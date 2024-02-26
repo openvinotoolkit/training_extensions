@@ -4,7 +4,7 @@
 
 import pytest
 import torch
-from otx.core.metrics import HLabelAccuracy
+from otx.core.metrices.hlabel_accuracy import HLabelAccuracy
 
 
 class TestHLabelAccuracy:

@@ -57,13 +57,13 @@ class CustomAccuracy(Metric):
         self.preds.extend(preds)
         self.targets.extend(target)
 
-    def _compute_unnormalized_confusion_matrics(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         raise NotImplementedError
 
-    def _compute_accuracy_from_conf_matrics(self, conf_matrics: list[NamedConfusionMatrix]) -> Tensor:
+    def _compute_accuracy_from_conf_matrices(self, conf_matrices: list[NamedConfusionMatrix]) -> Tensor:
         """Compute the accuracy from the confusion matrix."""
-        correct_per_label_group = torch.stack([torch.trace(conf_matrix) for conf_matrix in conf_matrics])
-        total_per_label_group = torch.stack([torch.sum(conf_matrix) for conf_matrix in conf_matrics])
+        correct_per_label_group = torch.stack([torch.trace(conf_matrix) for conf_matrix in conf_matrices])
+        total_per_label_group = torch.stack([torch.sum(conf_matrix) for conf_matrix in conf_matrices])
 
         if self.average == "MICRO":
             return torch.sum(correct_per_label_group) / torch.sum(total_per_label_group)
@@ -75,20 +75,20 @@ class CustomAccuracy(Metric):
 
     def compute(self) -> Tensor:
         """Compute the metric."""
-        conf_matrics = self._compute_unnormalized_confusion_matrics()
+        conf_matrices = self._compute_unnormalized_confusion_matrices()
 
         return {
-            "conf_matrix": conf_matrics,
-            "accuracy": self._compute_accuracy_from_conf_matrics(conf_matrics),
+            "conf_matrix": conf_matrices,
+            "accuracy": self._compute_accuracy_from_conf_matrices(conf_matrices),
         }
 
 
 class CustomMulticlassAccuracy(CustomAccuracy):
     """Custom accuracy class for the multi-class classification."""
 
-    def _compute_unnormalized_confusion_matrics(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
-        conf_matrics = []
+        conf_matrices = []
         for label_group in self.label_groups:
             label_to_idx = {label: index for index, label in enumerate(self.label_names)}
             group_indices = [label_to_idx[label] for label in label_group]
@@ -108,19 +108,19 @@ class CustomMulticlassAccuracy(CustomAccuracy):
                 row_names=label_group,
                 col_names=label_group,
             ).to(self.device)
-            conf_matrics.append(confmat(filtered_preds, filtered_targets))
-        return conf_matrics
+            conf_matrices.append(confmat(filtered_preds, filtered_targets))
+        return conf_matrices
 
 
 class CustomMultilabelAccuracy(CustomAccuracy):
     """Custom accuracy class for the multi-label classification."""
 
-    def _compute_unnormalized_confusion_matrics(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
 
-        conf_matrics = []
+        conf_matrices = []
         for i, label_group in enumerate(self.label_groups):
             label_preds = (preds[:, i] >= self.threshold).long()
             label_targets = targets[:, i]
@@ -136,8 +136,8 @@ class CustomMultilabelAccuracy(CustomAccuracy):
             confmat = NamedConfusionMatrix(task="binary", num_classes=2, row_names=data_name, col_names=data_name).to(
                 self.device,
             )
-            conf_matrics.append(confmat(valid_preds, valid_targets))
-        return conf_matrics
+            conf_matrices.append(confmat(valid_preds, valid_targets))
+        return conf_matrices
 
 
 class CustomHlabelAccuracy(CustomAccuracy):
@@ -146,12 +146,12 @@ class CustomHlabelAccuracy(CustomAccuracy):
     def _is_multiclass_group(self, label_group: list[str]) -> bool:
         return len(label_group) != 1
 
-    def _compute_unnormalized_confusion_matrics(self) -> list[NamedConfusionMatrix]:
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         preds = torch.stack(self.preds)
         targets = torch.stack(self.targets)
 
-        conf_matrics = []
+        conf_matrices = []
         for i, label_group in enumerate(self.label_groups):
             label_preds = preds[:, i]
             label_targets = targets[:, i]
@@ -171,7 +171,7 @@ class CustomHlabelAccuracy(CustomAccuracy):
                     row_names=label_group,
                     col_names=label_group,
                 ).to(self.device)
-                conf_matrics.append(confmat(valid_preds, valid_targets))
+                conf_matrices.append(confmat(valid_preds, valid_targets))
             else:
                 label_preds = (label_preds >= self.threshold).long()
                 data_name = [label_group[0], "~" + label_group[0]]
@@ -181,5 +181,5 @@ class CustomHlabelAccuracy(CustomAccuracy):
                     row_names=data_name,
                     col_names=data_name,
                 ).to(self.device)
-                conf_matrics.append(confmat(valid_preds, valid_targets))
-        return conf_matrics
+                conf_matrices.append(confmat(valid_preds, valid_targets))
+        return conf_matrices
