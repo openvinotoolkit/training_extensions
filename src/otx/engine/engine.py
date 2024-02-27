@@ -5,19 +5,21 @@
 
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable, Literal
+from warnings import warn
 
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
+from otx.core.types import PathLike
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
@@ -25,7 +27,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .utils.auto_configurator import AutoConfigurator, PathLike
+from .utils.auto_configurator import AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -33,7 +35,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
-    from torchmetrics import Metric
+
+    from otx.core.metrics import MetricCallable
 
 
 LITMODULE_PER_TASK = {
@@ -154,7 +157,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig | None = None,
         **kwargs,
@@ -172,7 +175,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
@@ -261,7 +265,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -270,7 +274,8 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -575,15 +580,24 @@ class Engine:
         )
 
     @classmethod
-    def from_config(cls, config_path: PathLike, data_root: PathLike | None = None, **kwargs) -> Engine:
+    def from_config(
+        cls,
+        config_path: PathLike,
+        data_root: PathLike | None = None,
+        work_dir: PathLike | None = None,
+        **kwargs,
+    ) -> Engine:
         """Builds the engine from a configuration file.
 
         Args:
             config_path (PathLike): The configuration file path.
-            data_root (PathLike | None): Root directory for the data. Defaults to None.
+            data_root (PathLike | None): Root directory for the data.
+                Defaults to None. If data_root is None, use the data_root from the configuration file.
+            work_dir (PathLike | None, optional): Working directory for the engine.
+                Defaults to None. If work_dir is None, use the work_dir from the configuration file.
             kwargs: Arguments that can override the engine's arguments.
 
-        Returns:
+        Returns:s
             Engine: An instance of the Engine class.
 
         Example:
@@ -591,45 +605,44 @@ class Engine:
             ...     config="config.yaml",
             ... )
         """
-        from lightning.pytorch.cli import instantiate_class
+        from otx.cli.utils.jsonargparse import get_instantiated_classes
 
-        from otx.cli.utils.jsonargparse import get_configuration
-        from otx.core.utils.instantiators import partial_instantiate_class
-
-        config = get_configuration(str(config_path))
-        config.pop("config", None)  # Unnecessary config key
-        # Datamodule
-        data_config = config.pop("data")
-        if data_root is not None:
-            data_config["config"]["data_root"] = data_root
-        datamodule = OTXDataModule(
-            task=data_config["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config["config"].pop("train_subset")),
-                val_subset=SubsetConfig(**data_config["config"].pop("val_subset")),
-                test_subset=SubsetConfig(**data_config["config"].pop("test_subset")),
-                tile_config=TileConfig(**data_config["config"].pop("tile_config", {})),
-                **data_config["config"],
-            ),
+        # For the Engine argument, prepend 'engine.' for CLI parser
+        filter_kwargs = ["device", "checkpoint", "task"]
+        for key in filter_kwargs:
+            if key in kwargs:
+                kwargs[f"engine.{key}"] = kwargs.pop(key)
+        instantiated_config, train_kwargs = get_instantiated_classes(
+            config=config_path,
+            data_root=data_root,
+            work_dir=work_dir,
+            **kwargs,
         )
-        # Model
-        num_classes = datamodule.meta_info.num_classes
-        config["model"]["init_args"]["num_classes"] = num_classes
-        model = instantiate_class(args=(), init=config.pop("model"))
-        optimizer = partial_instantiate_class(init=config.pop("optimizer", None))
-        scheduler = partial_instantiate_class(init=config.pop("scheduler", None))
+        engine_kwargs = {**instantiated_config.get("engine", {}), **train_kwargs}
 
-        engine_config = {**config.pop("engine"), **config}
-        engine_config.update(kwargs)
-        engine_config["data_root"] = data_root
-        engine_config.pop("metric", None)  # Remove the metric config
+        # Remove any input that is not currently available in Engine and print a warning message.
+        set_valid_args = TrainerArgumentsCache.get_trainer_constructor_args().union(
+            set(inspect.signature(Engine.__init__).parameters.keys()),
+        )
+        removed_args = []
+        for engine_key in list(engine_kwargs.keys()):
+            if engine_key not in set_valid_args:
+                engine_kwargs.pop(engine_key)
+                removed_args.append(engine_key)
+        if removed_args:
+            msg = (
+                f"Warning: {removed_args} -> not available in Engine constructor. "
+                "It will be ignored. Use what need in the right places."
+            )
+            warn(msg, stacklevel=1)
 
         return cls(
-            datamodule=datamodule,
-            model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            **engine_config,
+            work_dir=instantiated_config.get("work_dir", work_dir),
+            datamodule=instantiated_config.get("datamodule"),
+            model=instantiated_config.get("model"),
+            optimizer=instantiated_config.get("optimizer"),
+            scheduler=instantiated_config.get("scheduler"),
+            **engine_kwargs,
         )
 
     # ------------------------------------------------------------------------ #
@@ -727,7 +740,7 @@ class Engine:
         model: OTXModel,
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -735,7 +748,8 @@ class Engine:
             model (OTXModel): The OTXModel instance.
             optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
 
         Returns:
             OTXLitModule: The built LightningModule instance.
@@ -743,10 +757,14 @@ class Engine:
         class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])
         lightning_module = getattr(module, class_name)
-        return lightning_module(
-            otx_model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            torch_compile=False,
-            metric=metric,
-        )
+
+        lightning_kwargs = {
+            "otx_model": model,
+            "optimizer": optimizer,
+            "scheduler": scheduler,
+            "torch_compile": False,
+        }
+        if metric:
+            lightning_kwargs["metric"] = metric
+
+        return lightning_module(**lightning_kwargs)

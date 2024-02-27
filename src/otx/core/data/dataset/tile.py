@@ -92,7 +92,7 @@ class OTXTileTransform(Tile):
         img_h, img_w = image.size
         tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
-        stride_h, stride_w = int(tile_h * (1 - h_ovl)), int(tile_w * (1 - w_ovl))
+        stride_h, stride_w = max(int(tile_h * (1 - h_ovl)), 1), max(int(tile_w * (1 - w_ovl)), 1)
         n_row, n_col = (img_h + stride_h - 1) // stride_h, (img_w + stride_w - 1) // stride_w
 
         rois: list[BboxIntCoords] = []
@@ -237,6 +237,8 @@ class OTXTileTrainDataset(OTXTileDataset):
             threshold_drop_ann=0.5,
         )
         dm_dataset = dm_dataset.filter("/item/annotation", filter_annotations=True, remove_empty=True)
+        # Include original dataset for training
+        dm_dataset.update(dataset.dm_subset.as_dataset())
         dm_subset = DatasetSubset(dm_dataset, dataset.dm_subset.name)
         dataset.dm_subset = dm_subset
         dataset.ids = [item.id for item in dm_subset]

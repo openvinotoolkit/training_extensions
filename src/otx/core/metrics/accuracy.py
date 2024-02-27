@@ -1,7 +1,7 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for defining hierarchical label accuracy metric."""
+"""Module for OTX accuracy metric used for classification tasks."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import Callable, Sequence
 import torch
 from torch import nn
 from torchmetrics import Metric
-from torchmetrics.classification import Accuracy, MultilabelAccuracy
+from torchmetrics.classification.accuracy import Accuracy, MultilabelAccuracy
 
 
 class HLabelAccuracy(Metric):
@@ -19,16 +19,17 @@ class HLabelAccuracy(Metric):
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
         num_multilabel_classes (int): Number of multi-label classes.
-        threshold_multilabel (float): Predictions with scores under the thresholds
-                                        are considered as negative. Defaults to 0.5.
         head_idx_to_logits_range (dict[str, tuple[int, int]]): The range of logits which represents
                                                                 the number of classes for each heads.
+        threshold_multilabel (float): Predictions with scores under the thresholds
+                                        are considered as negative. Defaults to 0.5.
     """
 
     def __init__(
         self,
         num_multiclass_heads: int,
         num_multilabel_classes: int,
+        head_logits_info: dict[str, tuple[int, int]],
         threshold_multilabel: float = 0.5,
     ):
         super().__init__()
@@ -41,8 +42,6 @@ class HLabelAccuracy(Metric):
         self.num_multilabel_classes = num_multilabel_classes
         self.threshold_multilabel = threshold_multilabel
 
-    def set_hlabel_accuracy_from_head_logits_info(self, head_logits_info: dict[str, tuple[int, int]]) -> None:
-        """Set the hlabel accuracy by using the head_logits_info."""
         # Multiclass classification accuracy
         self.multiclass_head_accuracy: list[Accuracy] = [
             Accuracy(

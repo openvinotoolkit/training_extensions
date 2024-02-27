@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import warnings
 from abc import abstractmethod
@@ -341,6 +342,17 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         super().__init__(num_classes)
+
+        tile_enabled = False
+        with contextlib.suppress(RuntimeError):
+            tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
+
+        if tile_enabled:
+            self._setup_tiler()
+
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        raise NotImplementedError
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
