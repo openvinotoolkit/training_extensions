@@ -4,7 +4,7 @@
 """Test of Module for OTX custom metrices."""
 
 import torch
-from otx.algo.metrices.fmeasure import FMeasure
+from otx.core.metrics.fmeasure import FMeasure
 
 
 class TestFMeasure:
