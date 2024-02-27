@@ -1,4 +1,4 @@
-"""OTX object Detection perfomance benchmark tests."""
+"""OTX object detection perfomance benchmark tests."""
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
