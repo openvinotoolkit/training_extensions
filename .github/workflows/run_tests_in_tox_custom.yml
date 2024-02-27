@@ -46,7 +46,7 @@ jobs:
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:11.7.1.1-devel-ubuntu20.04
       options: ${{ inputs.container-options }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:

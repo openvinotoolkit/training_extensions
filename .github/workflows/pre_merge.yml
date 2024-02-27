@@ -69,7 +69,7 @@ jobs:
       cancel-in-progress: true
     runs-on: ["otx-gpu-v100-1"]
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:11.7.1.1-devel-ubuntu20.04
       options: --runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g
     steps:
       - name: Checkout repository
