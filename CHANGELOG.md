@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.5.1\]
+
+### Bug fixes
+
+- Remove polygon clipping code (<https://github.com/openvinotoolkit/training_extensions/pull/2926>)
+- Hotfix default memcache size to 100MB (<https://github.com/openvinotoolkit/training_extensions/pull/2990>)
+
 ## \[v1.5.0\]
 
 ### New features
