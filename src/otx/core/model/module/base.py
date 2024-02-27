@@ -56,7 +56,7 @@ class OTXLitModule(LightningModule):
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False, ignore=["otx_model", "metric"])
+        self.save_hyperparameters(logger=False, ignore=["otx_model"])
 
     def training_step(self, inputs: OTXBatchDataEntity, batch_idx: int) -> Tensor:
         """Step for model training."""
