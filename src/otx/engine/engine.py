@@ -131,7 +131,7 @@ class Engine:
             model
             if isinstance(model, OTXModel)
             else self._auto_configurator.get_model(
-                meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
+                label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
@@ -231,7 +231,7 @@ class Engine:
             scheduler=self.scheduler,
             metric=metric,
         )
-        lit_module.meta_info = self.datamodule.meta_info
+        lit_module.label_info = self.datamodule.label_info
 
         if seed is not None:
             seed_everything(seed, workers=True)
@@ -306,7 +306,7 @@ class Engine:
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.get_ov_datamodule()
-            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
@@ -315,7 +315,7 @@ class Engine:
             scheduler=self.scheduler,
             metric=metric,
         )
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -379,7 +379,7 @@ class Engine:
         )
         if datamodule is None:
             datamodule = self.datamodule
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         lit_module.model.explain_mode = explain
 
@@ -454,8 +454,8 @@ class Engine:
             scheduler=self.scheduler,
         )
         loaded_checkpoint = torch.load(ckpt_path)
-        lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-        self.model.label_info = lit_module.meta_info
+        lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
+        self.model.label_info = lit_module.label_info
 
         lit_module.load_state_dict(loaded_checkpoint)
 
@@ -559,7 +559,7 @@ class Engine:
         )
         if datamodule is None:
             datamodule = self.datamodule
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         lit_module.model.explain_mode = True
 
@@ -720,7 +720,7 @@ class Engine:
             None
         """
         if isinstance(model, str):
-            model = self._auto_configurator.get_model(model, meta_info=self.datamodule.meta_info)
+            model = self._auto_configurator.get_model(model, label_info=self.datamodule.label_info)
         self._model = model
 
     @property

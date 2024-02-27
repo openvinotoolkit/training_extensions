@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from operator import itemgetter
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -255,7 +254,6 @@ class HLabelInfo:
         def get_exclusive_group_info(all_groups: list[Label | list[Label]]) -> dict[str, Any]:
             """Get exclusive group information."""
             exclusive_groups = [g for g in all_groups if len(g) > 1]
-            exclusive_groups.sort(key=itemgetter(0))
 
             last_logits_pos = 0
             num_single_label_classes = 0
@@ -282,7 +280,6 @@ class HLabelInfo:
         ) -> dict[str, Any]:
             """Get single label group information."""
             single_label_groups = [g for g in all_groups if len(g) == 1]
-            single_label_groups.sort(key=itemgetter(0))
 
             class_to_idx = {}
 

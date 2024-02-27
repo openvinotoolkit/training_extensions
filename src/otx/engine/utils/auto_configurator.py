@@ -216,12 +216,12 @@ class AutoConfigurator:
             ),
         )
 
-    def get_model(self, model_name: str | None = None, meta_info: LabelInfo | None = None) -> OTXModel:
+    def get_model(self, model_name: str | None = None, label_info: LabelInfo | None = None) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
-            meta_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
+            label_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
                 will be updated in the model's configuration.
 
         Returns:
@@ -232,19 +232,19 @@ class AutoConfigurator:
 
             # If model_name is None, the default model will be used from task.
             >>> auto_configurator.get_model(
-            ...     meta_info=<LabelInfo>,
+            ...     label_info=<LabelInfo>,
             ... )
 
             # If model_name is str, the default config file is changed.
             >>> auto_configurator.get_model(
             ...     model_name=<model_name, str>,
-            ...     meta_info=<LabelInfo>,
+            ...     label_info=<LabelInfo>,
             ... )
         """
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
-        if meta_info is not None:
-            num_classes = meta_info.num_classes
+        if label_info is not None:
+            num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
@@ -286,12 +286,12 @@ class AutoConfigurator:
 
         return None
 
-    def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
+    def get_ov_model(self, model_name: str, label_info: LabelInfo) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
         Args:
             model_name (str): The name of the model.
-            meta_info (LabelInfo): The label information.
+            label_info (LabelInfo): The label information.
 
         Returns:
             OVModel: The OVModel instance.
@@ -308,7 +308,7 @@ class AutoConfigurator:
         ov_model = getattr(module, class_name)
         return ov_model(
             model_name=model_name,
-            num_classes=meta_info.num_classes,
+            num_classes=label_info.num_classes,
         )
 
     def get_ov_datamodule(self) -> OTXDataModule:

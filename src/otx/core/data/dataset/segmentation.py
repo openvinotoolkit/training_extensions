@@ -64,15 +64,15 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             image_color_channel,
             stack_images,
         )
-        self.meta_info = SegMetaInfo(
-            label_names=self.meta_info.label_names,
-            label_groups=self.meta_info.label_groups,
+        self.label_info = SegMetaInfo(
+            label_names=self.label_info.label_names,
+            label_groups=self.label_info.label_groups,
         )
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        num_classes = self.meta_info.num_classes
+        num_classes = self.label_info.num_classes
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
 

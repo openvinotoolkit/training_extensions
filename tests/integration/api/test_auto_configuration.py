@@ -49,7 +49,7 @@ def test_auto_configuration(
 
     default_config = get_configuration(DEFAULT_CONFIG_PER_TASK[task])
     default_config["data"]["config"]["data_root"] = data_root
-    num_classes = engine.datamodule.meta_info.num_classes
+    num_classes = engine.datamodule.label_info.num_classes
 
     default_config["model"]["init_args"]["num_classes"] = num_classes
 

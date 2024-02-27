@@ -194,7 +194,7 @@ class OTXLitModule(LightningModule):
 
         """
         state_dict = super().state_dict()
-        state_dict["meta_info"] = self.meta_info
+        state_dict["label_info"] = self.label_info
         return state_dict
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
@@ -202,7 +202,7 @@ class OTXLitModule(LightningModule):
 
         It successfully loads the checkpoint from OTX v1.x and for finetune and for resume.
 
-        If checkpoint's meta_info and OTXLitModule's meta_info are different,
+        If checkpoint's label_info and OTXLitModule's label_info are different,
         load_state_pre_hook for smart weight loading will be registered.
         """
         if is_ckpt_from_otx_v1(ckpt):
@@ -214,23 +214,23 @@ class OTXLitModule(LightningModule):
         else:
             state_dict = ckpt
 
-        ckpt_meta_info = state_dict.pop("meta_info", None)
+        ckpt_label_info = state_dict.pop("label_info", None)
 
-        if ckpt_meta_info and self.meta_info is None:
+        if ckpt_label_info and self.label_info is None:
             msg = (
-                "`state_dict` to load has `meta_info`, but the current model has no `meta_info`. "
-                "It is recommended to set proper `meta_info` for the incremental learning case."
+                "`state_dict` to load has `label_info`, but the current model has no `label_info`. "
+                "It is recommended to set proper `label_info` for the incremental learning case."
             )
             warnings.warn(msg, stacklevel=2)
-        if ckpt_meta_info and self.meta_info and ckpt_meta_info != self.meta_info:
+        if ckpt_label_info and self.label_info and ckpt_label_info != self.label_info:
             logger = logging.getLogger()
             logger.info(
-                f"Data classes from checkpoint: {ckpt_meta_info.label_names} -> "
-                f"Data classes from training data: {self.meta_info.label_names}",
+                f"Data classes from checkpoint: {ckpt_label_info.label_names} -> "
+                f"Data classes from training data: {self.label_info.label_names}",
             )
             self.register_load_state_dict_pre_hook(
-                self.meta_info.label_names,
-                ckpt_meta_info.label_names,
+                self.label_info.label_names,
+                ckpt_label_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
 

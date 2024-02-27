@@ -26,7 +26,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrics import HLabelAccuracy
+from otx.core.metrics.accuracy import MixedHLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -61,6 +61,10 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
             raise RuntimeError(msg)
+
+        # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
+        if results.get("accuracy"):
+            results = results["accuracy"]
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
@@ -150,6 +154,11 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
+
+        # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
+        if results.get("accuracy"):
+            results = results["accuracy"]
+
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: MultilabelClsBatchDataEntity, batch_idx: int) -> None:
@@ -207,11 +216,11 @@ class OTXHlabelClsLitModule(OTXLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = partial(  # noqa: B008
-            HLabelAccuracy,
+            MixedHLabelAccuracy,
             num_multiclass_heads=2,
             num_multilabel_classes=2,
             head_logits_info={"default": (0, 2)},
-        ),  # lambda: HLabelAccuracy() doesn't return the partial class. So, use the partial() directly.
+        ),  # lambda: MixedHLabelAccuracy() doesn't return the partial class. So, use the partial() directly.
     ):
         super().__init__(
             otx_model=otx_model,
@@ -247,32 +256,29 @@ class OTXHlabelClsLitModule(OTXLitModule):
         # Need to manually correct the device setting.
         self.metric.to(self.device)
 
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
-
     def _set_hlabel_setup(self) -> None:
-        if not isinstance(self.meta_info, HLabelMetaInfo):
-            msg = f"The type of self.meta_info should be HLabelMetaInfo, got {type(self.meta_info)}."
+        if not isinstance(self.label_info, HLabelMetaInfo):
+            msg = f"The type of self.label_info should be HLabelMetaInfo, got {type(self.label_info)}."
             raise TypeError(msg)
 
-        self.hlabel_info = self.meta_info.hlabel_info
+        self.hlabel_info = self.label_info.hlabel_info
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
         self.model.set_hlabel_info(self.hlabel_info)
 
         # Set the OTXHlabelClsLitModule params.
-        self.num_labels = len(self.meta_info.label_names)
+        self.num_labels = len(self.label_info.label_names)
         self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
         self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
+
+        # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
+        if results.get("accuracy"):
+            results = results["accuracy"]
+
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
     def validation_step(self, inputs: HlabelClsBatchDataEntity, batch_idx: int) -> None:
@@ -326,14 +332,14 @@ class OTXHlabelClsLitModule(OTXLitModule):
             )
 
     @property
-    def meta_info(self) -> LabelInfo:
+    def label_info(self) -> LabelInfo:
         """Meta information of OTXLitModule."""
         if self._meta_info is None:
-            err_msg = "meta_info is referenced before assignment"
+            err_msg = "label_info is referenced before assignment"
             raise TypeError(err_msg)
         return self._meta_info
 
-    @meta_info.setter
-    def meta_info(self, meta_info: LabelInfo) -> None:
-        self._meta_info = meta_info
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo) -> None:
+        self._meta_info = label_info
         self._set_hlabel_setup()
