@@ -494,6 +494,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
 
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return None
+
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""

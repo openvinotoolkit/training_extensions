@@ -118,8 +118,6 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         )
         for idx in range(1, 4)
@@ -132,8 +130,6 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         ),
         DatasetTestCase(
@@ -144,8 +140,6 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         )
     ]
@@ -199,8 +193,6 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         )
         for idx in range(1, 4)
@@ -213,8 +205,6 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         ),
         DatasetTestCase(
@@ -225,8 +215,6 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
-                "callback_monitor": "val/accuracy",
-                "scheduler.monitor": "val/accuracy",
             }
         )
     ]
@@ -278,8 +266,8 @@ class TestHlabelCls(BaseTest):
             data_format="datumaro",
             num_classes=6,
             extra_overrides={
-                "model.num_multiclass_heads": "3",
-                "model.num_multilabel_classes": "0",
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomHlabelAccuracy",
             },
         )
         for idx in range(1, 4)
@@ -290,8 +278,8 @@ class TestHlabelCls(BaseTest):
             data_format="datumaro",
             num_classes=102,
             extra_overrides={
-                "model.num_multiclass_heads": "23",
-                "model.num_multilabel_classes": "0",
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomHlabelAccuracy",
             },
         )
 
@@ -495,7 +483,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -509,7 +497,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=2,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -521,7 +509,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },

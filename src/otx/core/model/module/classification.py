@@ -69,7 +69,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             raise RuntimeError(msg)
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
-        if results.get("accuracy"):
+        if isinstance(results, dict):
             results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
@@ -142,11 +142,6 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def configure_metric(self) -> None:
         """Configure the metric."""
-        if isinstance(self.metric_callable, CustomAccuracy):
-            self.metric = self.metric_callable(
-                label_info=self.model.label_info,
-            )
-
         if isinstance(self.metric_callable, partial):
             num_classes_augmented_params = {
                 name: param.default if name != "num_labels" else self.model.num_classes
@@ -170,7 +165,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         results = meter.compute()
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
-        if results.get("accuracy"):
+        if isinstance(results, dict):
             results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
@@ -290,7 +285,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         results = meter.compute()
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
-        if results.get("accuracy"):
+        if isinstance(results, dict):
             results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
