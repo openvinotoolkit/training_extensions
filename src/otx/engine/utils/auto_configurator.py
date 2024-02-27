@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
+from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
@@ -205,12 +205,15 @@ class AutoConfigurator:
             return None
         self.config["data"]["config"]["data_root"] = self.data_root
         data_config = self.config["data"]["config"].copy()
+        train_config = data_config.pop("train_subset")
+        val_config = data_config.pop("val_subset")
+        test_config = data_config.pop("test_subset")
         return OTXDataModule(
             task=self.config["data"]["task"],
             config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
+                train_subset=SubsetConfig(**train_config, sampler=SamplerConfig(train_config.pop("sampler", {}))),
+                val_subset=SubsetConfig(**val_config, sampler=SamplerConfig(val_config.pop("sampler", {}))),
+                test_subset=SubsetConfig(**test_config, sampler=SamplerConfig(test_config.pop("sampler", {}))),
                 tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
