@@ -1,4 +1,4 @@
-"""OTX Classification perfomance tests."""
+"""OTX classification perfomance benchmark tests."""
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -60,6 +60,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         {
             "type": "accuracy",
             "criteria": [
+                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
                 Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
@@ -154,6 +155,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         {
             "type": "accuracy",
             "criteria": [
+                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
                 Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
@@ -246,6 +248,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         {
             "type": "accuracy",
             "criteria": [
+                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
                 Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
                 Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
