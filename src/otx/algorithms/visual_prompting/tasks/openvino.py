@@ -30,7 +30,6 @@ from zipfile import ZipFile
 
 import attr
 import cv2
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
