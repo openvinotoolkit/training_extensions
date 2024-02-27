@@ -23,15 +23,15 @@ import warnings
 from typing import Any, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
-from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 from openvino.model_api.models.utils import ClassificationResult
 
+import nncf
+from nncf.common.quantization.structs import QuantizationPreset
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,

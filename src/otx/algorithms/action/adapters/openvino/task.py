@@ -22,14 +22,14 @@ import tempfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from mmcv.utils import ProgressBar
-from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
+import nncf
+from nncf.common.quantization.structs import QuantizationPreset
 from otx.algorithms.action.adapters.openvino import (
     ActionOVClsDataLoader,
     get_ovdataloader,

@@ -22,15 +22,15 @@ import tempfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
-import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
 from anomalib.data.utils.transform import get_transforms
-from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
 from openvino.model_api.models import AnomalyDetection, AnomalyResult
 
+import nncf
+from nncf.common.quantization.structs import QuantizationPreset
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils import embed_ir_model_data
