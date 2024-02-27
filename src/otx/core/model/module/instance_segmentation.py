@@ -26,7 +26,7 @@ from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrices import MetricCallable
 
 
 class OTXInstanceSegLitModule(OTXLitModule):

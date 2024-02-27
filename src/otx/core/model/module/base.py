@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrices import MetricCallable
 
 
 class OTXLitModule(LightningModule):

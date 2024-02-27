@@ -17,7 +17,7 @@ from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrices import MetricCallable
 
 
 class OTXRotatedDetLitModule(OTXInstanceSegLitModule):

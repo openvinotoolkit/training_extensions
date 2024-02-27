@@ -26,7 +26,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrics import HLabelAccuracy
+from otx.core.metrices import HLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.dataset.base import LabelInfo
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrices import MetricCallable
 
 
 class OTXMulticlassClsLitModule(OTXLitModule):
@@ -246,14 +246,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
         # Since the metric is not initialized at the init phase,
         # Need to manually correct the device setting.
         self.metric.to(self.device)
-
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.model.label_info, HLabelMetaInfo):

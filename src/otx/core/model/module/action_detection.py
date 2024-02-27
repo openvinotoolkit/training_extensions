@@ -22,7 +22,7 @@ from otx.core.model.module.base import OTXLitModule
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.core.metrics import MetricCallable
+    from otx.core.metrices import MetricCallable
 
 
 class OTXActionDetLitModule(OTXLitModule):

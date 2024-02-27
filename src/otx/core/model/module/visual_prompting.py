@@ -59,7 +59,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         )
 
     def configure_metric(self, cond: str = "") -> None:
-        """Configure metrics."""
+        """Configure metrices."""
         self.val_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
@@ -244,7 +244,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     """Base class for the lightning module used in OTX zero-shot visual prompting task."""
 
     def set_metrics(self) -> None:
-        """Set metrics."""
+        """Set metrices."""
         self.test_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
