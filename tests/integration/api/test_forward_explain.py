@@ -13,7 +13,7 @@ from otx.engine import Engine
     pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
-def test_otx_e2e(
+def test_forward_explain(
     recipe: str,
     fxt_target_dataset_per_task: dict,
 ) -> None:
