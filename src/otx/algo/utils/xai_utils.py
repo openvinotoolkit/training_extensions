@@ -25,9 +25,9 @@ def process_saliency_maps_in_pred_entity(
     work_dir: Path | None = None,
 ) -> list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI]:
     """Process saliency maps in PredEntity."""
-    for batch_id in range(len(predict_result)):
-        saliency_maps = predict_result[batch_id].saliency_maps
-        pred_labels = predict_result[batch_id].labels  # type: ignore[union-attr]
+    for predict_result_per_batch in predict_result:
+        saliency_maps = predict_result_per_batch.saliency_maps
+        pred_labels = predict_result_per_batch.labels  # type: ignore[union-attr]
         if pred_labels:
             pred_labels = [pred.tolist() for pred in pred_labels]
 
@@ -38,7 +38,7 @@ def process_saliency_maps_in_pred_entity(
             s_map_to_save = next(iter(processed_saliency_maps[0].values()))
             cv2.imwrite(str(work_dir / "saliency_map.tiff"), s_map_to_save)
 
-        predict_result[batch_id].saliency_maps = processed_saliency_maps
+        predict_result_per_batch.saliency_maps = processed_saliency_maps
     return predict_result
 
 
