@@ -5,11 +5,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Callable, Sequence
 
 import torch
 from torch import nn
 from torchmetrics import ConfusionMatrix, Metric
+from torchmetrics import Metric
+from torchmetrics.classification.accuracy import Accuracy as TorchmetricAcc
+from torchmetrics.classification.accuracy import MultilabelAccuracy as TorchmetricMultilabelAcc
 
 if TYPE_CHECKING:
     from torch import Tensor
@@ -183,3 +186,92 @@ class CustomHlabelAccuracy(CustomAccuracy):
                 ).to(self.device)
                 conf_matrices.append(confmat(valid_preds, valid_targets))
         return conf_matrices
+
+class MixedHLabelAccuracy(Metric):
+    """Custom accuracy metric for h-label classification.
+
+    Args:
+        num_multiclass_heads (int): Number of multi-class heads.
+        num_multilabel_classes (int): Number of multi-label classes.
+        head_idx_to_logits_range (dict[str, tuple[int, int]]): The range of logits which represents
+                                                                the number of classes for each heads.
+        threshold_multilabel (float): Predictions with scores under the thresholds
+                                        are considered as negative. Defaults to 0.5.
+    """
+
+    def __init__(
+        self,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+        head_logits_info: dict[str, tuple[int, int]],
+        threshold_multilabel: float = 0.5,
+    ):
+        super().__init__()
+
+        self.num_multiclass_heads = num_multiclass_heads
+        if num_multiclass_heads == 0:
+            msg = "The number of multiclass heads should be larger than 0"
+            raise ValueError(msg)
+
+        self.num_multilabel_classes = num_multilabel_classes
+        self.threshold_multilabel = threshold_multilabel
+
+        # Multiclass classification accuracy
+        self.multiclass_head_accuracy: list[TorchmetricAcc] = [
+            TorchmetricAcc(
+                task="multiclass",
+                num_classes=int(head_range[1] - head_range[0]),
+            )
+            for head_range in head_logits_info.values()
+        ]
+
+        # Multilabel classification accuracy metrics
+        if self.num_multilabel_classes > 0:
+            self.multilabel_accuracy = TorchmetricMultilabelAcc(
+                num_labels=self.num_multilabel_classes,
+                threshold=0.5,
+                average="macro",
+            )
+
+    def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
+        self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]  # noqa: SLF001
+        if self.num_multilabel_classes > 0:
+            self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)  # noqa: SLF001
+        return self
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        """Update state with predictions and targets."""
+        # Split preds into multiclass and multilabel parts
+        for head_idx in range(self.num_multiclass_heads):
+            preds_multiclass = preds[:, head_idx]
+            target_multiclass = target[:, head_idx]
+            multiclass_mask = target_multiclass > 0
+
+            is_all_multiclass_ignored = not multiclass_mask.any()
+            if not is_all_multiclass_ignored:
+                self.multiclass_head_accuracy[head_idx].update(
+                    preds_multiclass[multiclass_mask],
+                    target_multiclass[multiclass_mask],
+                )
+
+        if self.num_multilabel_classes > 0:
+            # Split preds into multiclass and multilabel parts
+            preds_multilabel = preds[:, self.num_multiclass_heads :]
+            target_multilabel = target[:, self.num_multiclass_heads :]
+            # Multilabel update
+            self.multilabel_accuracy.update(preds_multilabel, target_multilabel)
+
+    def compute(self) -> torch.Tensor:
+        """Compute the final statistics."""
+        multiclass_accs = torch.mean(
+            torch.stack(
+                [acc.compute() for acc in self.multiclass_head_accuracy],
+            ),
+        )
+
+        if self.num_multilabel_classes > 0:
+            multilabel_acc = self.multilabel_accuracy.compute()
+
+            return (multiclass_accs + multilabel_acc) / 2
+
+        return multiclass_accs

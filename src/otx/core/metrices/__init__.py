@@ -3,9 +3,12 @@
 #
 """Module for OTX custom metrices."""
 
-from typing import Callable
+from typing import Callable, Union
 
-from lightning.pytorch.cli import ArgsType
 from torchmetrics import Metric
 
-MetricCallable = Callable[[ArgsType], Metric]
+from .accuracy import HLabelAccuracy
+
+MetricCallable = Union[Callable[[], Metric], Callable[[int], Metric]]
+
+__all__ = ["HLabelAccuracy"]
