@@ -115,6 +115,12 @@ class SamplerConfig:
     """Configuration class for defining the sampler used in the data loading process.
 
     This is passed in the form of a dataclass, which is instantiated when the dataloader is created.
+
+    [TODO]: Need to replace this with a proper Sampler class.
+    Currently, SamplerConfig, which belongs to the sampler of SubsetConfig,
+    belongs to the nested dataclass of dataclass, which is not easy to instantiate from the CLI.
+    So currently replace sampler with a corresponding dataclass that resembles the configuration of another object,
+    providing limited functionality.
     """
 
     class_path: str = "torch.utils.data.RandomSampler"

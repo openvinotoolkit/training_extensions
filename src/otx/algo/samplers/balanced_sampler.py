@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from datumaro.components.annotation import Annotation, AnnotationType, LabelCategories
 
-from .base_sampler import BaseSampler
+from .repeat_sampler import RepeatSampler
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
@@ -24,14 +24,7 @@ def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
     labels = dm_dataset.categories().get(AnnotationType.label, LabelCategories())
 
     def get_label(ann: Annotation) -> str:
-        """Get the name of the label associated with the given annotation.
-
-        Args:
-            ann (Annotation): The annotation object.
-
-        Returns:
-            str: The name of the label if it exists, otherwise None.
-        """
+        """Get the name of the label associated with the given annotation."""
         try:
             return labels.items[ann.label].name if ann.label is not None else None
         except IndexError:
@@ -48,7 +41,7 @@ def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
     return stats
 
 
-class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attributes
+class BalancedSampler(RepeatSampler):
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch

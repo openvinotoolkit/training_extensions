@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -204,7 +205,7 @@ class AutoConfigurator:
         if self.data_root is None:
             return None
         self.config["data"]["config"]["data_root"] = self.data_root
-        data_config = self.config["data"]["config"].copy()
+        data_config = deepcopy(self.config["data"]["config"])
         train_config = data_config.pop("train_subset")
         val_config = data_config.pop("val_subset")
         test_config = data_config.pop("test_subset")

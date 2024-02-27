@@ -36,12 +36,12 @@ def get_proper_repeat_times(
     return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
 
 
-class BaseSampler(Sampler):
+class RepeatSampler(Sampler):
     """Sampler that easily adapts to the dataset statistics.
 
     In the exterme small dataset, the iteration per epoch could be set to 1 and then it could make slow training
     since DataLoader reinitialized at every epoch. So, in the small dataset case,
-    BaseSampler repeats the dataset to enlarge the iterations per epoch.
+    RepeatSampler repeats the dataset to enlarge the iterations per epoch.
 
     In the large dataset, the useful information is not totally linear relationship with the number of datasets.
     It is close to the log scale relationship, rather.
@@ -96,14 +96,14 @@ class BaseSampler(Sampler):
         self.total_size = self.num_samples * self.num_replicas
 
         generator = np.random.default_rng()
-        self.seed = generator.integers(2**31)
+        self.seed = generator.integers(0, 2**31)
         self.epoch = 0
 
     def __iter__(self):
         """Iter."""
         if self.shuffle:
             g = torch.Generator()
-            g.manual_seed(self.seed + self.epoch)
+            g.manual_seed(int(self.seed + self.epoch))
             indices = torch.randperm(len(self.dataset), generator=g).tolist()
         else:
             indices = list(range(len(self.dataset)))
