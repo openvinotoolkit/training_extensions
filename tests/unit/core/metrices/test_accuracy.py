@@ -9,10 +9,10 @@ from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import HLabelInfo
 from otx.core.metrices.accuracy import (
-    CustomHlabelAccuracy, 
-    CustomMulticlassAccuracy, 
-    CustomMultilabelAccuracy, 
-    MixedHLabelAccuracy
+    CustomHlabelAccuracy,
+    CustomMulticlassAccuracy,
+    CustomMultilabelAccuracy,
+    MixedHLabelAccuracy,
 )
 
 
