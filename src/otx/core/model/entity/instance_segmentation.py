@@ -5,11 +5,13 @@
 
 from __future__ import annotations
 
+import logging as log
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -105,6 +107,16 @@ class OTXInstanceSegModel(
 
         parameters["metadata"][("model_info", "labels")] = all_labels.strip()
         parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
+
+        if self.tile_config.enable_tiler:
+            parameters["metadata"].update(
+                {
+                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
+                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
+                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
+                },
+            )
+
         return parameters
 
 
@@ -315,6 +327,17 @@ class OVInstanceSegmentationModel(
             model_api_configuration,
         )
 
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = InstanceSegmentationTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
+        )
+
     def _customize_outputs(
         self,
         outputs: list[InstanceSegmentationResult],
@@ -338,8 +361,12 @@ class OVInstanceSegmentationModel(
                     canvas_size=inputs.imgs_info[-1].img_shape,
                 ),
             )
+            # NOTE: OTX 1.5 filter predictions with result_based_confidence_threshold,
+            # but OTX 2.0 doesn't have it in configuration.
+            _masks = [output.mask for output in output_objects]
+            _masks = np.stack(_masks) if len(_masks) else []
             scores.append(torch.tensor([output.score for output in output_objects]))
-            masks.append(torch.tensor([output.mask for output in output_objects]))
+            masks.append(torch.tensor(_masks))
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         if outputs and outputs[0].saliency_map:

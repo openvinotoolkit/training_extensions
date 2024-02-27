@@ -13,5 +13,3 @@ ir_config = dict(
     output_names=["boxes", "labels", "masks"],
     opset_version=11,
 )
-
-scale_ir_input = False
