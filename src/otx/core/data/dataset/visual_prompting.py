@@ -228,23 +228,18 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         masks = tv_tensors.Mask(torch.stack(gt_masks, dim=0), dtype=torch.uint8)
 
         # set entity without masks to avoid resizing masks
-        entity = ZeroShotVisualPromptingDataEntity(
-            image=img_data,
+        return ZeroShotVisualPromptingDataEntity(
+            image=F.to_image(img_data),
             img_info=ImageInfo(
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
             ),
-            masks=None,
+            masks=masks,
             labels=labels,
             polygons=gt_polygons,
             prompts=gt_prompts,
         )
-        transformed_entity = self._apply_transforms(entity)
-
-        # insert masks to transformed_entity
-        transformed_entity.masks = masks  # type: ignore[union-attr]
-        return transformed_entity
 
     @property
     def collate_fn(self) -> Callable:

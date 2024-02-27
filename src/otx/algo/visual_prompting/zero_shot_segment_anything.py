@@ -11,6 +11,7 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 from typing import Any, Literal
+import numpy as np
 
 import torch
 from torch.nn import Parameter, ParameterDict
@@ -18,6 +19,8 @@ from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
+import torchvision.transforms.v2 as tvt_v2
+from torchvision.tv_tensors import BoundingBoxes, Image
 
 from otx.algo.visual_prompting.segment_anything import (
     DEFAULT_CONFIG_SEGMENT_ANYTHING,
@@ -298,7 +301,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             input_prompt == 1
                         ] += 1  # TODO(sungchul): check if the mask is bool or int # noqa: TD003
                     else:
-                        if isinstance(input_prompt, tv_tensors.BoundingBoxes):
+                        if isinstance(input_prompt, BoundingBoxes):
                             point_coords = input_prompt.reshape(1, 2, 2)
                             point_labels = torch.tensor([[2, 3]], device=point_coords.device)
                         elif isinstance(input_prompt, Points):
@@ -635,9 +638,18 @@ class ZeroShotSegmentAnything(SegmentAnything):
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
-    def __init__(self, backbone: Literal["tiny_vit", "vit_b"], num_classes: int = 0, **kwargs):
+    def __init__(
+        self,
+        backbone: Literal["tiny_vit", "vit_b"],
+        num_classes: int = 0,
+        pixel_mean: list[float] = [123.675, 116.28, 103.53],
+        pixel_std: list[float] = [58.395, 57.12, 57.375],
+        **kwargs):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)
+        
+        self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
+        self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -648,14 +660,22 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
-        forward_fn = self.model.learn if self.training else self.model.infer
-
-        outputs = forward_fn(**self._customize_inputs(inputs))
-
+        forward_fn = self.learn if self.training else self.infer
+        return forward_fn(inputs)
+    
+    def learn(self, inputs: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Learn to directly connect to the model."""
+        outputs = self.model.learn(**self._customize_inputs(inputs))
+        return self._customize_outputs(outputs, inputs)
+    
+    def infer(self, inputs: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        """Infer to directly connect to the model."""
+        outputs = self.model.infer(**self._customize_inputs(inputs))
         return self._customize_outputs(outputs, inputs)
 
     def _customize_inputs(self, inputs: ZeroShotVisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
         """Customize the inputs for the model."""
+        inputs = self.transforms(inputs)
         if self.training:
             # learn
             return {
@@ -726,3 +746,65 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
         return total_processed_prompts
+
+    def apply_image(self, image: tv_tensors.Image | np.ndarray, target_length: int = 1024) -> tv_tensors.Image:
+        """Preprocess image to be used in the model."""
+        h, w = image.shape[-2:]
+        target_size = self.get_preprocess_shape(h, w, target_length)
+        return tvt_v2.functional.resize(tvt_v2.functional.to_image(image), target_size, antialias=True)
+
+    def apply_coords(self, coords: Tensor, ori_shape: tuple[int, ...], target_length: int = 1024) -> Tensor:
+        """Preprocess points to be used in the model."""
+        old_h, old_w = ori_shape
+        new_h, new_w = self.get_preprocess_shape(ori_shape[0], ori_shape[1], target_length)
+        coords = deepcopy(coords).to(torch.float32)
+        coords[..., 0] = coords[..., 0] * (new_w / old_w)
+        coords[..., 1] = coords[..., 1] * (new_h / old_h)
+        return coords
+    
+    def apply_points(self, points: Points, ori_shape: tuple[int, ...], target_length: int = 1024) -> Points:
+        """Preprocess points to be used in the model."""
+        return Points(self.apply_coords(points, ori_shape, target_length), canvas_size=(target_length, target_length))
+    
+    def apply_boxes(self, boxes: BoundingBoxes, ori_shape: tuple[int, ...], target_length: int = 1024) -> BoundingBoxes:
+        """Preprocess boxes to be used in the model."""
+        return BoundingBoxes(
+            self.apply_coords(boxes.reshape(-1, 2, 2), ori_shape, target_length).reshape(-1, 4),
+            format=boxes.format,
+            canvas_size=(target_length, target_length))
+    
+    def apply_prompts(self, prompts: list[Points | BoundingBoxes], ori_shape: tuple[int, ...], target_length: int = 1024) -> list[Points | BoundingBoxes]:
+        """Preprocess prompts to be used in the model."""
+        transformed_prompts: list[Points, BoundingBoxes] = []
+        for prompt in prompts:
+            if isinstance(prompt, Points):
+                transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
+            elif isinstance(prompt, BoundingBoxes):
+                transformed_prompts.append(self.apply_boxes(prompt, ori_shape, target_length))
+            else:
+                log.info(f"Current prompt ({prompt.__class__.__name__}) is not supported, saved as it is.")
+                transformed_prompts.append(prompt)
+        return transformed_prompts
+
+    def get_preprocess_shape(self, oldh: int, oldw: int, long_side_length: int) -> tuple[int, int]:
+        """Get preprocess shape."""
+        scale = long_side_length * 1.0 / max(oldh, oldw)
+        newh, neww = oldh * scale, oldw * scale
+        neww = int(neww + 0.5)
+        newh = int(newh + 0.5)
+        return (newh, neww)
+    
+    def preprocess(self, x: Image) -> Image:
+        """Normalize pixel values and pad to a square input."""
+        # Normalize colors
+        x = (x - self.pixel_mean) / self.pixel_std
+
+        # Pad
+        x = self.model._pad_to_square(x)
+        return Image(x)
+    
+    def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
+        """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
+        entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
+        entity.prompts = [self.apply_prompts(prompt, info.ori_shape, self.model.image_size) for prompt, info in zip(entity.prompts, entity.imgs_info)]
+        return entity
