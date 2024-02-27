@@ -10,10 +10,18 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from .base_sampler import BaseSampler
+from datumaro import Dataset as DmDataset
 
 if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset
 
+
+def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
+    """Compute class statistics."""
+    stats = {}
+    for item in dm_dataset:
+        for label in item.annotations.labels:
+            stats[label] = stats.get(label, 0) + 1
 
 class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attributes
     """Balanced sampler for imbalanced data for class-incremental task.
@@ -58,6 +66,7 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
         super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
         # img_indices: dict[label: list[idx]]
+        annotation_stats = compute_class_statistics(dataset.dm_subset)
         self.img_indices: dict = {label: [] for label in self.dataset.meta_info.label_names}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
