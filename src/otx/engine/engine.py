@@ -35,7 +35,8 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
-    from torchmetrics import Metric
+
+    from otx.core.metrics import MetricCallable
 
 
 LITMODULE_PER_TASK = {
@@ -156,7 +157,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig | None = None,
         **kwargs,
@@ -174,7 +175,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
@@ -263,7 +265,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -272,7 +274,8 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -737,7 +740,7 @@ class Engine:
         model: OTXModel,
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-        metric: Metric | None = None,
+        metric: MetricCallable | None = None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -745,7 +748,8 @@ class Engine:
             model (OTXModel): The OTXModel instance.
             optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
-            metric (Metric | None): The metric for the validation and test. It could be None at export, predict, etc.
+            metric (MetricCallable | None): The metric for the validation and test.
+                                            It could be None at export, predict, etc.
 
         Returns:
             OTXLitModule: The built LightningModule instance.
@@ -753,10 +757,14 @@ class Engine:
         class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
         module = __import__(class_module, fromlist=[class_name])
         lightning_module = getattr(module, class_name)
-        return lightning_module(
-            otx_model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            torch_compile=False,
-            metric=metric,
-        )
+
+        lightning_kwargs = {
+            "otx_model": model,
+            "optimizer": optimizer,
+            "scheduler": scheduler,
+            "torch_compile": False,
+        }
+        if metric:
+            lightning_kwargs["metric"] = metric
+
+        return lightning_module(**lightning_kwargs)

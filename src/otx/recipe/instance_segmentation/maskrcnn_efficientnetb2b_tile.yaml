@@ -55,10 +55,10 @@ overrides:
             with_bbox: true
             with_mask: true
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: RandomFlip
             prob: 0.5
           - type: PackDetInputs
@@ -69,10 +69,10 @@ overrides:
           - type: LoadImageFromFile
             backend_args: null
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
@@ -90,10 +90,10 @@ overrides:
           - type: LoadImageFromFile
             backend_args: null
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true

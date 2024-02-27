@@ -20,6 +20,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
         self.image_size = (1, 3, 1024, 1024)
+        self.tile_image_size = (1, 3, 512, 512)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -44,6 +45,7 @@ class MaskRCNNSwinT(MaskRCNN):
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="swint")
         self.image_size = (1, 3, 1344, 1344)
+        self.tile_image_size = (1, 3, 512, 512)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
