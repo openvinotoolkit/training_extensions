@@ -356,11 +356,11 @@ algo_backend:
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
-    default_value: 1000000000
+    default_value: 100000000
     description: Size of memory pool for caching decoded data to load data faster (bytes).
     editable: true
     header: Size of memory pool
-    max_value: 9223372036854775807
+    max_value: 10000000000
     min_value: 0
     type: INTEGER
     ui_rules:
