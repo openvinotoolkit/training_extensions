@@ -6,9 +6,8 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
@@ -17,6 +16,7 @@ from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
+from otx.core.types import PathLike
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
@@ -24,11 +24,9 @@ from otx.core.utils.instantiators import partial_instantiate_class
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-    from typing_extensions import TypeAlias
 
     from otx.core.model.entity.base import OTXModel
 
-PathLike: TypeAlias = Union[str, Path, os.PathLike]
 
 logger = logging.getLogger()
 RECIPE_PATH = get_otx_root_path() / "recipe"

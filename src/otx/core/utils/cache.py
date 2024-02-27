@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 from typing import Any
 
@@ -47,6 +48,8 @@ class TrainerArgumentsCache:
     def update(self, **kwargs) -> None:
         """Replace cached arguments with arguments retrieved from the model."""
         for key, value in kwargs.items():
+            if value is None:
+                continue
             if key in self._cached_args and self._cached_args[key] != value:
                 logger.info(
                     f"Overriding {key} from {self._cached_args[key]} with {value}",
@@ -72,3 +75,15 @@ class TrainerArgumentsCache:
             dict[str, Any]: The cached arguments.
         """
         return self._cached_args
+
+    @staticmethod
+    def get_trainer_constructor_args() -> set[str]:
+        """Get the set of arguments accepted by the Trainer class constructor.
+
+        Returns:
+            set[str]: A set of argument names accepted by the Trainer class constructor.
+        """
+        from lightning import Trainer
+
+        sig = inspect.signature(Trainer.__init__)
+        return set(sig.parameters.keys())
