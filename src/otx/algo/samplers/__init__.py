@@ -4,6 +4,5 @@
 """Custom samplers for the OTX2.0."""
 
 from .balanced_sampler import BalancedSampler
-from .class_incremental_sampler import ClsIncrSampler
 
-__all__ = ["BalancedSampler", "ClsIncrSampler"]
+__all__ = ["BalancedSampler"]
