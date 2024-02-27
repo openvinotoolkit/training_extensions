@@ -612,25 +612,6 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             best_idx = torch.argmax(scores[0])
         return logits[:, best_idx], masks[0, best_idx]
-    
-    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
-        """Find latest reference info to be used."""
-        if not os.path.isdir(root):
-            return None
-        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
-            return stamps[0]
-        return None
-    
-    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
-        """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pt")
-            reference_info = torch.load(latest_reference_info)
-            self.register_buffer("reference_feats", reference_info.get("reference_feats", torch.zeros(0, 1, self.embed_dim)).to(device), False)
-            self.register_buffer("used_indices", reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device), False)
-            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
-            return True
-        return False
 
 
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
@@ -806,3 +787,22 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
         entity.prompts = [self.apply_prompts(prompt, info.ori_shape, self.model.image_size) for prompt, info in zip(entity.prompts, entity.imgs_info)]
         return entity
+    
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+        """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
+            return stamps[0]
+        return None
+    
+    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
+        """Load latest reference info to be used."""
+        if (latest_stamp := self._find_latest_reference_info(self.model.root_reference_info)) is not None:
+            latest_reference_info = os.path.join(self.model.root_reference_info, latest_stamp, "reference_info.pt")
+            reference_info = torch.load(latest_reference_info)
+            self.model.register_buffer("reference_feats", reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device), False)
+            self.model.register_buffer("used_indices", reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device), False)
+            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            return True
+        return False

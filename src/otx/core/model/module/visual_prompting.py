@@ -266,25 +266,25 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.model.model._load_latest_reference_info(self.device):
+        if not self.model._load_latest_reference_info(self.device):
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.fit_loop.run()
             self.training = False # to use infer logic
             self.model.training = False # to use infer logic
             self.trainer._evaluation_loop.setup_data() # to set _combined_loader
             self.trainer._evaluation_loop.reset() # to set _combined_loader
-            self.model.model._load_latest_reference_info(self.device)
+            self.model._load_latest_reference_info(self.device)
         
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.model.model._load_latest_reference_info(self.device):
+        if not self.model._load_latest_reference_info(self.device):
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.fit_loop.run()
             self.training = False # to use infer logic
             self.model.training = False # to use infer logic
             self.trainer._evaluation_loop.setup_data() # to set _combined_loader
             self.trainer._evaluation_loop.reset() # to set _combined_loader
-            self.model.model._load_latest_reference_info(self.device)
+            self.model._load_latest_reference_info(self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
