@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor
@@ -47,6 +47,28 @@ class OTXInstanceSegLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
+        self.test_meta_info: dict[str, Any] = {}
+
+    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state_dict from checkpoint.
+
+        For detection, it is need to update confidence threshold information when
+        the metric is FMeasure.
+        """
+        if "confidence_threshold" in ckpt:
+            self.test_meta_info["best_confidence_threshold"] = ckpt["confidence_threshold"]
+            self.test_meta_info["vary_confidence_threshold"] = False
+        elif "confidence_threshold" in ckpt["hyper_parameters"]:
+            self.test_meta_info["best_confidence_threshold"] = ckpt["hyper_parameters"]["confidence_threshold"]
+            self.test_meta_info["vary_confidence_threshold"] = False
+        super().load_state_dict(ckpt, *args, **kwargs)
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
+        for key, value in self.test_meta_info.items():
+            if hasattr(self.metric, key):
+                setattr(self.metric, key, value)
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
@@ -80,6 +102,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
                 sync_dist=True,
                 prog_bar=True,
             )
+        self.hparams["confidence_threshold"] = meter.best_confidence_threshold
 
     def validation_step(self, inputs: InstanceSegBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
