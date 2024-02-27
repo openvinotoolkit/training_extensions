@@ -26,7 +26,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrices import HLabelAccuracy
+from otx.core.metrices.accuracy import MixedHLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -207,7 +207,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = partial(  # noqa: B008
-            HLabelAccuracy,
+            MixedHLabelAccuracy,
             num_multiclass_heads=2,
             num_multilabel_classes=2,
             head_logits_info={"default": (0, 2)},

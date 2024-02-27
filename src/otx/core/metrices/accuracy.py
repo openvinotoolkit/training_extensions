@@ -5,12 +5,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Callable, Sequence
+from typing import TYPE_CHECKING, Callable, Literal, Sequence
 
 import torch
 from torch import nn
 from torchmetrics import ConfusionMatrix, Metric
-from torchmetrics import Metric
 from torchmetrics.classification.accuracy import Accuracy as TorchmetricAcc
 from torchmetrics.classification.accuracy import MultilabelAccuracy as TorchmetricMultilabelAcc
 
@@ -186,6 +185,7 @@ class CustomHlabelAccuracy(CustomAccuracy):
                 ).to(self.device)
                 conf_matrices.append(confmat(valid_preds, valid_targets))
         return conf_matrices
+
 
 class MixedHLabelAccuracy(Metric):
     """Custom accuracy metric for h-label classification.

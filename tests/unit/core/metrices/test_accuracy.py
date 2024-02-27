@@ -3,11 +3,17 @@
 #
 """Test of Module for OTX custom metrices."""
 
+import pytest
 import torch
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.classification import HLabelMetaInfo
 from otx.core.data.entity.classification import HLabelInfo
-from otx.core.metrices.accuracy import CustomHlabelAccuracy, CustomMulticlassAccuracy, CustomMultilabelAccuracy
+from otx.core.metrices.accuracy import (
+    CustomHlabelAccuracy, 
+    CustomMulticlassAccuracy, 
+    CustomMultilabelAccuracy, 
+    MixedHLabelAccuracy
+)
 
 
 class TestAccuracy:
@@ -79,3 +85,34 @@ class TestAccuracy:
         result = metric.compute()
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.636
+
+
+class TestMixedHLabelAccuracy:
+    @pytest.fixture()
+    def hlabel_accuracy(self) -> MixedHLabelAccuracy:
+        # You may need to adjust the parameters based on your actual use case
+        return MixedHLabelAccuracy(
+            num_multiclass_heads=2,
+            num_multilabel_classes=3,
+            head_logits_info={"head1": (0, 5), "head2": (5, 10)},
+            threshold_multilabel=0.5,
+        )
+
+    def test_update_and_compute(self, hlabel_accuracy) -> None:
+        preds = torch.rand((10, 5))
+        target = torch.randint(0, 2, (10, 5))  # Replace the dimensions with actual dimensions
+
+        hlabel_accuracy.update(preds, target)
+        result = hlabel_accuracy.compute()
+
+        assert isinstance(result, torch.Tensor)
+
+    def test_multilabel_only(self) -> None:
+        # Test when only multilabel heads are present (should raise an exception)
+        with pytest.raises(ValueError, match="The number of multiclass heads should be larger than 0"):
+            MixedHLabelAccuracy(
+                num_multiclass_heads=0,
+                num_multilabel_classes=3,
+                head_logits_info={"head1": (0, 5), "head2": (5, 10)},
+                threshold_multilabel=0.5,
+            )
