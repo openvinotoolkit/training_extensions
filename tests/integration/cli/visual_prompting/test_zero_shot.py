@@ -17,10 +17,10 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/car_tree_bug",
-    "--val-data-roots": "tests/assets/car_tree_bug",
-    "--test-data-roots": "tests/assets/car_tree_bug",
-    "--input": "tests/assets/car_tree_bug/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug_zero_shot",
+    "--val-data-roots": "tests/assets/car_tree_bug_zero_shot",
+    "--test-data-roots": "tests/assets/car_tree_bug_zero_shot",
+    "--input": "tests/assets/car_tree_bug_zero_shot/images/train",
     "train_params": [
         "params",
         "--learning_parameters.trainer.max_epochs",

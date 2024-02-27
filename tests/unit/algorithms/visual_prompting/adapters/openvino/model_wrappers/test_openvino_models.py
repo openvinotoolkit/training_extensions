@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Tuple
+from typing import Tuple, Dict, Any
 
 import numpy as np
 import pytest
@@ -57,6 +57,26 @@ class TestPromptGetter:
         assert params.get("sim_threshold").default_value == 0.5
         assert params.get("num_bg_points").default_value == 1
 
+    @e2e_pytest_unit
+    def test_get_inputs(self, mocker):
+        """Test _get_inputs."""
+        mocker.patch.object(ImageModel, "__init__")
+        prompt_getter = PromptGetter("adapter")
+
+        prompt_getter.inputs = {
+            "image_embeddings": np.ones((1, 4, 4, 3)),
+            "reference_feats": np.ones((2, 1, 256)),
+            "used_indices": np.array([[0, 1]], dtype=np.int64),
+            "original_size": np.array([[4, 4]], dtype=np.int64),
+            "threshold": np.array([[0.1]]),
+            "num_bg_points": np.array([[1]], dtype=np.int64),
+        }
+
+        returned_value = prompt_getter._get_inputs()
+
+        assert returned_value[0] == ["image_embeddings"]
+        assert returned_value[1] == ["reference_feats", "used_indices", "original_size", "threshold", "num_bg_points"]
+
 
 class TestDecoder:
     @pytest.fixture(autouse=True)
@@ -79,20 +99,42 @@ class TestDecoder:
         """Test _get_outputs."""
         results = self.decoder._get_outputs()
 
-        assert "low_res_masks" == results
+        assert "upscaled_masks" == results
 
     @e2e_pytest_unit
-    def test_preprocess(self):
+    @pytest.mark.parametrize(
+        "prompts,expected",
+        [
+            (
+                {
+                    "bboxes": [np.array([[1, 1], [2, 2]])],
+                    "points": [],
+                    "labels": {"bboxes": [1]},
+                    "original_size": (4, 4),
+                },
+                {
+                    "point_coords": (1, 2, 2),
+                    "point_labels": (1, 2),
+                },
+            ),
+            (
+                {"bboxes": [], "points": [np.array([[1, 1]])], "labels": {"points": [1]}, "original_size": (4, 4)},
+                {
+                    "point_coords": (1, 1, 2),
+                    "point_labels": (1, 1),
+                },
+            ),
+        ],
+    )
+    def test_preprocess(self, prompts: Dict[str, Any], expected: Dict[str, Any]):
         """Test preprocess"""
-        prompts = {"bboxes": [np.array([[1, 1], [2, 2]])], "labels": [1], "original_size": (4, 4)}
-
         results = self.decoder.preprocess(prompts, {})
 
         assert isinstance(results, list)
         assert "point_coords" in results[0]
-        assert results[0]["point_coords"].shape == (1, 2, 2)
+        assert results[0]["point_coords"].shape == expected["point_coords"]
         assert "point_labels" in results[0]
-        assert results[0]["point_labels"].shape == (1, 2)
+        assert results[0]["point_labels"].shape == expected["point_labels"]
         assert "mask_input" in results[0]
         assert "has_mask_input" in results[0]
         assert "orig_size" in results[0]
@@ -134,35 +176,11 @@ class TestDecoder:
     @e2e_pytest_unit
     def test_postprocess(self, mocker):
         """Test postprocess."""
-        self.decoder.output_blob_name = "masks"
-        self.decoder.soft_threshold = 0.5
+        self.decoder.output_blob_name = "upscaled_masks"
+        self.decoder.mask_threshold = 0.0
         self.decoder.blur_strength = 2
-        fake_output = {"masks": np.ones((4, 4)), "iou_predictions": 0.1}
+        fake_output = {"upscaled_masks": np.ones((4, 4)), "scores": 0.1}
         fake_metadata = {"original_size": np.array([[6, 6]]), "label": mocker.Mock(spec=LabelEntity)}
         returned_value = self.decoder.postprocess(outputs=fake_output, meta=fake_metadata)
 
         assert isinstance(returned_value, tuple)
-        assert np.all(returned_value[0].shape == fake_metadata["original_size"])
-        assert np.all(returned_value[1].shape == fake_metadata["original_size"])
-
-    @e2e_pytest_unit
-    def test_resize_and_crop(self, mocker):
-        """Test resize_and_crop."""
-        mocker.patch.object(self.decoder, "get_padded_size", return_value=np.array((6, 6)))
-
-        masks = np.zeros((2, 2))
-        orig_size = np.array((8, 8))
-
-        results = self.decoder.resize_and_crop(masks, orig_size)
-
-        assert results.shape == tuple(orig_size)
-
-    @e2e_pytest_unit
-    def test_get_padded_size(self):
-        """Test get_padded_size."""
-        original_size = np.array((2, 4))
-        longest_side = 6
-
-        results = self.decoder.get_padded_size(original_size, longest_side)
-
-        assert np.all(results == np.array((3, 6)))

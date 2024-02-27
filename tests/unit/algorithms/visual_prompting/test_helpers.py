@@ -17,6 +17,8 @@ from otx.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from unittest.mock import Mock
+from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.color import Color
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -148,12 +150,8 @@ class MockConfig:
 
 
 class MockImageEncoder(nn.Module):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.backbone = nn.Linear(1, 1)
-
-    def forward(self, *args, **kwargs):
-        return torch.ones((1, 2, 4, 4))
+    def __new__(cls, *args, **kwargs):
+        return nn.Linear(4, 4)
 
 
 class MockPromptEncoder(nn.Module):
@@ -186,9 +184,20 @@ class MockMaskDecoder(nn.Module):
 
 
 class MockScoredLabel:
-    def __init__(self, label: int, name: str = "background"):
+    def __init__(
+        self,
+        label: int,
+        name: str = "background",
+        probability: float = 0.0,
+        label_source=None,
+    ):
         self.name = name
-        self.id_ = label
+        self.label = Mock()
+        self.label.id_ = label
+        self.label.id = label
+        self.probability = probability
+        self.label_source = label_source
+        self.__class__ = ScoredLabel
 
 
 class MockPromptGetter(nn.Module):
@@ -202,7 +211,7 @@ class MockPromptGetter(nn.Module):
         pass
 
     def get_prompt_candidates(self, *args, **kwargs):
-        return {1: (torch.Tensor([[0, 0, 0.5]]), torch.Tensor([[1, 1]]))}
+        return {1: torch.Tensor([[0, 0, 0.5]])}, {1: torch.Tensor([[1, 1]])}
 
     def forward(self, *args, **kwargs):
         return torch.tensor([[[0, 0, 0.5], [1, 1, 0.7]]]), torch.tensor([[[2, 2]]])

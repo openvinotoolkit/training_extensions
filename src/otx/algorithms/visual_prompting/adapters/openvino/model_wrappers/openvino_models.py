@@ -17,14 +17,12 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import cv2
 import numpy as np
 from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
 from openvino.model_api.models.types import NumericalValue, StringValue
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
-from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
 
 class ImageEncoder(ImageModel):
@@ -64,13 +62,31 @@ class PromptGetter(ImageModel):
 
     __model__ = "prompt_getter"
 
+    def __init__(self, inference_adapter, configuration=None, preload=False):
+        super().__init__(inference_adapter, configuration, preload)
+
     @classmethod
     def parameters(cls) -> Dict[str, Any]:  # noqa: D102
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
         parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
+        parameters.update(
+            {"default_threshold_reference": NumericalValue(value_type=float, default_value=0.3, min=-1.0, max=1.0)}
+        )
         return parameters
+
+    def _get_inputs(self):
+        """Defines the model inputs for images and additional info."""
+        image_blob_names, image_info_blob_names = [], []
+        for name, metadata in self.inputs.items():
+            if len(metadata.shape) == 4:
+                image_blob_names.append(name)
+            else:
+                image_info_blob_names.append(name)
+        if not image_blob_names:
+            self.raise_error("Failed to identify the input for the image: no 4D input layer found")
+        return image_blob_names, image_info_blob_names
 
 
 class Decoder(SegmentationModel):
@@ -86,6 +102,9 @@ class Decoder(SegmentationModel):
     ):
         super().__init__(model_adapter, configuration, preload)
 
+        self.mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
+        self.has_mask_input = np.zeros((1, 1), dtype=np.float32)
+
     @classmethod
     def parameters(cls):  # noqa: D102
         parameters = super().parameters()
@@ -94,27 +113,30 @@ class Decoder(SegmentationModel):
         return parameters
 
     def _get_outputs(self):
-        return "low_res_masks"
+        return "upscaled_masks"
 
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Preprocess prompts."""
         processed_prompts = []
-        # TODO (sungchul): process points
-        for bbox, label in zip(inputs["bboxes"], inputs["labels"]):
-            # TODO (sungchul): add condition to check whether using bbox or point
-            point_coords = self._apply_coords(bbox.reshape(-1, 2, 2), inputs["original_size"])
-            point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-            processed_prompts.append(
-                {
-                    "point_coords": point_coords,
-                    "point_labels": point_labels,
-                    # TODO (sungchul): how to generate mask_input and has_mask_input
-                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                    "orig_size": np.array(inputs["original_size"], dtype=np.float32).reshape((-1, 2)),
-                    "label": label,
-                }
-            )
+        for prompt_name in ["bboxes", "points"]:
+            for prompt, label in zip(inputs.get(prompt_name), inputs["labels"].get(prompt_name, [])):
+                if prompt_name == "bboxes":
+                    point_coords = self._apply_coords(prompt.reshape(-1, 2, 2), inputs["original_size"])
+                    point_labels = np.array([2, 3], dtype=np.float32).reshape(-1, 2)
+                else:
+                    point_coords = self._apply_coords(prompt.reshape(-1, 1, 2), inputs["original_size"])
+                    point_labels = np.array([1], dtype=np.float32).reshape(-1, 1)
+
+                processed_prompts.append(
+                    {
+                        "point_coords": point_coords,
+                        "point_labels": point_labels,
+                        "mask_input": self.mask_input,
+                        "has_mask_input": self.has_mask_input,
+                        "orig_size": np.asarray(inputs["original_size"], dtype=np.int64).reshape(-1, 2),
+                        "label": label,
+                    }
+                )
         return processed_prompts
 
     def _apply_coords(self, coords: np.ndarray, original_size: Union[List[int], Tuple[int, int]]) -> np.ndarray:
@@ -152,64 +174,13 @@ class Decoder(SegmentationModel):
 
         Returns:
             hard_prediction (np.ndarray): The hard prediction.
-            soft_prediction (np.ndarray): Resized, cropped, and normalized soft prediction.
+            soft_prediction (np.ndarray): The soft prediction.
         """
+        probability = max(min(float(outputs["scores"]), 1.0), 0.0)
+        hard_prediction = outputs[self.output_blob_name].squeeze() > self.mask_threshold
+        soft_prediction = hard_prediction * probability
 
-        def sigmoid(x):
-            return np.tanh(x * 0.5) * 0.5 + 0.5  # to avoid overflow
-
-        soft_prediction = outputs[self.output_blob_name].squeeze()
-        soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"][0])
-        soft_prediction = sigmoid(soft_prediction)
         meta["soft_prediction"] = soft_prediction
-
-        hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction,
-            soft_threshold=self.soft_threshold,
-            blur_strength=self.blur_strength,
-        )
-
-        probability = max(min(float(outputs["iou_predictions"]), 1.0), 0.0)
         meta["label"].probability = probability
 
         return hard_prediction, soft_prediction
-
-    def resize_and_crop(self, soft_prediction: np.ndarray, original_size: np.ndarray) -> np.ndarray:
-        """Resize and crop soft prediction.
-
-        Args:
-            soft_prediction (np.ndarray): Predicted soft prediction with HxW shape.
-            original_size (np.ndarray): The original image size.
-
-        Returns:
-            final_soft_prediction (np.ndarray): Resized and cropped soft prediction for the original image.
-        """
-        resized_soft_prediction = cv2.resize(
-            soft_prediction, (self.image_size, self.image_size), 0, 0, interpolation=cv2.INTER_LINEAR
-        )
-
-        prepadded_size = self.get_padded_size(original_size, self.image_size).astype(np.int64)
-        resized_cropped_soft_prediction = resized_soft_prediction[: prepadded_size[0], : prepadded_size[1], ...]
-
-        original_size = original_size.astype(np.int64)
-        h, w = original_size
-        final_soft_prediction = cv2.resize(
-            resized_cropped_soft_prediction, (w, h), 0, 0, interpolation=cv2.INTER_LINEAR
-        )
-        return final_soft_prediction
-
-    def get_padded_size(self, original_size: np.ndarray, longest_side: int) -> np.ndarray:
-        """Get padded size from original size and longest side of the image.
-
-        Args:
-            original_size (np.ndarray): The original image size with shape Bx2.
-            longest_side (int): The size of the longest side.
-
-        Returns:
-            transformed_size (np.ndarray): The transformed image size with shape Bx2.
-        """
-        original_size = original_size.astype(np.float32)
-        scale = longest_side / np.max(original_size)
-        transformed_size = scale * original_size
-        transformed_size = np.floor(transformed_size + 0.5).astype(np.int64)
-        return transformed_size

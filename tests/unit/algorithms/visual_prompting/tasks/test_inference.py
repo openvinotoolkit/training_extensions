@@ -343,6 +343,7 @@ class TestZeroShotTask:
             },
             "visual_prompting_prompt_getter": {
                 "image_embeddings": np.random.randn(1, embed_dim, *embed_size).astype(dtype=np.float32),
+                "reference_feat": np.random.randn(1, 256).astype(dtype=np.float32),
                 "original_size": np.random.randint(low=0, high=image_size * 2, size=(1, 2), dtype=np.int64),
                 "threshold": np.array([[0.1]], dtype=np.float32),
                 "num_bg_points": np.random.randint(low=1, high=image_size, size=(1, 1), dtype=np.int64),
@@ -353,12 +354,13 @@ class TestZeroShotTask:
                 "point_labels": np.random.randint(low=0, high=4, size=(1, 2)).astype(np.float32),
                 "mask_input": np.random.randn(1, 1, *mask_input_size).astype(np.float32),
                 "has_mask_input": np.array([[1]], dtype=np.float32),
+                "orig_size": np.random.randint(low=256, high=2048, size=(1, 2)).astype(np.int64),
             },
         }
         onnx_outputs = {
             "visual_prompting_image_encoder": ["image_embeddings"],
-            "visual_prompting_prompt_getter": ["total_points_scores", "total_bg_coords"],
-            "visual_prompting_decoder": ["iou_predictions", "low_res_masks"],
+            "visual_prompting_prompt_getter": ["points_scores", "bg_coords"],
+            "visual_prompting_decoder": ["upscaled_masks", "iou_predictions", "low_res_masks"],
         }
 
         onnx_rt_models = {
@@ -378,10 +380,13 @@ class TestZeroShotTask:
         mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_save = mocker.patch("torch.save")
+        mocker.patch.object(
+            self.zero_shot_task.model,
+            "state_dict",
+            return_value={"reference_info.reference_feats": None, "reference_info.used_indices": None},
+        )
 
-        self.zero_shot_task.model.prompt_getter = mocker.MagicMock()
-        self.zero_shot_task.model.prompt_getter.reference_feats.return_value = "reference_feats"
-        self.zero_shot_task.model.prompt_getter.reference_prompts.return_value = "reference_prompts"
+        self.zero_shot_task.model.reference_info = "reference_info"
 
         self.zero_shot_task.save_model(mocker_otx_model)
 
