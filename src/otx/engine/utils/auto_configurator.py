@@ -211,9 +211,9 @@ class AutoConfigurator:
         return OTXDataModule(
             task=self.config["data"]["task"],
             config=DataModuleConfig(
-                train_subset=SubsetConfig(**train_config, sampler=SamplerConfig(train_config.pop("sampler", {}))),
-                val_subset=SubsetConfig(**val_config, sampler=SamplerConfig(val_config.pop("sampler", {}))),
-                test_subset=SubsetConfig(**test_config, sampler=SamplerConfig(test_config.pop("sampler", {}))),
+                train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
+                val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
+                test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
                 tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
