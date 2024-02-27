@@ -317,35 +317,17 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
 
     def __init__(
         self,
-        cls_head_forward_fn: Callable,
         num_classes: int,
         num_anchors: list[int],
         normalize: bool = True,
         use_cls_softmax: bool = True,
     ) -> None:
-        super().__init__(cls_head_forward_fn, normalize)
+        super().__init__(cls_head_forward_fn=None, normalize=normalize)
         # SSD-like heads also have background class
         self._num_classes = num_classes
         self._num_anchors = num_anchors
         # Should be switched off for tiling
         self.use_cls_softmax = use_cls_softmax
-
-    # @classmethod
-    # def create_and_register_hook(
-    #     cls,
-    #     backbone: torch.nn.Module,
-    #     cls_head_forward_fn: Callable,
-    #     num_classes: int,
-    #     num_anchors: list[int],
-    # ) -> BaseRecordingForwardHook:
-    #     """Create this object and register it to the module forward hook."""
-    #     hook = cls(
-    #         cls_head_forward_fn,
-    #         num_classes=num_classes,
-    #         num_anchors=num_anchors,
-    #     )
-    #     hook.handle = backbone.register_forward_hook(hook.recording_forward)
-    #     return hook
 
     def func(
         self,

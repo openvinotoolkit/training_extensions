@@ -6,13 +6,20 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Any
+import types
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from torchvision import tv_tensors
 
+from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
+from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import (
+    OTXBatchLossEntity,
+    T_OTXBatchDataEntity,
+    T_OTXBatchPredEntity,
+)
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
@@ -20,22 +27,10 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
-from otx.core.data.entity.base import (
-    OTXBatchLossEntity,
-    T_OTXBatchDataEntity,
-    T_OTXBatchPredEntity,
-)
-
-from typing import TYPE_CHECKING, Any, Callable
-import types
-from mmdet.structures import OptSampleList
-
-from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
-from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
-
-
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from mmdet.models.detectors import SingleStageDetector
+    from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
     from torch import nn
@@ -121,7 +116,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         # Return the first output form detection head: classification scores
         return head_out[0]
 
-
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
@@ -142,56 +136,51 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             else outputs
         )
 
-    
     @staticmethod
-    def _forward_explain_detection(self,
-                inputs: torch.Tensor,
-                data_samples: OptSampleList = None,
-                mode: str = 'tensor'):
+    def _forward_explain_detection(
+        self: SingleStageDetector,
+        inputs: torch.Tensor,
+        data_samples: OptSampleList = None,
+        mode: str = "tensor",
+    ) -> dict:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
-
-        # Hack to remove grads for model parameters, since after class patching 
+        # Workaround to remove grads for model parameters, since after class patching
         # convolutions are failing since thay can't process gradients
         for param in self.parameters():
             param.requires_grad = False
-        
+
         backbone_feat = self.extract_feat(inputs)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
-    
+
         # Return the first output form detection head: classification scores
         saliency_map = self.explain_fn(bbox_head_feat[0])
 
-        if mode == 'loss':
+        if mode == "loss":
             predictions = self.bbox_head.loss(backbone_feat, data_samples)
-        elif mode == 'predict':
+        elif mode == "predict":
             predictions = self.bbox_head.predict(backbone_feat, data_samples)
-        elif mode == 'tensor':
+        elif mode == "tensor":
             predictions = bbox_head_feat
         else:
-            raise RuntimeError(f'Invalid mode "{mode}". '
-                               'Only supports loss, predict and tensor mode')
+            msg = f'Invalid mode "{mode}".'
+            raise RuntimeError(msg)
 
         return {
             "predictions": predictions,
             "saliency_map": saliency_map,
         }
 
-
     def get_explain_fn(self) -> Callable:
-        """Returns explain function. Lox"""
-
+        """Returns explain function."""
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, CustomSSDHead)
         explainer = DetClassProbabilityMapHook(
-            self.cls_head_forward_fn,
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )
         return explainer.func
 
-    
     def _reset_model_forward(self) -> None:
-
         if not self.explain_mode:
             return
 
@@ -216,7 +205,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         func_type = types.MethodType
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
-
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""

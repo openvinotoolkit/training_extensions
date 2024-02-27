@@ -4,7 +4,6 @@
 
 from pathlib import Path
 
-import numpy as np
 import pytest
 import yaml
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
@@ -239,7 +238,7 @@ def test_otx_e2e(
     # 5) otx export with XAI
     if ("_cls" not in task) and (task != "detection"):
         pytest.skip("Supported only for classification and detection task.")
-    
+
     if "dino" in model_name or "deit" in model_name:
         pytest.skip("Dino is not supported.")
 

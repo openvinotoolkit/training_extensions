@@ -168,16 +168,6 @@ class OTXModel(
         """Model forward explain function."""
         raise NotImplementedError
 
-    def get_explain_fn(self) -> Callable:
-        """Returns explain function."""
-        raise NotImplementedError
-
-    def _reset_model_forward(self) -> None:
-        raise NotImplementedError
-
-    def _restore_model_forward(self) -> None:
-        raise NotImplementedError
-
     def forward_tiles(self, inputs: T_OTXTileBatchDataEntity) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function for tile task."""
         raise NotImplementedError
