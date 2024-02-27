@@ -93,28 +93,12 @@ class OTXDetectionModel(
                 ("model_info", "iou_threshold"): str(0.5),
             },
         )
-        parameters["additional_output_names"] = ["saliency_map"] if self.explain_mode else []
+        parameters["additional_output_names"] = ("saliency_map") if self.explain_mode else ()
         return parameters
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI hook."""
-
-    @torch.no_grad()
-    def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward and returns cls scores.
-
-        This can be redefined at the model's level.
-        """
-        if (head := getattr(self.model, "bbox_head", None)) is None:
-            raise ValueError
-
-        # if (neck := getattr(self.model, "neck", None)) is not None:
-        #     x = neck(x)
-
-        head_out = head(x)
-        # Return the first output form detection head: classification scores
-        return head_out[0]
 
     def forward_explain(
         self,

@@ -196,8 +196,11 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
-    if "_cls" not in task or "dino" in model_name:
-        return
+    if ("_cls" not in task) and (task != "detection"):
+        pytest.skip("Supported only for classification and detection task.")
+
+    if "dino" in model_name:
+        pytest.skip("Dino is not supported.")
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -234,44 +237,6 @@ def test_otx_e2e(
             key=lambda p: p.stat().st_mtime,
         )
         assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
-
-    # 5) otx export with XAI
-    if ("_cls" not in task) and (task != "detection"):
-        pytest.skip("Supported only for classification and detection task.")
-
-    if "dino" in model_name or "deit" in model_name:
-        pytest.skip("Dino is not supported.")
-
-    format_to_file = {
-        "ONNX": "exported_model.onnx",
-        "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
-    }
-
-    tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
-    for fmt in format_to_file:
-        command_cfg = [
-            "otx",
-            "export",
-            "--config",
-            recipe,
-            "--data_root",
-            fxt_target_dataset_per_task[task],
-            "--engine.work_dir",
-            str(tmp_path_test / "outputs"),
-            *fxt_cli_override_command_per_task[task],
-            "--checkpoint",
-            str(ckpt_files[-1]),
-            "--export_format",
-            f"{fmt}",
-            "--explain",
-            "True",
-        ]
-
-        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-        assert (tmp_path_test / "outputs").exists()
-        assert (tmp_path_test / "outputs" / f"{format_to_file[fmt]}").exists()
 
 
 @pytest.mark.parametrize(
