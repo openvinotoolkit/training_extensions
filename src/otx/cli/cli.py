@@ -25,9 +25,9 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
-    from functools import partial
-
     from jsonargparse._actions import _ActionSubCommands
+
+    from otx.core.metrics import MetricCallable
 
 _ENGINE_AVAILABLE = True
 try:
@@ -374,7 +374,7 @@ class OTXCLI:
             **engine_kwargs,
         )
 
-    def instantiate_metric(self, metric_config: Namespace) -> partial | None:
+    def instantiate_metric(self, metric_config: Namespace) -> MetricCallable | None:
         """Instantiate the metric based on the metric_config.
 
         It also pathces the num_classes according to the model classes information.
