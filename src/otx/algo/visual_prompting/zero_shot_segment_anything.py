@@ -14,7 +14,6 @@ from typing import Any, Literal
 import numpy as np
 
 import torch
-from torch.nn import Parameter, ParameterDict
 from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
 from torch.nn import functional as F  # noqa: N812
@@ -214,8 +213,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         self.save_outputs = kwargs.pop("save_outputs", True)
         self.path_reference_info = kwargs.pop("path_reference_info", "vpm_zsl_reference_infos/{}/reference_info.pt")
         super().__init__(*args, **kwargs)
-        
-        self.reference_info: ParameterDict = ParameterDict()
+
         self.initialize_reference_info()
 
         self.prompt_getter = PromptGetter(image_size=self.image_size)
@@ -243,15 +241,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_info["reference_feats"] = Parameter(torch.zeros(0, 1, self.embed_dim), requires_grad=False)
-        self.reference_info["used_indices"] = Parameter(torch.tensor([], dtype=torch.int64), requires_grad=False)
+        self.register_buffer("reference_feats", torch.zeros(0, 1, self.embed_dim), False)
+        self.register_buffer("used_indices", torch.tensor([], dtype=torch.int64), False)
 
     def expand_reference_info(self, new_largest_label: int) -> None:
         """Expand reference info dimensions if newly given processed prompts have more lables."""            
-        if new_largest_label > (cur_largest_label := len(self.reference_info["reference_feats"]) - 1):
+        if new_largest_label > (cur_largest_label := len(self.reference_feats) - 1):
             diff = new_largest_label - cur_largest_label
-            padded_reference_feats = F.pad(self.reference_info["reference_feats"], (0, 0, 0, 0, 0, diff), value=0.0)
-            self.reference_info["reference_feats"] = Parameter(padded_reference_feats, requires_grad=False)
+            self.reference_feats = F.pad(self.reference_feats, (0, 0, 0, 0, 0, diff), value=0.0)
 
     @torch.no_grad()
     def learn(
@@ -260,7 +257,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]],
         ori_shapes: list[Tensor],
         reset_feat: bool = False,
-    ) -> tuple[nn.ParameterDict, list[Tensor]] | None:
+    ) -> tuple[dict[str, Tensor], list[Tensor]] | None:
         """Get reference features.
 
         Using given images, get reference features.
@@ -339,14 +336,11 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     )
                     default_threshold_reference -= 0.05
 
-                self.reference_info["reference_feats"][label] = ref_feat.detach().cpu()
-                self.reference_info["used_indices"] = Parameter(
-                    torch.cat((self.reference_info["used_indices"], torch.tensor([label])), dim=0),
-                    requires_grad=False,
-                )
+                self.reference_feats[label] = ref_feat.detach().cpu()
+                self.used_indices = torch.cat((self.used_indices, torch.tensor([label])), dim=0)
                 ref_masks[label] = ref_mask.detach().cpu()
             reference_masks.append(ref_masks)
-        return self.reference_info, reference_masks
+        return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
 
     @torch.no_grad()
     def infer(
@@ -627,11 +621,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
             return stamps[0]
         return None
     
-    def _load_latest_reference_info(self) -> None:
+    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> None:
         """Load latest reference info to be used."""
         if (latest_stamp := self._find_latest_reference_info()) is not None:
             latest_reference_info = self.path_reference_info.format(latest_stamp)
-            self.reference_info = torch.load(latest_reference_info)
+            reference_info = torch.load(latest_reference_info)
+            self.register_buffer("reference_feats", reference_info.get("reference_feats", torch.zeros(0, 1, self.embed_dim)).to(device), False)
+            self.register_buffer("used_indices", reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device), False)
             log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
 
 
@@ -687,8 +683,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         # infer
         return {
             "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
-            "reference_feats": self.model.reference_info["reference_feats"],
-            "used_indices": self.model.reference_info["used_indices"],
+            "reference_feats": self.model.reference_feats,
+            "used_indices": self.model.used_indices,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
             "is_cascade": self.model.is_cascade,
         }

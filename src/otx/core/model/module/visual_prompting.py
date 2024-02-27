@@ -263,27 +263,29 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
-        self.model.model._load_latest_reference_info()
+        self.model.model._load_latest_reference_info(self.device)
         
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        self.model.model._load_latest_reference_info()
+        self.model.model._load_latest_reference_info(self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
 
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
-        self.model.model.reference_info["used_indices"] = Parameter(
-            self.model.model.reference_info["used_indices"].unique().unsqueeze(0), requires_grad=False
-        )
+        self.model.model.used_indices = self.model.model.used_indices.unique()
         if self.model.model.save_outputs:
+            reference_info = {
+                "reference_feats": self.model.model.reference_feats,
+                "used_indices": self.model.model.used_indices,
+            }
             # save reference info
             path_reference_info = self.model.model.path_reference_info.format(time.strftime("%Y%m%d_%H%M%S"))
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
-            torch.save(self.model.model.reference_info, path_reference_info)
+            torch.save(reference_info, path_reference_info)
             pickle.dump(
-                {k: v.numpy() for k, v in self.model.model.reference_info.items()},
+                {k: v.numpy() for k, v in reference_info.items()},
                 open(path_reference_info.replace(".pt", ".pickle"), "wb"),
             )
             log.info(f"Saved reference info at {path_reference_info}.")
