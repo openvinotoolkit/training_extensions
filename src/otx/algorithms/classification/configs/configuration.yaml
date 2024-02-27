@@ -445,7 +445,7 @@ algo_backend:
     description: Size of memory pool for caching decoded data to load data faster (bytes).
     editable: true
     header: Size of memory pool
-    max_value: 9223372036854775807
+    max_value: 10000000000
     min_value: 0
     type: INTEGER
     ui_rules:
