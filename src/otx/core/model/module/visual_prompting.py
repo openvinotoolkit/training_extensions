@@ -12,7 +12,6 @@ from torch import Tensor
 import time
 import os
 import pickle
-from torch.nn import Parameter
 from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from torchmetrics.collections import MetricCollection
@@ -246,6 +245,10 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     """Base class for the lightning module used in OTX zero-shot visual prompting task."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.automatic_optimization = False
+
     def set_metrics(self) -> None:
         """Set metrics."""
         self.test_metric = MetricCollection(
@@ -263,11 +266,25 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
-        self.model.model._load_latest_reference_info(self.device)
+        if not self.model.model._load_latest_reference_info(self.device):
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.fit_loop.run()
+            self.training = False # to use infer logic
+            self.model.training = False # to use infer logic
+            self.trainer._evaluation_loop.setup_data() # to set _combined_loader
+            self.trainer._evaluation_loop.reset() # to set _combined_loader
+            self.model.model._load_latest_reference_info(self.device)
         
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        self.model.model._load_latest_reference_info(self.device)
+        if not self.model.model._load_latest_reference_info(self.device):
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.fit_loop.run()
+            self.training = False # to use infer logic
+            self.model.training = False # to use infer logic
+            self.trainer._evaluation_loop.setup_data() # to set _combined_loader
+            self.trainer._evaluation_loop.reset() # to set _combined_loader
+            self.model.model._load_latest_reference_info(self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
