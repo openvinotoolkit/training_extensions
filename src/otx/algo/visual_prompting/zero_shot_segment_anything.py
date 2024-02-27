@@ -211,7 +211,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         self.is_cascade = kwargs.pop("is_cascade", True)
         self.save_outputs = kwargs.pop("save_outputs", True)
-        self.path_reference_info = kwargs.pop("path_reference_info", "vpm_zsl_reference_infos/{}/reference_info.pt")
+        self.root_reference_info = kwargs.pop("root_reference_info", "vpm_zsl_reference_infos")
         super().__init__(*args, **kwargs)
 
         self.initialize_reference_info()
@@ -621,14 +621,16 @@ class ZeroShotSegmentAnything(SegmentAnything):
             return stamps[0]
         return None
     
-    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> None:
+    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
         """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info()) is not None:
-            latest_reference_info = self.path_reference_info.format(latest_stamp)
+        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
+            latest_reference_info = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pt")
             reference_info = torch.load(latest_reference_info)
             self.register_buffer("reference_feats", reference_info.get("reference_feats", torch.zeros(0, 1, self.embed_dim)).to(device), False)
             self.register_buffer("used_indices", reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device), False)
             log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            return True
+        return False
 
 
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):

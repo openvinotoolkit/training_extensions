@@ -10,6 +10,7 @@ model:
     default_threshold_target: 0.65
     is_cascade: False
     save_outputs: True
+    root_reference_info: vpm_zsl_reference_infos
     # options
     use_stability_score: False
     return_single_mask: False

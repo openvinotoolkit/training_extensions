@@ -281,7 +281,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                 "used_indices": self.model.model.used_indices,
             }
             # save reference info
-            path_reference_info = self.model.model.path_reference_info.format(time.strftime("%Y%m%d_%H%M%S"))
+            path_reference_info = os.path.join(self.model.model.root_reference_info, time.strftime("%Y%m%d_%H%M%S"), "reference_info.pt")
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
             torch.save(reference_info, path_reference_info)
             pickle.dump(
