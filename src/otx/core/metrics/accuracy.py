@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 import torch
 from torch import nn
@@ -42,17 +42,23 @@ class NamedConfusionMatrix(nn.Module):
 class CustomAccuracy(Metric):
     """Accuracy for the OTX classification tasks."""
 
-    def __init__(self, label_info: LabelInfo, average: Literal["MICRO", "MACRO"] = "MICRO", threshold: float = 0.5):
+    def __init__(self, average: Literal["MICRO", "MACRO"] = "MICRO", threshold: float = 0.5):
         super().__init__()
         self.average = average
-        self.label_info = label_info
-        self.label_groups = label_info.label_groups
-        self.label_names = label_info.label_names
-
         self.threshold = threshold
+        self._label_info: LabelInfo
 
         self.preds: list[Tensor] = []
         self.targets: list[Tensor] = []
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get the member `CustomAccuracy` label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo) -> None:
+        self._label_info = label_info
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
@@ -75,7 +81,7 @@ class CustomAccuracy(Metric):
         msg = f"Average should be MICRO or MACRO, got {self.average}"
         raise ValueError(msg)
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor | dict[str, Any]:
         """Compute the metric."""
         conf_matrices = self._compute_unnormalized_confusion_matrices()
 
@@ -91,17 +97,17 @@ class CustomMulticlassAccuracy(CustomAccuracy):
     def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
         """Compute an unnormalized confusion matrix for every label group."""
         conf_matrices = []
-        for label_group in self.label_groups:
-            label_to_idx = {label: index for index, label in enumerate(self.label_names)}
+        for label_group in self.label_info.label_groups:
+            label_to_idx = {label: index for index, label in enumerate(self.label_info.label_names)}
             group_indices = [label_to_idx[label] for label in label_group]
 
             mask = torch.tensor([t.item() in group_indices for t in self.targets])
-            filtered_preds = torch.tensor(self.preds)[mask]
-            filtered_targets = torch.tensor(self.targets)[mask]
+            valid_preds = torch.tensor(self.preds)[mask]
+            valid_targets = torch.tensor(self.targets)[mask]
 
             for i, index in enumerate(group_indices):
-                filtered_preds[filtered_preds == index] = i
-                filtered_targets[filtered_targets == index] = i
+                valid_preds[valid_preds == index] = i
+                valid_targets[valid_targets == index] = i
 
             num_classes = len(label_group)
             confmat = NamedConfusionMatrix(
@@ -109,8 +115,8 @@ class CustomMulticlassAccuracy(CustomAccuracy):
                 num_classes=num_classes,
                 row_names=label_group,
                 col_names=label_group,
-            ).to(self.device)
-            conf_matrices.append(confmat(filtered_preds, filtered_targets))
+            )
+            conf_matrices.append(confmat(valid_preds, valid_targets))
         return conf_matrices
 
 
@@ -123,7 +129,7 @@ class CustomMultilabelAccuracy(CustomAccuracy):
         targets = torch.stack(self.targets)
 
         conf_matrices = []
-        for i, label_group in enumerate(self.label_groups):
+        for i, label_group in enumerate(self.label_info.label_groups):
             label_preds = (preds[:, i] >= self.threshold).long()
             label_targets = targets[:, i]
 
@@ -154,7 +160,7 @@ class CustomHlabelAccuracy(CustomAccuracy):
         targets = torch.stack(self.targets)
 
         conf_matrices = []
-        for i, label_group in enumerate(self.label_groups):
+        for i, label_group in enumerate(self.label_info.label_groups):
             label_preds = preds[:, i]
             label_targets = targets[:, i]
 

@@ -26,7 +26,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrics.accuracy import MixedHLabelAccuracy
+from otx.core.metrics.accuracy import CustomAccuracy, MixedHLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -56,6 +56,12 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             metric=metric,
         )
 
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
+        if isinstance(self.metric, CustomAccuracy):
+            self.metric.label_info = self.model.label_info
+
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
         if results is None:
@@ -64,7 +70,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
         if results.get("accuracy"):
-            results = results["accuracy"]
+            results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
@@ -136,6 +142,11 @@ class OTXMultilabelClsLitModule(OTXLitModule):
 
     def configure_metric(self) -> None:
         """Configure the metric."""
+        if isinstance(self.metric_callable, CustomAccuracy):
+            self.metric = self.metric_callable(
+                label_info=self.model.label_info,
+            )
+
         if isinstance(self.metric_callable, partial):
             num_classes_augmented_params = {
                 name: param.default if name != "num_labels" else self.model.num_classes
@@ -150,14 +161,17 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         if not isinstance(self.metric, Metric):
             msg = "Metric should be the instance of torchmetrics.Metric."
             raise TypeError(msg)
+
         self.metric.to(self.device)
+        if isinstance(self.metric, CustomAccuracy):
+            self.metric.label_info = self.model.label_info
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
         if results.get("accuracy"):
-            results = results["accuracy"]
+            results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 
@@ -252,9 +266,9 @@ class OTXHlabelClsLitModule(OTXLitModule):
             msg = "Metric should be the instance of torchmetrics.Metric."
             raise TypeError(msg)
 
-        # Since the metric is not initialized at the init phase,
-        # Need to manually correct the device setting.
         self.metric.to(self.device)
+        if isinstance(self.metric, CustomAccuracy):
+            self.metric.label_info = self.model.label_info
 
     def _set_hlabel_setup(self) -> None:
         if not isinstance(self.label_info, HLabelMetaInfo):
@@ -277,7 +291,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
         # Custom Accuracy returns the dictionary, and accuracy value is in the `accuracy` key.
         if results.get("accuracy"):
-            results = results["accuracy"]
+            results = torch.tensor(results["accuracy"])
 
         self.log(f"{key}/accuracy", results.item(), sync_dist=True, prog_bar=True)
 

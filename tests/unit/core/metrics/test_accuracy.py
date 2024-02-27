@@ -35,13 +35,15 @@ class TestAccuracy:
             torch.Tensor([1]),
             torch.Tensor([2]),
         ]
-        metric = CustomMulticlassAccuracy(average="MICRO", label_info=fxt_multiclass_labelinfo)
+        metric = CustomMulticlassAccuracy(average="MICRO")
+        metric.label_info = fxt_multiclass_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.800
 
-        metric = CustomMulticlassAccuracy(average="MACRO", label_info=fxt_multiclass_labelinfo)
+        metric = CustomMulticlassAccuracy(average="MACRO")
+        metric.label_info = fxt_multiclass_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]
@@ -57,7 +59,8 @@ class TestAccuracy:
             torch.Tensor([0, 1, 1]),
             torch.Tensor([0, 1, 0]),
         ]
-        metric = CustomMultilabelAccuracy(average="MICRO", label_info=fxt_multilabel_labelinfo)
+        metric = CustomMultilabelAccuracy(average="MICRO")
+        metric.label_info = fxt_multilabel_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]
@@ -80,7 +83,8 @@ class TestAccuracy:
             hlabel_info=fxt_hlabel_multilabel_info,
         )
 
-        metric = CustomHlabelAccuracy(average="MICRO", label_info=hlabel_info)
+        metric = CustomHlabelAccuracy(average="MICRO")
+        metric.label_info = hlabel_info
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]

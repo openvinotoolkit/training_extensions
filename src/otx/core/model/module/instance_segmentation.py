@@ -60,7 +60,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             self._log_metrics(self.metric, "test")
             self.metric.reset()
 
-    def _log_metrics(self, meter: OTXMaskRLEMeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: Metric, subset_name: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"

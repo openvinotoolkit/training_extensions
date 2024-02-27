@@ -115,7 +115,12 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         )
         for idx in range(1, 4)
     ] + [
@@ -124,14 +129,24 @@ class TestMultiClassCls(BaseTest):
             data_root=Path("multiclass_classification/multiclass_CUB_medium"),
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         ),
         DatasetTestCase(
             name=f"multiclass_food101_large",
             data_root=Path("multiclass_classification/multiclass_food101_large"),
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         )
     ]
 
@@ -181,7 +196,12 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
             data_format="datumaro",
             num_classes=3,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         )
         for idx in range(1, 4)
     ] + [
@@ -190,14 +210,24 @@ class TestMultilabelCls(BaseTest):
             data_root=Path("multilabel_classification/multilabel_CUB_medium"),
             data_format="datumaro",
             num_classes=68,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         ),
         DatasetTestCase(
             name=f"multilabel_food101_large",
             data_root=Path("multilabel_classification/multilabel_food101_large"),
             data_format="datumaro",
             num_classes=21,
-            extra_overrides={},
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "callback_monitor": "val/accuracy",
+                "scheduler.monitor": "val/accuracy",
+            }
         )
     ]
 
@@ -318,7 +348,7 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -332,7 +362,7 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -344,7 +374,7 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -465,7 +495,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrices.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -479,7 +509,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=2,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrices.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -491,7 +521,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrices.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },

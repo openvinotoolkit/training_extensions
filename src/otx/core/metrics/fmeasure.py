@@ -632,6 +632,7 @@ class FMeasure(Metric):
     to True.
 
     Args:
+        num_classes (int): The number of classes.
         vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
             confidence threshold values Defaults to False.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
@@ -642,6 +643,7 @@ class FMeasure(Metric):
 
     def __init__(
         self,
+        num_classes: int,
         vary_confidence_threshold: bool = True,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
@@ -652,7 +654,7 @@ class FMeasure(Metric):
         self.cross_class_nms = cross_class_nms
         self.preds: list[list[tuple]] = []
         self.targets: list[list[tuple]] = []
-        self.num_classes: int | None = None
+        self.num_classes = num_classes
 
         self._f_measure_per_confidence: dict | None = None
         self._f_measure_per_nms: dict | None = None

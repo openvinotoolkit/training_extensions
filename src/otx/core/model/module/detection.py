@@ -45,7 +45,7 @@ class OTXDetectionLitModule(OTXLitModule):
             metric=metric,
         )
 
-    def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
