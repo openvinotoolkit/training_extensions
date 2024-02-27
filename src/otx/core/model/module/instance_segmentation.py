@@ -4,12 +4,12 @@
 """Class definition for instance segmentation lightning module used in OTX."""
 from __future__ import annotations
 
-import inspect
 import logging as log
 from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
 
 from otx.algo.instance_segmentation.otx_instseg_evaluation import (
     OTXMaskRLEMeanAveragePrecision,
@@ -26,7 +26,7 @@ from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
-    from otx.algo.metrices import MetricCallable
+    from otx.core.metrics import MetricCallable
 
 
 class OTXInstanceSegLitModule(OTXLitModule):
@@ -38,7 +38,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable | None = None,
+        metric: MetricCallable = lambda: OTXMaskRLEMeanAveragePrecision(),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -48,25 +48,15 @@ class OTXInstanceSegLitModule(OTXLitModule):
             metric=metric,
         )
 
-        if metric:
-            sig = inspect.signature(metric)
-            param_dict = {}
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default
-            param_dict.pop("kwargs", {})
-
-            metric = metric(**param_dict)  # type: ignore[call-arg]
-        self.metric = metric
-
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self._log_metrics(self.metric, "val")
             self.metric.reset()
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self._log_metrics(self.metric, "test")
             self.metric.reset()
 
@@ -109,7 +99,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -184,7 +174,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )

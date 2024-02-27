@@ -6,9 +6,11 @@
 from __future__ import annotations
 
 import copy
+import logging as log
 from typing import TYPE_CHECKING, Any
 
 import torch
+from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -84,6 +86,15 @@ class OTXDetectionModel(
                 ("model_info", "iou_threshold"): str(0.5),
             },
         )
+        if self.tile_config.enable_tiler:
+            parameters["metadata"].update(
+                {
+                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
+                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
+                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
+                },
+            )
+
         return parameters
 
 
@@ -329,6 +340,17 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             model_api_configuration,
         )
 
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = DetectionTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
+        )
+
     def _customize_outputs(
         self,
         outputs: list[DetectionResult],
@@ -338,6 +360,18 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
         bboxes = []
         scores = []
         labels = []
+
+        # some OMZ model requires to shift labels
+        first_label = (
+            self.model.model.get_label_name(0)
+            if isinstance(self.model, DetectionTiler)
+            else self.model.get_label_name(0)
+        )
+
+        label_shift = 1 if first_label == "background" else 0
+        if label_shift:
+            log.warning(f"label_shift: {label_shift}")
+
         for output in outputs:
             output_objects = output.objects
             if len(output_objects):
@@ -352,12 +386,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
                 ),
             )
             scores.append(torch.tensor([output.score for output in output_objects]))
-
-            if self.model.get_label_name(0) == "background":
-                # some OMZ model requires to shift labeles
-                labels.append(torch.tensor([output.id - 1 for output in output_objects]))
-            else:
-                labels.append(torch.tensor([output.id for output in output_objects]))
+            labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
 
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]

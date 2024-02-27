@@ -4,13 +4,16 @@
 """Class definition for base lightning module used in OTX."""
 from __future__ import annotations
 
+import inspect
 import logging
 import warnings
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import torch
 from lightning import LightningModule
 from torch import Tensor
+from torchmetrics import Metric
 
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
@@ -26,9 +29,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics import Metric
 
     from otx.core.data.dataset.base import LabelInfo
+    from otx.core.metrics import MetricCallable
 
 
 class OTXLitModule(LightningModule):
@@ -41,7 +44,7 @@ class OTXLitModule(LightningModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: Metric | None = None,
+        metric: MetricCallable = lambda: Metric(),
     ):
         super().__init__()
 
@@ -49,8 +52,7 @@ class OTXLitModule(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.torch_compile = torch_compile
-
-        self.metric = metric
+        self.metric_callable = metric
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -91,27 +93,31 @@ class OTXLitModule(LightningModule):
 
         raise TypeError(train_loss)
 
+    def on_validation_start(self) -> None:
+        """Called at the beginning of validation."""
+        self.configure_metric()
+
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""
+        self.configure_metric()
+
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
-        if self.metric:
-            self.metric.num_classes = self.model.num_classes
+        if isinstance(self.metric, Metric):
             self.metric.reset()
 
     def on_test_epoch_start(self) -> None:
         """Callback triggered when the test epoch starts."""
-        if self.metric:
-            self.metric.num_classes = self.model.num_classes
+        if isinstance(self.metric, Metric):
             self.metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        if self.metric:
-            self._log_metrics(self.metric, "val")
+        self._log_metrics(self.metric, "val")
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        if self.metric:
-            self._log_metrics(self.metric, "test")
+        self._log_metrics(self.metric, "test")
 
     def setup(self, stage: str) -> None:
         """Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.
@@ -156,6 +162,24 @@ class OTXLitModule(LightningModule):
             lr_schedulers.append(lr_scheduler_config)
 
         return optimizers, lr_schedulers
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if isinstance(self.metric_callable, partial):
+            num_classes_augmented_params = {
+                name: param.default if name != "num_classes" else self.model.num_classes
+                for name, param in inspect.signature(self.metric_callable).parameters.items()
+                if name != "kwargs"
+            }
+            self.metric = self.metric_callable(**num_classes_augmented_params)
+
+        if isinstance(self.metric_callable, Metric):
+            self.metric = self.metric_callable
+
+        if not isinstance(self.metric, Metric):
+            msg = "Metric should be the instance of torchmetrics.Metric."
+            raise TypeError(msg)
+        self.metric.to(self.device)
 
     def register_load_state_dict_pre_hook(self, model_classes: list[str], ckpt_classes: list[str]) -> None:
         """Register self.model's load_state_dict_pre_hook.

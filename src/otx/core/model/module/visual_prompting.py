@@ -48,10 +48,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        self.set_metrics()
 
-    def set_metrics(self) -> None:
-        """Set metrics."""
         self.train_metric = MetricCollection(
             {
                 "loss": MeanMetric(),
@@ -60,6 +57,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 "loss_iou": MeanMetric(),
             },
         )
+
+    def configure_metric(self, cond: str = "") -> None:
+        """Configure metrics."""
         self.val_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
@@ -68,6 +68,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
+        self.val_metric.to(self.device)
+
         self.test_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
@@ -76,6 +78,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
+        self.test_metric.to(self.device)
 
     def on_train_epoch_start(self) -> None:
         """Callback triggered when the train epoch starts."""

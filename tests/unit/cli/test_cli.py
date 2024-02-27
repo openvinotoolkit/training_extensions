@@ -51,7 +51,7 @@ class TestOTXCLI:
     def test_subcommand_parser(self, mocker) -> None:
         mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
         cli = OTXCLI()
-        parser = cli.engine_subcommand_parser()
+        parser, _ = cli.engine_subcommand_parser(subcommand="train")
         assert parser.__class__.__name__ == "ArgumentParser"
         argument_list = [action.dest for action in parser._actions]
         expected_argument = [

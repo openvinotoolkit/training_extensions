@@ -43,7 +43,8 @@ def test_engine_from_config(
     assert isinstance(engine.model, OTXModel)
     assert isinstance(engine.datamodule, OTXDataModule)
 
-    train_metric = engine.train(max_epochs=2)
+    max_epochs = 2 if task.lower() != "zero_shot_visual_prompting" else 1
+    train_metric = engine.train(max_epochs=max_epochs)
     if task.lower() != "zero_shot_visual_prompting":
         assert len(train_metric) > 0
 
