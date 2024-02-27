@@ -12,7 +12,7 @@ import torch
 from torch.utils.data.sampler import Sampler
 
 if TYPE_CHECKING:
-    from torch.utils.data import Dataset
+    from otx.core.data.dataset.base import OTXDataset
 
 
 def get_proper_repeat_times(
@@ -34,24 +34,6 @@ def get_proper_repeat_times(
         return 1
     n_iters_per_epoch = math.ceil(data_size / batch_size)
     return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
-
-
-def unwrap_dataset(dataset: Dataset) -> tuple[Dataset, int]:
-    """Unwraps a nested dataset and returns the innermost dataset along with the number of times it has been wrapped.
-
-    Args:
-        dataset (Dataset): The dataset to unwrap.
-
-    Returns:
-        tuple[Dataset, int]: A tuple containing the innermost dataset and the number of times it has been wrapped.
-    """
-    times = 1
-    target_dataset = dataset
-    while hasattr(target_dataset, "dataset"):
-        if hasattr(target_dataset, "times"):
-            times = target_dataset.times
-        target_dataset = target_dataset.dataset
-    return target_dataset, times
 
 
 class BaseSampler(Sampler):
@@ -86,7 +68,7 @@ class BaseSampler(Sampler):
 
     def __init__(
         self,
-        dataset: Dataset,
+        dataset: OTXDataset,
         samples_per_gpu: int,
         num_replicas: int = 1,
         rank: int = 0,
@@ -96,7 +78,7 @@ class BaseSampler(Sampler):
         n_repeats: float | int | str = "auto",
         seed: int | None = None,
     ):
-        self.dataset, _ = unwrap_dataset(dataset)
+        self.dataset = dataset
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank

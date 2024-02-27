@@ -2,26 +2,51 @@
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 from __future__ import annotations
 
 import math
 from typing import TYPE_CHECKING
 
 import numpy as np
+from datumaro.components.annotation import Annotation, AnnotationType, LabelCategories
 
 from .base_sampler import BaseSampler
-from datumaro import Dataset as DmDataset
 
 if TYPE_CHECKING:
+    from datumaro import Dataset as DmDataset
+
     from otx.core.data.dataset.base import OTXDataset
 
 
 def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
     """Compute class statistics."""
-    stats = {}
-    for item in dm_dataset:
-        for label in item.annotations.labels:
-            stats[label] = stats.get(label, 0) + 1
+    labels = dm_dataset.categories().get(AnnotationType.label, LabelCategories())
+
+    def get_label(ann: Annotation) -> str:
+        """Get the name of the label associated with the given annotation.
+
+        Args:
+            ann (Annotation): The annotation object.
+
+        Returns:
+            str: The name of the label if it exists, otherwise None.
+        """
+        try:
+            return labels.items[ann.label].name if ann.label is not None else None
+        except IndexError:
+            return ann.label
+
+    stats: dict[str, list[int]] = {}
+    for i, item in enumerate(dm_dataset):
+        for ann in item.annotations:
+            label = get_label(ann)
+            if label in stats:
+                stats[label].append(i)
+            else:
+                stats[label] = [i]
+    return stats
+
 
 class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attributes
     """Balanced sampler for imbalanced data for class-incremental task.
@@ -32,7 +57,7 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
     that all samples in the tail class are selected more than once with probability 0.999
 
     Args:
-        dataset (Dataset): A built-up dataset
+        dataset (OTXDataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
         num_replicas (int, optional): Number of processes participating in
@@ -66,8 +91,8 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
         super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
         # img_indices: dict[label: list[idx]]
-        annotation_stats = compute_class_statistics(dataset.dm_subset)
-        self.img_indices: dict = {label: [] for label in self.dataset.meta_info.label_names}
+        ann_stats = compute_class_statistics(dataset.dm_subset)
+        self.img_indices = {k: v for k, v in ann_stats.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
         self.num_trials = int(self.data_length / self.num_cls)
@@ -106,10 +131,11 @@ class BalancedSampler(BaseSampler):  # pylint: disable=too-many-instance-attribu
     def __iter__(self):
         """Iter."""
         indices = []
+        random_generator = np.random.default_rng()
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
                 indice = np.concatenate(
-                    [np.random.Generator.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
+                    [random_generator.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
                 )
                 indices.append(indice)
 
