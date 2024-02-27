@@ -6,8 +6,9 @@
 
 from __future__ import annotations
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from .benchmark import Benchmark
 from .conftest import PerfTestBase
@@ -17,13 +18,13 @@ class TestPerfSingleLabelClassification(PerfTestBase):
     """Benchmark single-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_light", category="speed"),
+        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", category="balance"),
+        Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", category="accuracy"),
+        Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", category="other"),
     ]
 
-    DATASET_TEST_CASES = [  # noqa: RUF012
+    DATASET_TEST_CASES = [
         Benchmark.Dataset(
             name=f"multiclass_CUB_small_{idx}",
             path=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
@@ -36,7 +37,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         for idx in (1, 2, 3)
     ] + [
         Benchmark.Dataset(
-            name=f"multiclass_CUB_medium",
+            name="multiclass_CUB_medium",
             path=Path("multiclass_classification/multiclass_CUB_medium"),
             size="medium",
             data_format="imagenet_with_subset_dirs",
@@ -45,14 +46,14 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name=f"multiclass_food101_large",
+            name="multiclass_food101_large",
             path=Path("multiclass_classification/multiclass_food101_large"),
             size="large",
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
             num_repeat=1,
             extra_overrides={},
-        )
+        ),
     ]
 
     BENCHMARK_TEST_CASES = [  # noqa: RUF012
@@ -72,8 +73,8 @@ class TestPerfSingleLabelClassification(PerfTestBase):
                 Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ]
-        }
+            ],
+        },
     ]
 
     @pytest.mark.parametrize(
@@ -94,7 +95,8 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
-    def test_perf(self,
+    def test_perf(
+        self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
@@ -110,13 +112,13 @@ class TestPerfMultiLabelClassification(PerfTestBase):
     """Benchmark multi-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="classification/multi_label_cls", name="mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="classification/multi_label_cls", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_b0_light", category="speed"),
+        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_v2_light", category="balance"),
+        Benchmark.Model(task="classification/multi_label_cls", name="mobilenet_v3_large_light", category="accuracy"),
+        Benchmark.Model(task="classification/multi_label_cls", name="otx_deit_tiny", category="other"),
     ]
 
-    DATASET_TEST_CASES = [  # noqa: RUF012
+    DATASET_TEST_CASES = [
         Benchmark.Dataset(
             name=f"multilabel_CUB_small_{idx}",
             path=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
@@ -129,7 +131,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         for idx in (1, 2, 3)
     ] + [
         Benchmark.Dataset(
-            name=f"multilabel_CUB_medium",
+            name="multilabel_CUB_medium",
             path=Path("multilabel_classification/multilabel_CUB_medium"),
             size="medium",
             data_format="datumaro",
@@ -138,14 +140,14 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             extra_overrides={},
         ),
         Benchmark.Dataset(
-            name=f"multilabel_food101_large",
+            name="multilabel_food101_large",
             path=Path("multilabel_classification/multilabel_food101_large"),
             size="large",
             data_format="datumaro",
             num_classes=21,
             num_repeat=1,
             extra_overrides={},
-        )
+        ),
     ]
 
     BENCHMARK_TEST_CASES = [  # noqa: RUF012
@@ -165,8 +167,8 @@ class TestPerfMultiLabelClassification(PerfTestBase):
                 Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ]
-        }
+            ],
+        },
     ]
 
     @pytest.mark.parametrize(
@@ -187,7 +189,8 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
-    def test_perf(self,
+    def test_perf(
+        self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
@@ -203,13 +206,13 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
     """Benchmark hierarchical-label classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_b0_light", type="speed",),
-        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_v2_light", type="balance",),
-        Benchmark.Model(task="classification/h_label_cls", name="mobilenet_v3_large_light", type="accuracy",),
-        Benchmark.Model(task="classification/h_label_cls", name="otx_deit_tiny", type="other",),
+        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_b0_light", category="speed"),
+        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_v2_light", category="balance"),
+        Benchmark.Model(task="classification/h_label_cls", name="mobilenet_v3_large_light", category="accuracy"),
+        Benchmark.Model(task="classification/h_label_cls", name="otx_deit_tiny", category="other"),
     ]
 
-    DATASET_TEST_CASES = [  # noqa: RUF012
+    DATASET_TEST_CASES = [
         Benchmark.Dataset(
             name=f"hlabel_CUB_small_{idx}",
             path=Path("hlabel_classification/hlabel_CUB_small") / f"{idx}",
@@ -225,7 +228,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         for idx in (1, 2, 3)
     ] + [
         Benchmark.Dataset(
-            name=f"hlabel_CUB_medium",
+            name="hlabel_CUB_medium",
             path=Path("hlabel_classification/hlabel_CUB_medium"),
             size="medium",
             data_format="datumaro",
@@ -236,7 +239,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
                 "model.num_multilabel_classes": "0",
             },
         ),
-        # TODO: Add large dataset
+        # Add large dataset
     ]
 
     BENCHMARK_TEST_CASES = [  # noqa: RUF012
@@ -256,8 +259,8 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
                 Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
                 Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ]
-        }
+            ],
+        },
     ]
 
     @pytest.mark.parametrize(
@@ -278,7 +281,8 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         ids=lambda benchmark: benchmark["type"],
         indirect=True,
     )
-    def test_perf(self,
+    def test_perf(
+        self,
         fxt_model: Benchmark.Model,
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,

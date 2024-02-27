@@ -5,18 +5,14 @@
 
 from __future__ import annotations
 
-import csv
+import gc
 import logging
 import os
-import gc
-import glob
-import pandas as pd
 import subprocess
-import yaml
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
-from otx.cli.cli import OTXCLI
+
+import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -46,13 +42,15 @@ class Benchmark:
     @dataclass
     class Model:
         """Benchmark model."""
+
         task: str
         name: str
-        type: str
+        category: str
 
     @dataclass
     class Dataset:
         """Benchmark dataset."""
+
         name: str
         path: Path
         size: str
@@ -64,6 +62,7 @@ class Benchmark:
     @dataclass
     class Criterion:
         """Benchmark criterion."""
+
         name: str
         summary: str
         compare: str
@@ -78,7 +77,7 @@ class Benchmark:
         num_epoch: int = 0,
         num_repeat: int = 1,
         eval_upto: str = "train",
-        tags: dict[str,str] | None = None,
+        tags: dict[str, str] | None = None,
         dry_run: bool = False,
         deterministic: bool = False,
         accelerator: str = "gpu",
@@ -95,9 +94,8 @@ class Benchmark:
         self.deterministic = deterministic
         self.accelerator = accelerator
 
-        if num_epoch == 0:  # 0: use default
-            if benchmark_type == "efficiency":
-                self.num_epoch = 2
+        if num_epoch == 0 and benchmark_type == "efficiency":
+            self.num_epoch = 2
 
     def run(
         self,
@@ -138,13 +136,20 @@ class Benchmark:
 
             # Train & test
             command = [
-                "otx", "train",
-                "--config", f"src/otx/recipe/{model.task}/{model.name}.yaml",
-                "--data_root", str(data_root),
-                "--work_dir", str(sub_work_dir),
-                "--model.num_classes", str(dataset.num_classes),
-                "--data.config.data_format", dataset.data_format,
-                "--engine.device", self.accelerator,
+                "otx",
+                "train",
+                "--config",
+                f"src/otx/recipe/{model.task}/{model.name}.yaml",
+                "--data_root",
+                str(data_root),
+                "--work_dir",
+                str(sub_work_dir),
+                "--model.num_classes",
+                str(dataset.num_classes),
+                "--data.config.data_format",
+                dataset.data_format,
+                "--engine.device",
+                self.accelerator,
             ]
             for key, value in dataset.extra_overrides.items():
                 command.append(f"--{key}")
@@ -156,13 +161,15 @@ class Benchmark:
             self._run_command(command)
 
             command = [
-                "otx", "test",
-                "--work_dir", str(sub_work_dir),
+                "otx",
+                "test",
+                "--work_dir",
+                str(sub_work_dir),
             ]
             self._run_command(command)
 
-            # TODO: Export & test
-            # TODO: Optimize & test
+            # Export & test
+            # Optimize & test
 
             self._log_metrics(work_dir=sub_work_dir, tags=tags)
 
@@ -171,20 +178,18 @@ class Benchmark:
 
         return self.load_result(work_dir)
 
-    def _run_command(self, command: list[str]):
+    def _run_command(self, command: list[str]) -> None:
         if self.dry_run:
             print(" ".join(command))
         else:
-            subprocess.run(command, check=True)
+            subprocess.run(command, check=True)  # noqa: S603
 
-    def _log_metrics(self, work_dir: Path, tags: dict[str, str]):
+    def _log_metrics(self, work_dir: Path, tags: dict[str, str]) -> None:
         if not work_dir.exists():
             return
         # Load raw metrics
-        csv_files = glob.glob(f"{work_dir}/**/metrics.csv", recursive=True)
-        raw_data = []
-        for csv_file in csv_files:
-            raw_data.append(pd.read_csv(csv_file))
+        csv_files = work_dir.glob("**/metrics.csv")
+        raw_data = [pd.read_csv(csv_file) for csv_file in csv_files]
         raw_data = pd.concat(raw_data, ignore_index=True)
         # Summarize
         metrics = []
@@ -195,7 +200,7 @@ class Benchmark:
             if len(column) == 0:
                 continue
             if criterion.summary == "mean":
-                value = column[(len(column)-1):].mean()  # Drop 1st epoch if possible
+                value = column[(len(column) - 1) :].mean()  # Drop 1st epoch if possible
             elif criterion.summary == "max":
                 value = column.max()
             elif criterion.summary == "min":
@@ -221,29 +226,21 @@ class Benchmark:
         Retruns:
             pd.DataFrame: Table with benchmark metrics & options
         """
-        # Search csv files
         if not result_path.exists():
             return None
-        if result_path.is_dir():
-            csv_files = glob.glob(f"{result_path}/**/benchmark.raw.csv", recursive=True)
-        else:
-            csv_files = [result_path]
-        results = []
         # Load csv data
-        for csv_file in csv_files:
-            result = pd.read_csv(csv_file)
-            results.append(result)
-        # Merge data
-        if len(results) > 0:
-            data = pd.concat(results, ignore_index=True)
-            # Average by unique group
-            grouped = data.groupby(["benchmark", "task", "data_size", "model"])
-            aggregated = grouped.mean(numeric_only=True)
-            # Merge tag columns (non-numeric & non-index)
-            tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
-            for col in tag_columns:
-                # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-                aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-            return aggregated
-        else:
+        csv_files = result_path.glob("**/benchmark.raw.csv") if result_path.is_dir() else [result_path]
+        results = [pd.read_csv(csv_file) for csv_file in csv_files]
+        if len(results) == 0:
             return None
+        # Merge data
+        data = pd.concat(results, ignore_index=True)
+        # Average by unique group
+        grouped = data.groupby(["benchmark", "task", "data_size", "model"])
+        aggregated = grouped.mean(numeric_only=True)
+        # Merge tag columns (non-numeric & non-index)
+        tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
+        for col in tag_columns:
+            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+        return aggregated

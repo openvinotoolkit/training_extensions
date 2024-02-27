@@ -3,9 +3,9 @@ name: Performance-Accuracy Benchmark Test
 on:
   workflow_dispatch: # run on request (no need for PR)
     inputs:
-      model-type:
+      model-category:
         type: choice
-        description: Model type to run benchmark
+        description: Model category to run benchmark
         options:
           - default # speed, balance, accuracy models only
           - all # default + other models
@@ -65,7 +65,7 @@ jobs:
         run: >
           tox -vv -e performance-test -- tests/perf/test_${{ matrix.task }}.py
           -k accuracy
-          --model-type ${{ inputs.model-type }}
+          --model-category ${{ inputs.model-category }}
           --data-root /home/validation/data/v2/
           --data-size ${{ inputs.data-size }}
           --num-repeat ${{ inputs.num-repeat }}

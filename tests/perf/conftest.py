@@ -4,24 +4,16 @@
 from __future__ import annotations
 
 import logging
-import platform
 import os
-import re
+import platform
 import subprocess
-import shutil
-from cpuinfo import get_cpu_info
-from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Dict, List, Tuple, Callable
+from urllib.parse import urlparse
 
-import mlflow
-import numpy as np
-import pandas as pd
 import pytest
-import yaml
+from cpuinfo import get_cpu_info
 
-from otx import __version__ as VERSION
 from .benchmark import Benchmark
 
 log = logging.getLogger(__name__)
@@ -37,7 +29,7 @@ def pytest_addoption(parser):
         help="Choose accuracy|efficiency|all. Defaults to accuracy.",
     )
     parser.addoption(
-        "--model-type",
+        "--model-category",
         action="store",
         default="all",
         choices=("default", "all"),
@@ -104,7 +96,7 @@ def pytest_addoption(parser):
         "--user-name",
         type=str,
         default="anonymous",
-        help="Sign-off the user name who launched the regression tests this time, " 'e.g., `--user-name "John Doe"`.',
+        help='Sign-off the user name who launched the regression tests this time, e.g., `--user-name "John Doe"`.',
     )
     parser.addoption(
         "--mlflow-tracking-uri",
@@ -123,12 +115,12 @@ def fxt_benchmark_type(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_model_type(request: pytest.FixtureRequest) -> str:
-    """Model type to run the benchmark."""
-    model_type = request.config.getoption("--model-type")
-    msg = f"{model_type = }"
+def fxt_model_category(request: pytest.FixtureRequest) -> str:
+    """Model category to run the benchmark."""
+    model_category = request.config.getoption("--model-category")
+    msg = f"{model_category = }"
     log.info(msg)
-    return model_type
+    return model_category
 
 
 @pytest.fixture(scope="session")
@@ -182,12 +174,35 @@ def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.Tem
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-    commit_str = os.environ.get("GH_CTX_SHA", "unknown")
-    output_root = Path(output_root) / (data_str + "-" + commit_str[:7])
+    date_str = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+    output_root = Path(output_root) / date_str
     msg = f"{output_root = }"
     log.info(msg)
     return output_root
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags() -> dict[str, str]:
+    """Version / branch / commit info."""
+    import otx
+
+    version_str = otx.__version__
+    try:
+        branch_str = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()  # noqa: S603, S607
+    except Exception:
+        branch_str = os.environ.get("GH_CTX_REF_NAME", "unknown")
+    try:
+        commit_str = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("ascii").strip()  # noqa: S603, S607
+    except Exception:
+        commit_str = os.environ.get("GH_CTX_SHA", "unknown")
+    version_tags = {
+        "version": version_str,
+        "branch": branch_str,
+        "commit": commit_str,
+    }
+    msg = f"{version_tags = }"
+    log.info(msg)
+    return version_tags
 
 
 @pytest.fixture(scope="session")
@@ -239,39 +254,29 @@ def fxt_mlflow_tracking_uri(request: pytest.FixtureRequest) -> str:
     return mlflow_tracking_uri
 
 
-@pytest.fixture(scope="session")
-def fxt_working_branch() -> str:
-    """Git branch name for the current HEAD."""
-    working_branch = os.environ.get("GH_CTX_REF_NAME", "unknown")
-    msg = f"{working_branch = }"
-    log.info(msg)
-    return working_branch
-
-
-@pytest.fixture
-def fxt_model(request: pytest.FixtureRequest, fxt_model_type) -> Benchmark.Model:
+@pytest.fixture()
+def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.Model:
     """Skip models according to user options."""
     model: Benchmark.Model = request.param
-    if fxt_model_type == "default":
-        if model.type == "other":
-            pytest.skip(f"{model.type} type model")
+    if fxt_model_category == "default" and model.category == "other":
+        pytest.skip(f"{model.category} category model")
     return model
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_dataset(request: pytest.FixtureRequest, fxt_data_size) -> Benchmark.Data:
     """Skip datasets according to user options."""
     dataset: Benchmark.Dataset = request.param
-    if fxt_data_size != "all":
-        if dataset.size != fxt_data_size:
-            pytest.skip(f"{dataset.size} size dataset")
+    if fxt_data_size not in {"all", dataset.size}:
+        pytest.skip(f"{dataset.size} size dataset")
     return dataset
 
 
 @pytest.fixture(scope="session")
-def fxt_tags(fxt_user_name) -> dict[str, str]:
+def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, str]:
     """Tag fields to record the machine and user executing this perf test."""
     tags = {
+        **fxt_version_tags,
         "user_name": fxt_user_name,
         "machine_name": platform.node(),
         "cpu_info": get_cpu_info()["brand_raw"],
@@ -282,11 +287,11 @@ def fxt_tags(fxt_user_name) -> dict[str, str]:
         .strip(),
     }
     msg = f"{tags = }"
-    log.info(tags)
+    log.info(msg)
     return tags
 
 
-@pytest.fixture
+@pytest.fixture()
 def fxt_benchmark(
     request: pytest.FixtureRequest,
     fxt_benchmark_type: str,
@@ -302,9 +307,8 @@ def fxt_benchmark(
 ) -> Benchmark:
     """Configure benchmark."""
     benchmark_type: str = request.param["type"]
-    if fxt_benchmark_type != "all":
-        if benchmark_type != fxt_benchmark_type:
-            pytest.skip(f"{benchmark_type} benchmark")
+    if fxt_benchmark_type not in {"all", benchmark_type}:
+        pytest.skip(f"{benchmark_type} benchmark")
 
     return Benchmark(
         benchmark_type=benchmark_type,
@@ -321,87 +325,10 @@ def fxt_benchmark(
     )
 
 
-#def logging_perf_results_to_mlflow(
-#    version: str, branch: str, git_hash: str, results: pd.DataFrame, client: "MlflowClient"
-#):
-#    class DummyDatasetSource(mlflow.data.DatasetSource):
-#        @staticmethod
-#        def _get_source_type():
-#            return "dummy"
-#
-#    class DummyDataset(mlflow.data.Dataset):
-#        def _to_dict(self, base_dict):
-#            return {
-#                "name": base_dict["name"],
-#                "digest": base_dict["digest"],
-#                "source": base_dict["source"],
-#                "source_type": base_dict["source_type"],
-#            }
-#
-#    exp_name = f"[{branch}] OTX Performance Benchmark"
-#    exp = client.get_experiment_by_name(exp_name)
-#    if exp is None:
-#        exp_id = client.create_experiment(exp_name, tags={"Project": "OpenVINO Training Extensions", "Branch": branch})
-#    else:
-#        exp_id = exp.experiment_id
-#
-#    mlflow.set_experiment(experiment_id=exp_id)
-#
-#    rows = results.to_dict(orient="records")
-#    for row in rows:
-#        task = row.pop("task")
-#        model = row.pop("model")
-#        data = row.pop("data")
-#        data = os.path.dirname(data)
-#        data_sz = row.pop("data_size")
-#        benchmark = row.pop("benchmark")
-#        runs = client.search_runs(
-#            exp_id,
-#            filter_string=f"tags.task LIKE '%{task}%' AND "
-#            f"tags.model LIKE '%{model}%' AND "
-#            f"tags.data LIKE '%{data}%' AND "
-#            f"tags.benchmark LIKE '%{benchmark}%'",
-#        )
-#        run = None
-#        is_new_run = True
-#        run_name = f"[{benchmark}] {task} | {model}"
-#        if len(runs) == 0:
-#            run = client.create_run(exp_id, run_name=run_name)
-#        else:
-#            is_new_run = False
-#            run = runs[0]
-#
-#        with mlflow.start_run(run_id=run.info.run_id):
-#            if is_new_run:
-#                mlflow.set_tag("task", task)
-#                mlflow.set_tag("model", model)
-#                mlflow.set_tag("data", data)
-#                mlflow.set_tag("benchmark", benchmark)
-#                dat_src = DummyDatasetSource()
-#                dataset = DummyDataset(dat_src, data, data_sz)
-#                mlflow.log_input(dataset)
-#            mlflow.set_tag("version", version)
-#            mlflow.set_tag("git-hash", git_hash)
-#            for k, v in row.items():
-#                if isinstance(v, int) or isinstance(v, float):
-#                    k = k.replace("(", "_")
-#                    k = k.replace(")", "")
-#                    k = k.replace("%", "percentage")
-#                    history = client.get_metric_history(run.info.run_id, k)
-#                    step = 0
-#                    if len(history) > 0:
-#                        step = history[-1].step + 1
-#                    # set 'synchronous' to True to show the metric graph correctly
-#                    mlflow.log_metric(k, v, step=step, synchronous=True)
-#
-#
 @pytest.fixture(scope="session", autouse=True)
 def fxt_benchmark_summary(
-    request: pytest.FixtureRequest,
     fxt_output_root: Path,
     fxt_summary_csv: Path,
-    fxt_working_branch: str,
-    # fxt_mlflow_client,
 ):
     """Summarize all results at the end of test session."""
     yield
@@ -409,86 +336,19 @@ def fxt_benchmark_summary(
     if all_results is not None:
         print("=" * 20, "[Benchmark summary]")
         print(all_results)
-        output_path = request.config.getoption("--summary-csv")
-        if not output_path:
-            output_path = fxt_output_root / "benchmark.summary.csv"
-        all_results.to_csv(output_path)
-        print(f"  -> Saved to {output_path}.")
-#
-#        if fxt_mlflow_client is None:
-#            print(
-#                "Tracking server is not configured. for logging results, "
-#                "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
-#            )
-#            return
-#
-#        # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-#        if fxt_working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", fxt_working_branch)):
-#            version = VERSION
-#            git_hash = str(fxt_output_root).split("-")[-1]
-#            logging_perf_results_to_mlflow(version, fxt_working_branch, git_hash, all_results, fxt_mlflow_client)
-#
-#    if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
-#        shutil.rmtree(fxt_output_root)
-#
-#
-#@pytest.fixture(scope="session")
-#def fxt_benchmark_reference() -> pd.DataFrame | None:
-#    """Load reference benchmark results with index."""
-#    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
-#    if ref is not None:
-#        ref.set_index(["benchmark", "task", "data_size", "model"], inplace=True)
-#    return ref
-#
-#
-#@pytest.fixture(scope="session")
-#def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> Callable:
-#    """Return result checking function with reference data."""
-#
-#    def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
-#        if fxt_benchmark_reference is None:
-#            print("No benchmark references loaded. Skipping result checking.")
-#            return
-#
-#        def get_entry(data: pd.DataFrame, key: Tuple) -> pd.Series:
-#            if key in data.index:
-#                return data.loc[key]
-#            return None
-#
-#        target_entry = get_entry(fxt_benchmark_reference, key)
-#        if target_entry is None:
-#            print(f"No benchmark reference for {key} loaded. Skipping result checking.")
-#            return
-#
-#        result_entry = get_entry(result, key)
-#        assert result_entry is not None
-#
-#        def compare(name: str, op: str, margin: float):
-#            if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
-#                return
-#            if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
-#                return
-#            if op == "==":
-#                assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
-#            elif op == "<":
-#                assert result_entry[name] < target_entry[name] * (1.0 + margin)
-#            elif op == ">":
-#                assert result_entry[name] > target_entry[name] * (1.0 - margin)
-#
-#        for check in checks:
-#            compare(**check)
-#
-#    return check_benchmark_result
+        all_results.to_csv(fxt_summary_csv)
+        print(f"  -> Saved to {fxt_summary_csv}.")
 
 
 class PerfTestBase:
     """Base perf test structure."""
 
-    def _test_perf(self,
+    def _test_perf(
+        self,
         model: Benchmark.Model,
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
-    ):
+    ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
