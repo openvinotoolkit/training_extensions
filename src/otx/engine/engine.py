@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Iterable, Literal
 import torch
 from lightning import Trainer, seed_everything
 
-from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
@@ -369,6 +368,8 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -549,6 +550,8 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
             explain_config = ExplainConfig()
