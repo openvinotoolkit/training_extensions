@@ -231,6 +231,7 @@ def test_get_configuration(tmp_path):
         """
         data:
             task: SEMANTIC_SEGMENTATION
+        callback_monitor: test/f1
         """,
     )
 
