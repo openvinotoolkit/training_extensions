@@ -373,10 +373,17 @@ class Engine:
                 ```
         """
         model = self.model
-        checkpoint = str(checkpoint) if checkpoint is not None else str(self.checkpoint)
+        
+        if checkpoint is not None:
+            checkpoint = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint = str(self.checkpoint)
+        else:
+            checkpoint = None
+
         datamodule = datamodule if datamodule is not None else self.datamodule
 
-        is_ir_ckpt = Path(checkpoint).suffix in [".xml", ".onnx"]
+        is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.get_ov_datamodule()
             model = self._auto_configurator.get_ov_model(model_name=checkpoint, meta_info=datamodule.meta_info)
