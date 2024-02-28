@@ -8,7 +8,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import numpy as np
+import torch
 from datumaro.components.annotation import Annotation, AnnotationType, LabelCategories
 
 from .repeat_sampler import RepeatSampler
@@ -75,11 +75,13 @@ class BalancedSampler(RepeatSampler):
         rank: int = 0,
         drop_last: bool = False,
         n_repeats: float | int | str = 1,
+        generator: torch.Generator | None = None,
     ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
+        self.generator = generator
 
         super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
@@ -123,17 +125,28 @@ class BalancedSampler(RepeatSampler):
 
     def __iter__(self):
         """Iter."""
+        if self.generator is None:
+            seed = int(torch.empty((), dtype=torch.int64).random_().item())
+            generator = torch.Generator()
+            generator.manual_seed(seed)
+        else:
+            generator = self.generator
+
         indices = []
-        random_generator = np.random.default_rng()
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
-                indice = np.concatenate(
-                    [random_generator.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
+                indice = torch.cat(
+                    [
+                        torch.tensor(self.img_indices[cls_indices], dtype=torch.int64)[
+                            torch.multinomial(torch.ones(len(self.img_indices[cls_indices])), 1, generator=generator)
+                        ]
+                        for cls_indices in self.img_indices
+                    ],
                 )
                 indices.append(indice)
 
-        indices = np.concatenate(indices)
-        indices = indices.astype(np.int64).tolist()
+        indices = torch.cat(indices)
+        indices = indices.tolist()
 
         if self.num_replicas > 1:
             if not self.drop_last:
