@@ -339,6 +339,7 @@ class Engine:
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         return_predictions: bool | None = None,
         explain: bool = False,
+        explain_config: ExplainConfig | None = None,
         **kwargs,
     ) -> list | None:
         """Run predictions using the specified model and data.
@@ -373,6 +374,8 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
@@ -398,6 +401,12 @@ class Engine:
             ckpt_path=checkpoint_path,
             return_predictions=return_predictions,
         )
+
+        if explain:
+            if explain_config is None:
+                explain_config = ExplainConfig()
+
+            predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
 
         lit_module.model.explain_mode = False
         return predict_result
@@ -547,7 +556,7 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import get_processed_saliency_maps
+        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
@@ -566,19 +575,15 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
-        predictions = self.trainer.predict(
+        predict_result = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
 
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, Path(self.work_dir))
         lit_module.model.explain_mode = False
-
-        return get_processed_saliency_maps(
-            predictions,
-            explain_config,
-            Path(self.work_dir),
-        )
+        return predict_result
 
     @classmethod
     def from_config(
