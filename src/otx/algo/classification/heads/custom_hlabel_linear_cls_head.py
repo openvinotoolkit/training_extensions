@@ -1,7 +1,7 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for defining multi-label linear classification head."""
+"""Module for defining h-label linear classification head."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @MODELS.register_module()
-class CustomHierarchicalClsHead(BaseModule):
+class CustomHierarchicalLinearClsHead(BaseModule):
     """Custom classification head for hierarchical classification task.
 
     Args:
