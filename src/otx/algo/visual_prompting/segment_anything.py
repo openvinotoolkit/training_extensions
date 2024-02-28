@@ -491,7 +491,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         """Create a PyTorch model for this class."""
         return SegmentAnything(**self.config)
 
-    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
         """Customize the inputs for the model."""
         images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
         return {
@@ -512,7 +512,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: VisualPromptingBatchDataEntity,
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:

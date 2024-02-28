@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 from typing import Any, Callable
-from unittest.mock import MagicMock
 
 import pytest
 import torch
@@ -287,7 +286,11 @@ class TestZeroShotSegmentAnything:
         """Test infer."""
         mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
         zero_shot_segment_anything = build_zero_shot_segment_anything()
-        mocker.patch.object(zero_shot_segment_anything.prompt_getter, "get_prompt_candidates", return_value=({0: torch.tensor([[0, 0, 0.5], [1000, 1000, 0.7]])}, {0: torch.tensor([[500, 500]])}))
+        mocker.patch.object(
+            zero_shot_segment_anything.prompt_getter,
+            "get_prompt_candidates",
+            return_value=({0: torch.tensor([[0, 0, 0.5], [1000, 1000, 0.7]])}, {0: torch.tensor([[500, 500]])}),
+        )
 
         def _patch_predict_masks(**kwargs) -> Tensor:
             point_coords = kwargs.get("point_coords")
@@ -437,7 +440,7 @@ class TestZeroShotSegmentAnything:
         _, result = zero_shot_segment_anything._decide_cascade_results(masks, logits, scores)
 
         assert torch.equal(result, expected)
-        
+
     def test_find_latest_reference_info(self, mocker, build_zero_shot_segment_anything):
         """Test _find_latest_reference_info."""
         zero_shot_segment_anything = build_zero_shot_segment_anything()
@@ -461,7 +464,7 @@ class TestZeroShotSegmentAnything:
         )
         results = zero_shot_segment_anything._find_latest_reference_info()
         assert results is None
-        
+
     def test_load_latest_reference_info(self, mocker, build_zero_shot_segment_anything):
         """Test _load_latest_reference_info."""
         zero_shot_segment_anything = build_zero_shot_segment_anything()
@@ -478,7 +481,7 @@ class TestZeroShotSegmentAnything:
         mocker.patch(
             "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
             return_value=torch.nn.ParameterDict(
-                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])}
+                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])},
             ),
         )
         mocker.patch("builtins.open", return_value="Mocked data")
@@ -528,7 +531,7 @@ class TestOTXZeroShotSegmentAnything:
         """Test _customize_inputs with training=False."""
         model.training = False
         model.model.reference_info["reference_feats"] = torch.rand(1, 1, 256)
-        model.model.reference_info["used_indices"] = torch.tensor([0.])
+        model.model.reference_info["used_indices"] = torch.tensor([0.0])
         output_data = model._customize_inputs(fxt_zero_shot_vpm_data_entity[1])
 
         assert output_data is not None

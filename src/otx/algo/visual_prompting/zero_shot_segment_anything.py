@@ -10,15 +10,15 @@ import os
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
-from typing import Any, Literal
-import numpy as np
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
+import torchvision.transforms.v2 as tvt_v2
 from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
-import torchvision.transforms.v2 as tvt_v2
 from torchvision.tv_tensors import BoundingBoxes, Image
 
 from otx.algo.visual_prompting.segment_anything import (
@@ -31,6 +31,9 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchPredEntity,
 )
 from otx.core.model.entity.visual_prompting import OTXZeroShotVisualPromptingModel
+
+if TYPE_CHECKING:
+    import numpy as np
 
 
 class PromptGetter(nn.Module):
@@ -234,8 +237,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         )
         return kwargs
 
-    def expand_reference_info(self, reference_feats: Tensor, new_largest_label: int) -> None:
-        """Expand reference info dimensions if newly given processed prompts have more lables."""            
+    def expand_reference_info(self, reference_feats: Tensor, new_largest_label: int) -> Tensor:
+        """Expand reference info dimensions if newly given processed prompts have more lables."""
         if new_largest_label > (cur_largest_label := len(reference_feats) - 1):
             diff = new_largest_label - cur_largest_label
             reference_feats = F.pad(reference_feats, (0, 0, 0, 0, 0, diff), value=0.0)
@@ -547,7 +550,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
         # Post-process masks
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), scale_factor=scale_factor, mode="bilinear").squeeze()
-        masks = self._pad_to_square(masks)
+        masks = self.pad_to_square(masks)
         masks = F.interpolate(masks.unsqueeze(0).unsqueeze(0), size=feats.shape[0:2], mode="bilinear").squeeze()
 
         # Target feature extraction
@@ -559,7 +562,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         masked_feat = masked_feat.mean(0).unsqueeze(0)
         return masked_feat / masked_feat.norm(dim=-1, keepdim=True)
 
-    def _pad_to_square(self, x: Tensor) -> Tensor:
+    def pad_to_square(self, x: Tensor) -> Tensor:
         """Pad to a square input.
 
         Args:
@@ -608,19 +611,20 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         num_classes: int = 0,
-        root_reference_info: str = "vpm_zsl_reference_infos",
+        root_reference_info: Path | str = "vpm_zsl_reference_infos",
         save_outputs: bool = True,
         is_cascade: bool = False,
-        pixel_mean: list[float] = [123.675, 116.28, 103.53],
-        pixel_std: list[float] = [58.395, 57.12, 57.375],
-        **kwargs):
+        pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
+        pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
+        **kwargs,
+    ):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
         super().__init__(num_classes=num_classes)
-        
+
         self.save_outputs = save_outputs
-        self.root_reference_info = root_reference_info
+        self.root_reference_info: Path = Path(root_reference_info)
         self.is_cascade = is_cascade
-        
+
         self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
 
@@ -634,17 +638,24 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         forward_fn = self.learn if self.training else self.infer
-        return forward_fn(inputs)
-    
-    def learn(self, inputs: ZeroShotVisualPromptingBatchDataEntity, reset_feat: bool = False) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+        return forward_fn(inputs)  # type: ignore[operator]
+
+    def learn(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reset_feat: bool = False,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Learn to directly connect to the model."""
         if reset_feat:
             self.initialize_reference_info()
 
         outputs = self.model.learn(**self._customize_inputs(inputs))
         return self._customize_outputs(outputs, inputs)
-    
-    def infer(self, inputs: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+
+    def infer(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Infer to directly connect to the model."""
         outputs = self.model.infer(**self._customize_inputs(inputs))
         return self._customize_outputs(outputs, inputs)
@@ -660,7 +671,9 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         }
         if self.training:
             # learn
-            forward_inputs.update({"processed_prompts": self._gather_prompts_with_labels(inputs.prompts, inputs.labels)})
+            forward_inputs.update(
+                {"processed_prompts": self._gather_prompts_with_labels(inputs.prompts, inputs.labels)},
+            )
         else:
             # infer
             forward_inputs.update({"is_cascade": self.is_cascade})
@@ -737,21 +750,27 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
-    
+
     def apply_points(self, points: Points, ori_shape: tuple[int, ...], target_length: int = 1024) -> Points:
         """Preprocess points to be used in the model."""
         return Points(self.apply_coords(points, ori_shape, target_length), canvas_size=(target_length, target_length))
-    
+
     def apply_boxes(self, boxes: BoundingBoxes, ori_shape: tuple[int, ...], target_length: int = 1024) -> BoundingBoxes:
         """Preprocess boxes to be used in the model."""
         return BoundingBoxes(
             self.apply_coords(boxes.reshape(-1, 2, 2), ori_shape, target_length).reshape(-1, 4),
             format=boxes.format,
-            canvas_size=(target_length, target_length))
-    
-    def apply_prompts(self, prompts: list[Points | BoundingBoxes], ori_shape: tuple[int, ...], target_length: int = 1024) -> list[Points | BoundingBoxes]:
+            canvas_size=(target_length, target_length),
+        )
+
+    def apply_prompts(
+        self,
+        prompts: list[Points | BoundingBoxes],
+        ori_shape: tuple[int, ...],
+        target_length: int = 1024,
+    ) -> list[Points | BoundingBoxes]:
         """Preprocess prompts to be used in the model."""
-        transformed_prompts: list[Points, BoundingBoxes] = []
+        transformed_prompts: list[Points | BoundingBoxes] = []
         for prompt in prompts:
             if isinstance(prompt, Points):
                 transformed_prompts.append(self.apply_points(prompt, ori_shape, target_length))
@@ -769,42 +788,53 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         neww = int(neww + 0.5)
         newh = int(newh + 0.5)
         return (newh, neww)
-    
+
     def preprocess(self, x: Image) -> Image:
         """Normalize pixel values and pad to a square input."""
         # Normalize colors
         x = (x - self.pixel_mean) / self.pixel_std
 
         # Pad
-        x = self.model._pad_to_square(x)
+        x = self.model.pad_to_square(x)
         return Image(x)
-    
+
     def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
         entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
-        entity.prompts = [self.apply_prompts(prompt, info.ori_shape, self.model.image_size) for prompt, info in zip(entity.prompts, entity.imgs_info)]
+        entity.prompts = [
+            self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
+            for prompt, info in zip(entity.prompts, entity.imgs_info)
+        ]
         return entity
-    
+
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
         self.register_buffer("reference_feats", torch.zeros(0, 1, self.model.embed_dim), False)
         self.register_buffer("used_indices", torch.tensor([], dtype=torch.int64), False)
-    
-    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+
+    def _find_latest_reference_info(self, root: Path) -> str | None:
         """Find latest reference info to be used."""
-        if not os.path.isdir(root):
+        if not Path.is_dir(root):
             return None
         if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
             return stamps[0]
         return None
-    
-    def _load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
+
+    def load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
         """Load latest reference info to be used."""
         if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pt")
+            latest_reference_info = self.root_reference_info / latest_stamp / "reference_info.pt"
             reference_info = torch.load(latest_reference_info)
-            self.register_buffer("reference_feats", reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device), False)
-            self.register_buffer("used_indices", reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device), False)
+            self.register_buffer(
+                "reference_feats",
+                reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device),
+                False,
+            )
+            self.register_buffer(
+                "used_indices",
+                reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device),
+                False,
+            )
             log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
             return True
         return False

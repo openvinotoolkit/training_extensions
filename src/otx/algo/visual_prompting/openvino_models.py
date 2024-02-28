@@ -127,10 +127,10 @@ class Decoder(SegmentationModel):
             for prompt in prompts:
                 label = inputs["labels"][idx]
                 if prompt_name == "bboxes":
-                    point_coords = self._apply_coords(prompt.reshape(-1, 2, 2), inputs["orig_size"])
+                    point_coords = self.apply_coords(prompt.reshape(-1, 2, 2), inputs["orig_size"])
                     point_labels = np.array([2, 3], dtype=np.float32).reshape(-1, 2)
                 else:
-                    point_coords = self._apply_coords(prompt.reshape(-1, 1, 2), inputs["orig_size"])
+                    point_coords = self.apply_coords(prompt.reshape(-1, 1, 2), inputs["orig_size"])
                     point_labels = np.array([1], dtype=np.float32).reshape(-1, 1)
 
                 processed_prompts.append(
@@ -146,7 +146,7 @@ class Decoder(SegmentationModel):
                 idx += 1
         return processed_prompts
 
-    def _apply_coords(self, coords: np.ndarray, orig_size: np.ndarray | list[int] | tuple[int, int]) -> np.ndarray:
+    def apply_coords(self, coords: np.ndarray, orig_size: np.ndarray | list[int] | tuple[int, int]) -> np.ndarray:
         """Process coords according to preprocessed image size using image meta."""
         old_h, old_w = orig_size
         new_h, new_w = self._get_preprocess_shape(old_h, old_w, self.image_size)

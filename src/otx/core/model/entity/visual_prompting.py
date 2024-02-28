@@ -5,22 +5,22 @@
 
 from __future__ import annotations
 
+import logging as log
 import os
 import pickle
-import numpy as np
-import logging as log
-from pathlib import Path
-from itertools import product
-from typing import TYPE_CHECKING, Any, Literal
 from collections import defaultdict
 from copy import deepcopy
+from itertools import product
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
-import torch
 import cv2
+import numpy as np
+import torch
 from openvino.model_api.models import Model
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI, Points
+from otx.core.data.entity.base import OTXBatchLossEntity, Points, T_OTXBatchPredEntityWithXAI
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -34,8 +34,6 @@ from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
-    import numpy as np
-
     from otx.core.types.export import OTXExportFormatType
 
 
@@ -162,12 +160,13 @@ class OVVisualPromptingModel(
     OVModel[
         VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
         VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXBatchPredEntityWithXAI
+        T_OTXBatchPredEntityWithXAI,
     ],
 ):
     """Visual prompting model compatible for OpenVINO IR inference.
 
-    It can only consume OpenVINO IR model path and create the OTX visual prompting model compatible for OTX testing pipeline.
+    It can only consume OpenVINO IR model path and create the OTX visual prompting model compatible
+        for OTX testing pipeline.
     """
 
     def __init__(
@@ -226,7 +225,7 @@ class OVVisualPromptingModel(
 
     def forward(
         self,
-        inputs: VisualPromptingBatchDataEntity,
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         if self.async_inference:
@@ -294,7 +293,7 @@ class OVVisualPromptingModel(
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: VisualPromptingBatchDataEntity,
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
@@ -320,13 +319,15 @@ class OVVisualPromptingModel(
 
 class OTXZeroShotVisualPromptingModel(OTXVisualPromptingModel):
     """Base class for the zero-shot visual prompting models used in OTX."""
-    
-    
+
+
 class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     """Zero-shot visual prompting model compatible for OpenVINO IR inference.
 
-    It can only consume OpenVINO IR model path and create the OTX zero-shot visual prompting model compatible for OTX testing pipeline.
+    It can only consume OpenVINO IR model path and create the OTX zero-shot visual prompting model compatible
+        for OTX testing pipeline.
     """
+
     def __init__(
         self,
         num_classes: int,
@@ -339,25 +340,30 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         root_reference_info: str = "vpm_zsl_reference_infos",
         save_outputs: bool = True,
     ) -> None:
-        super().__init__(num_classes, model_name, model_type, async_inference, max_num_requests, use_throughput_mode, model_api_configuration)
-        self.root_reference_info = root_reference_info
-        self.save_outputs = save_outputs
-        
+        super().__init__(
+            num_classes,
+            model_name,
+            model_type,
+            async_inference,
+            max_num_requests,
+            use_throughput_mode,
+            model_api_configuration,
+        )
+        self.root_reference_info: Path = Path(root_reference_info)
+        self.save_outputs: bool = save_outputs
+
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
-        
-        self.reference_feats: np.ndarray | None = None
-        self.used_indices: np.ndarray | None = None
-        
+
+        self.initialize_reference_info()
+
     def learn(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reset_feat: bool = False,
         default_threshold_reference: float = 0.3,
-    ):
+    ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
-        ref_masks: np.ndarray
-
         if reset_feat or self.reference_feats is None:
             self.initialize_reference_info()
 
@@ -368,7 +374,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         reference_masks: list[np.ndarray] = []
         for image, meta, prompts in zip(images, metas, processed_prompts):
             original_shape = np.array(meta["original_shape"][:2])
-            
+
             # forward image encoder
             image_embeddings = self.model["image_encoder"].infer_sync(image)
             processed_embedding = image_embeddings["image_embeddings"].squeeze().transpose(1, 2, 0)
@@ -378,7 +384,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             for label, input_prompts in prompts.items():
                 ref_mask: np.ndarray = np.zeros(original_shape, dtype=np.uint8)
                 for inputs_decoder in input_prompts:
-                    label = inputs_decoder.pop("label")
+                    label = inputs_decoder.pop("label")  # noqa: PLW2901
                     if "point_coords" in inputs_decoder:
                         # bboxes and points
                         inputs_decoder.update(image_embeddings)
@@ -389,7 +395,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                         continue
                     ref_mask[masks] += 1
                 ref_mask = np.clip(ref_mask, 0, 1)
-                
+
                 ref_feat: np.ndarray | None = None
                 cur_default_threshold_reference = deepcopy(default_threshold_reference)
                 while ref_feat is None:
@@ -398,38 +404,38 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                         feats=processed_embedding,
                         masks=ref_mask,
                         threshold_mask=cur_default_threshold_reference,
-                        image_size=self.model["image_encoder"].image_size
+                        image_size=self.model["image_encoder"].image_size,
                     )
                     cur_default_threshold_reference -= 0.05
-                    
+
                 self.reference_feats[label] = ref_feat
-                self.used_indices = np.concatenate((self.used_indices, label))
+                self.used_indices: np.ndarray = np.concatenate((self.used_indices, label))
                 ref_masks[label] = ref_mask
             reference_masks.append(ref_masks)
         self.used_indices = np.unique(self.used_indices)
         return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
-    
+
     def infer(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
         is_cascade: bool = False,
-        threshold: float = 0.,
+        threshold: float = 0.0,
         num_bg_points: int = 1,
         default_threshold_target: float = 0.65,
         image_size: int = 1024,
         downsizing: int = 64,
-    ) -> list[list[defaultdict[list]]]:
+    ) -> list[list[defaultdict[int, list]]]:
         """`Infer` for target predictions."""
         images, metas, _ = self._customize_inputs(inputs)
-        total_results: list[list[defaultdict[list]]] = []
+        total_results: list[list[defaultdict[int, list]]] = []
         for image, meta in zip(images, metas):
             original_shape = np.array(meta["original_shape"][:2])
 
             # forward image encoder
             image_embeddings = self.model["image_encoder"].infer_sync(image)
-            
+
             # get point candidates
             total_points_scores, total_bg_coords = self._get_prompt_candidates(
                 image_embeddings=image_embeddings["image_embeddings"],
@@ -442,10 +448,10 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 image_size=image_size,
                 downsizing=downsizing,
             )
-            
-            predicted_masks: defaultdict[list] = defaultdict(list)
-            used_points: defaultdict[list] = defaultdict(list)
-            for label in total_points_scores.keys():
+
+            predicted_masks: defaultdict[int, list] = defaultdict(list)
+            used_points: defaultdict[int, list] = defaultdict(list)
+            for label in total_points_scores:
                 points_scores = total_points_scores[label]
                 bg_coords = total_bg_coords[label]
                 for points_score in points_scores:
@@ -463,7 +469,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                         continue
 
                     point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-                    point_coords = self.model["decoder"]._apply_coords(point_coords, original_shape)
+                    point_coords = self.model["decoder"].apply_coords(point_coords, original_shape)
                     point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
                     inputs_decoder = {
                         "point_coords": point_coords[None],
@@ -482,21 +488,21 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             self._inspect_overlapping_areas(predicted_masks, used_points)
             total_results.append([predicted_masks, used_points])
         return total_results
-        
-    def forward(
+
+    def forward(  # type: ignore[override]
         self,
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
-        if self.training:
-            fn = self.learn
-        else:
-            fn = self.infer
-            kwargs.update({
-                "reference_feats": self.reference_feats,
-                "used_indices": self.used_indices,
-            })
+        fn = self.learn if self.training else self.infer
+        if not self.training:
+            kwargs.update(
+                {
+                    "reference_feats": self.reference_feats,
+                    "used_indices": self.used_indices,
+                },
+            )
 
         if self.async_inference:
             log.warning(
@@ -505,13 +511,13 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     "Running synchronous inference instead.",
                 ),
             )
-            
-        return self._customize_outputs(fn(inputs, **kwargs), inputs)
 
-    def _customize_inputs(
+        return self._customize_outputs(fn(inputs, **kwargs), inputs)  # type: ignore[operator]
+
+    def _customize_inputs(  # type: ignore[override]
         self,
-        entity: ZeroShotVisualPromptingBatchDataEntity,
-    ) -> tuple[list[np.ndarray], list[dict[str, Any]], list[list[dict[str, Any]]]]:
+        entity: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+    ) -> tuple[list[np.ndarray], list[dict[str, Any]], list[dict[int, list[Any]]]]:
         """Customize OTX input batch data entity."""
         images: list[np.ndarray] = []
         metas: list[dict[str, Any]] = []
@@ -539,23 +545,25 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     elif isinstance(prompt, Points):
                         points.append(prompt.cpu().numpy())
                         labels["points"].append(label.cpu().numpy())
-                    
+
                 # preprocess decoder inputs
-                processed_prompts.append(self.model["decoder"].preprocess(
-                    {
-                        "bboxes": bboxes,
-                        "points": points,
-                        "labels": labels["bboxes"] + labels["points"],
-                        "orig_size": imgs_info.ori_shape,
-                    },
-                ))
+                processed_prompts.append(
+                    self.model["decoder"].preprocess(
+                        {
+                            "bboxes": bboxes,
+                            "points": points,
+                            "labels": labels["bboxes"] + labels["points"],
+                            "orig_size": imgs_info.ori_shape,
+                        },
+                    ),
+                )
         processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
         return images, metas, processed_prompts_w_labels
 
-    def _customize_outputs(
+    def _customize_outputs(  # type: ignore[override]
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
@@ -564,13 +572,18 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         masks: list[tv_tensors.Mask] = []
         prompts: list[Points] = []
         scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []            
+        labels: list[torch.LongTensor] = []
         for output in outputs:
             predicted_masks, used_points = output
             for label, predicted_mask in predicted_masks.items():
                 if len(predicted_mask) == 0:
                     continue
-                masks.append(tv_tensors.Mask(torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0), dtype=torch.float32))
+                masks.append(
+                    tv_tensors.Mask(
+                        torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0),
+                        dtype=torch.float32,
+                    ),
+                )
                 prompts.append(
                     Points(
                         torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
@@ -591,11 +604,14 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             polygons=[],
             labels=labels,
         )
-        
+
     ######################################
     #             Preprocess             #
     ######################################
-    def _gather_prompts_with_labels(self, batch_prompts: list[list[dict[str, Any]]]) -> list[dict[int, list[np.ndarray]]]:
+    def _gather_prompts_with_labels(
+        self,
+        batch_prompts: list[list[dict[str, Any]]],
+    ) -> list[dict[int, list[np.ndarray]]]:
         """Gather prompts according to labels."""
         total_processed_prompts: list[dict[int, list[np.ndarray]]] = []
         for prompts in batch_prompts:
@@ -604,7 +620,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 processed_prompts[int(prompt["label"])].append(prompt)
             total_processed_prompts.append(dict(sorted(processed_prompts.items(), key=lambda x: x)))
         return total_processed_prompts
-    
+
     ######################################
     #               Common               #
     ######################################
@@ -623,7 +639,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             if i == 0:
                 # First-step prediction
                 mask_input = np.zeros(
-                    (1, 1, *map(lambda x: x * 4, inputs["image_embeddings"].shape[2:])), dtype=np.float32
+                    (1, 1, *(x * 4 for x in inputs["image_embeddings"].shape[2:])),
+                    dtype=np.float32,
                 )
                 has_mask_input = self.has_mask_inputs[0]
 
@@ -643,14 +660,15 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
-                box_coords = self.model["decoder"]._apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size[0]
+                box_coords = self.model["decoder"].apply_coords(
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32),
+                    original_size[0],
                 )
                 inputs.update(
                     {
                         "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
                         "point_labels": np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1),
-                    }
+                    },
                 )
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
@@ -664,21 +682,25 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
         _, masks = self._decide_masks(masks, logits, scores)
         return {"upscaled_masks": masks}
-    
+
     def _decide_masks(
-        self, masks: np.ndarray, logits: np.ndarray, scores: np.ndarray, is_single: bool = False
+        self,
+        masks: np.ndarray,
+        logits: np.ndarray,
+        scores: np.ndarray,
+        is_single: bool = False,
     ) -> tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
         if is_single:
             best_idx = 0
         else:
             # skip the first index components
-            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+            scores, masks, logits = (x[:, 1:] for x in (scores, masks, logits))
 
             # filter zero masks
             while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
-                scores, masks, logits = map(
-                    lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
+                scores, masks, logits = (
+                    np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1) for x in (scores, masks, logits)
                 )
 
             if len(scores[0]) == 0:
@@ -687,17 +709,17 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
             best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
-    
+
     ######################################
     #               Learn                #
     ######################################
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
-        self.reference_feats: np.ndarray = np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32)
-        self.used_indices: np.ndarray = np.array([], dtype=np.int64)
-        
+        self.reference_feats = np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32)
+        self.used_indices = np.array([], dtype=np.int64)
+
     def expand_reference_info(self, new_largest_label: int) -> None:
-        """Expand reference info dimensions if newly given processed prompts have more lables."""            
+        """Expand reference info dimensions if newly given processed prompts have more lables."""
         if new_largest_label > (cur_largest_label := len(self.reference_feats) - 1):
             diff = new_largest_label - cur_largest_label
             self.reference_feats = np.pad(self.reference_feats, ((0, diff), (0, 0), (0, 0)), constant_values=0.0)
@@ -708,7 +730,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         masks: np.ndarray,
         threshold_mask: float,
         image_size: int = 1024,
-    ) -> tuple[np.ndarray, ...]:
+    ) -> tuple[np.ndarray, ...] | None:
         """Generate masked features.
 
         Args:
@@ -735,10 +757,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
         masked_feat = feats[masks > threshold_mask]
         masked_feat = masked_feat.mean(0)[None]
-        masked_feat = masked_feat / np.linalg.norm(masked_feat, axis=-1, keepdims=True)
+        return masked_feat / np.linalg.norm(masked_feat, axis=-1, keepdims=True)
 
-        return masked_feat
-    
     def _pad_to_square(self, x: np.ndarray, image_size: int = 1024) -> np.ndarray:
         """Pad to a square input.
 
@@ -751,27 +771,29 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         h, w = x.shape[-2:]
         padh = image_size - h
         padw = image_size - w
-        x = np.pad(x, ((0, padh), (0, padw)), constant_values=0.0)
-        return x
-    
+        return np.pad(x, ((0, padh), (0, padw)), constant_values=0.0)
+
     ######################################
     #               Infer                #
     ######################################
-    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+    def _find_latest_reference_info(self, root: Path) -> str | None:
         """Find latest reference info to be used."""
-        if not os.path.isdir(root):
+        if not Path.is_dir(root):
             return None
         if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
             return stamps[0]
         return None
-    
-    def _load_latest_reference_info(self, *args, **kwargs) -> bool:
+
+    def load_latest_reference_info(self, *args, **kwargs) -> bool:
         """Load latest reference info to be used."""
         if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info: str = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pickle")
-            reference_info: dict[str, np.ndarray] = pickle.load(open(latest_reference_info, "rb"))
-            self.reference_feats: np.ndarray = reference_info.get("reference_feats", np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32))
-            self.used_indices: np.ndarray = reference_info.get("used_indices", np.array([], dtype=np.int64))
+            latest_reference_info: Path = self.root_reference_info / latest_stamp / "reference_info.pickle"
+            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(latest_reference_info, "rb"))  # noqa: S301
+            self.reference_feats = reference_info.get(
+                "reference_feats",
+                np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
+            )
+            self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
             log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
             return True
         return False
@@ -782,7 +804,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
         original_shape: np.ndarray,
-        threshold: float = 0.,
+        threshold: float = 0.0,
         num_bg_points: int = 1,
         default_threshold_target: float = 0.65,
         image_size: int = 1024,
@@ -793,7 +815,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / np.linalg.norm(target_feat, axis=0, keepdims=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
-        
+
         total_points_scores: dict[int, np.ndarray] = {}
         total_bg_coords: dict[int, np.ndarray] = {}
         for label in used_indices:
@@ -810,7 +832,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 image_size=image_size,
                 downsizing=downsizing,
             )
-            
+
             if points_scores is not None:
                 total_points_scores[label] = points_scores
                 total_bg_coords[label] = bg_coords
@@ -851,13 +873,13 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         matched_grid = np.expand_dims(fg_coords_scores, axis=1) * np.expand_dims(matched_matrix, axis=-1)
 
         ## sample the highest score one of the samples that are in the same grid
-        matched_indices = self._topk_numpy(matched_grid[...,-1], k=1, axis=0, largest=True)[1][0].astype(np.int64)
+        matched_indices = self._topk_numpy(matched_grid[..., -1], k=1, axis=0, largest=True)[1][0].astype(np.int64)
         points_scores = matched_grid[matched_indices].diagonal().T
 
         ## sort by the highest score
         sorted_points_scores_indices = np.flip(np.argsort(points_scores[:, -1]), axis=-1).astype(np.int64)
         points_scores = points_scores[sorted_points_scores_indices]
-        
+
         # Top-last point selection
         bg_indices = self._topk_numpy(mask_sim.flatten(), num_bg_points, largest=False)[1]
         bg_x = np.expand_dims(bg_indices // w_sim, axis=0)
@@ -866,7 +888,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         bg_coords = bg_coords.astype(np.float32)
 
         return points_scores, bg_coords
-            
+
     def _resize_to_original_shape(self, masks: np.ndarray, image_size: int, original_shape: np.ndarray) -> np.ndarray:
         """Resize feature size to original shape."""
         # resize feature size to input size
@@ -886,23 +908,23 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         scale = image_size / np.max(original_shape)
         transformed_size = scale * original_shape
         return np.floor(transformed_size + 0.5).astype(np.int64)
-    
+
     def _inspect_overlapping_areas(
         self,
         predicted_masks: dict[int, list[np.ndarray]],
         used_points: dict[int, list[np.ndarray]],
         threshold_iou: float = 0.8,
-    ):
-        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
-            assert mask1.ndim == 2 and mask2.ndim == 2
+    ) -> None:
+        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray) -> np.ndarray:
+            assert mask1.ndim == 2  # noqa: S101
+            assert mask2.ndim == 2  # noqa: S101
             intersection = np.logical_and(mask1, mask2).sum().item()
             union = np.logical_or(mask1, mask2).sum().item()
 
             # Avoid division by zero
             if union == 0:
                 return 0.0
-            iou = intersection / union
-            return iou
+            return intersection / union
 
         for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
             if other_label <= label:
@@ -917,21 +939,21 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     else:
                         overlapped_label.append(im)
 
-            for im in sorted(list(set(overlapped_label)), reverse=True):
+            for im in sorted(set(overlapped_label), reverse=True):
                 masks.pop(im)
                 used_points[label].pop(im)
 
-            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
+            for jm in sorted(set(overlapped_other_label), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
-    
+
     def _topk_numpy(self, x: np.ndarray, k: int, axis: int = -1, largest: bool = True) -> np.ndarray:
         """Top-k function for numpy same with torch.topk."""
         if largest:
             k = -k
             indices = range(k, 0)
         else:
-            indices = range(0, k)
+            indices = range(k)
         partitioned_ind = np.argpartition(x, k, axis=axis).take(indices=indices, axis=axis)
         partitioned_scores = np.take_along_axis(x, partitioned_ind, axis=axis)
         sorted_trunc_ind = np.flip(np.argsort(partitioned_scores, axis=axis), axis=axis)
