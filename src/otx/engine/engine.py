@@ -372,29 +372,35 @@ class Engine:
                 otx predict --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        model = self.model
+        checkpoint = str(checkpoint) if checkpoint is not None else str(self.checkpoint)
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = Path(checkpoint).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=checkpoint, meta_info=datamodule.meta_info)
+        
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.meta_info = datamodule.meta_info
+
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        if checkpoint is not None and not is_ir_ckpt:
+            loaded_checkpoint = torch.load(checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
 
         lit_module.model.explain_mode = explain
 
         self._build_trainer(**kwargs)
 
-        checkpoint_path: str | None = None
-        if checkpoint is not None:
-            checkpoint_path = str(checkpoint)
-        elif self.checkpoint is not None:
-            checkpoint_path = str(self.checkpoint)
-
         predict_result = self.trainer.predict(
             model=lit_module,
-            datamodule=datamodule if datamodule is not None else self.datamodule,
-            ckpt_path=checkpoint_path,
+            dataloaders=datamodule,
             return_predictions=return_predictions,
         )
 
