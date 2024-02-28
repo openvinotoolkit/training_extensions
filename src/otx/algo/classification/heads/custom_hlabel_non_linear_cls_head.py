@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 @MODELS.register_module()
 class CustomHierarchicalNonLinearClsHead(BaseModule):
-    """Custom classification head for hierarchical classification task.
+    """Custom classification non-linear head for hierarchical classification task.
 
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
@@ -30,7 +30,10 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
-                            
+        hid_cahnnels (int): Number of channels in the hidden feature map at the classifier.
+        acivation_Cfg (dict | None): Config of activation layer at the classifier.
+        dropout (bool): Flag for the enabling the dropout at the classifier.
+
     """
 
     def __init__(

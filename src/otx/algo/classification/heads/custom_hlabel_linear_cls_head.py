@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 @MODELS.register_module()
 class CustomHierarchicalLinearClsHead(BaseModule):
-    """Custom classification head for hierarchical classification task.
+    """Custom classification linear head for hierarchical classification task.
 
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
