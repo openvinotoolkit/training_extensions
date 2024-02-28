@@ -7,7 +7,7 @@ import pytest
 from datumaro.components.annotation import Label
 from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
-from otx.algo.samplers.balanced_sampler import BalancedSampler, compute_class_statistics
+from otx.algo.samplers.balanced_sampler import BalancedSampler, get_idx_list_per_classes
 from otx.core.data.dataset.base import OTXDataset
 
 
@@ -87,7 +87,7 @@ class TestBalancedSampler:
 
     def test_compute_class_statistics(self, fxt_imbalanced_dataset):
         # Compute class statistics
-        stats = compute_class_statistics(fxt_imbalanced_dataset.dm_subset)
+        stats = get_idx_list_per_classes(fxt_imbalanced_dataset.dm_subset)
 
         # Check the expected results
         assert stats == {"0": list(range(100)), "1": list(range(100, 108))}
@@ -96,7 +96,7 @@ class TestBalancedSampler:
         batch_size = 4
         sampler = BalancedSampler(fxt_imbalanced_dataset, batch_size)
 
-        stats = compute_class_statistics(fxt_imbalanced_dataset.dm_subset)
+        stats = get_idx_list_per_classes(fxt_imbalanced_dataset.dm_subset)
         class_0_idx = stats["0"]
         class_1_idx = stats["1"]
         list_iter = list(iter(sampler))

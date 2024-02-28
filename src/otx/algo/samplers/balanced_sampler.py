@@ -10,8 +10,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from datumaro.components.annotation import Annotation, AnnotationType, LabelCategories
-
-from .repeat_sampler import RepeatSampler
+from torch.utils.data import Sampler
 
 if TYPE_CHECKING:
     from datumaro import Dataset as DmDataset
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset
 
 
-def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
+def get_idx_list_per_classes(dm_dataset: DmDataset) -> dict[str, list[int]]:
     """Compute class statistics."""
     labels = dm_dataset.categories().get(AnnotationType.label, LabelCategories())
 
@@ -41,7 +40,7 @@ def compute_class_statistics(dm_dataset: DmDataset) -> dict[str, list[int]]:
     return stats
 
 
-class BalancedSampler(RepeatSampler):
+class BalancedSampler(Sampler):
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch
@@ -63,7 +62,7 @@ class BalancedSampler(RepeatSampler):
             tail of the data to make it evenly divisible across the number of
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
-        n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
+        n_repeats (int, optional) : number of iterations for manual setting
     """
 
     def __init__(
@@ -74,19 +73,21 @@ class BalancedSampler(RepeatSampler):
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
-        n_repeats: float | int | str = 1,
+        n_repeats: int = 1,
         generator: torch.Generator | None = None,
     ):
+        self.dataset = dataset
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
         self.generator = generator
+        self.repeat = n_repeats
 
-        super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
+        super().__init__(dataset)
 
         # img_indices: dict[label: list[idx]]
-        ann_stats = compute_class_statistics(dataset.dm_subset)
+        ann_stats = get_idx_list_per_classes(dataset.dm_subset)
         self.img_indices = {k: v for k, v in ann_stats.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
