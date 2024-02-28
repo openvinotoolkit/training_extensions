@@ -6,9 +6,8 @@
 from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
 
 if is_nncf_enabled():
-    from timm.models.layers.conv2d_same import Conv2dSame
-
     from nncf.torch import register_module
+    from timm.models.layers.conv2d_same import Conv2dSame
 
     # Register custom modules.
     # Users of nncf should manually check every custom
