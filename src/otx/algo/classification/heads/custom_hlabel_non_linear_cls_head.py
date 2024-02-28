@@ -8,13 +8,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import BaseModule, normal_init, constant_init
+from mmengine.model import BaseModule, constant_init, normal_init
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from torch import nn
 
 if TYPE_CHECKING:
-    from otx.core.data.entity.classification import HLabelInfo
+    from otx.core.data.entity.classification import HLabelData
 
 
 @MODELS.register_module()
@@ -42,7 +42,7 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         multilabel_loss_cfg: dict | None = None,
         thr: float = 0.5,
         hid_channels: int = 1280,
-        activation_cfg: dict = {"type": "ReLU"},
+        activation_cfg: dict | None = None,
         dropout: bool = False,
         **kwargs,
     ):
@@ -52,9 +52,8 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.thr = thr
-        
-        self.hid_channels = hid_channels 
-        self.activation = MODELS.build(activation_cfg)
+
+        self.hid_channels = hid_channels
         self.dropout = dropout
 
         if self.num_multiclass_heads == 0:
@@ -65,10 +64,15 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         if num_multilabel_classes > 0:
             self.multilabel_loss = MODELS.build(multilabel_loss_cfg)
 
+        if not activation_cfg:
+            activation_cfg = {"type": "ReLU"}
+
+        self.activation = MODELS.build(activation_cfg)
+
         classifier_modules = [
             nn.Linear(in_channels, hid_channels),
             nn.BatchNorm1d(hid_channels),
-            self.activation
+            self.activation,
         ]
 
         if self.dropout:
@@ -77,16 +81,16 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         classifier_modules.append(nn.Linear(hid_channels, num_classes))
 
         self.classifier = nn.Sequential(*classifier_modules)
-        
+
         self._init_layers()
-    
+
     def _init_layers(self) -> None:
         """Iniitialize weights of classification head."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
                 normal_init(module, mean=0, std=0.01, bias=0)
             elif isinstance(module, nn.BatchNorm1d):
-                constant_init(module, 1)   
+                constant_init(module, 1)
 
     def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head."""
@@ -97,7 +101,7 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)
 
-    def set_hlabel_info(self, hlabel_info: HLabelInfo) -> None:
+    def set_hlabel_info(self, hlabel_info: HLabelData) -> None:
         """Set hlabel information."""
         self.hlabel_info = hlabel_info
 
@@ -105,7 +109,7 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         """Get gt labels from data samples."""
         return torch.stack([data_sample.gt_label for data_sample in data_samples])
 
-    def _get_head_idx_to_logits_range(self, hlabel_info: HLabelInfo, idx: int) -> tuple[int, int]:
+    def _get_head_idx_to_logits_range(self, hlabel_info: HLabelData, idx: int) -> tuple[int, int]:
         """Get head_idx_to_logits_range information from hlabel information."""
         return (
             hlabel_info.head_idx_to_logits_range[str(idx)][0],

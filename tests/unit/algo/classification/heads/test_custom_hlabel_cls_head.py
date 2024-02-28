@@ -115,8 +115,6 @@ class TestCustomHierarchicalLinearClsHead:
         result = fxt_hlabel_linear_head.predict(dummy_input, fxt_data_sample)
         assert isinstance(result[0], DataSample)
 
-
-
         fxt_hlabel_non_linear_head.set_hlabel_info(fxt_hlabel_multilabel_info)
         dummy_input = (torch.ones((2, 24)), torch.ones((2, 24)))
         result = fxt_hlabel_non_linear_head.predict(dummy_input, fxt_data_sample)
