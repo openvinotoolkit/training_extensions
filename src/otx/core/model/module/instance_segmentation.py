@@ -47,7 +47,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        self.test_meta_info: dict[str, Any] = {}
+        self.test_meta_info: dict[str, Any] = self.model.test_meta_info if hasattr(self.model, "test_meta_info") else {}
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state_dict from checkpoint.
