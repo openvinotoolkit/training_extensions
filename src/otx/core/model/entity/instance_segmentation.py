@@ -357,8 +357,10 @@ class OVInstanceSegmentationModel(
             plugin_config=plugin_config,
             model_parameters=self.model_adapter_parameters,
         )
-        for key, value in model_adapter.model.rt_info["model_info"]["test_meta_info"].items():
-            self.test_meta_info[key] = self._change_dtype(value.value)
+        for name, info in model_adapter.model.rt_info["model_info"].items():
+            if name == "test_meta_info":
+                for key, value in info.items():
+                    self.test_meta_info[key] = self._change_dtype(value.value)
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     @staticmethod
