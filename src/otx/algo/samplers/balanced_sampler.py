@@ -1,7 +1,7 @@
-"""Balanced sampler for imbalanced data."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
+"""Balanced sampler for imbalanced data."""
 
 from __future__ import annotations
 
