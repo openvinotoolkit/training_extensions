@@ -75,7 +75,7 @@ class TestCustomHierarchicalLinearClsHead:
         fxt_data_sample_with_ignored_labels,
         fxt_hlabel_multilabel_info,
     ) -> None:
-        fxt_hlabel_linear_head.set_hlabel_info(fxt_hlabel_multilabel_info)
+        fxt_hlabel_linear_head.set_hlabel_data(fxt_hlabel_multilabel_info)
 
         dummy_input = (torch.ones((18, 24)), torch.ones((18, 24)))
         result_without_ignored_labels = fxt_hlabel_linear_head.loss(dummy_input, fxt_data_sample)
@@ -89,10 +89,11 @@ class TestCustomHierarchicalLinearClsHead:
     def test_non_linear_loss(
         self,
         fxt_hlabel_non_linear_head,
+        fxt_data_sample,
         fxt_data_sample_with_ignored_labels,
         fxt_hlabel_multilabel_info,
     ) -> None:
-        fxt_hlabel_non_linear_head.set_hlabel_info(fxt_hlabel_multilabel_info)
+        fxt_hlabel_non_linear_head.set_hlabel_data(fxt_hlabel_multilabel_info)
 
         dummy_input = (torch.ones((18, 24)), torch.ones((18, 24)))
         result_without_ignored_labels = fxt_hlabel_non_linear_head.loss(dummy_input, fxt_data_sample)
@@ -110,12 +111,12 @@ class TestCustomHierarchicalLinearClsHead:
         fxt_data_sample,
         fxt_hlabel_multilabel_info,
     ) -> None:
-        fxt_hlabel_linear_head.set_hlabel_info(fxt_hlabel_multilabel_info)
+        fxt_hlabel_linear_head.set_hlabel_data(fxt_hlabel_multilabel_info)
         dummy_input = (torch.ones((2, 24)), torch.ones((2, 24)))
         result = fxt_hlabel_linear_head.predict(dummy_input, fxt_data_sample)
         assert isinstance(result[0], DataSample)
 
-        fxt_hlabel_non_linear_head.set_hlabel_info(fxt_hlabel_multilabel_info)
+        fxt_hlabel_non_linear_head.set_hlabel_data(fxt_hlabel_multilabel_info)
         dummy_input = (torch.ones((2, 24)), torch.ones((2, 24)))
         result = fxt_hlabel_non_linear_head.predict(dummy_input, fxt_data_sample)
         assert isinstance(result[0], DataSample)
