@@ -9,7 +9,7 @@ from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.classification import HLabelData
 from otx.core.metrics.accuracy import (
-    CustomHlabelAccuracy,
+    HlabelAccuracy,
     MixedHLabelAccuracy,
     MulticlassAccuracywithLabelGroup,
     MultilabelAccuracywithLabelGroup,
@@ -83,7 +83,7 @@ class TestAccuracy:
             hlabel_data=fxt_hlabel_multilabel_info,
         )
 
-        metric = CustomHlabelAccuracy(average="MICRO")
+        metric = HlabelAccuracy(average="MICRO")
         metric.label_info = hlabel_data
         metric.update(preds, targets)
         result = metric.compute()
