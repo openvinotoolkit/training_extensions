@@ -3,14 +3,15 @@
 
 from pathlib import Path
 
-import pytest
 import numpy as np
-
 import openvino.runtime as ov
-
-from otx.core.data.entity.classification import MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI
+import pytest
+from otx.core.data.entity.classification import (
+    MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
+    MultilabelClsBatchPredEntityWithXAI,
+)
 from otx.engine import Engine
-
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
 MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in recipe]
@@ -102,7 +103,10 @@ def test_predict_with_explain(
 
     # Predict with explain torch
     predict_result_explain_torch = engine.predict(explain=True)
-    assert isinstance(predict_result_explain_torch[0], (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI))
+    assert isinstance(
+        predict_result_explain_torch[0],
+        (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI),
+    )
     assert predict_result_explain_torch[0].saliency_maps is not None
     assert isinstance(predict_result_explain_torch[0].saliency_maps[0], dict)
 
@@ -120,7 +124,10 @@ def test_predict_with_explain(
 
     # Predict OV model with xai
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
-    assert isinstance(predict_result_explain_ov[0], (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI))
+    assert isinstance(
+        predict_result_explain_ov[0],
+        (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI),
+    )
     assert predict_result_explain_ov[0].saliency_maps is not None
     assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
 
@@ -133,4 +140,6 @@ def test_predict_with_explain(
         class_id = 0
         for class_id in maps_torch[i]:
             assert class_id in maps_ov[i]
-            assert np.mean(abs(maps_torch[i][class_id].astype(np.float32) - maps_ov[i][class_id].astype(np.float32))) < 150
+            assert (
+                np.mean(abs(maps_torch[i][class_id].astype(np.float32) - maps_ov[i][class_id].astype(np.float32))) < 150
+            )

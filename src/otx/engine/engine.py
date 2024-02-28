@@ -378,7 +378,7 @@ class Engine:
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
         model = self.model
-        
+
         if checkpoint is not None:
             checkpoint = str(checkpoint)
         elif self.checkpoint is not None:
@@ -391,8 +391,8 @@ class Engine:
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.get_ov_datamodule()
-            model = self._auto_configurator.get_ov_model(model_name=checkpoint, label_info=datamodule.label_info)
-        
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
         lit_module = self._build_lightning_module(
             model=model,
             optimizer=self.optimizer,
