@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
+    from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
 
@@ -131,7 +132,7 @@ class Engine:
             model
             if isinstance(model, OTXModel)
             else self._auto_configurator.get_model(
-                meta_info=self._datamodule.meta_info if self._datamodule is not None else None,
+                label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
@@ -157,7 +158,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        metric: MetricCallable | None = None,
+        metric: Metric | MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig | None = None,
         **kwargs,
@@ -175,7 +176,7 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
-            metric (MetricCallable | None): The metric for the validation and test.
+            metric (Metric | MetricCallable | None): The metric for the validation and test.
                                             It could be None at export, predict, etc.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
@@ -231,7 +232,7 @@ class Engine:
             scheduler=self.scheduler,
             metric=metric,
         )
-        lit_module.meta_info = self.datamodule.meta_info
+        lit_module.label_info = self.datamodule.label_info
 
         if seed is not None:
             seed_everything(seed, workers=True)
@@ -265,7 +266,7 @@ class Engine:
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        metric: MetricCallable | None = None,
+        metric: Metric | MetricCallable | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -274,7 +275,7 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
-            metric (MetricCallable | None): The metric for the validation and test.
+            metric (Metric | MetricCallable | None): The metric for the validation and test.
                                             It could be None at export, predict, etc.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
@@ -306,7 +307,7 @@ class Engine:
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.get_ov_datamodule()
-            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), meta_info=datamodule.meta_info)
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
@@ -315,7 +316,7 @@ class Engine:
             scheduler=self.scheduler,
             metric=metric,
         )
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -379,7 +380,7 @@ class Engine:
         )
         if datamodule is None:
             datamodule = self.datamodule
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         lit_module.model.explain_mode = explain
 
@@ -454,8 +455,8 @@ class Engine:
             scheduler=self.scheduler,
         )
         loaded_checkpoint = torch.load(ckpt_path)
-        lit_module.meta_info = loaded_checkpoint["state_dict"]["meta_info"]
-        self.model.label_info = lit_module.meta_info
+        lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
+        self.model.label_info = lit_module.label_info
 
         lit_module.load_state_dict(loaded_checkpoint)
 
@@ -559,7 +560,7 @@ class Engine:
         )
         if datamodule is None:
             datamodule = self.datamodule
-        lit_module.meta_info = datamodule.meta_info
+        lit_module.label_info = datamodule.label_info
 
         lit_module.model.explain_mode = True
 
@@ -720,7 +721,7 @@ class Engine:
             None
         """
         if isinstance(model, str):
-            model = self._auto_configurator.get_model(model, meta_info=self.datamodule.meta_info)
+            model = self._auto_configurator.get_model(model, label_info=self.datamodule.label_info)
         self._model = model
 
     @property
@@ -740,7 +741,7 @@ class Engine:
         model: OTXModel,
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-        metric: MetricCallable | None = None,
+        metric: Metric | MetricCallable | None = None,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -748,7 +749,7 @@ class Engine:
             model (OTXModel): The OTXModel instance.
             optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
-            metric (MetricCallable | None): The metric for the validation and test.
+            metric (Metric | MetricCallable | None): The metric for the validation and test.
                                             It could be None at export, predict, etc.
 
         Returns:

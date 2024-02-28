@@ -494,7 +494,24 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
 
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
+
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
         return {}
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information."""
+
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes

@@ -31,6 +31,9 @@ class OTXVisualPromptingModel(
     def __init__(self, num_classes: int = 0) -> None:
         super().__init__(num_classes=num_classes)
 
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
+
 
 class OTXZeroShotVisualPromptingModel(
     OTXModel[
@@ -67,3 +70,6 @@ class OTXZeroShotVisualPromptingModel(
         """Load reference info manually."""
         self.model.reference_info = state_dict.get(prefix + "model.reference_info", self.model.reference_info)
         state_dict[prefix + "model.reference_info.reference_feats"] = self.model.reference_info["reference_feats"]
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
