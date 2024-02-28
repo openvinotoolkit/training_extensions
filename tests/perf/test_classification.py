@@ -1,8 +1,7 @@
-"""OTX classification perfomance benchmark tests."""
-
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+"""OTX classification perfomance benchmark tests."""
 
 from __future__ import annotations
 
