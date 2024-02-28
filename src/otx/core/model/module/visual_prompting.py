@@ -267,6 +267,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
         if not self.model._load_latest_reference_info(self.device):
+            # TODO (sungchul): check fit_loop for OVModel
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.fit_loop.run()
             self.training = False # to use infer logic
@@ -278,6 +279,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
         if not self.model._load_latest_reference_info(self.device):
+            # TODO (sungchul): check fit_loop for OVModel
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.fit_loop.run()
             self.training = False # to use infer logic

@@ -5,15 +5,21 @@
 
 from __future__ import annotations
 
+import os
+import pickle
+import numpy as np
 import logging as log
 from pathlib import Path
+from itertools import product
 from typing import TYPE_CHECKING, Any, Literal
+from collections import defaultdict
 
 import torch
+import cv2
 from openvino.model_api.models import Model
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI, Points
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -34,8 +40,8 @@ if TYPE_CHECKING:
 
 class OTXVisualPromptingModel(
     OTXModel[
-        VisualPromptingBatchDataEntity,
-        VisualPromptingBatchPredEntity,
+        VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
         T_OTXBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
@@ -152,12 +158,15 @@ class OTXVisualPromptingModel(
 
 
 class OVVisualPromptingModel(
-    OVModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXBatchPredEntityWithXAI],
+    OVModel[
+        VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
+        T_OTXBatchPredEntityWithXAI
+    ],
 ):
     """Visual prompting model compatible for OpenVINO IR inference.
 
-    It can consume OpenVINO IR model path or model name from Intel OMZ repository
-    and create the OTX visual prompting model compatible for OTX testing pipeline.
+    It can only consume OpenVINO IR model path and create the OTX visual prompting model compatible for OTX testing pipeline.
     """
 
     def __init__(
@@ -308,15 +317,450 @@ class OVVisualPromptingModel(
         )
 
 
-class OTXZeroShotVisualPromptingModel(
-    OTXModel[
-        ZeroShotVisualPromptingBatchDataEntity,
-        ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXBatchPredEntityWithXAI,
-        T_OTXTileBatchDataEntity,
-    ],
-):
+class OTXZeroShotVisualPromptingModel(OTXVisualPromptingModel):
     """Base class for the zero-shot visual prompting models used in OTX."""
+    
+    
+class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
+    """Zero-shot visual prompting model compatible for OpenVINO IR inference.
 
-    def __init__(self, num_classes: int = 0) -> None:
-        super().__init__(num_classes=num_classes)
+    It can only consume OpenVINO IR model path and create the OTX zero-shot visual prompting model compatible for OTX testing pipeline.
+    """
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "Zero_Shot_Visual_Prompting",
+        async_inference: bool = False,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+        root_reference_info: str = "vpm_zsl_reference_infos",
+    ) -> None:
+        super().__init__(num_classes, model_name, model_type, async_inference, max_num_requests, use_throughput_mode, model_api_configuration)
+        self.root_reference_info = root_reference_info
+        self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
+        self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
+        
+    def learn(self, *args, **kwrags):
+        """`Learn` for reference features."""
+    
+    def infer(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: np.ndarray,
+        used_indices: np.ndarray,
+        is_cascade: bool = False,
+    ) -> list[list[defaultdict[list]]]:
+        """`Infer` for target predictions."""
+        images, metas, _ = self._customize_inputs(inputs)
+        total_results: list[list[defaultdict[list]]] = []
+        for image, meta in zip(images, metas):
+            original_shape = np.array(meta["original_shape"][:2])
+
+            # forward image encoder
+            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            
+            # get point candidates
+            total_points_scores, total_bg_coords = self._get_prompt_candidates(
+                image_embeddings["image_embeddings"], reference_feats, used_indices, original_shape
+            )
+            
+            predicted_masks: defaultdict[list] = defaultdict(list)
+            used_points: defaultdict[list] = defaultdict(list)
+            for label in total_points_scores.keys():
+                points_scores = total_points_scores[label]
+                bg_coords = total_bg_coords[label]
+                for points_score in points_scores:
+                    if points_score[-1] in [-1.0, 0.0]:
+                        continue
+
+                    x, y = points_score[:2]
+                    is_done = False
+                    for pm in predicted_masks.get(label, []):
+                        # check if that point is already assigned
+                        if pm[int(y), int(x)] > 0:
+                            is_done = True
+                            break
+                    if is_done:
+                        continue
+
+                    point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
+                    point_coords = self.model["decoder"]._apply_coords(point_coords, original_shape)
+                    point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
+                    inputs_decoder = {
+                        "point_coords": point_coords[None],
+                        "point_labels": point_labels[None],
+                        "orig_size": original_shape[None],
+                    }
+                    inputs_decoder.update(image_embeddings)
+
+                    prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade)
+                    prediction.update({"scores": points_score[-1]})
+
+                    predicted_masks[label].append(prediction[self.model["decoder"].output_blob_name])
+                    used_points[label].append(points_score)
+
+            # check overlapping area between different label masks
+            self._inspect_overlapping_areas(predicted_masks, used_points)
+            total_results.append([predicted_masks, used_points])
+        return total_results
+        
+    def forward(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward function."""
+        kwargs: dict[str, Any] = {}
+        if self.training:
+            fn = self.learn
+        else:
+            fn = self.infer
+            kwargs.update({
+                "reference_feats": self.reference_feats,
+                "used_indices": self.used_indices,
+            })
+
+        if self.async_inference:
+            log.warning(
+                (
+                    "Async inference is not supported for visual prompting models yet. "
+                    "Running synchronous inference instead.",
+                ),
+            )
+            
+        return self._customize_outputs(fn(inputs, **kwargs), inputs)
+
+    def _customize_inputs(
+        self,
+        entity: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> tuple[list[np.ndarray], list[dict[str, Any]], list[list[dict[str, Any]]]]:
+        """Customize OTX input batch data entity."""
+        images: list[np.ndarray] = []
+        metas: list[dict[str, Any]] = []
+        processed_prompts: list[list[dict[str, Any]]] = []
+        for image, prompts, label, imgs_info in zip(
+            entity.images,
+            entity.prompts,
+            entity.labels,
+            entity.imgs_info,
+        ):
+            # preprocess image encoder inputs
+            numpy_image = image.cpu().numpy().transpose(1, 2, 0)
+            processed_image, meta = self.model["image_encoder"].preprocess(numpy_image)
+            images.append(processed_image)
+            metas.append(meta)
+
+            if self.training:
+                # preprocess decoder inputs
+                processed_prompts.append(self.model["decoder"].preprocess(
+                    {
+                        "prompts": prompts,
+                        "labels": label.cpu().numpy(),
+                        "orig_size": imgs_info.ori_shape,
+                    },
+                ))
+        return images, metas, processed_prompts
+
+    def _customize_outputs(
+        self,
+        outputs: Any,  # noqa: ANN401
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Customize OTX output batch data entity if needed for model."""
+        if self.training:
+            # TODO (sungchul): check if it is needed for reference features
+            return None
+        else:
+            masks: list[tv_tensors.Mask] = []
+            prompts: list[Points] = []
+            scores: list[torch.Tensor] = []
+            labels: list[torch.LongTensor] = []            
+            for output in outputs:
+                predicted_masks, used_points = output
+                for label, predicted_mask in predicted_masks.items():
+                    if len(predicted_mask) == 0:
+                        continue
+                    masks.append(tv_tensors.Mask(torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0), dtype=torch.float32))
+                    prompts.append(
+                        Points(
+                            torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
+                            canvas_size=inputs.imgs_info[0].ori_shape,
+                            dtype=torch.float32,
+                        ),
+                    )
+                    scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0))
+                    labels.append(torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0))
+
+        return ZeroShotVisualPromptingBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            prompts=prompts,
+            masks=masks,
+            polygons=[],
+            labels=labels,
+        )
+        
+    def _predict_masks(
+        self,
+        inputs: dict[str, np.ndarray],
+        original_size: np.ndarray,
+        is_cascade: bool = False,
+    ) -> dict[str, np.ndarray]:
+        """Process function of OpenVINO Visual Prompting Inferencer."""
+        masks: np.ndarray
+        logits: np.ndarray
+        scores: np.ndarray
+        num_iter = 3 if is_cascade else 1
+        for i in range(num_iter):
+            if i == 0:
+                # First-step prediction
+                mask_input = np.zeros(
+                    (1, 1, *map(lambda x: x * 4, inputs["image_embeddings"].shape[2:])), dtype=np.float32
+                )
+                has_mask_input = self.has_mask_inputs[0]
+
+            elif i == 1:
+                # Cascaded Post-refinement-1
+                mask_input, masks = self._decide_masks(masks, logits, scores, is_single=True)  # noqa: F821
+                if masks.sum() == 0:
+                    return {"upscaled_masks": masks}
+
+                has_mask_input = self.has_mask_inputs[1]
+
+            elif i == 2:
+                # Cascaded Post-refinement-2
+                mask_input, masks = self._decide_masks(masks, logits, scores)  # noqa: F821
+                if masks.sum() == 0:
+                    return {"upscaled_masks": masks}
+
+                has_mask_input = self.has_mask_inputs[1]
+                y, x = np.nonzero(masks)
+                box_coords = self.model["decoder"]._apply_coords(
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size[0]
+                )
+                inputs.update(
+                    {
+                        "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
+                        "point_labels": np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1),
+                    }
+                )
+
+            inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
+            prediction = self.model["decoder"].infer_sync(inputs)
+            upscaled_masks, scores, logits = (
+                prediction["upscaled_masks"],
+                prediction["iou_predictions"],
+                prediction["low_res_masks"],
+            )
+            masks = upscaled_masks > self.model["decoder"].mask_threshold
+
+        _, masks = self._decide_masks(masks, logits, scores)
+        return {"upscaled_masks": masks}
+    
+    def _decide_masks(
+        self, masks: np.ndarray, logits: np.ndarray, scores: np.ndarray, is_single: bool = False
+    ) -> tuple[np.ndarray, ...]:
+        """Post-process logits for resized masks according to best index based on scores."""
+        if is_single:
+            best_idx = 0
+        else:
+            # skip the first index components
+            scores, masks, logits = map(lambda x: x[:, 1:], (scores, masks, logits))
+
+            # filter zero masks
+            while len(scores[0]) > 0 and masks[0, (best_idx := np.argmax(scores[0]))].sum() == 0:
+                scores, masks, logits = map(
+                    lambda x: np.concatenate((x[:, :best_idx], x[:, best_idx + 1 :]), axis=1), (scores, masks, logits)
+                )
+
+            if len(scores[0]) == 0:
+                # all predicted masks were zero masks, ignore them.
+                return None, np.zeros(masks.shape[-2:])
+
+            best_idx = np.argmax(scores[0])
+        return logits[:, [best_idx]], masks[0, best_idx]
+        
+    def _get_prompt_candidates(
+        self,
+        image_embeddings: np.ndarray,
+        reference_feats: np.ndarray,
+        used_indices: np.ndarray,
+        original_shape: np.ndarray,
+        threshold: float = 0.,
+        num_bg_points: int = 1,
+        default_threshold_target: float = 0.65,
+        image_size: int = 1024,
+        downsizing: int = 64,
+    ) -> tuple[dict[int, np.ndarray], dict[int, np.ndarray]]:
+        """Get prompt candidates."""
+        target_feat = image_embeddings.squeeze()
+        c_feat, h_feat, w_feat = target_feat.shape
+        target_feat = target_feat / np.linalg.norm(target_feat, axis=0, keepdims=True)
+        target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
+        
+        total_points_scores: dict[int, np.ndarray] = {}
+        total_bg_coords: dict[int, np.ndarray] = {}
+        for label in used_indices:
+            sim = reference_feats[label] @ target_feat
+            sim = sim.reshape(h_feat, w_feat)
+            sim = self._resize_to_original_shape(sim, image_size, original_shape)
+
+            threshold = (threshold == 0) * default_threshold_target + threshold
+            points_scores, bg_coords = self._point_selection(
+                mask_sim=sim,
+                original_shape=original_shape,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
+                image_size=image_size,
+                downsizing=downsizing,
+            )
+            
+            if points_scores is not None:
+                total_points_scores[label] = points_scores
+                total_bg_coords[label] = bg_coords
+        return total_points_scores, total_bg_coords
+
+    def _point_selection(
+        self,
+        mask_sim: np.ndarray,
+        original_shape: np.ndarray,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
+        image_size: int = 1024,
+        downsizing: int = 64,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Select point used as point prompts."""
+        _, w_sim = mask_sim.shape
+
+        # Top-first point selection
+        point_coords = np.where(mask_sim > threshold)
+        fg_coords_scores = np.stack(point_coords[::-1] + (mask_sim[point_coords],), axis=0).T
+
+        ## skip if there is no point coords
+        if len(fg_coords_scores) == 0:
+            return None, None
+
+        ratio = image_size / original_shape.max()
+        width = (original_shape[1] * ratio).astype(np.int64)
+        n_w = width // downsizing
+
+        ## get grid numbers
+        idx_grid = fg_coords_scores[:, 1] * ratio // downsizing * n_w + fg_coords_scores[:, 0] * ratio // downsizing
+        idx_grid_unique = np.unique(idx_grid.astype(np.int64))
+
+        ## get matched indices
+        matched_matrix = np.expand_dims(idx_grid, axis=-1) == idx_grid_unique  # (totalN, uniqueN)
+
+        ## sample fg_coords_scores matched by matched_matrix
+        matched_grid = np.expand_dims(fg_coords_scores, axis=1) * np.expand_dims(matched_matrix, axis=-1)
+
+        ## sample the highest score one of the samples that are in the same grid
+        matched_indices = self._topk_numpy(matched_grid[...,-1], k=1, axis=0, largest=True)[1][0].astype(np.int64)
+        points_scores = matched_grid[matched_indices].diagonal().T
+
+        ## sort by the highest score
+        sorted_points_scores_indices = np.flip(np.argsort(points_scores[:, -1]), axis=-1).astype(np.int64)
+        points_scores = points_scores[sorted_points_scores_indices]
+        
+        # Top-last point selection
+        bg_indices = self._topk_numpy(mask_sim.flatten(), num_bg_points, largest=False)[1]
+        bg_x = np.expand_dims(bg_indices // w_sim, axis=0)
+        bg_y = bg_indices - bg_x * w_sim
+        bg_coords = np.concatenate((bg_y, bg_x), axis=0).transpose(1, 0)
+        bg_coords = bg_coords.astype(np.float32)
+
+        return points_scores, bg_coords
+            
+    def _resize_to_original_shape(self, masks: np.ndarray, image_size: int, original_shape: np.ndarray) -> np.ndarray:
+        """Resize feature size to original shape."""
+        # resize feature size to input size
+        masks = cv2.resize(masks, (image_size, image_size), interpolation=cv2.INTER_LINEAR)
+
+        # remove pad
+        prepadded_size = self._get_prepadded_size(original_shape, image_size)
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
+
+        # resize unpadded one to original shape
+        original_shape = original_shape.astype(np.int64)
+        h, w = original_shape[0], original_shape[1]
+        return cv2.resize(masks, (w, h), interpolation=cv2.INTER_LINEAR)
+
+    def _get_prepadded_size(self, original_shape: int, image_size: int) -> np.ndarray:
+        """Get pre-padded size."""
+        scale = image_size / np.max(original_shape)
+        transformed_size = scale * original_shape
+        return np.floor(transformed_size + 0.5).astype(np.int64)
+    
+    def _inspect_overlapping_areas(
+        self,
+        predicted_masks: dict[int, list[np.ndarray]],
+        used_points: dict[int, list[np.ndarray]],
+        threshold_iou: float = 0.8,
+    ):
+        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
+            assert mask1.ndim == 2 and mask2.ndim == 2
+            intersection = np.logical_and(mask1, mask2).sum().item()
+            union = np.logical_or(mask1, mask2).sum().item()
+
+            # Avoid division by zero
+            if union == 0:
+                return 0.0
+            iou = intersection / union
+            return iou
+
+        for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
+            if other_label <= label:
+                continue
+
+            overlapped_label = []
+            overlapped_other_label = []
+            for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
+                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        overlapped_other_label.append(jm)
+                    else:
+                        overlapped_label.append(im)
+
+            for im in sorted(list(set(overlapped_label)), reverse=True):
+                masks.pop(im)
+                used_points[label].pop(im)
+
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
+                other_masks.pop(jm)
+                used_points[other_label].pop(jm)
+
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+        """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
+            return stamps[0]
+        return None
+    
+    def _load_latest_reference_info(self, *args, **kwargs) -> bool:
+        """Load latest reference info to be used."""
+        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
+            latest_reference_info: str = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pickle")
+            reference_info: dict[str, np.ndarray] = pickle.load(open(latest_reference_info, "rb"))
+            self.reference_feats: np.ndarray = reference_info.get("reference_feats", np.zeros((0, 1, self.model["decoder"].embed_dim)))
+            self.used_indices: np.ndarray = reference_info.get("used_indices", np.array([], dtype=np.int64))
+            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            return True
+        return False
+    
+    def _topk_numpy(self, x: np.ndarray, k: int, axis: int = -1, largest: bool = True) -> np.ndarray:
+        """Top-k function for numpy same with torch.topk."""
+        if largest:
+            k = -k
+            indices = range(k, 0)
+        else:
+            indices = range(0, k)
+        partitioned_ind = np.argpartition(x, k, axis=axis).take(indices=indices, axis=axis)
+        partitioned_scores = np.take_along_axis(x, partitioned_ind, axis=axis)
+        sorted_trunc_ind = np.flip(np.argsort(partitioned_scores, axis=axis), axis=axis)
+        ind = np.take_along_axis(partitioned_ind, sorted_trunc_ind, axis=axis)
+        scores = np.take_along_axis(partitioned_scores, sorted_trunc_ind, axis=axis)
+        return scores, ind

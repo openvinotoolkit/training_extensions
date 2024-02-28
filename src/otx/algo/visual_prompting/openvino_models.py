@@ -109,6 +109,7 @@ class Decoder(SegmentationModel):
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         parameters.update({"mask_threshold": NumericalValue(value_type=float, default_value=0.0, min=0, max=1)})
+        parameters.update({"embed_dim": NumericalValue(value_type=int, default_value=256, min=0, max=512)})
         parameters.update({"embedded_processing": BooleanValue(default_value=True)})
         return parameters
 
@@ -119,7 +120,7 @@ class Decoder(SegmentationModel):
         """Preprocess prompts."""
         processed_prompts: list[dict[str, Any]] = []
         idx: int = 0
-        for prompt_name in ["bboxes", "points"]:
+        for prompt_name in ["bboxes", "points", "prompts"]:
             prompts = inputs.get(prompt_name, None)
             if prompts is None:
                 continue
@@ -145,7 +146,7 @@ class Decoder(SegmentationModel):
                 idx += 1
         return processed_prompts
 
-    def _apply_coords(self, coords: np.ndarray, orig_size: list[int] | tuple[int, int]) -> np.ndarray:
+    def _apply_coords(self, coords: np.ndarray, orig_size: np.ndarray | list[int] | tuple[int, int]) -> np.ndarray:
         """Process coords according to preprocessed image size using image meta."""
         old_h, old_w = orig_size
         new_h, new_w = self._get_preprocess_shape(old_h, old_w, self.image_size)
