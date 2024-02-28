@@ -200,7 +200,7 @@ class Benchmark:
             if len(column) == 0:
                 continue
             if criterion.summary == "mean":
-                value = column[(len(column) - 1) :].mean()  # Drop 1st epoch if possible
+                value = column[min(1, len(column) - 1) :].mean()  # Drop 1st epoch if possible
             elif criterion.summary == "max":
                 value = column.max()
             elif criterion.summary == "min":
