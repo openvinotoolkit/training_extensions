@@ -93,7 +93,7 @@ class OTXDetectionModel(
                 ("model_info", "iou_threshold"): str(0.5),
             },
         )
-        parameters["additional_output_names"] = ("saliency_map") if self.explain_mode else ()
+        parameters["additional_output_names"] = ("saliency_map",) if self.explain_mode else ()
         return parameters
 
 

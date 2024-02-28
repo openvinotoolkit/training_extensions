@@ -5,15 +5,21 @@
 
 from __future__ import annotations
 
+import types
 from copy import copy
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 import torch
+from mmengine.structures.instance_data import InstanceData
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.base import (
+    OTXBatchLossEntity,
+    T_OTXBatchDataEntity,
+    T_OTXBatchPredEntity,
+)
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
     InstanceSegBatchPredEntity,
@@ -28,6 +34,7 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from mmdet.structures import SampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import nn
@@ -95,6 +102,7 @@ class OTXInstanceSegModel(
                 ("model_info", "iou_threshold"): str(0.5),
             },
         )
+        parameters["additional_output_names"] = ("saliency_map", "feature_vector") if self.explain_mode else ()
 
         # Instance segmentation needs to add empty label
         all_labels = "otx_empty_lbl "
@@ -111,22 +119,93 @@ class OTXInstanceSegModel(
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI hook."""
 
-    def register_explain_hook(self) -> None:
-        """Register explain hook at the model backbone output."""
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        """Model forward function."""
+        self.model.explain_fn = self.get_explain_fn()
 
-        self.explain_hook = MaskRCNNRecordingForwardHook.create_and_register_hook(
-            num_classes=self.num_classes,
+        # If customize_inputs is overridden
+        outputs = (
+            self._forward_explain_inst_seg(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != ExplainableOTXInstanceSegModel._customize_inputs
+            else self.model(inputs)
         )
 
-    def remove_explain_hook_handle(self) -> None:
-        """Removes explain hook from the model."""
-        if self.explain_hook.handle is not None:
-            self.explain_hook.handle.remove()
+        return (
+            self._customize_outputs(outputs, inputs)
+            if self._customize_outputs != ExplainableOTXInstanceSegModel._customize_outputs
+            else outputs
+        )
 
-    def reset_explain_hook(self) -> None:
-        """Clear all history of explain records."""
-        self.explain_hook.reset()
+    @staticmethod
+    def _forward_explain_inst_seg(self, inputs: torch.Tensor, data_samples: SampleList, _: str) -> dict:
+        """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
+        # Workaround to remove grads for model parameters, since after class patching
+        # convolutions are failing since thay can't process gradients
+        for param in self.parameters():
+            param.requires_grad = False
+
+        x = self.extract_feat(inputs)
+        rpn_results_list = self.rpn_head.predict(x, data_samples, rescale=False)
+        results_list = self.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
+
+        if isinstance(results_list, list) and isinstance(results_list[0], InstanceData):  # rewrite
+            # Predict case, consists of InstanceData
+            predictions = self.add_pred_to_datasample(data_samples, results_list)
+
+            saliency_map = self.explain_fn(data_samples[0].pred_instances)
+            feature_vector = []
+
+        elif isinstance(results_list, tuple) and isinstance(results_list[0], torch.Tensor):  # rewrite
+            # Export case, consists of tensors
+            predictions = results_list
+
+            saliency_map = torch.empty(1, dtype=torch.uint8)  # .cpu()
+            feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in x]
+            feature_vector = torch.cat(feature_vector, 1)  # .cpu()
+
+        return {
+            "predictions": predictions,
+            "saliency_map": saliency_map,
+            "feature_vector": feature_vector,
+        }
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
+        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+
+        explainer = MaskRCNNRecordingForwardHook.create_and_register_hook(
+            num_classes=self.num_classes,
+        )
+        return explainer.func
+
+    def _reset_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        self.model.explain_fn = self.get_explain_fn()
+        forward_with_explain = self._forward_explain_inst_seg
+
+        self.original_model_forward = self.model.forward
+
+        func_type = types.MethodType
+        # Patch class method
+        model_class = type(self.model)
+        model_class.forward = func_type(forward_with_explain, self.model)
+
+    def _restore_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        if not self.original_model_forward:
+            msg = "Original model forward was not saved."
+            raise RuntimeError(msg)
+
+        func_type = types.MethodType
+        self.model.forward = func_type(self.original_model_forward, self.model)
+        self.original_model_forward = None
 
 
 class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
@@ -248,7 +327,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         labels: list[torch.LongTensor] = []
         masks: list[tv_tensors.Mask] = []
 
-        for output in outputs:
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for output in predictions:
             if not isinstance(output, DetDataSample):
                 raise TypeError(output)
 
@@ -267,16 +347,37 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             masks.append(output_masks)
             labels.append(output.pred_instances.labels)
 
-        return InstanceSegBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=scores,
-            bboxes=bboxes,
-            masks=masks,
-            polygons=[],
-            labels=labels,
-        )
+            if self.explain_mode:
+                if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                    msg = "No saliency maps in the model output."
+                    raise ValueError(msg)
+
+                saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+                feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
+
+                return InstanceSegBatchPredEntityWithXAI(
+                    batch_size=len(outputs),
+                    images=inputs.images,
+                    imgs_info=inputs.imgs_info,
+                    scores=scores,
+                    bboxes=bboxes,
+                    masks=masks,
+                    polygons=[],
+                    labels=labels,
+                    saliency_maps=list(saliency_maps),
+                    feature_vectors=list(feature_vectors),
+                )
+
+            return InstanceSegBatchPredEntity(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                masks=masks,
+                polygons=[],
+                labels=labels,
+            )
 
     @property
     def _exporter(self) -> OTXModelExporter:
