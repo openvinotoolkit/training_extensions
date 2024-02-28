@@ -13,6 +13,7 @@ from pathlib import Path
 from itertools import product
 from typing import TYPE_CHECKING, Any, Literal
 from collections import defaultdict
+from copy import deepcopy
 
 import torch
 import cv2
@@ -336,14 +337,77 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         root_reference_info: str = "vpm_zsl_reference_infos",
+        save_outputs: bool = True,
     ) -> None:
         super().__init__(num_classes, model_name, model_type, async_inference, max_num_requests, use_throughput_mode, model_api_configuration)
         self.root_reference_info = root_reference_info
+        self.save_outputs = save_outputs
+        
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
         
-    def learn(self, *args, **kwrags):
+        self.reference_feats: np.ndarray | None = None
+        self.used_indices: np.ndarray | None = None
+        
+    def learn(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reset_feat: bool = False,
+        default_threshold_reference: float = 0.3,
+    ):
         """`Learn` for reference features."""
+        ref_masks: np.ndarray
+
+        if reset_feat or self.reference_feats is None:
+            self.initialize_reference_info()
+
+        images, metas, processed_prompts = self._customize_inputs(inputs)
+        largest_label: int = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
+        self.expand_reference_info(largest_label)
+
+        reference_masks: list[np.ndarray] = []
+        for image, meta, prompts in zip(images, metas, processed_prompts):
+            original_shape = np.array(meta["original_shape"][:2])
+            
+            # forward image encoder
+            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            processed_embedding = image_embeddings["image_embeddings"].squeeze().transpose(1, 2, 0)
+
+            # get reference masks
+            ref_masks: np.ndarray = np.zeros((largest_label + 1, *original_shape), dtype=np.uint8)
+            for label, input_prompts in prompts.items():
+                ref_mask: np.ndarray = np.zeros(original_shape, dtype=np.uint8)
+                for inputs_decoder in input_prompts:
+                    label = inputs_decoder.pop("label")
+                    if "point_coords" in inputs_decoder:
+                        # bboxes and points
+                        inputs_decoder.update(image_embeddings)
+                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=False)
+                        masks = prediction["upscaled_masks"]
+                    else:
+                        log.warning("annotation and polygon will be supported.")
+                        continue
+                    ref_mask[masks] += 1
+                ref_mask = np.clip(ref_mask, 0, 1)
+                
+                ref_feat: np.ndarray | None = None
+                cur_default_threshold_reference = deepcopy(default_threshold_reference)
+                while ref_feat is None:
+                    log.info(f"[*] default_threshold_reference : {cur_default_threshold_reference:.4f}")
+                    ref_feat = self._generate_masked_features(
+                        feats=processed_embedding,
+                        masks=ref_mask,
+                        threshold_mask=cur_default_threshold_reference,
+                        image_size=self.model["image_encoder"].image_size
+                    )
+                    cur_default_threshold_reference -= 0.05
+                    
+                self.reference_feats[label] = ref_feat
+                self.used_indices = np.concatenate((self.used_indices, label))
+                ref_masks[label] = ref_mask
+            reference_masks.append(ref_masks)
+        self.used_indices = np.unique(self.used_indices)
+        return {"reference_feats": self.reference_feats, "used_indices": self.used_indices}, reference_masks
     
     def infer(
         self,
@@ -351,6 +415,11 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
         is_cascade: bool = False,
+        threshold: float = 0.,
+        num_bg_points: int = 1,
+        default_threshold_target: float = 0.65,
+        image_size: int = 1024,
+        downsizing: int = 64,
     ) -> list[list[defaultdict[list]]]:
         """`Infer` for target predictions."""
         images, metas, _ = self._customize_inputs(inputs)
@@ -363,7 +432,15 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             
             # get point candidates
             total_points_scores, total_bg_coords = self._get_prompt_candidates(
-                image_embeddings["image_embeddings"], reference_feats, used_indices, original_shape
+                image_embeddings=image_embeddings["image_embeddings"],
+                reference_feats=reference_feats,
+                used_indices=used_indices,
+                original_shape=original_shape,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
+                default_threshold_target=default_threshold_target,
+                image_size=image_size,
+                downsizing=downsizing,
             )
             
             predicted_masks: defaultdict[list] = defaultdict(list)
@@ -452,15 +529,28 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             metas.append(meta)
 
             if self.training:
+                points: list[np.ndarray] = []
+                bboxes: list[np.ndarray] = []
+                labels: dict[str, list[int]] = defaultdict(list)
+                for prompt in prompts:
+                    if isinstance(prompt, tv_tensors.BoundingBoxes):
+                        bboxes.append(prompt.cpu().numpy())
+                        labels["bboxes"].append(label.cpu().numpy())
+                    elif isinstance(prompt, Points):
+                        points.append(prompt.cpu().numpy())
+                        labels["points"].append(label.cpu().numpy())
+                    
                 # preprocess decoder inputs
                 processed_prompts.append(self.model["decoder"].preprocess(
                     {
-                        "prompts": prompts,
-                        "labels": label.cpu().numpy(),
+                        "bboxes": bboxes,
+                        "points": points,
+                        "labels": labels["bboxes"] + labels["points"],
                         "orig_size": imgs_info.ori_shape,
                     },
                 ))
-        return images, metas, processed_prompts
+        processed_prompts_w_labels = self._gather_prompts_with_labels(processed_prompts)
+        return images, metas, processed_prompts_w_labels
 
     def _customize_outputs(
         self,
@@ -469,28 +559,27 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
-            # TODO (sungchul): check if it is needed for reference features
-            return None
-        else:
-            masks: list[tv_tensors.Mask] = []
-            prompts: list[Points] = []
-            scores: list[torch.Tensor] = []
-            labels: list[torch.LongTensor] = []            
-            for output in outputs:
-                predicted_masks, used_points = output
-                for label, predicted_mask in predicted_masks.items():
-                    if len(predicted_mask) == 0:
-                        continue
-                    masks.append(tv_tensors.Mask(torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0), dtype=torch.float32))
-                    prompts.append(
-                        Points(
-                            torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
-                            canvas_size=inputs.imgs_info[0].ori_shape,
-                            dtype=torch.float32,
-                        ),
-                    )
-                    scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0))
-                    labels.append(torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0))
+            return outputs
+
+        masks: list[tv_tensors.Mask] = []
+        prompts: list[Points] = []
+        scores: list[torch.Tensor] = []
+        labels: list[torch.LongTensor] = []            
+        for output in outputs:
+            predicted_masks, used_points = output
+            for label, predicted_mask in predicted_masks.items():
+                if len(predicted_mask) == 0:
+                    continue
+                masks.append(tv_tensors.Mask(torch.stack([torch.as_tensor(m) for m in predicted_mask], dim=0), dtype=torch.float32))
+                prompts.append(
+                    Points(
+                        torch.stack([torch.as_tensor(p[:2]) for p in used_points[label]], dim=0),
+                        canvas_size=inputs.imgs_info[0].ori_shape,
+                        dtype=torch.float32,
+                    ),
+                )
+                scores.append(torch.stack([torch.as_tensor(p[2]) for p in used_points[label]], dim=0))
+                labels.append(torch.stack([torch.LongTensor([label]) for _ in range(len(scores[-1]))], dim=0))
 
         return ZeroShotVisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -503,6 +592,22 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             labels=labels,
         )
         
+    ######################################
+    #             Preprocess             #
+    ######################################
+    def _gather_prompts_with_labels(self, batch_prompts: list[list[dict[str, Any]]]) -> list[dict[int, list[np.ndarray]]]:
+        """Gather prompts according to labels."""
+        total_processed_prompts: list[dict[int, list[np.ndarray]]] = []
+        for prompts in batch_prompts:
+            processed_prompts: defaultdict[int, list[np.ndarray]] = defaultdict(list)
+            for prompt in prompts:
+                processed_prompts[int(prompt["label"])].append(prompt)
+            total_processed_prompts.append(dict(sorted(processed_prompts.items(), key=lambda x: x)))
+        return total_processed_prompts
+    
+    ######################################
+    #               Common               #
+    ######################################
     def _predict_masks(
         self,
         inputs: dict[str, np.ndarray],
@@ -582,7 +687,95 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
             best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
+    
+    ######################################
+    #               Learn                #
+    ######################################
+    def initialize_reference_info(self) -> None:
+        """Initialize reference information."""
+        self.reference_feats: np.ndarray = np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32)
+        self.used_indices: np.ndarray = np.array([], dtype=np.int64)
         
+    def expand_reference_info(self, new_largest_label: int) -> None:
+        """Expand reference info dimensions if newly given processed prompts have more lables."""            
+        if new_largest_label > (cur_largest_label := len(self.reference_feats) - 1):
+            diff = new_largest_label - cur_largest_label
+            self.reference_feats = np.pad(self.reference_feats, ((0, diff), (0, 0), (0, 0)), constant_values=0.0)
+
+    def _generate_masked_features(
+        self,
+        feats: np.ndarray,
+        masks: np.ndarray,
+        threshold_mask: float,
+        image_size: int = 1024,
+    ) -> tuple[np.ndarray, ...]:
+        """Generate masked features.
+
+        Args:
+            feats (np.ndarray): Raw reference features. It will be filtered with masks.
+            masks (np.ndarray): Reference masks used to filter features.
+            threshold_mask (float): Threshold to control masked region.
+            image_size (int): Input image size.
+
+        Returns:
+            (np.ndarray): Masked features.
+        """
+        target_shape = image_size / max(masks.shape) * np.array(masks.shape)
+        target_shape = target_shape[::-1].astype(np.int32)
+
+        # Post-process masks
+        masks = cv2.resize(masks, target_shape, interpolation=cv2.INTER_LINEAR)
+        masks = self._pad_to_square(masks, image_size)
+        masks = cv2.resize(masks, feats.shape[:2][::-1], interpolation=cv2.INTER_LINEAR)
+
+        # Target feature extraction
+        if (masks > threshold_mask).sum() == 0:
+            # (for stability) there is no area to be extracted
+            return None
+
+        masked_feat = feats[masks > threshold_mask]
+        masked_feat = masked_feat.mean(0)[None]
+        masked_feat = masked_feat / np.linalg.norm(masked_feat, axis=-1, keepdims=True)
+
+        return masked_feat
+    
+    def _pad_to_square(self, x: np.ndarray, image_size: int = 1024) -> np.ndarray:
+        """Pad to a square input.
+
+        Args:
+            x (np.ndarray): Mask to be padded.
+
+        Returns:
+            (np.ndarray): Padded mask.
+        """
+        h, w = x.shape[-2:]
+        padh = image_size - h
+        padw = image_size - w
+        x = np.pad(x, ((0, padh), (0, padw)), constant_values=0.0)
+        return x
+    
+    ######################################
+    #               Infer                #
+    ######################################
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
+        """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
+            return stamps[0]
+        return None
+    
+    def _load_latest_reference_info(self, *args, **kwargs) -> bool:
+        """Load latest reference info to be used."""
+        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
+            latest_reference_info: str = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pickle")
+            reference_info: dict[str, np.ndarray] = pickle.load(open(latest_reference_info, "rb"))
+            self.reference_feats: np.ndarray = reference_info.get("reference_feats", np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32))
+            self.used_indices: np.ndarray = reference_info.get("used_indices", np.array([], dtype=np.int64))
+            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            return True
+        return False
+
     def _get_prompt_candidates(
         self,
         image_embeddings: np.ndarray,
@@ -731,25 +924,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             for jm in sorted(list(set(overlapped_other_label)), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
-
-    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> str | None:
-        """Find latest reference info to be used."""
-        if not os.path.isdir(root):
-            return None
-        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
-            return stamps[0]
-        return None
-    
-    def _load_latest_reference_info(self, *args, **kwargs) -> bool:
-        """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info: str = os.path.join(self.root_reference_info, latest_stamp, "reference_info.pickle")
-            reference_info: dict[str, np.ndarray] = pickle.load(open(latest_reference_info, "rb"))
-            self.reference_feats: np.ndarray = reference_info.get("reference_feats", np.zeros((0, 1, self.model["decoder"].embed_dim)))
-            self.used_indices: np.ndarray = reference_info.get("used_indices", np.array([], dtype=np.int64))
-            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
-            return True
-        return False
     
     def _topk_numpy(self, x: np.ndarray, k: int, axis: int = -1, largest: bool = True) -> np.ndarray:
         """Top-k function for numpy same with torch.topk."""

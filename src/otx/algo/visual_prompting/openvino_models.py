@@ -120,7 +120,7 @@ class Decoder(SegmentationModel):
         """Preprocess prompts."""
         processed_prompts: list[dict[str, Any]] = []
         idx: int = 0
-        for prompt_name in ["bboxes", "points", "prompts"]:
+        for prompt_name in ["bboxes", "points"]:
             prompts = inputs.get(prompt_name, None)
             if prompts is None:
                 continue

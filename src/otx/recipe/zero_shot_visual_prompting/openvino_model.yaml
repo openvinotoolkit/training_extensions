@@ -7,6 +7,7 @@ model:
     async_inference: False
     use_throughput_mode: True
     root_reference_info: vpm_zsl_reference_infos
+    save_outputs: True
 
 engine:
   task: ZERO_SHOT_VISUAL_PROMPTING
@@ -16,6 +17,8 @@ callback_monitor: step
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
+  max_epochs: 1
+  limit_val_batches: 0
   data:
     task: ZERO_SHOT_VISUAL_PROMPTING
     config:

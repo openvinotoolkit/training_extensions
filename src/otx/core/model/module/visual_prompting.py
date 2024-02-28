@@ -24,7 +24,7 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
+from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel, OTXZeroShotVisualPromptingModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -262,7 +262,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         
     def on_train_start(self) -> None:
         """Initialize reference infos before learn."""
-        self.model.model.initialize_reference_info()
+        self.model.initialize_reference_info()
         
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
@@ -293,20 +293,23 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
 
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
-        self.model.model.used_indices = self.model.model.used_indices.unique()
-        if self.model.model.save_outputs:
+        if self.model.save_outputs:
             reference_info = {
-                "reference_feats": self.model.model.reference_feats,
-                "used_indices": self.model.model.used_indices,
+                "reference_feats": self.model.reference_feats,
+                "used_indices": self.model.used_indices,
             }
             # save reference info
-            path_reference_info = os.path.join(self.model.model.root_reference_info, time.strftime("%Y%m%d_%H%M%S"), "reference_info.pt")
+            path_reference_info = os.path.join(self.model.root_reference_info, time.strftime("%Y%m%d_%H%M%S"), "reference_info.pt")
             os.makedirs(os.path.dirname(path_reference_info), exist_ok=True)
-            torch.save(reference_info, path_reference_info)
-            pickle.dump(
-                {k: v.numpy() for k, v in reference_info.items()},
-                open(path_reference_info.replace(".pt", ".pickle"), "wb"),
-            )
+            if isinstance(self.model, OTXZeroShotVisualPromptingModel):
+                torch.save(reference_info, path_reference_info)
+                pickle.dump(
+                    {k: v.numpy() for k, v in reference_info.items()},
+                    open(path_reference_info.replace(".pt", ".pickle"), "wb"),
+                )
+            else:
+                torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
+                pickle.dump(reference_info, open(path_reference_info.replace(".pt", ".pickle"), "wb"))
             log.info(f"Saved reference info at {path_reference_info}.")
 
     def on_validation_epoch_start(self) -> None:
