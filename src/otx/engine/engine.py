@@ -462,7 +462,7 @@ class Engine:
 
         self.model.explain_mode = explain
 
-        exported_model_path = self.model.export(
+        exported_model_path = lit_module.export(
             output_dir=Path(self.work_dir),
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
@@ -753,19 +753,38 @@ class Engine:
                                             It could be None at export, predict, etc.
 
         Returns:
-            OTXLitModule: The built LightningModule instance.
+            OTXLitModule | OTXModel: The built LightningModule instance.
         """
-        class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
-        module = __import__(class_module, fromlist=[class_name])
-        lightning_module = getattr(module, class_name)
+        if self.task in (
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ):
+            model = self._get_anomaly_model(model, optimizer, scheduler)
+        else:
+            class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
+            module = __import__(class_module, fromlist=[class_name])
+            lightning_module = getattr(module, class_name)
+            lightning_kwargs = {
+                "otx_model": model,
+                "optimizer": optimizer,
+                "scheduler": scheduler,
+                "torch_compile": False,
+            }
+            if metric:
+                lightning_kwargs["metric"] = metric
 
-        lightning_kwargs = {
-            "otx_model": model,
-            "optimizer": optimizer,
-            "scheduler": scheduler,
-            "torch_compile": False,
-        }
-        if metric:
-            lightning_kwargs["metric"] = metric
+            model = lightning_module(**lightning_kwargs)
+        return model
 
-        return lightning_module(**lightning_kwargs)
+    def _get_anomaly_model(
+        self,
+        model: OTXModel,
+        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
+    ) -> OTXModel:
+        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
+        model.task = self.task
+        model.optimizer = optimizer
+        model.scheduler = scheduler
+        return model
