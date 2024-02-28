@@ -117,7 +117,7 @@ class TestMultiClassCls(BaseTest):
             num_classes=2,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
             }
         )
         for idx in range(1, 4)
@@ -129,7 +129,7 @@ class TestMultiClassCls(BaseTest):
             num_classes=67,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
             }
         ),
         DatasetTestCase(
@@ -139,7 +139,7 @@ class TestMultiClassCls(BaseTest):
             num_classes=20,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMulticlassAccuracy",
+                "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
             }
         )
     ]
@@ -192,7 +192,7 @@ class TestMultilabelCls(BaseTest):
             num_classes=3,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
             }
         )
         for idx in range(1, 4)
@@ -204,7 +204,7 @@ class TestMultilabelCls(BaseTest):
             num_classes=68,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
             }
         ),
         DatasetTestCase(
@@ -214,7 +214,7 @@ class TestMultilabelCls(BaseTest):
             num_classes=21,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomMultilabelAccuracy",
+                "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
             }
         )
     ]

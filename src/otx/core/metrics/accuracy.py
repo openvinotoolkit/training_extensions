@@ -63,8 +63,8 @@ class NamedConfusionMatrix(ConfusionMatrix):
         return self.row_names
 
 
-class CustomAccuracy(Metric):
-    """Base Accuracy for the OTX classification tasks.
+class AccuracywithLabelGroup(Metric):
+    """Base accuracy class for the OTX classification tasks with lable group.
 
     It calculates the accuracy with the label_groups information, not class.
     It means that average will be applied to the results from the each label groups.
@@ -81,7 +81,7 @@ class CustomAccuracy(Metric):
 
     @property
     def label_info(self) -> LabelInfo:
-        """Get the member `CustomAccuracy` label information."""
+        """Get the member `AccuracywithLabelGroup` label information."""
         return self._label_info
 
     @label_info.setter
@@ -119,8 +119,8 @@ class CustomAccuracy(Metric):
         }
 
 
-class CustomMulticlassAccuracy(CustomAccuracy):
-    """Custom accuracy class for the multi-class classification.
+class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
+    """Accuracy class for the multi-class classification with label group.
 
     For the multi-class classification, the number of label_groups should be 1.
     So, the results always the same regardless of average method.
@@ -152,8 +152,8 @@ class CustomMulticlassAccuracy(CustomAccuracy):
         return conf_matrices
 
 
-class CustomMultilabelAccuracy(CustomAccuracy):
-    """Custom accuracy class for the multi-label classification.
+class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
+    """Accuracy class for the multi-label classification with label_group.
 
     For the multi-label classification, the number of label_groups should be the same with number of labels.
     All lable_group represents whether the label exist or not (binary classification).
@@ -184,8 +184,8 @@ class CustomMultilabelAccuracy(CustomAccuracy):
         return conf_matrices
 
 
-class CustomHlabelAccuracy(CustomAccuracy):
-    """Custom accuracy class for the hierarchical-label classification.
+class HlabelAccuracy(AccuracywithLabelGroup):
+    """Accuracy class for the hierarchical-label classification.
 
     H-label Classification is the combination version of multi-class and multi-label classification.
     It could have multiple heads for the multi-class classification to classify complex hierarchy architecture.

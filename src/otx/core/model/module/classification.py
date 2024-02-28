@@ -26,7 +26,7 @@ from otx.core.data.entity.classification import (
     MultilabelClsBatchPredEntity,
     MultilabelClsBatchPredEntityWithXAI,
 )
-from otx.core.metrics.accuracy import CustomAccuracy, MixedHLabelAccuracy
+from otx.core.metrics.accuracy import AccuracywithLabelGroup, MixedHLabelAccuracy
 from otx.core.model.entity.classification import OTXHlabelClsModel, OTXMulticlassClsModel, OTXMultilabelClsModel
 from otx.core.model.module.base import OTXLitModule
 
@@ -59,7 +59,7 @@ class OTXMulticlassClsLitModule(OTXLitModule):
     def configure_metric(self) -> None:
         """Configure the metric."""
         super().configure_metric()
-        if isinstance(self.metric, CustomAccuracy):
+        if isinstance(self.metric, AccuracywithLabelGroup):
             self.metric.label_info = self.model.label_info
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
@@ -158,7 +158,7 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             raise TypeError(msg)
 
         self.metric.to(self.device)
-        if isinstance(self.metric, CustomAccuracy):
+        if isinstance(self.metric, AccuracywithLabelGroup):
             self.metric.label_info = self.model.label_info
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
@@ -262,7 +262,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
             raise TypeError(msg)
 
         self.metric.to(self.device)
-        if isinstance(self.metric, CustomAccuracy):
+        if isinstance(self.metric, AccuracywithLabelGroup):
             self.metric.label_info = self.model.label_info
 
     def _set_hlabel_setup(self) -> None:

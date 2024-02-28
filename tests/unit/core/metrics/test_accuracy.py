@@ -10,9 +10,9 @@ from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.classification import HLabelData
 from otx.core.metrics.accuracy import (
     CustomHlabelAccuracy,
-    CustomMulticlassAccuracy,
-    CustomMultilabelAccuracy,
     MixedHLabelAccuracy,
+    MulticlassAccuracywithLabelGroup,
+    MultilabelAccuracywithLabelGroup,
 )
 
 
@@ -35,14 +35,14 @@ class TestAccuracy:
             torch.Tensor([1]),
             torch.Tensor([2]),
         ]
-        metric = CustomMulticlassAccuracy(average="MICRO")
+        metric = MulticlassAccuracywithLabelGroup(average="MICRO")
         metric.label_info = fxt_multiclass_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.800
 
-        metric = CustomMulticlassAccuracy(average="MACRO")
+        metric = MulticlassAccuracywithLabelGroup(average="MACRO")
         metric.label_info = fxt_multiclass_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
@@ -59,7 +59,7 @@ class TestAccuracy:
             torch.Tensor([0, 1, 1]),
             torch.Tensor([0, 1, 0]),
         ]
-        metric = CustomMultilabelAccuracy(average="MICRO")
+        metric = MultilabelAccuracywithLabelGroup(average="MICRO")
         metric.label_info = fxt_multilabel_labelinfo
         metric.update(preds, targets)
         result = metric.compute()
