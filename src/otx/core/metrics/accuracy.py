@@ -41,7 +41,7 @@ class NamedConfusionMatrix(nn.Module):
 
 class CustomAccuracy(Metric):
     """Base Accuracy for the OTX classification tasks.
-    
+
     It calculates the accuracy with the label_groups information, not class.
     It means that average will be applied to the results from the each label groups.
     """
@@ -97,7 +97,7 @@ class CustomAccuracy(Metric):
 
 class CustomMulticlassAccuracy(CustomAccuracy):
     """Custom accuracy class for the multi-class classification.
-    
+
     For the multi-class classification, the number of label_groups should be 1.
     So, the results always the same regardless of average method.
     """
@@ -130,7 +130,7 @@ class CustomMulticlassAccuracy(CustomAccuracy):
 
 class CustomMultilabelAccuracy(CustomAccuracy):
     """Custom accuracy class for the multi-label classification.
-    
+
     For the multi-label classification, the number of label_groups should be the same with number of labels.
     All lable_group represents whether the label exist or not (binary classification).
     """
@@ -162,7 +162,7 @@ class CustomMultilabelAccuracy(CustomAccuracy):
 
 class CustomHlabelAccuracy(CustomAccuracy):
     """Custom accuracy class for the hierarchical-label classification.
-    
+
     H-label Classification is the combination version of multi-class and multi-label classification.
     It could have multiple heads for the multi-class classification to classify complex hierarchy architecture.
     For the multi-label part, it's the same with the CusotmMultilabelAccuracy.
