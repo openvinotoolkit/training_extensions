@@ -267,7 +267,7 @@ class TestHlabelCls(BaseTest):
             num_classes=6,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomHlabelAccuracy",
+                "metric": "otx.core.metrics.accuracy.HlabelAccuracy",
             },
         )
         for idx in range(1, 4)
@@ -279,7 +279,7 @@ class TestHlabelCls(BaseTest):
             num_classes=102,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.accuracy.CustomHlabelAccuracy",
+                "metric": "otx.core.metrics.accuracy.HlabelAccuracy",
             },
         )
 
