@@ -17,12 +17,12 @@ RECIPE_LIST_ALL = pytest.RECIPE_LIST
 MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in recipe]
 MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe]
 MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
+MEAN_TORCH_OV_DIFF = 150
 
 
 @pytest.mark.parametrize(
     "recipe",
     MULTI_CLASS_CLS,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_forward_explain(
     recipe: str,
@@ -62,7 +62,6 @@ def test_forward_explain(
 @pytest.mark.parametrize(
     "recipe",
     MC_ML_CLS,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_predict_with_explain(
     recipe: str,
@@ -141,5 +140,6 @@ def test_predict_with_explain(
         for class_id in maps_torch[i]:
             assert class_id in maps_ov[i]
             assert (
-                np.mean(abs(maps_torch[i][class_id].astype(np.float32) - maps_ov[i][class_id].astype(np.float32))) < 150
+                np.mean(abs(maps_torch[i][class_id].astype(np.float32) - maps_ov[i][class_id].astype(np.float32)))
+                < MEAN_TORCH_OV_DIFF
             )
