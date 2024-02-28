@@ -12,7 +12,7 @@ import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
 from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.metrics.fmeasure import FMeasure
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.model.module.detection import OTXDetectionLitModule
 from torch.optim import Optimizer
@@ -20,8 +20,8 @@ from torch.optim import Optimizer
 
 class TestOTXLitModule:
     @pytest.fixture()
-    def mock_otx_model(self) -> OTXModel:
-        return create_autospec(OTXModel)
+    def mock_otx_model(self) -> OTXDetectionModel:
+        return create_autospec(OTXDetectionModel)
 
     @pytest.fixture()
     def mock_optimizer(self) -> Optimizer:
@@ -38,6 +38,7 @@ class TestOTXLitModule:
         mock_scheduler,
         mocker,
     ) -> None:
+        mock_otx_model.test_meta_info = {}
         module = OTXDetectionLitModule(
             otx_model=mock_otx_model,
             torch_compile=False,
@@ -55,7 +56,9 @@ class TestOTXLitModule:
         module.load_state_dict(mock_v1_ckpt)
 
         assert module.test_meta_info["best_confidence_threshold"] == 0.35
+        assert module.model.test_meta_info["best_confidence_threshold"] == 0.35
         assert module.test_meta_info["vary_confidence_threshold"] is False
+        assert module.model.test_meta_info["vary_confidence_threshold"] is False
 
         module.configure_metric()
         assert module.metric.best_confidence_threshold == 0.35
@@ -68,6 +71,7 @@ class TestOTXLitModule:
         mock_scheduler,
         mocker,
     ) -> None:
+        mock_otx_model.test_meta_info = {}
         module = OTXDetectionLitModule(
             otx_model=mock_otx_model,
             torch_compile=False,
@@ -85,7 +89,9 @@ class TestOTXLitModule:
         module.load_state_dict(mock_v2_ckpt)
 
         assert module.test_meta_info["best_confidence_threshold"] == 0.35
+        assert module.model.test_meta_info["best_confidence_threshold"] == 0.35
         assert module.test_meta_info["vary_confidence_threshold"] is False
+        assert module.model.test_meta_info["vary_confidence_threshold"] is False
 
         module.configure_metric()
         assert module.metric.best_confidence_threshold == 0.35

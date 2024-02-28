@@ -87,7 +87,8 @@ class OTXDetectionLitModule(OTXLitModule):
                 sync_dist=True,
                 prog_bar=True,
             )
-        self.hparams["confidence_threshold"] = meter.best_confidence_threshold
+        if hasattr(meter, "best_confidence_threshold"):
+            self.hparams["confidence_threshold"] = meter.best_confidence_threshold
 
     def validation_step(self, inputs: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
