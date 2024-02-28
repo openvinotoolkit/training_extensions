@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class SegMetaInfo(LabelInfo):
+class SegLabelInfo(LabelInfo):
     """Meta information of Semantic Segmentation."""
 
     def __init__(self, label_names: list[str], label_groups: list[list[str]]) -> None:
@@ -64,7 +64,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             image_color_channel,
             stack_images,
         )
-        self.label_info = SegMetaInfo(
+        self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
         )

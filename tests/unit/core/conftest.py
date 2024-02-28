@@ -4,7 +4,7 @@
 import pytest
 from otx.core.config import register_configs
 from otx.core.data.dataset.base import LabelInfo
-from otx.core.data.entity.classification import HLabelInfo
+from otx.core.data.entity.classification import HLabelData
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -38,8 +38,8 @@ def fxt_multilabel_labelinfo() -> LabelInfo:
 
 
 @pytest.fixture()
-def fxt_hlabel_multilabel_info() -> HLabelInfo:
-    return HLabelInfo(
+def fxt_hlabel_multilabel_info() -> HLabelData:
+    return HLabelData(
         num_multiclass_heads=3,
         num_multilabel_classes=3,
         head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},

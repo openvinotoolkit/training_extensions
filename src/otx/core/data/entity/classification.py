@@ -178,7 +178,7 @@ class MultilabelClsBatchPredEntityWithXAI(MultilabelClsBatchDataEntity, OTXBatch
 
 
 @dataclass
-class HLabelInfo:
+class HLabelData:
     """The label information represents the hierarchy.
 
     All params should be kept since they're also used at the Model API side.
@@ -244,8 +244,8 @@ class HLabelInfo:
     empty_multiclass_head_indices: list[int]
 
     @classmethod
-    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelInfo:
-        """Generate HLabelInfo from the Datumaro LabelCategories.
+    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelData:
+        """Generate HLabelData from the Datumaro LabelCategories.
 
         Args:
             dm_label_categories (LabelCategories): the label categories of datumaro.
@@ -321,7 +321,7 @@ class HLabelInfo:
             single_label_group_info["class_to_idx"],
         )
 
-        return HLabelInfo(
+        return HLabelData(
             num_multiclass_heads=exclusive_group_info["num_multiclass_heads"],
             num_multilabel_classes=single_label_group_info["num_multilabel_classes"],
             head_idx_to_logits_range=exclusive_group_info["head_idx_to_logits_range"],

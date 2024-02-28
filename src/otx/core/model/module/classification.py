@@ -13,12 +13,12 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.classification.accuracy import Accuracy
 
-from otx.core.data.dataset.classification import HLabelMetaInfo
+from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
     HlabelClsBatchPredEntityWithXAI,
-    HLabelInfo,
+    HLabelData,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MulticlassClsBatchPredEntityWithXAI,
@@ -238,7 +238,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        self.hlabel_info: HLabelInfo
+        self.hlabel_data: HLabelData
 
     def configure_metric(self) -> None:
         """Configure the metric."""
@@ -249,7 +249,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
                 if name in ["num_multiclass_heads", "num_multilabel_classes"]:
                     param_dict[name] = getattr(self.model, name)
                 elif name == "head_logits_info":
-                    param_dict[name] = self.hlabel_info.head_idx_to_logits_range
+                    param_dict[name] = self.hlabel_data.head_idx_to_logits_range
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
@@ -266,19 +266,19 @@ class OTXHlabelClsLitModule(OTXLitModule):
             self.metric.label_info = self.model.label_info
 
     def _set_hlabel_setup(self) -> None:
-        if not isinstance(self.label_info, HLabelMetaInfo):
-            msg = f"The type of self.label_info should be HLabelMetaInfo, got {type(self.label_info)}."
+        if not isinstance(self.label_info, HLabelInfo):
+            msg = f"The type of self.label_info should be HLabelInfo, got {type(self.label_info)}."
             raise TypeError(msg)
 
-        self.hlabel_info = self.label_info.hlabel_info
+        self.hlabel_data = self.label_info.hlabel_data
 
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
-        self.model.set_hlabel_info(self.hlabel_info)
+        self.model.set_hlabel_data(self.hlabel_data)
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.label_info.label_names)
-        self.num_multiclass_heads = self.hlabel_info.num_multiclass_heads
-        self.num_multilabel_classes = self.hlabel_info.num_multilabel_classes
+        self.num_multiclass_heads = self.hlabel_data.num_multiclass_heads
+        self.num_multilabel_classes = self.hlabel_data.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
     def _log_metrics(self, meter: Metric, key: str) -> None:

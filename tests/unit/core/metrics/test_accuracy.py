@@ -6,8 +6,8 @@
 import pytest
 import torch
 from otx.core.data.dataset.base import LabelInfo
-from otx.core.data.dataset.classification import HLabelMetaInfo
-from otx.core.data.entity.classification import HLabelInfo
+from otx.core.data.dataset.classification import HLabelInfo
+from otx.core.data.entity.classification import HLabelData
 from otx.core.metrics.accuracy import (
     CustomHlabelAccuracy,
     CustomMulticlassAccuracy,
@@ -66,7 +66,7 @@ class TestAccuracy:
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.667
 
-    def test_hlabel_accuracy(self, fxt_hlabel_multilabel_info: HLabelInfo) -> None:
+    def test_hlabel_accuracy(self, fxt_hlabel_multilabel_info: HLabelData) -> None:
         """Check whether accuracy is same with OTX1.x version."""
         preds = [
             torch.Tensor([1, -1, 0, 0.2, 0.8, 0.9]),
@@ -77,14 +77,14 @@ class TestAccuracy:
             torch.Tensor([0, 0, 1, 0, 1, 0]),
         ]
 
-        hlabel_info = HLabelMetaInfo(
+        hlabel_data = HLabelInfo(
             label_names=fxt_hlabel_multilabel_info.label_to_idx.keys(),
             label_groups=fxt_hlabel_multilabel_info.all_groups,
-            hlabel_info=fxt_hlabel_multilabel_info,
+            hlabel_data=fxt_hlabel_multilabel_info,
         )
 
         metric = CustomHlabelAccuracy(average="MICRO")
-        metric.label_info = hlabel_info
+        metric.label_info = hlabel_data
         metric.update(preds, targets)
         result = metric.compute()
         acc = result["accuracy"]
