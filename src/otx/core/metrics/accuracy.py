@@ -5,16 +5,241 @@
 
 from __future__ import annotations
 
-from typing import Callable, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 import torch
 from torch import nn
-from torchmetrics import Metric
-from torchmetrics.classification.accuracy import Accuracy, MultilabelAccuracy
+from torchmetrics import ConfusionMatrix, Metric
+from torchmetrics.classification.accuracy import Accuracy as TorchmetricAcc
+from torchmetrics.classification.accuracy import MultilabelAccuracy as TorchmetricMultilabelAcc
+
+if TYPE_CHECKING:
+    from torch import Tensor
+
+    from otx.core.data.dataset.base import LabelInfo
 
 
-class HLabelAccuracy(Metric):
-    """Custom accuracy metric for h-label classification.
+class NamedConfusionMatrix(ConfusionMatrix):
+    """Named Confusion Matrix to add row, col label names."""
+
+    def __new__(
+        cls,
+        col_names: list[str],
+        row_names: list[str],
+        task: Literal["binary", "multiclass", "multilabel"],
+        threshold: float = 0.5,
+        num_classes: int | None = None,
+        num_labels: int | None = None,
+        normalize: Literal["true", "pred", "all", "none"] | None = None,
+        ignore_index: int | None = None,
+        validate_args: bool = True,
+        **kwargs: Any,  # noqa: ANN401
+    ) -> NamedConfusionMatrix:
+        """Construct the NamedConfusionMatrix."""
+        confusion_metric = super().__new__(
+            cls,
+            task=task,
+            threshold=threshold,
+            num_classes=num_classes,
+            num_labels=num_labels,
+            normalize=normalize,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+            **kwargs,
+        )
+
+        confusion_metric.col_names = col_names
+        confusion_metric.row_names = row_names
+        return confusion_metric
+
+    @property
+    def col_names(self) -> list[str]:
+        """The names of colum."""
+        return self.col_names
+
+    @property
+    def row_names(self) -> list[str]:
+        """The names of row."""
+        return self.row_names
+
+
+class AccuracywithLabelGroup(Metric):
+    """Base accuracy class for the OTX classification tasks with lable group.
+
+    It calculates the accuracy with the label_groups information, not class.
+    It means that average will be applied to the results from the each label groups.
+    """
+
+    def __init__(self, average: Literal["MICRO", "MACRO"] = "MICRO", threshold: float = 0.5):
+        super().__init__()
+        self.average = average
+        self.threshold = threshold
+        self._label_info: LabelInfo
+
+        self.preds: list[Tensor] = []
+        self.targets: list[Tensor] = []
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get the member `AccuracywithLabelGroup` label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo) -> None:
+        self._label_info = label_info
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
+        self.preds.extend(preds)
+        self.targets.extend(target)
+
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+        raise NotImplementedError
+
+    def _compute_accuracy_from_conf_matrices(self, conf_matrices: list[NamedConfusionMatrix]) -> Tensor:
+        """Compute the accuracy from the confusion matrix."""
+        correct_per_label_group = torch.stack([torch.trace(conf_matrix) for conf_matrix in conf_matrices])
+        total_per_label_group = torch.stack([torch.sum(conf_matrix) for conf_matrix in conf_matrices])
+
+        if self.average == "MICRO":
+            return torch.sum(correct_per_label_group) / torch.sum(total_per_label_group)
+        if self.average == "MACRO":
+            return torch.nanmean(torch.divide(correct_per_label_group, total_per_label_group))
+
+        msg = f"Average should be MICRO or MACRO, got {self.average}"
+        raise ValueError(msg)
+
+    def compute(self) -> Tensor | dict[str, Any]:
+        """Compute the metric."""
+        conf_matrices = self._compute_unnormalized_confusion_matrices()
+
+        return {
+            "conf_matrix": conf_matrices,
+            "accuracy": self._compute_accuracy_from_conf_matrices(conf_matrices),
+        }
+
+
+class MulticlassAccuracywithLabelGroup(AccuracywithLabelGroup):
+    """Accuracy class for the multi-class classification with label group.
+
+    For the multi-class classification, the number of label_groups should be 1.
+    So, the results always the same regardless of average method.
+    """
+
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+        """Compute an unnormalized confusion matrix for every label group."""
+        conf_matrices = []
+        for label_group in self.label_info.label_groups:
+            label_to_idx = {label: index for index, label in enumerate(self.label_info.label_names)}
+            group_indices = [label_to_idx[label] for label in label_group]
+
+            mask = torch.tensor([t.item() in group_indices for t in self.targets])
+            valid_preds = torch.tensor(self.preds)[mask]
+            valid_targets = torch.tensor(self.targets)[mask]
+
+            for i, index in enumerate(group_indices):
+                valid_preds[valid_preds == index] = i
+                valid_targets[valid_targets == index] = i
+
+            num_classes = len(label_group)
+            confmat = NamedConfusionMatrix(
+                task="multiclass",
+                num_classes=num_classes,
+                row_names=label_group,
+                col_names=label_group,
+            )
+            conf_matrices.append(confmat(valid_preds, valid_targets))
+        return conf_matrices
+
+
+class MultilabelAccuracywithLabelGroup(AccuracywithLabelGroup):
+    """Accuracy class for the multi-label classification with label_group.
+
+    For the multi-label classification, the number of label_groups should be the same with number of labels.
+    All lable_group represents whether the label exist or not (binary classification).
+    """
+
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+        """Compute an unnormalized confusion matrix for every label group."""
+        preds = torch.stack(self.preds)
+        targets = torch.stack(self.targets)
+
+        conf_matrices = []
+        for i, label_group in enumerate(self.label_info.label_groups):
+            label_preds = (preds[:, i] >= self.threshold).long()
+            label_targets = targets[:, i]
+
+            valid_mask = label_targets >= 0
+            if valid_mask.any():
+                valid_preds = label_preds[valid_mask]
+                valid_targets = label_targets[valid_mask]
+            else:
+                continue
+
+            data_name = [label_group[0], "~" + label_group[0]]
+            confmat = NamedConfusionMatrix(task="binary", num_classes=2, row_names=data_name, col_names=data_name).to(
+                self.device,
+            )
+            conf_matrices.append(confmat(valid_preds, valid_targets))
+        return conf_matrices
+
+
+class HlabelAccuracy(AccuracywithLabelGroup):
+    """Accuracy class for the hierarchical-label classification.
+
+    H-label Classification is the combination version of multi-class and multi-label classification.
+    It could have multiple heads for the multi-class classification to classify complex hierarchy architecture.
+    For the multi-label part, it's the same with the CusotmMultilabelAccuracy.
+    """
+
+    def _is_multiclass_group(self, label_group: list[str]) -> bool:
+        return len(label_group) != 1
+
+    def _compute_unnormalized_confusion_matrices(self) -> list[NamedConfusionMatrix]:
+        """Compute an unnormalized confusion matrix for every label group."""
+        preds = torch.stack(self.preds)
+        targets = torch.stack(self.targets)
+
+        conf_matrices = []
+        for i, label_group in enumerate(self.label_info.label_groups):
+            label_preds = preds[:, i]
+            label_targets = targets[:, i]
+
+            valid_mask = label_targets >= 0
+            if valid_mask.any():
+                valid_preds = label_preds[valid_mask]
+                valid_targets = label_targets[valid_mask]
+            else:
+                continue
+
+            if self._is_multiclass_group(label_group):
+                num_classes = len(label_group)
+                confmat = NamedConfusionMatrix(
+                    task="multiclass",
+                    num_classes=num_classes,
+                    row_names=label_group,
+                    col_names=label_group,
+                ).to(self.device)
+                conf_matrices.append(confmat(valid_preds, valid_targets))
+            else:
+                label_preds = (label_preds >= self.threshold).long()
+                data_name = [label_group[0], "~" + label_group[0]]
+                confmat = NamedConfusionMatrix(
+                    task="binary",
+                    num_classes=2,
+                    row_names=data_name,
+                    col_names=data_name,
+                ).to(self.device)
+                conf_matrices.append(confmat(valid_preds, valid_targets))
+        return conf_matrices
+
+
+class MixedHLabelAccuracy(Metric):
+    """Mixed accuracy metric for h-label classification.
+
+    It only used multi-class and multi-label metrics from torchmetrics.
+    This is different from the CustomHlabelAccuracy since MixedHLabelAccuracy doesn't use label_groups info.
+    It makes large gap to the results since CusotmHlabelAccuracy averages the results by using the label_groups info.
 
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
@@ -43,8 +268,8 @@ class HLabelAccuracy(Metric):
         self.threshold_multilabel = threshold_multilabel
 
         # Multiclass classification accuracy
-        self.multiclass_head_accuracy: list[Accuracy] = [
-            Accuracy(
+        self.multiclass_head_accuracy: list[TorchmetricAcc] = [
+            TorchmetricAcc(
                 task="multiclass",
                 num_classes=int(head_range[1] - head_range[0]),
             )
@@ -53,7 +278,7 @@ class HLabelAccuracy(Metric):
 
         # Multilabel classification accuracy metrics
         if self.num_multilabel_classes > 0:
-            self.multilabel_accuracy = MultilabelAccuracy(
+            self.multilabel_accuracy = TorchmetricMultilabelAcc(
                 num_labels=self.num_multilabel_classes,
                 threshold=0.5,
                 average="macro",

@@ -65,7 +65,7 @@ class OTXDatasetFactory:
     """Factory class for OTXDataset."""
 
     @classmethod
-    def create(
+    def create(  # noqa: PLR0911 # ignore too many return statements
         cls: type[OTXDatasetFactory],
         task: OTXTaskType,
         dm_subset: DatasetSubset,
@@ -83,6 +83,16 @@ class OTXDatasetFactory:
             "image_color_channel": cfg_data_module.image_color_channel,
             "stack_images": cfg_data_module.stack_images,
         }
+
+        if task in (
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ):
+            from .dataset.anomaly import AnomalyDataset
+
+            return AnomalyDataset(task_type=task, **common_kwargs)
+
         if task == OTXTaskType.MULTI_CLASS_CLS:
             from .dataset.classification import OTXMulticlassClsDataset
 
