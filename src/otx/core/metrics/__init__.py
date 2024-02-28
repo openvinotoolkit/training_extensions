@@ -7,8 +7,4 @@ from typing import Callable, Union
 
 from torchmetrics import Metric
 
-from .accuracy import HLabelAccuracy
-
 MetricCallable = Union[Callable[[], Metric], Callable[[int], Metric]]
-
-__all__ = ["HLabelAccuracy"]
