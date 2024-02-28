@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import pytest
+import numpy as np
 
 import openvino.runtime as ov
 
@@ -11,9 +12,15 @@ from otx.core.data.entity.classification import MulticlassClsBatchPredEntity, Mu
 from otx.engine import Engine
 
 
+RECIPE_LIST_ALL = pytest.RECIPE_LIST
+MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in recipe]
+MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe]
+MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
+
+
 @pytest.mark.parametrize(
     "recipe",
-    pytest.RECIPE_LIST,
+    MULTI_CLASS_CLS,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_forward_explain(
@@ -32,10 +39,6 @@ def test_forward_explain(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification.")
-    if "multi_class_cls" not in task:
-        pytest.skip("Required only for multiclass classification (not required for multilabel and h-label).")
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
@@ -57,7 +60,7 @@ def test_forward_explain(
 
 @pytest.mark.parametrize(
     "recipe",
-    pytest.RECIPE_LIST,
+    MC_ML_CLS,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_predict_with_explain(
@@ -70,6 +73,7 @@ def test_predict_with_explain(
 
     Args:
         recipe (str): The recipe to use for predicting. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the outputs.
 
     Returns:
         None
@@ -77,10 +81,8 @@ def test_predict_with_explain(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification.")
-    if "h_label_cls" in task:
-        pytest.skip("H-label is not supported.")
+    if "mobilenet_v3_large_light" in model_name:
+        pytest.skip("Dataloader failure during train.")
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
@@ -101,6 +103,8 @@ def test_predict_with_explain(
     # Predict with explain torch
     predict_result_explain_torch = engine.predict(explain=True)
     assert isinstance(predict_result_explain_torch[0], (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI))
+    assert predict_result_explain_torch[0].saliency_maps is not None
+    assert isinstance(predict_result_explain_torch[0].saliency_maps[0], dict)
 
     # Export with explain
     exported_model_path = engine.export(explain=True)
@@ -114,15 +118,19 @@ def test_predict_with_explain(
     assert saliency_map_output is not None
     assert len(saliency_map_output.get_shape()) in [3, 4]
 
-    # Predict OV of the model with xai
+    # Predict OV model with xai
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
     assert isinstance(predict_result_explain_ov[0], (MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI))
+    assert predict_result_explain_ov[0].saliency_maps is not None
+    assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
 
-    assert len(predict_result_explain_torch[0].saliency_maps) == len(predict_result_explain_ov[0].saliency_maps)
+    maps_torch = predict_result_explain_torch[0].saliency_maps
+    maps_ov = predict_result_explain_ov[0].saliency_maps
 
-    import numpy as np
-    res_torch = predict_result_explain_torch[0]
-    res_ov = predict_result_explain_ov[0]
-    for i in range(len(predict_result_explain_torch[0].saliency_maps)):
+    assert len(maps_torch) == len(maps_ov)
+
+    for i in range(len(maps_torch)):
         class_id = 0
-        print(np.max(abs(res_torch.saliency_maps[i][class_id].astype(np.float32) - res_ov.saliency_maps[i][class_id].astype(np.float32))))
+        for class_id in maps_torch[i]:
+            assert class_id in maps_ov[i]
+            assert np.mean(abs(maps_torch[i][class_id].astype(np.float32) - maps_ov[i][class_id].astype(np.float32))) < 150
