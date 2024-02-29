@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -46,9 +47,10 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,
+        stack_images: bool = True,
         **kwargs,
     ) -> None:
-        super().__init__(dm_subset, transforms, **kwargs)
+        super().__init__(dm_subset, transforms, stack_images=stack_images, **kwargs)
         if not use_bbox and not use_point:
             # if both are False, use bbox as default
             use_bbox = True
@@ -86,7 +88,10 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                         canvas_size=img_shape,
                         dtype=torch.float32,
                     )
-                    bbox = F._meta.convert_bounding_box_format(bbox, new_format=tv_tensors.BoundingBoxFormat.XYXY)  # noqa: SLF001
+                    bbox = F._meta.convert_bounding_box_format(  # noqa: SLF001
+                        bbox,
+                        new_format=tv_tensors.BoundingBoxFormat.XYXY,
+                    )
                     gt_bboxes.append(bbox)
                     gt_labels["bboxes"].append(annotation.label)
                     gt_masks["bboxes"].append(mask)
@@ -149,7 +154,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect VisualPromptingDataEntity into VisualPromptingBatchDataEntity in data loader."""  # noqa: E501
-        return VisualPromptingBatchDataEntity.collate_fn
+        return partial(VisualPromptingBatchDataEntity.collate_fn, stack_images=self.stack_images)
 
 
 class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEntity]):
@@ -167,9 +172,10 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         transforms: Transforms,
         use_bbox: bool = True,
         use_point: bool = False,
+        stack_images: bool = True,
         **kwargs,
     ) -> None:
-        super().__init__(dm_subset, transforms, **kwargs)
+        super().__init__(dm_subset, transforms, stack_images=stack_images, **kwargs)
         if not use_bbox and not use_point:
             # if both are False, use bbox as default
             use_bbox = True
@@ -204,7 +210,10 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                         canvas_size=img_shape,
                         dtype=torch.float32,
                     )
-                    bbox = F._meta.convert_bounding_box_format(bbox, new_format=tv_tensors.BoundingBoxFormat.XYXY)  # noqa: SLF001
+                    bbox = F._meta.convert_bounding_box_format(  # noqa: SLF001
+                        bbox,
+                        new_format=tv_tensors.BoundingBoxFormat.XYXY,
+                    )
                     gt_prompts.append(bbox)
                 else:
                     # get center point
@@ -250,4 +259,4 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect ZeroShotVisualPromptingDataEntity into ZeroShotVisualPromptingBatchDataEntity in data loader."""  # noqa: E501
-        return ZeroShotVisualPromptingBatchDataEntity.collate_fn
+        return partial(ZeroShotVisualPromptingBatchDataEntity.collate_fn, stack_images=self.stack_images)

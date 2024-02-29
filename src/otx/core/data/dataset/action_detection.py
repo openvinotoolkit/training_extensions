@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import pickle
+from functools import partial
 from pathlib import Path
 from typing import Callable
 
@@ -99,4 +100,4 @@ class OTXActionDetDataset(OTXDataset[ActionDetDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect ActionClsDataEntity into ActionClsBatchDataEntity."""
-        return ActionDetBatchDataEntity.collate_fn
+        return partial(ActionDetBatchDataEntity.collate_fn, stack_images=self.stack_images)
