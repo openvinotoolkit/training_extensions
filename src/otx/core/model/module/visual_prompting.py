@@ -249,8 +249,8 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def set_metrics(self) -> None:
-        """Set metrics."""
+    def configure_metric(self, cond: str = "") -> None:
+        """Configure metrics."""
         self.test_metric = MetricCollection(
             {
                 "IoU": BinaryJaccardIndex(),
@@ -266,6 +266,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
 
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
+        super().on_test_start()
         if not self.model.load_latest_reference_info(self.device):
             # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
             log.warning("No reference info found. `Learn` will be automatically excuted first.")

@@ -356,7 +356,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
         tile_enabled = False
         with contextlib.suppress(RuntimeError):
-            tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
+            if isinstance(self.model, Model):
+                tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
+            else:
+                tile_enabled = any("tile_size" in v.inference_adapter.get_rt_info(["model_info"]).astype(dict) for v in self.model.values())
 
         if tile_enabled:
             self._setup_tiler()
