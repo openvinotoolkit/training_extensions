@@ -60,7 +60,6 @@ def test_engine_from_config(
         OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
-        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
     ]:
         return
 
@@ -76,7 +75,7 @@ def test_engine_from_config(
 
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
-        if task.lower() in ["visual_prompting"]:
+        if task.lower() in ["visual_prompting", "zero_shot_visual_prompting"]:
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")
         else:
             test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")

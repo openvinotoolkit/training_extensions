@@ -253,10 +253,10 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         """Configure metrics."""
         self.test_metric = MetricCollection(
             {
-                "IoU": BinaryJaccardIndex(),
-                "F1": BinaryF1Score(),
-                "Dice": Dice(),
-                "mAP": MeanAveragePrecision(iou_type="segm"),
+                "IoU": BinaryJaccardIndex().to(self.device),
+                "F1": BinaryF1Score().to(self.device),
+                "Dice": Dice().to(self.device),
+                "mAP": MeanAveragePrecision(iou_type="segm").to(self.device),
             },
         )
 
