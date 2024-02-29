@@ -479,11 +479,20 @@ class ZeroShotSegmentAnything(SegmentAnything):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
+                _mask_iou = _calculate_mask_iou(mask, other_mask)
+                if _mask_iou > threshold_iou:
+                    # compare overlapped regions between different labels and filter out the lower score
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:
                         overlapped_label.append(im)
+                elif _mask_iou > 0:
+                    # refine the slightly overlapping region
+                    overlapped_coords = torch.where(torch.logical_and(mask, other_mask))
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        other_mask[overlapped_coords] = 0.
+                    else:
+                        mask[overlapped_coords] = 0. 
 
             for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
