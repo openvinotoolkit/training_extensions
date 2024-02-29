@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import logging as log
 from typing import TYPE_CHECKING, Any
 
@@ -86,7 +87,7 @@ class OTXDetectionModel(
                 ("model_info", "task_type"): "detection",
                 ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
                 ("model_info", "iou_threshold"): str(0.5),
-                ("model_info", "test_meta_info"): self.test_meta_info,
+                ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
         if self.tile_config.enable_tiler:
@@ -372,21 +373,9 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
         )
         for name, info in model_adapter.model.rt_info["model_info"].items():
             if name == "test_meta_info":
-                for key, value in info.items():
-                    self.test_meta_info[key] = self._change_dtype(value.value)
+                for key, value in json.loads(info.value).items():
+                    self.test_meta_info[key] = value
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
-
-    @staticmethod
-    def _change_dtype(value: str) -> str | bool | int | float:
-        if value == "NO":
-            return False
-        if value == "YES":
-            return True
-        if value.isdigit():
-            return int(value)
-        if value.replace(".", "", 1).isdigit():
-            return float(value)
-        return value
 
     def _customize_outputs(
         self,

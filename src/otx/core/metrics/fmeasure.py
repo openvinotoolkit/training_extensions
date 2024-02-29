@@ -633,8 +633,8 @@ class FMeasure(Metric):
 
     Args:
         num_classes (int): The number of classes.
-        vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
-            confidence threshold values Defaults to False.
+        best_confidence_threshold (float | None): Pre-defined best confidence threshold. If this value is None, then
+        FMeasure will find best confidence threshold. Defaults to None.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
             values. Defaults to False.
         cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
@@ -645,12 +645,10 @@ class FMeasure(Metric):
         self,
         num_classes: int,
         best_confidence_threshold: float | None = None,
-        vary_confidence_threshold: bool = True,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
     ):
         super().__init__()
-        self.vary_confidence_threshold = vary_confidence_threshold
         self.vary_nms_threshold = vary_nms_threshold
         self.cross_class_nms = cross_class_nms
         self.preds: list[list[tuple]] = []
@@ -684,13 +682,6 @@ class FMeasure(Metric):
 
     def compute(self) -> dict:
         """Compute f1 score metric."""
-        if self.best_confidence_threshold is not None and self.vary_confidence_threshold:
-            msg = "if best_confidence_threshold is set, then vary_confidence_threshold should be False"
-            raise ValueError(msg)
-        if self.best_confidence_threshold is None and not self.vary_confidence_threshold:
-            msg = "if best_confidence_threshold is None, then vary_confidence_threshold should be True"
-            raise ValueError(msg)
-
         boxes_pair = _FMeasureCalculator(self.targets, self.preds)
         result = boxes_pair.evaluate_detections(
             result_based_nms_threshold=self.vary_nms_threshold,
@@ -699,18 +690,18 @@ class FMeasure(Metric):
         )
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
-        if self.vary_confidence_threshold:
+        if self.best_confidence_threshold is not None:
+            (index,) = np.where(
+                np.isclose(list(np.arange(*boxes_pair.confidence_range)), self.best_confidence_threshold),
+            )
+            self._f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
+        else:
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
             }
             self._best_confidence_threshold = result.per_confidence.best_threshold
             self._f_measure = result.best_f_measure
-        else:
-            (index,) = np.where(
-                np.isclose(list(np.arange(*boxes_pair.confidence_range)), self.best_confidence_threshold),
-            )
-            self._f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
 
         if self.vary_nms_threshold and result.per_nms is not None:
             self._f_measure_per_nms = {

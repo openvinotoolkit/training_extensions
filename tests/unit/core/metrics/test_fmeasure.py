@@ -50,21 +50,6 @@ class TestFMeasure:
         """Check fmeasure can compute f1 score given confidence threshold."""
         metric = FMeasure(num_classes=1)
 
-        metric.vary_confidence_threshold = True
-        metric.best_confidence_threshold = 0.3
-        metric.update(fxt_preds, fxt_targets)
-        msg = "if best_confidence_threshold is set, then vary_confidence_threshold should be False"
-        with pytest.raises(ValueError, match=msg):
-            metric.compute()
-
-        metric.vary_confidence_threshold = False
-        metric.best_confidence_threshold = None
-        metric.update(fxt_preds, fxt_targets)
-        msg = "if best_confidence_threshold is None, then vary_confidence_threshold should be True"
-        with pytest.raises(ValueError, match=msg):
-            metric.compute()
-
-        metric.vary_confidence_threshold = False
         metric.best_confidence_threshold = 0.85
         metric.update(fxt_preds, fxt_targets)
         result = metric.compute()
