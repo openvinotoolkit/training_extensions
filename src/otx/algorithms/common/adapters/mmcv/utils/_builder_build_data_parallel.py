@@ -96,27 +96,19 @@ class XPUDataParallel(MMDataParallel):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
         target_device = torch.device(f"xpu:{device_ids[0]}")
 
-        for x in inputs:
-            if isinstance(x, tuple):
-                for val in x:
-                    if isinstance(val, dict):
-                        for k in val:
-                            if isinstance(val[k], torch.Tensor):
-                                val[k] = val[k].to(target_device)
-                            elif isinstance(val[k], list):
-                                for i, item in enumerate(val[k]):
-                                    if isinstance(item, torch.Tensor):
-                                        val[k][i] = item.to(target_device)
+        def change_tensor_device(obj):
+            if isinstance(obj, list):
+                obj = list(map(change_tensor_device, obj))
+            elif isinstance(obj, tuple):
+                obj = tuple(map(change_tensor_device, obj))
+            elif isinstance(obj, dict):
+                obj = {key : change_tensor_device(val) for key, val in obj.items()}
+            elif isinstance(obj, torch.Tensor):
+                obj = obj.to(target_device)
+            return obj
 
-        for x in kwargs:
-            if isinstance(x, dict):
-                for k in x:
-                    if isinstance(x[k], torch.Tensor):
-                        x[k] = x[k].to(target_device)
-                    elif isinstance(x[k], list):
-                        for i, item in enumerate(x[k]):
-                            if isinstance(item, torch.Tensor):
-                                x[k][i] = item.to(target_device)
+        inputs = change_tensor_device(inputs)
+        kwargs = change_tensor_device(kwargs)
 
         return inputs, kwargs
 
