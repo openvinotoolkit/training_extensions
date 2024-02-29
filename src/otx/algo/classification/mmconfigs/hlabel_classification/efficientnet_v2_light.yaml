@@ -16,7 +16,7 @@ head:
     type: AsymmetricAngularLossWithIgnore
   normalized: true
   scale: 7.0
-  type: CustomHierarchicalClsHead
+  type: CustomHierarchicalLinearClsHead
 neck:
   type: GlobalAveragePooling
 data_preprocessor:

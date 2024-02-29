@@ -1,14 +1,14 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Module for defining multi-label linear classification head."""
+"""Module for defining h-label nonlinear classification head."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.model import BaseModule, normal_init
+from mmengine.model import BaseModule, constant_init, normal_init
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from torch import nn
@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 
 
 @MODELS.register_module()
-class CustomHierarchicalClsHead(BaseModule):
-    """Custom classification head for hierarchical classification task.
+class CustomHierarchicalNonLinearClsHead(BaseModule):
+    """Custom classification non-linear head for hierarchical classification task.
 
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
@@ -30,6 +30,10 @@ class CustomHierarchicalClsHead(BaseModule):
         multilabel_loss (dict | None): Config of multi-label loss.
         thr (float | None): Predictions with scores under the thresholds are considered
                             as negative. Defaults to 0.5.
+        hid_cahnnels (int): Number of channels in the hidden feature map at the classifier.
+        acivation_Cfg (dict | None): Config of activation layer at the classifier.
+        dropout (bool): Flag for the enabling the dropout at the classifier.
+
     """
 
     def __init__(
@@ -41,6 +45,9 @@ class CustomHierarchicalClsHead(BaseModule):
         multiclass_loss_cfg: dict | None = None,
         multilabel_loss_cfg: dict | None = None,
         thr: float = 0.5,
+        hid_channels: int = 1280,
+        activation_cfg: dict | None = None,
+        dropout: bool = False,
         **kwargs,
     ):
         super().__init__()
@@ -50,6 +57,9 @@ class CustomHierarchicalClsHead(BaseModule):
         self.num_classes = num_classes
         self.thr = thr
 
+        self.hid_channels = hid_channels
+        self.dropout = dropout
+
         if self.num_multiclass_heads == 0:
             msg = "num_multiclass_head should be larger than 0"
             raise ValueError(msg)
@@ -58,12 +68,33 @@ class CustomHierarchicalClsHead(BaseModule):
         if num_multilabel_classes > 0:
             self.multilabel_loss = MODELS.build(multilabel_loss_cfg)
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        if not activation_cfg:
+            activation_cfg = {"type": "ReLU"}
+
+        self.activation = MODELS.build(activation_cfg)
+
+        classifier_modules = [
+            nn.Linear(in_channels, hid_channels),
+            nn.BatchNorm1d(hid_channels),
+            self.activation,
+        ]
+
+        if self.dropout:
+            classifier_modules.append(nn.Dropout(p=0.2))
+
+        classifier_modules.append(nn.Linear(hid_channels, num_classes))
+
+        self.classifier = nn.Sequential(*classifier_modules)
+
         self._init_layers()
 
     def _init_layers(self) -> None:
-        """Initialize weights of the layers."""
-        normal_init(self.fc, mean=0, std=0.01, bias=0)
+        """Iniitialize weights of classification head."""
+        for module in self.classifier:
+            if isinstance(module, nn.Linear):
+                normal_init(module, mean=0, std=0.01, bias=0)
+            elif isinstance(module, nn.BatchNorm1d):
+                constant_init(module, 1)
 
     def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head."""
@@ -72,7 +103,7 @@ class CustomHierarchicalClsHead(BaseModule):
     def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
-        return self.fc(pre_logits)
+        return self.classifier(pre_logits)
 
     def set_hlabel_data(self, hlabel_data: HLabelData) -> None:
         """Set hlabel information."""
