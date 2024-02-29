@@ -140,7 +140,7 @@ class OTXDataModule(LightningDataModule):
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
-        sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
+        sampler = instantiate_sampler(config.sampler, dataset=dataset)
 
         common_args = {
             "dataset": dataset,

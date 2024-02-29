@@ -44,7 +44,7 @@ def fxt_imbalanced_dataset() -> OTXDataset:
 
 class TestBalancedSampler:
     def test_sampler_iter(self, fxt_imbalanced_dataset):
-        sampler = BalancedSampler(fxt_imbalanced_dataset, 4)
+        sampler = BalancedSampler(fxt_imbalanced_dataset)
         sampler_iter = iter(sampler)
         count = 0
 
@@ -54,18 +54,8 @@ class TestBalancedSampler:
         assert count == len(sampler)
         assert sampler.num_trials == math.ceil(len(fxt_imbalanced_dataset) / sampler.num_cls)
 
-    @pytest.mark.parametrize("batch", [1, 2, 4, 8, 16])
-    def test_sampler_iter_with_adptive_repeat(self, batch, fxt_imbalanced_dataset):
-        sampler = BalancedSampler(fxt_imbalanced_dataset, batch)
-        sampler_iter = iter(sampler)
-        count = 0
-
-        for _ in sampler_iter:
-            count += 1
-        assert count == len(fxt_imbalanced_dataset) * sampler.repeat
-
     def test_sampler_efficient_mode(self, fxt_imbalanced_dataset):
-        sampler = BalancedSampler(fxt_imbalanced_dataset, 4, efficient_mode=True)
+        sampler = BalancedSampler(fxt_imbalanced_dataset, efficient_mode=True)
         sampler_iter = iter(sampler)
         count = 0
 
@@ -76,7 +66,7 @@ class TestBalancedSampler:
         assert sampler.num_trials == 51
 
     def test_sampler_iter_with_multiple_replicas(self, fxt_imbalanced_dataset):
-        sampler = BalancedSampler(fxt_imbalanced_dataset, 4, num_replicas=2)
+        sampler = BalancedSampler(fxt_imbalanced_dataset, num_replicas=2)
         sampler_iter = iter(sampler)
         count = 0
 
@@ -94,7 +84,7 @@ class TestBalancedSampler:
 
     def test_sampler_iter_per_class(self, fxt_imbalanced_dataset):
         batch_size = 4
-        sampler = BalancedSampler(fxt_imbalanced_dataset, batch_size)
+        sampler = BalancedSampler(fxt_imbalanced_dataset)
 
         stats = get_idx_list_per_classes(fxt_imbalanced_dataset.dm_subset)
         class_0_idx = stats[0]

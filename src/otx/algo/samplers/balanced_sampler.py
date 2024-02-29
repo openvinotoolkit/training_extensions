@@ -37,7 +37,6 @@ class BalancedSampler(Sampler):
 
     Args:
         dataset (OTXDataset): A built-up dataset
-        samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
         num_replicas (int, optional): Number of processes participating in
             distributed training. By default, :attr:`world_size` is retrieved from the
@@ -55,7 +54,6 @@ class BalancedSampler(Sampler):
     def __init__(
         self,
         dataset: OTXDataset,
-        samples_per_gpu: int,
         efficient_mode: bool = False,
         num_replicas: int = 1,
         rank: int = 0,
@@ -64,7 +62,6 @@ class BalancedSampler(Sampler):
         generator: torch.Generator | None = None,
     ):
         self.dataset = dataset
-        self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
