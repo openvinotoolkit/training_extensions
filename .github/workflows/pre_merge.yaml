@@ -72,6 +72,7 @@ jobs:
           - task: "instance_segmentation"
           - task: "semantic_segmentation"
           - task: "visual_prompting"
+          - task: "anomaly"
     name: Integration-Test-${{ matrix.task }}-py310
     # This is what will cancel the job concurrency
     concurrency:

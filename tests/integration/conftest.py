@@ -66,6 +66,8 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         return [OTXTaskType.ACTION_CLASSIFICATION, OTXTaskType.ACTION_DETECTION]
     if task == "visual_prompting":
         return [OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
+    if task == "anomaly":
+        return [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION]
     return [OTXTaskType(task.upper())]
 
 
