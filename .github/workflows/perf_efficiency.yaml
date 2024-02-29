@@ -42,7 +42,7 @@ on:
       data-root:
         type: string
         description: Root directory containing validation data in CI server.
-        default: /home/validation/data/v2/
+        default: "/home/validation/data/v2/"
 
 jobs:
   Perf-Efficiency-Benchmark:
