@@ -1,4 +1,4 @@
-name: Performance-Efficiency Benchmark
+name: Perf-Efficiency Benchmark
 
 on:
   workflow_dispatch: # run on request (no need for PR)
@@ -33,11 +33,22 @@ on:
           - export
           - optimize
         default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      dara-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: /home/validation/data/v2/
 
 jobs:
-  Perf-Efficency-Benchmark:
-    name: Perf-Efficiency-Benchmark-all-py310
+  Perf-Efficiency-Benchmark:
+    name: Perf-Efficiency-Benchmark-all
     runs-on: [self-hosted, linux, x64, dmount]
+    timeout-minutes: 8640
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -49,10 +60,10 @@ jobs:
         run: python -m pip install tox
       - name: Run Performance Test
         run: >
-          tox -vv -e performance-test -- tests/perf
+          tox -vv -e perf-benchmark -- tests/perf ${{ inputs.pytest-args }}
           --benchmark-type efficiency
           --model-category ${{ inputs.model-category }}
-          --data-root /home/validation/data/v2/
+          --data-root ${{ inputs.data-root }}
           --data-size ${{ inputs.data-size }}
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}

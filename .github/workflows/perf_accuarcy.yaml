@@ -1,4 +1,4 @@
-name: Performance-Accuracy Benchmark
+name: Perf-Accuracy Benchmark
 
 on:
   workflow_dispatch: # run on request (no need for PR)
@@ -33,6 +33,16 @@ on:
           - export
           - optimize
         default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      dara-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: /home/validation/data/v2/
 
 jobs:
   Perf-Accuracy-Benchmark:
@@ -40,20 +50,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toxenv_task: "ano"
+          - task-short: "ano"
             task: "anomaly"
-          - toxenv_task: "cls"
+          - task-short: "cls"
             task: "classification"
-          - toxenv_task: "det"
+          - task-short: "det"
             task: "detection"
-          - toxenv_task: "iseg"
+          - task-short: "isg"
             task: "instance_segmentation"
-          - toxenv_task: "seg"
+          - task-short: "ssg"
             task: "semantic_segmentation"
-          - toxenv_task: "vsp"
+          - task-short: "vsp"
             task: "visual_prompting"
-    name: Perf-Accuracy-Benchmark-${{ matrix.toxenv_task }}-py310
+    name: Perf-Accuracy-Benchmark-${{ matrix.task-short }}
     runs-on: [self-hosted, linux, x64, dmount]
+    timeout-minutes: 8640
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -65,21 +76,21 @@ jobs:
         run: python -m pip install tox
       - name: Run Performance Test
         run: >
-          tox -vv -e performance-test -- tests/perf/test_${{ matrix.task }}.py
+          tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
           --benchmark-type accuracy
           --model-category ${{ inputs.model-category }}
-          --data-root /home/validation/data/v2/
+          --data-root ${{ inputs.data-root }}
           --data-size ${{ inputs.data-size }}
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}
           --eval-upto ${{ inputs.eval-upto }}
-          --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.toxenv_task }}.csv
+          --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.task-short }}.csv
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           --user-name ${{ vars.USER_NAME }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
-          name: perf-speed-benchmark-${{ matrix.toxenv_task }}
+          name: perf-accuracy-benchmark-${{ matrix.task-short }}
           path: .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
