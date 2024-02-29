@@ -323,8 +323,7 @@ class SegmentAnything(LightningModule):
 
         Args:
             masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
-            input_size (int): The size of the image input to the model, in (H, W) format.
-                Used to remove padding.
+            input_size (int): The size of the image input to the model. Used to remove padding.
             orig_size (Tensor): The original image size with shape Bx2.
 
         Returns:
