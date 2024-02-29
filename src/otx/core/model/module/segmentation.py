@@ -54,7 +54,8 @@ class OTXSegmentationLitModule(OTXLitModule):
             for name, param in sig.parameters.items():
                 if name == "num_classes":
                     param_dict[name] = self.model.num_classes + 1
-                    param_dict["ignore_index"] = self.model.num_classes
+                elif name == "ignore_index":
+                    param_dict[name] = self.model.num_classes
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
