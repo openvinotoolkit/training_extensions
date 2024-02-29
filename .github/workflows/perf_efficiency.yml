@@ -1,11 +1,11 @@
-name: Performance-Speed Benchmark Test
+name: Performance-Efficiency Benchmark
 
 on:
   workflow_dispatch: # run on request (no need for PR)
     inputs:
-      model-type:
+      model-category:
         type: choice
-        description: Model type to run benchmark
+        description: Model category to run benchmark
         options:
           - default # speed, balance, accuracy models only
           - all # default + other models
@@ -35,12 +35,12 @@ on:
         default: optimize
       artifact-prefix:
         type: string
-        default: perf-speed-benchmark
+        default: perf-efficiency-benchmark
   workflow_call:
     inputs:
-      model-type:
+      model-category:
         type: string
-        description: Model type to run benchmark [default, all]
+        description: Model category to run benchmark [default, all]
         default: default
       data-size:
         type: string
@@ -60,14 +60,14 @@ on:
         default: optimize
       artifact-prefix:
         type: string
-        default: perf-speed-benchmark
+        default: perf-efficiency-benchmark
 
 # Declare default permissions as read only.
 permissions: read-all
 
 jobs:
-  Perf-Speed-Benchmark:
-    name: Perf-Speed-Benchmark-all-py310
+  Perf-Efficiency-Benchmark:
+    name: Perf-Efficiency-Benchmark-all-py310
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
@@ -75,14 +75,14 @@ jobs:
       toxenv-task: all
       tests-dir: >
         tests/perf/
-        -k speed
-        --model-type ${{ inputs.model-type }}
+        --benchmark-type efficiency
+        --model-category ${{ inputs.model-category }}
         --data-root /home/validation/data/new/
         --data-size ${{ inputs.data-size }}
         --num-repeat ${{ inputs.num-repeat }}
         --num-epoch ${{ inputs.num-epoch }}
         --eval-upto ${{ inputs.eval-upto }}
-        --summary-csv .tox/perf-speed-benchmark-all.csv
+        --summary-csv .tox/perf-efficiency-benchmark-all.csv
       runs-on: "['self-hosted', 'Linux', 'X64', 'dmount']"
       task: all
       timeout-minutes: 8640

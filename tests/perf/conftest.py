@@ -24,7 +24,14 @@ from .benchmark import OTXBenchmark
 def pytest_addoption(parser):
     """Add custom options for perf tests."""
     parser.addoption(
-        "--model-type",
+        "--benchmark-type",
+        action="store",
+        default="accuracy",
+        choices=("accuracy", "efficiency", "all"),
+        help="Choose accuracy|efficiency|all. Defaults to accuracy.",
+    )
+    parser.addoption(
+        "--model-category",
         action="store",
         default="all",
         choices=("default", "all"),
@@ -106,9 +113,9 @@ def fxt_working_branch() -> str:
 @pytest.fixture
 def fxt_model_id(request: pytest.FixtureRequest) -> str:
     """Skip by model category."""
-    model_type: str = request.config.getoption("--model-type")
+    model_category: str = request.config.getoption("--model-category")
     model_template: ModelTemplate = request.param
-    if model_type == "default":
+    if model_category == "default":
         if model_template.model_category == ModelCategory.OTHER:
             pytest.skip(f"{model_template.model_category} category model")
     return model_template.model_template_id
@@ -117,6 +124,11 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 @pytest.fixture
 def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXBenchmark:
     """Configure benchmark."""
+    # Skip by benchmark type
+    benchmark_type: str = request.config.getoption("--benchmark-type")
+    if benchmark_type != "all" and benchmark_type not in request.node.name:
+        pytest.skip(f"Non-{benchmark_type} benchmark")
+
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
     data_size: str = request.param[0]
@@ -276,6 +288,9 @@ def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> 
     def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
         if fxt_benchmark_reference is None:
             print("No benchmark references loaded. Skipping result checking.")
+            return
+
+        if result is None:
             return
 
         def get_entry(data: pd.DataFrame, key: Tuple) -> pd.Series:
