@@ -88,6 +88,17 @@ def pytest_addoption(parser):
         default=False,
         help="Print OTX commands without execution.",
     )
+    parser.addoption(
+        "--user-name",
+        type=str,
+        default="anonymous",
+        help='Sign-off the user name who launched the regression tests this time, e.g., `--user-name "John Doe"`.',
+    )
+    parser.addoption(
+        "--mlflow-tracking-uri",  # Currently set by MLFLOW_TRACKING_SERVER_URI env variable. To be fixed.
+        type=str,
+        help="URI for MLFlow Tracking server to store the regression test results.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -141,6 +152,7 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
 
     tags = cfg.get("tags", {})
     tags["data_size"] = data_size
+    tags["user_name"] = request.config.getoption("--user-name")
     cfg["tags"] = tags
 
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
