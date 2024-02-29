@@ -424,7 +424,7 @@ class Engine:
             checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
-            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
+            explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
 
         Returns:
             Path: Path to the exported model.
@@ -528,14 +528,16 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         explain_config: ExplainConfig | None = None,
+        dump: bool | None = False,
         **kwargs,
     ) -> list | None:
-        """Run XAI using the specified model and data.
+        """Run XAI using the specified model and data (test subset).
 
         Args:
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
+            dump (bool): Whether to dump "saliency_map" or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -546,6 +548,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
+            ...     dump=True,
             ... )
 
         CLI Usage:
@@ -556,7 +559,7 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
 
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
         if explain_config is None:
@@ -581,7 +584,14 @@ class Engine:
             ckpt_path=ckpt_path,
         )
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, Path(self.work_dir))
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        if dump:
+            dump_saliency_maps(
+                predict_result,
+                explain_config,
+                datamodule,
+                output_dir=Path(self.work_dir),
+            )
         lit_module.model.explain_mode = False
         return predict_result
 

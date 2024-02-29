@@ -301,6 +301,8 @@ def test_otx_explain_e2e(
         "0",
         "--deterministic",
         "True",
+        "--dump",
+        "True",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -311,15 +313,15 @@ def test_otx_explain_e2e(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert latest_dir.exists()
-    assert (latest_dir / "saliency_map.tiff").exists()
-    sal_map = cv2.imread(str(latest_dir / "saliency_map.tiff"))
+    assert (latest_dir / "saliency_maps").exists()
+    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
+    sal_map = cv2.imread(str(saliency_maps[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
     reference_sal_vals = {
-        "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
-        "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+        "multi_label_cls_efficientnet_v2_light": np.array([255, 108, 60, 11, 36, 112, 239], dtype=np.uint8),
+        "h_label_cls_efficientnet_v2_light": np.array([76, 99, 114, 93, 68, 117, 102], dtype=np.uint8),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
