@@ -659,15 +659,10 @@ class TestOTXZeroShotSegmentAnything:
 
     def test_load_latest_reference_info(self, mocker, model) -> None:
         """Test load_latest_reference_info."""
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.path.isdir",
-            return_value=True,
-        )
-
         # get previously saved reference info
         mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
-            return_value=["1", "2"],
+            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
+            return_value="1",
         )
         mocker.patch(
             "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
@@ -681,8 +676,8 @@ class TestOTXZeroShotSegmentAnything:
 
         # no saved reference info
         mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
-            return_value=[],
+            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
+            return_value=None,
         )
 
         model.initialize_reference_info()
