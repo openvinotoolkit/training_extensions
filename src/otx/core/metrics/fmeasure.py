@@ -633,8 +633,8 @@ class FMeasure(Metric):
 
     Args:
         num_classes (int): The number of classes.
-        vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
-            confidence threshold values Defaults to False.
+        best_confidence_threshold (float | None): Pre-defined best confidence threshold. If this value is None, then
+        FMeasure will find best confidence threshold. Defaults to None.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
             values. Defaults to False.
         cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
@@ -644,21 +644,20 @@ class FMeasure(Metric):
     def __init__(
         self,
         num_classes: int,
-        vary_confidence_threshold: bool = True,
+        best_confidence_threshold: float | None = None,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
     ):
         super().__init__()
-        self.vary_confidence_threshold = vary_confidence_threshold
         self.vary_nms_threshold = vary_nms_threshold
         self.cross_class_nms = cross_class_nms
         self.preds: list[list[tuple]] = []
         self.targets: list[list[tuple]] = []
-        self.num_classes = num_classes
+        self.num_classes: int = num_classes
 
         self._f_measure_per_confidence: dict | None = None
         self._f_measure_per_nms: dict | None = None
-        self._best_confidence_threshold: float | None = None
+        self._best_confidence_threshold: float | None = best_confidence_threshold
         self._best_nms_threshold: float | None = None
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
@@ -689,15 +688,20 @@ class FMeasure(Metric):
             classes=self.classes,
             cross_class_nms=self.cross_class_nms,
         )
-        self._f_measure = result.best_f_measure
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
-        if self.vary_confidence_threshold:
+        if self.best_confidence_threshold is not None:
+            (index,) = np.where(
+                np.isclose(list(np.arange(*boxes_pair.confidence_range)), self.best_confidence_threshold),
+            )
+            self._f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
+        else:
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
             }
             self._best_confidence_threshold = result.per_confidence.best_threshold
+            self._f_measure = result.best_f_measure
 
         if self.vary_nms_threshold and result.per_nms is not None:
             self._f_measure_per_nms = {
@@ -726,6 +730,11 @@ class FMeasure(Metric):
     def best_confidence_threshold(self) -> None | float:
         """Returns best confidence threshold as ScoreMetric if exists."""
         return self._best_confidence_threshold
+
+    @best_confidence_threshold.setter
+    def best_confidence_threshold(self, value: float) -> None:
+        """Setter for best_confidence_threshold."""
+        self._best_confidence_threshold = value
 
     @property
     def f_measure_per_nms(self) -> None | dict:
