@@ -4,12 +4,13 @@
 """Class definition for detection lightning module used in OTX."""
 from __future__ import annotations
 
-import inspect
 import logging as log
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.detection import (
     DetBatchDataEntity,
@@ -21,9 +22,8 @@ from otx.core.model.module.base import OTXLitModule
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
-    from otx.algo.metrices import MetricCallable
+    from otx.core.metrics import MetricCallable
 
 
 class OTXDetectionLitModule(OTXLitModule):
@@ -35,7 +35,7 @@ class OTXDetectionLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable | None = None,
+        metric: MetricCallable = lambda: MeanAveragePrecision(),
     ):
         super().__init__(
             otx_model=otx_model,
@@ -44,18 +44,30 @@ class OTXDetectionLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
+        self.test_meta_info: dict[str, Any] = self.model.test_meta_info if hasattr(self.model, "test_meta_info") else {}
 
-        param_dict = {}
-        if metric:
-            sig = inspect.signature(metric)
-            for name, param in sig.parameters.items():
-                param_dict[name] = param.default
-            param_dict.pop("kwargs", {})
-            metric = metric(**param_dict)  # type: ignore[call-arg]
+    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state_dict from checkpoint.
 
-        self.metric = metric
+        For detection, it is need to update confidence threshold information when
+        the metric is FMeasure.
+        """
+        if "confidence_threshold" in ckpt:
+            self.test_meta_info["best_confidence_threshold"] = ckpt["confidence_threshold"]
+            self.test_meta_info["vary_confidence_threshold"] = False
+        elif "confidence_threshold" in ckpt["hyper_parameters"]:
+            self.test_meta_info["best_confidence_threshold"] = ckpt["hyper_parameters"]["confidence_threshold"]
+            self.test_meta_info["vary_confidence_threshold"] = False
+        super().load_state_dict(ckpt, *args, **kwargs)
 
-    def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        super().configure_metric()
+        for key, value in self.test_meta_info.items():
+            if hasattr(self.metric, key):
+                setattr(self.metric, key, value)
+
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -75,6 +87,8 @@ class OTXDetectionLitModule(OTXLitModule):
                 sync_dist=True,
                 prog_bar=True,
             )
+        if hasattr(meter, "best_confidence_threshold"):
+            self.hparams["confidence_threshold"] = meter.best_confidence_threshold
 
     def validation_step(self, inputs: DetBatchDataEntity, batch_idx: int) -> None:
         """Perform a single validation step on a batch of data from the validation set.
@@ -88,7 +102,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
@@ -132,7 +146,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        if self.metric:
+        if isinstance(self.metric, Metric):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )

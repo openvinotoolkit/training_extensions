@@ -63,7 +63,7 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: True
+            keep_ratio: false
           - type: RandomFlip
             prob: 0.5
           - type: Pad
@@ -91,7 +91,7 @@ overrides:
             scale:
               - 416
               - 416
-            keep_ratio: True
+            keep_ratio: false
           - type: Pad
             pad_to_square: true
             pad_val: 114
@@ -115,7 +115,7 @@ overrides:
             scale:
               - 416
               - 416
-            keep_ratio: True
+            keep_ratio: false
           - type: Pad
             pad_to_square: true
             pad_val: 114

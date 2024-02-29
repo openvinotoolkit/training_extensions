@@ -14,6 +14,8 @@ from typing import Any, Iterator, TypeVar, Union
 import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
 
+from otx.core.types import PathLike
+
 logger = logging.getLogger()
 
 
@@ -339,7 +341,7 @@ def patch_update_configs() -> Iterator[None]:
         ArgumentParser.get_defaults = original_get_defaults
 
 
-def get_configuration(config_path: str | Path) -> dict:
+def get_configuration(config_path: str | Path, subcommand: str = "train", **kwargs) -> dict:
     """Get the configuration from the given path.
 
     Args:
@@ -351,14 +353,70 @@ def get_configuration(config_path: str | Path) -> dict:
     from otx.cli.cli import OTXCLI
 
     with patch_update_configs():
-        parser = OTXCLI.engine_subcommand_parser()
+        parser, _ = OTXCLI.engine_subcommand_parser(subcommand=subcommand)
+        if kwargs:
+            parser.set_defaults(**kwargs)
+
         args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
+
     config = namespace_to_dict(args)
     logger.info(f"{config_path} is loaded.")
 
     # Remove unnecessary cli arguments for API usage
-    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume", "disable_infer_num_classes"]
+    cli_args = [
+        "verbose",
+        "data_root",
+        "task",
+        "seed",
+        "callback_monitor",
+        "resume",
+        "disable_infer_num_classes",
+        "workspace",
+    ]
     logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
     for arg in cli_args:
         config.pop(arg, None)
     return config
+
+
+def get_instantiated_classes(
+    config: PathLike,
+    work_dir: PathLike | None,
+    data_root: PathLike | None,
+    **kwargs,
+) -> tuple[dict, dict]:
+    """Get the instantiated classes for training.
+
+    Args:
+        config (PathLike): Path to the configuration file.
+        work_dir (PathLike): Path to the working directory.
+        data_root (PathLike): Path to the data root directory.
+
+    Returns:
+        dict: The instantiated classes for training.
+    """
+    from otx.cli import OTXCLI
+
+    cli_args = [
+        "train",
+        "--config",
+        str(config),
+        "--workspace.use_sub_dir",
+        "false",
+    ]
+    if work_dir is not None:
+        cli_args.extend(["--work_dir", str(work_dir)])
+    if data_root is not None:
+        cli_args.extend(["--data_root", str(data_root)])
+    for key, value in kwargs.items():
+        cli_args.extend([f"--{key}", str(value)])
+    otx_cli = OTXCLI(
+        args=cli_args,
+        run=False,
+    )
+
+    otx_cli.set_seed()
+    otx_cli.instantiate_classes(instantiate_engine=False)
+    instantiated_config = namespace_to_dict(otx_cli.config_init["train"])
+
+    return instantiated_config, otx_cli.prepare_subcommand_kwargs("train")

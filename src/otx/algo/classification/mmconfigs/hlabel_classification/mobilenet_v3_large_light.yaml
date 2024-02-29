@@ -13,7 +13,7 @@ head:
     gamma_neg: 1.0
     gamma_pos: 0.0
     type: AsymmetricAngularLossWithIgnore
-  type: CustomHierarchicalClsHead
+  type: CustomHierarchicalNonLinearClsHead
 neck:
   type: GlobalAveragePooling
 data_preprocessor:

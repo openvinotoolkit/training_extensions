@@ -24,6 +24,8 @@ config:
       - prob: 0.5
         type: RandomFlip
       - type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     num_workers: 2
@@ -46,6 +48,8 @@ config:
           - img_shape
           - scale_factor
         type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     num_workers: 2
@@ -68,3 +72,5 @@ config:
           - img_shape
           - scale_factor
         type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
