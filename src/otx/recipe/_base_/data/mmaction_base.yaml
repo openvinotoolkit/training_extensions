@@ -40,6 +40,8 @@ config:
           - ori_shape
           - pad_shape
           - scale_factor
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     transform_lib_type: MMACTION
@@ -68,6 +70,8 @@ config:
           - ori_shape
           - pad_shape
           - scale_factor
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     transform_lib_type: MMACTION
@@ -96,3 +100,5 @@ config:
           - ori_shape
           - pad_shape
           - scale_factor
+    sampler:
+      class_path: torch.utils.data.RandomSampler

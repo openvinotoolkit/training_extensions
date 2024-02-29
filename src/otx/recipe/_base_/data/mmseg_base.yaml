@@ -32,6 +32,8 @@ config:
         type: RandomFlip
       - type: PhotoMetricDistortion
       - type: PackSegInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     num_workers: 4
@@ -47,6 +49,8 @@ config:
       - reduce_zero_label: true
         type: LoadAnnotations
       - type: PackSegInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     num_workers: 4
@@ -62,3 +66,5 @@ config:
       - reduce_zero_label: true
         type: LoadAnnotations
       - type: PackSegInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
