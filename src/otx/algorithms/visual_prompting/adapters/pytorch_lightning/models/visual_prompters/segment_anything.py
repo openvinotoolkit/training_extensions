@@ -6,11 +6,10 @@ reference: https://github.com/facebookresearch/segment-anything
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-#
 
-import re
+
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from omegaconf import DictConfig
@@ -133,37 +132,19 @@ class SegmentAnything(LightningModule):
             )
         )
 
-    def load_checkpoint(
-        self,
-        state_dict: Optional[OrderedDict] = None,
-        revise_keys: List = [(r"^image_encoder.", r"image_encoder.backbone.")],
-    ) -> None:
+    def load_checkpoint(self, state_dict: Optional[OrderedDict] = None) -> None:
         """Load checkpoint for SAM.
 
         Args:
             state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
-            revise_keys (List, optional): List of tuples of regex patterns to revise keys of state_dict.
-                Defaults to [(r'^image_encoder.', r'image_encoder.backbone.')].
         """
-
-        def replace_state_dict_keys(state_dict, revise_keys):
-            for p, r in revise_keys:
-                state_dict = OrderedDict(
-                    {
-                        re.sub(p, r, k) if re.search(p, k) and not re.search(r, k) else k: v
-                        for k, v in state_dict.items()
-                    }
-                )
-            return state_dict
-
         if state_dict:
             # state_dict from args.load_from
-            state_dict = replace_state_dict_keys(state_dict, revise_keys)
             self.load_state_dict(state_dict)
         elif self.config.model.checkpoint:
             if str(self.config.model.checkpoint).endswith(".ckpt"):
                 # load lightning checkpoint
-                self.load_from_checkpoint(self.config.model.checkpoint)
+                self.load_from_checkpoint(self.config.model.checkpoint, strict=False)
             else:
                 if str(self.config.model.checkpoint).startswith("http"):
                     # get checkpoint from url
@@ -172,8 +153,12 @@ class SegmentAnything(LightningModule):
                     # load checkpoint from local
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
-                state_dict = replace_state_dict_keys(state_dict, revise_keys)
+
                 self.load_state_dict(state_dict, strict=False)
+        else:
+            # use default checkpoint
+            state_dict = torch.hub.load_state_dict_from_url(CKPT_PATHS[self.config.model.backbone])
+            self.load_state_dict(state_dict, strict=False)
 
     ##########################################################
     #     forward for inference (export/deploy/optimize)     #
@@ -186,7 +171,7 @@ class SegmentAnything(LightningModule):
         point_labels: Tensor,
         mask_input: Tensor,
         has_mask_input: Tensor,
-        # orig_size: Tensor,
+        orig_size: Tensor,
     ):
         """Forward method for SAM inference (export/deploy).
 
@@ -228,18 +213,16 @@ class SegmentAnything(LightningModule):
         if self.config.model.return_single_mask:
             masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
-        return scores, masks
-        # TODO (sungchul): apply inner postprocessing
-        # upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
+        upscaled_masks = self.postprocess_masks(masks, self.config.model.image_size, orig_size[0])
 
-        # if self.config.model.return_extra_metrics:
-        #     stability_scores = self.calculate_stability_score(
-        #         upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
-        #     )
-        #     areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
-        #     return upscaled_masks, scores, stability_scores, areas, masks
+        if self.config.model.return_extra_metrics:
+            stability_scores = self.calculate_stability_score(
+                upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
+            )
+            areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
+            return upscaled_masks, scores, stability_scores, areas, masks
 
-        # return upscaled_masks, scores, masks
+        return upscaled_masks, scores, masks
 
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
@@ -334,9 +317,9 @@ class SegmentAnything(LightningModule):
 
         return masks, iou_preds
 
-    @staticmethod
-    def mask_postprocessing(masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
-        """Postprocesses the predicted masks.
+    @classmethod
+    def postprocess_masks(cls, masks: Tensor, input_size: int, orig_size: Tensor) -> Tensor:
+        """Postprocess the predicted masks.
 
         Args:
             masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
@@ -347,22 +330,20 @@ class SegmentAnything(LightningModule):
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
-
-        def resize_longest_image_size(input_image_size: Tensor, longest_side: int) -> Tensor:
-            scale = longest_side / torch.max(input_image_size)
-            transformed_size = scale * input_image_size
-            transformed_size = torch.floor(transformed_size + 0.5).to(torch.int64)
-            return transformed_size
-
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
-        prepadded_size = resize_longest_image_size(orig_size, input_size)
-        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
+        prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
-        masks = F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
-        return masks
+        return F.interpolate(masks, size=(h, w), mode="bilinear", align_corners=False)
+
+    def get_prepadded_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
+        """Get pre-padded size."""
+        scale = longest_side / torch.max(input_image_size)
+        transformed_size = scale * input_image_size
+        return torch.floor(transformed_size + 0.5).to(torch.int64)
 
     ######################################################
     #     forward for training/validation/prediction     #
@@ -395,23 +376,32 @@ class SegmentAnything(LightningModule):
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
-        for embedding, bbox in zip(image_embeddings, bboxes):
-            sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                points=points,
-                boxes=bbox,
-                masks=masks,
-            )
+        for idx, embedding in enumerate(image_embeddings):
+            low_res_masks, iou_predictions = [], []
+            for idx_prompt, prompt in enumerate([bboxes[idx], points[idx]]):
+                if prompt is None:
+                    continue
 
-            low_res_masks, iou_predictions = self.mask_decoder(
-                image_embeddings=embedding.unsqueeze(0),
-                image_pe=self.prompt_encoder.get_dense_pe(),
-                sparse_prompt_embeddings=sparse_embeddings,
-                dense_prompt_embeddings=dense_embeddings,
-                multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better.
-            )
+                sparse_embeddings, dense_embeddings = self.prompt_encoder(
+                    points=(prompt.unsqueeze(1), torch.ones(len(prompt), 1, device=prompt.device))
+                    if idx_prompt == 1
+                    else None,
+                    boxes=prompt if idx_prompt == 0 else None,
+                    masks=None,
+                )
 
-            pred_masks.append(low_res_masks)
-            ious.append(iou_predictions)
+                _low_res_masks, _iou_predictions = self.mask_decoder(
+                    image_embeddings=embedding.unsqueeze(0),
+                    image_pe=self.prompt_encoder.get_dense_pe(),
+                    sparse_prompt_embeddings=sparse_embeddings,
+                    dense_prompt_embeddings=dense_embeddings,
+                    multimask_output=False,  # when given multiple prompts. if there is single prompt True would be better. # noqa: E501
+                )
+                low_res_masks.append(_low_res_masks)
+                iou_predictions.append(_iou_predictions)
+
+            pred_masks.append(torch.cat(low_res_masks, dim=0))
+            ious.append(torch.cat(iou_predictions, dim=0))
 
         return pred_masks, ious
 
@@ -441,10 +431,8 @@ class SegmentAnything(LightningModule):
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
         for i, (pred_mask, gt_mask, iou_prediction) in enumerate(zip(pred_masks, gt_masks, iou_predictions)):
-            pred_mask = self.postprocess_masks(
-                pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i]
-            )
-            pred_mask = pred_mask.sigmoid()
+            pred_mask = self.postprocess_masks(pred_mask, self.config.model.image_size, batch["original_size"][i])
+            pred_mask = pred_mask.sigmoid().squeeze(1)
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
             self.train_metrics["train_Dice"].update(pred_mask, gt_mask)
@@ -499,10 +487,8 @@ class SegmentAnything(LightningModule):
 
         pred_masks, _ = self.forward_train(images, bboxes, points)
         for i, (pred_mask, gt_mask) in enumerate(zip(pred_masks, gt_masks)):
-            pred_mask = self.postprocess_masks(
-                pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i]
-            )
-            pred_mask = pred_mask.sigmoid()
+            pred_mask = self.postprocess_masks(pred_mask, self.config.model.image_size, batch["original_size"][i])
+            pred_mask = pred_mask.sigmoid().squeeze(1)
             for k, v in self.val_metrics.items():
                 v.update(pred_mask, gt_mask)
 
@@ -532,40 +518,14 @@ class SegmentAnything(LightningModule):
 
         masks: List[Tensor] = []
         for i, pred_mask in enumerate(pred_masks):
-            mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
+            mask = self.postprocess_masks(pred_mask, self.config.model.image_size, batch["original_size"][i])
             if not self.config.model.return_logits:
                 mask = (mask > self.config.model.mask_threshold).to(mask.dtype)
             else:
                 mask = mask.sigmoid()
-            masks.append(mask)
+            masks.append(mask.squeeze(1))
 
         return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"], labels=batch["labels"])
-
-    @staticmethod
-    def postprocess_masks(
-        masks: Tensor,
-        input_size: Tuple[int, int],
-        padding: Union[Tuple[int, ...], Tensor],
-        original_size: Union[Tuple[int, int], Tensor],
-    ) -> Tensor:
-        """Remove padding and upscale masks to the original image size.
-
-        Args:
-            masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).
-            input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.
-                Used to remove padding.
-            padding (tuple(int, int, int, int), Tensor): The padding applied to the image before input to the model,
-                in (left, top, right, bottom) format.
-            original_size (tuple(int, int), Tensor): The original size of the image before resizing
-                for input to the model, in (H, W) format.
-
-        Returns:
-          (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.
-        """
-        masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
-        masks = masks[..., : input_size[0] - padding[3], : input_size[1] - padding[2]]
-        masks = F.interpolate(masks, [int(o) for o in original_size], mode="bilinear", align_corners=False)
-        return masks.squeeze(1)
 
     def configure_optimizers(self) -> optim:
         """Configure the optimizer for SAM.

@@ -19,7 +19,6 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     generate_bbox,
     generate_bbox_from_mask,
     get_transform,
-    generate_point_from_mask,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     MultipleInputsCompose,
@@ -146,11 +145,6 @@ def test_generate_bbox_from_mask(mocker) -> None:
     assert bbox[3] >= 0 and bbox[3] <= height
 
 
-@e2e_pytest_unit
-def test_generate_point_from_mask() -> None:
-    """TODO"""
-
-
 class TestOTXVIsualPromptingDataset:
     @e2e_pytest_unit
     def test_len(self, mocker, dataset_polygon, transform, image_size, mean, std) -> None:
@@ -159,7 +153,7 @@ class TestOTXVIsualPromptingDataset:
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
             return_value=transform,
         )
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, image_size, mean, std)
+        otx_dataset = OTXVisualPromptingDataset("testing", dataset_polygon, image_size, mean, std)
         assert len(otx_dataset) == 4
 
     @e2e_pytest_unit
@@ -173,7 +167,7 @@ class TestOTXVIsualPromptingDataset:
             return_value=transform,
         )
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVisualPromptingDataset(dataset, image_size, mean, std)
+        otx_dataset = OTXVisualPromptingDataset("testing", dataset, image_size, mean, std)
 
         item = otx_dataset[0]
 
@@ -189,7 +183,7 @@ class TestOTXVIsualPromptingDataset:
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)
-        assert item["points"] == []
+        assert len(item["points"]) == 0
 
 
 class TestOTXZeroShotVisualPromptingDataset:
@@ -209,7 +203,7 @@ class TestOTXZeroShotVisualPromptingDataset:
             return_value=transform,
         )
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXZeroShotVisualPromptingDataset(dataset, image_size, mean, std)
+        otx_dataset = OTXZeroShotVisualPromptingDataset("testing", dataset, image_size, mean, std)
 
         item = otx_dataset[0]
 
@@ -225,7 +219,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)
-        assert item["points"] == []
+        assert len(item["points"]) == 0
 
 
 class TestOTXVisualPromptingDataModule:
@@ -248,8 +242,8 @@ class TestOTXVisualPromptingDataModule:
         datamodule = set_datamodule(train_type=TrainType.Zeroshot)
 
         assert datamodule.config.get("train_batch_size") == 1
-        assert "generate_point" in datamodule.kwargs
-        assert "generate_bbox" in datamodule.kwargs
+        assert "use_point" in datamodule.kwargs
+        assert "use_bbox" in datamodule.kwargs
 
     @e2e_pytest_unit
     def test_setup(self, mocker, set_datamodule) -> None:

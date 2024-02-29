@@ -78,7 +78,13 @@ class TestInferenceCallback:
                     "masks": [torch.Tensor([[[0, 1, 0], [1, 1, 1], [0, 1, 0]]])],
                     "iou_predictions": [torch.Tensor([[0.9]])],
                     "labels": [
-                        [ScoredLabel(label=LabelEntity("foreground", domain=Domain.VISUAL_PROMPTING), probability=0.0)],
+                        {
+                            "bboxes": [
+                                ScoredLabel(
+                                    label=LabelEntity("foreground", domain=Domain.VISUAL_PROMPTING), probability=0.0
+                                )
+                            ],
+                        }
                     ],
                 }
             ]

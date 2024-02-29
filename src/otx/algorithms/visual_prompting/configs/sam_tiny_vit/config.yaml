@@ -15,6 +15,8 @@ dataset:
       - 57.12
       - 57.375
   offset_bbox: 20 # randomness for generating bounding box, pixel
+  use_point: false
+  use_bbox: false
 
 model:
   name: SAM

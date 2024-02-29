@@ -57,7 +57,7 @@ class InferenceCallback(Callback):
         for output in outputs[0]:
             pred_masks.append(output["masks"][0])
             iou_predictions.append(output["iou_predictions"][0])
-            pred_labels.append(output["labels"][0])
+            pred_labels.append(output["labels"][0].get("bboxes", []) + output["labels"][0].get("points", []))
 
         for dataset_item, pred_mask, iou_prediction, labels in zip(
             self.otx_dataset, pred_masks, iou_predictions, pred_labels

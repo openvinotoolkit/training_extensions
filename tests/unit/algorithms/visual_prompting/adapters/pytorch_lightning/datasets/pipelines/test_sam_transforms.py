@@ -21,10 +21,6 @@ class TestResizeLongestSide:
         self.resize_longest_side = ResizeLongestSide(8)
 
     @e2e_pytest_unit
-    def test_call(self):
-        """Test __call__."""
-
-    @e2e_pytest_unit
     @pytest.mark.parametrize(
         "image,expected",
         [

@@ -132,6 +132,15 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        default_threshold_reference = configurable_float(
+            default_value=0.3,
+            header="Default reference threshold",
+            description="The threshold to get target area in the mask for reference features.",
+            min_value=-1.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
     @attrs
     class __POTParameter(BaseConfig.BasePOTParameter):
         header = string_attribute("POT Parameters")

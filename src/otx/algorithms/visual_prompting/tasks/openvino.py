@@ -17,16 +17,19 @@
 import io
 import json
 import os
+import pickle
 import random
 import tempfile
 import time
 from collections import defaultdict
+from copy import deepcopy
 from itertools import product
 from pathlib import Path
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, Type, Union
 from zipfile import ZipFile
 
 import attr
+import cv2
 import nncf
 import numpy as np
 import openvino.runtime as ov
@@ -149,11 +152,19 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         self.transform = get_transform()  # TODO (sungchul): insert args
 
     def pre_process(
-        self, dataset_item: DatasetItemEntity, extra_processing: bool = False
+        self,
+        dataset_item: DatasetItemEntity,
+        extra_processing: bool = False,
+        use_bbox: bool = False,
+        use_point: bool = False,
     ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
+        if use_bbox and use_point:
+            logger.warning("If both use_bbox and use_point are set, bboxes and points will be generated randomly.")
+
+        prob = 1.0 if not use_point else 0.0 if not use_bbox and use_point else 0.5
         images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
-        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
+        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels, prob=prob)
         prompts = self.model["decoder"].preprocess(prompts, meta)
         return images, meta, prompts  # type: ignore
 
@@ -176,12 +187,12 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         soft_predictions: List[np.ndarray] = []
         for prompt in prompts:
             label = prompt.pop("label")
-            orig_size = prompt.pop("orig_size")
             prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(prompt)
-            metadata = {"label": label, "original_size": orig_size}
+            prediction["scores"] = prediction["iou_predictions"]
+            metadata = {"label": label}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
@@ -202,10 +213,6 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         """Await all running infer requests if any."""
         self.model["image_encoder"].await_all()
         self.model["decoder"].await_all()
-
-    def pre_process_prompt_getter(self, *args, **kwargs) -> Any:
-        """Pre-process function of OpenVINO Zero-shot VIsual Prompting Inferencer for prompt getter."""
-        pass
 
 
 class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInferencer):
@@ -250,7 +257,13 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
-                    in ["image_size", "sim_threshold", "num_bg_points", "embedded_processing"],
+                    in [
+                        "image_size",
+                        "sim_threshold",
+                        "num_bg_points",
+                        "embedded_processing",
+                        "default_threshold_reference",
+                    ],
                 )
             },
             "decoder": {
@@ -289,44 +302,107 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
 
-    def pre_process(  # type: ignore
-        self, dataset_item: DatasetItemEntity, extra_processing: bool = False
+        self.reference_feats: Optional[np.ndarray] = None
+        self.used_indices: Optional[np.ndarray] = None
+
+    def pre_process_image_encoder(
+        self, inputs: np.ndarray, extra_processing: bool = False
     ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Zero-shot Visual Prompting Inferencer for image encoder."""
-        return self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
+        return self.model["image_encoder"].preprocess(inputs, extra_processing)
 
-    def pre_process_prompt_getter(
-        self, image_embeddings: Dict[str, np.ndarray], original_size: np.ndarray
-    ) -> Dict[str, np.ndarray]:
-        """Pre-process function of OpenVINO Zero-shot VIsual Prompting Inferencer for prompt getter."""
-        inputs_prompt_getter = {
-            "original_size": original_size[None],
-            "threshold": np.array([[self.model["prompt_getter"].sim_threshold]], dtype=np.float32),
-            "num_bg_points": np.array([[self.model["prompt_getter"].num_bg_points]], dtype=np.int64),
-        }
-        inputs_prompt_getter.update(image_embeddings)
-        return inputs_prompt_getter
+    def learn(
+        self,
+        dataset_item: DatasetItemEntity,
+        reset_feat: bool = False,
+        use_bbox: bool = False,
+        use_point: bool = False,
+        path_reference_info: str = "vpm_zsl_reference_infos/{}/reference_info.pickle",
+    ) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
+        """Learn for reference features."""
+        ref_masks: np.ndarray
 
-    def predict(self, dataset_item: DatasetItemEntity) -> List[Annotation]:  # type: ignore
+        if reset_feat or self.reference_feats is None:
+            self.initialize_reference_info()
+
+        images, meta, prompts = self.pre_process(dataset_item, use_bbox, use_point)
+        largest_label: int = max([int(p["label"].id) for p in prompts])
+        self.expand_reference_info(largest_label)
+
+        image_embeddings = self.forward_image_encoder(images)
+        processed_embedding = image_embeddings["image_embeddings"].squeeze().transpose(1, 2, 0)
+        original_size = meta["original_shape"][:2]
+
+        ref_masks = np.zeros((largest_label + 1, *map(int, original_size)), dtype=np.uint8)
+        for prompt in prompts:
+            if "point_coords" in prompt:
+                # bboxes and points
+                label = prompt.pop("label")
+                original_size = prompt.get("orig_size")
+                prompt.update(image_embeddings)
+
+                prediction = self.forward_decoder(prompt, original_size, is_cascade=False)
+                ref_mask = prediction["upscaled_masks"]
+            else:
+                logger.warning("annotation and polygon will be supported.")
+                continue
+            ref_masks[int(label.id)] += ref_mask
+
+        ref_masks = np.clip(ref_masks, 0, 1)
+        for label in range(largest_label + 1):
+            ref_mask = ref_masks[label]
+            if ref_mask.sum() == 0:
+                # empty prediction
+                continue
+
+            ref_feat = None
+            default_threshold_reference = deepcopy(self.model["prompt_getter"].default_threshold_reference)
+            while ref_feat is None:
+                logger.info(f"[*] default_threshold_reference : {default_threshold_reference:.4f}")
+                ref_feat = self._generate_masked_features(
+                    processed_embedding, ref_masks[label], default_threshold_reference
+                )
+                default_threshold_reference -= 0.05
+
+            self.reference_feats[label] = ref_feat
+            self.used_indices = np.concatenate((self.used_indices, np.array([[label]])), axis=1)
+
+        reference_info = {"reference_feats": self.reference_feats, "used_indices": self.used_indices}
+        path_reference_info = path_reference_info.format(time.strftime("%Y%m%d-%H%M%S"))
+        logger.info(f"Saved reference info at {path_reference_info}.")
+        pickle.dump(reference_info, open(path_reference_info, "wb"))
+        return reference_info, ref_masks
+
+    def infer(
+        self,
+        images: np.ndarray,
+        reference_feats: np.ndarray,
+        used_indices: np.ndarray,
+        is_cascade: bool = False,
+    ) -> Tuple[List[Any], DefaultDict[Any, Any], DefaultDict[Any, Any]]:
         """Perform a prediction for a given input image."""
+        points_score: np.ndarray
+
         # forward image encoder
-        images, meta = self.pre_process(dataset_item)
-        original_size = np.array(meta["original_shape"][:2], dtype=np.int64)
+        images, meta = self.pre_process_image_encoder(images)
+        original_size = np.asarray([meta["original_shape"][:2]], dtype=np.int64)
         image_embeddings = self.forward_image_encoder(images)
 
         # get point candidates
-        inputs_prompt_getter = self.pre_process_prompt_getter(image_embeddings, original_size)
-        total_prompts = self.forward_prompt_getter(inputs_prompt_getter)
+        total_points_scores, total_bg_coords = self.forward_prompt_getter(
+            image_embeddings, reference_feats, used_indices, original_size
+        )
 
         annotations: DefaultDict = defaultdict(list)
         predicted_masks: DefaultDict = defaultdict(list)
         used_points: DefaultDict = defaultdict(list)
-        for label, (points_scores, bg_coords) in enumerate(
-            zip(total_prompts["total_points_scores"], total_prompts["total_bg_coords"])
-        ):
+        for label in total_points_scores.keys():
+            points_scores = total_points_scores[label]
+            bg_coords = total_bg_coords[label]
             for points_score in points_scores:
-                if points_score[-1] == -1:
+                if points_score[-1] in [-1.0, 0.0]:
                     continue
+
                 x, y = points_score[:2]
                 is_done = False
                 for pm in predicted_masks.get(label, []):
@@ -338,37 +414,76 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                     continue
 
                 point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-                point_coords = self.model["decoder"]._apply_coords(point_coords, original_size)
+                point_coords = self.model["decoder"]._apply_coords(point_coords, original_size[0])
                 point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
-                inputs_decoder = {"point_coords": point_coords[None], "point_labels": point_labels[None]}
+                inputs_decoder = {
+                    "point_coords": point_coords[None],
+                    "point_labels": point_labels[None],
+                    "orig_size": original_size,
+                }
                 inputs_decoder.update(image_embeddings)
 
-                prediction = self.forward_decoder(inputs_decoder, original_size)
-                metadata = {
-                    "label": [_label for _label in self.labels if int(_label.id_) == label][0],
-                    "original_size": original_size[None],
-                }
+                prediction = self.forward_decoder(inputs_decoder, original_size, is_cascade)
+                prediction.update({"scores": points_score[-1]})
 
-                # set annotation for eval
-                annotation, hard_prediction, _ = self.post_process(prediction, metadata)
-                annotations[label].extend(annotation)
-                predicted_masks[label].append(hard_prediction)
+                predicted_masks[label].append(prediction[self.model["decoder"].output_blob_name])
                 used_points[label].append(points_score)
-        self.__inspect_overlapping_areas(predicted_masks, used_points, annotations)
-        return sum(annotations.values(), [])
 
-    def forward_prompt_getter(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+        self._inspect_overlapping_areas(predicted_masks, used_points)
+
+        for label, predictions in predicted_masks.items():
+            if len(predictions) == 0:
+                continue
+            metadata = {
+                "label": [_label for _label in self.labels if int(_label.id_) == label][0],
+                "original_size": original_size,
+            }
+            for prediction, used_point in zip(predictions, used_points[label]):
+                annotation, _, _ = self.post_process(
+                    {self.model["decoder"].output_blob_name: prediction, "scores": used_point[-1]}, metadata
+                )
+                annotations[label].extend(annotation)
+
+        return sum(annotations.values(), []), predicted_masks, used_points
+
+    def forward_prompt_getter(
+        self,
+        image_embeddings: Dict[str, np.ndarray],
+        reference_feats: np.ndarray,
+        used_indices: np.ndarray,
+        original_size: np.ndarray,
+    ) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
-        return self.model["prompt_getter"].infer_sync(inputs)
+        inputs = {
+            "original_size": original_size,
+            "threshold": np.array([[self.model["prompt_getter"].sim_threshold]], dtype=np.float32),
+            "num_bg_points": np.array([[self.model["prompt_getter"].num_bg_points]], dtype=np.int64),
+            **image_embeddings,
+        }
+        total_points_scores: Dict[int, np.ndarray] = {}
+        total_bg_coords: Dict[int, np.ndarray] = {}
+        for label in used_indices[0]:
+            reference_feat = reference_feats[label]
+            inputs["reference_feat"] = reference_feat
+            outputs = self.model["prompt_getter"].infer_sync(inputs)
+
+            total_points_scores[label] = outputs["points_scores"]
+            total_bg_coords[label] = outputs["bg_coords"]
+
+        return total_points_scores, total_bg_coords
 
     def forward_decoder(  # type: ignore
-        self, inputs: Dict[str, np.ndarray], original_size: np.ndarray
+        self,
+        inputs: Dict[str, np.ndarray],
+        original_size: np.ndarray,
+        is_cascade: bool = True,
     ) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Visual Prompting Inferencer."""
+        masks: np.ndarray
         logits: np.ndarray
         scores: np.ndarray
-        mask_slice = slice(0, 1)
-        for i in range(3):
+        num_iter = 3 if is_cascade else 1
+        for i in range(num_iter):
             if i == 0:
                 # First-step prediction
                 mask_input = np.zeros(
@@ -378,44 +493,46 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             elif i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size, is_single=True  # noqa: F821
-                )
+                mask_input, masks = self._postprocess_masks(masks, logits, scores, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
-                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
+                    return {"upscaled_masks": masks}
 
                 has_mask_input = self.has_mask_inputs[1]
 
             elif i == 2:
                 # Cascaded Post-refinement-2
-                mask_input, masks, iou_predictions = self._postprocess_masks(
-                    logits, scores, original_size  # noqa: F821
-                )
+                mask_input, masks = self._postprocess_masks(masks, logits, scores)  # noqa: F821
                 if masks.sum() == 0:
-                    return {"iou_predictions": iou_predictions, "low_res_masks": mask_input}
+                    return {"upscaled_masks": masks}
 
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"]._apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size[0]
                 )
-                inputs["point_coords"] = np.concatenate((inputs["point_coords"], box_coords), axis=1)
-                inputs["point_labels"] = np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1)
+                inputs.update(
+                    {
+                        "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
+                        "point_labels": np.concatenate((inputs["point_labels"], self.point_labels_box), axis=1),
+                    }
+                )
 
             inputs.update({"mask_input": mask_input, "has_mask_input": has_mask_input})
             prediction = self.model["decoder"].infer_sync(inputs)
-            scores, logits = prediction["iou_predictions"], prediction["low_res_masks"]
+            upscaled_masks, scores, logits = (
+                prediction["upscaled_masks"],
+                prediction["iou_predictions"],
+                prediction["low_res_masks"],
+            )
+            masks = upscaled_masks > self.model["decoder"].mask_threshold
 
-        return {"iou_predictions": scores[:, mask_slice], "low_res_masks": logits[:, mask_slice, :, :]}
+        _, masks = self._postprocess_masks(masks, logits, scores)
+        return {"upscaled_masks": masks}
 
     def _postprocess_masks(
-        self, logits: np.ndarray, scores: np.ndarray, original_size: np.ndarray, is_single: bool = False
+        self, masks: np.ndarray, logits: np.ndarray, scores: np.ndarray, is_single: bool = False
     ) -> Tuple[np.ndarray, ...]:
         """Post-process logits for resized masks according to best index based on scores."""
-        high_res_masks = self.model["decoder"].resize_and_crop(logits[0].transpose(1, 2, 0), original_size)
-        masks = high_res_masks > self.model["decoder"].mask_threshold
-        masks = masks.transpose(2, 0, 1)[None]
-
         if is_single:
             best_idx = 0
         else:
@@ -430,19 +547,18 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             if len(scores[0]) == 0:
                 # all predicted masks were zero masks, ignore them.
-                return None, np.zeros((self.model["decoder"].image_size, self.model["decoder"].image_size)), 0.0
+                return None, np.zeros(masks.shape[-2:])
 
             best_idx = np.argmax(scores[0])
-        return logits[:, [best_idx]], masks[0, best_idx], scores[0, best_idx]
+        return logits[:, [best_idx]], masks[0, best_idx]
 
-    def __inspect_overlapping_areas(
+    def _inspect_overlapping_areas(
         self,
         predicted_masks: Dict[int, List[np.ndarray]],
         used_points: Dict[int, List[np.ndarray]],
-        annotations: Dict[int, List[np.ndarray]],
         threshold_iou: float = 0.8,
     ):
-        def __calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
+        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray):
             assert mask1.ndim == 2 and mask2.ndim == 2
             intersection = np.logical_and(mask1, mask2).sum().item()
             union = np.logical_or(mask1, mask2).sum().item()
@@ -460,21 +576,104 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if __calculate_mask_iou(mask, other_mask) > threshold_iou:
+                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:
                         overlapped_label.append(im)
 
-            for im in overlapped_label[::-1]:
+            for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
                 used_points[label].pop(im)
-                annotations[label].pop(im)
 
-            for jm in overlapped_other_label[::-1]:
+            for jm in sorted(list(set(overlapped_other_label)), reverse=True):
                 other_masks.pop(jm)
                 used_points[other_label].pop(jm)
-                annotations[other_label].pop(jm)
+
+    def predict(self, dataset_item: DatasetItemEntity) -> List[Annotation]:  # type: ignore
+        """Perform a prediction for a given input image."""
+        results = self.infer(dataset_item.numpy, self.reference_feats, self.used_indices)
+        return results[0]
+
+    def _find_latest_reference_info(self, root: str = "vpm_zsl_reference_infos") -> Union[str, None]:
+        """Find latest reference info to be used."""
+        if not os.path.isdir(root):
+            return None
+        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
+            return stamps[0]
+        return None
+
+    def _get_reference_info(
+        self, root: str = "vpm_zsl_reference_infos", path_reference_info: str = "{}/reference_info.pickle"
+    ) -> Union[Tuple[np.ndarray, np.ndarray], None]:
+        """Get reference info through loading previously saved one or running `learn`."""
+        if (latest_stamp := self._find_latest_reference_info(root)) is not None:
+            # load previously saved reference info
+            latest_reference_info = os.path.join(root, path_reference_info.format(latest_stamp))
+            reference_info = pickle.load(open(latest_reference_info, "rb"))
+            return reference_info["reference_feats"], reference_info["used_indices"]
+        return None, None
+
+    def initialize_reference_info(self) -> None:
+        """Initialize reference information."""
+        self.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
+        self.used_indices = np.array([[]], dtype=np.int64)
+
+    def expand_reference_info(self, new_largest_label: int) -> None:
+        """Expand reference info dimensions if newly given processed prompts have more lables."""
+        if new_largest_label > (cur_largest_label := len(self.reference_feats) - 1):
+            diff = new_largest_label - cur_largest_label
+            self.reference_feats = np.pad(self.reference_feats, ((0, diff), (0, 0), (0, 0)), constant_values=0.0)
+
+    def _generate_masked_features(
+        self,
+        feats: np.ndarray,
+        masks: np.ndarray,
+        threshold_mask: float,
+    ) -> Tuple[np.ndarray, ...]:
+        """Generate masked features.
+
+        Args:
+            feats (np.ndarray): Raw reference features. It will be filtered with masks.
+            masks (np.ndarray): Reference masks used to filter features.
+            threshold_mask (float): Threshold to control masked region.
+
+        Returns:
+            (np.ndarray): Masked features.
+        """
+        target_shape = self.model["image_encoder"].image_size / max(masks.shape) * np.array(masks.shape)
+        target_shape = target_shape[::-1].astype(np.int32)
+
+        # Post-process masks
+        masks = cv2.resize(masks, target_shape, interpolation=cv2.INTER_LINEAR)
+        masks = self._pad_to_square(masks)
+        masks = cv2.resize(masks, feats.shape[:2][::-1], interpolation=cv2.INTER_LINEAR)
+
+        # Target feature extraction
+        if (masks > threshold_mask).sum() == 0:
+            # (for stability) there is no area to be extracted
+            return None
+
+        masked_feat = feats[masks > threshold_mask]
+        masked_feat = masked_feat.mean(0)[None]
+        masked_feat = masked_feat / np.linalg.norm(masked_feat, axis=-1, keepdims=True)
+
+        return masked_feat
+
+    def _pad_to_square(self, x: np.ndarray) -> np.ndarray:
+        """Pad to a square input.
+
+        Args:
+            x (np.ndarray): Mask to be padded.
+
+        Returns:
+            (np.ndarray): Padded mask.
+        """
+        h, w = x.shape[-2:]
+        padh = self.model["image_encoder"].image_size - h
+        padw = self.model["image_encoder"].image_size - w
+        x = np.pad(x, ((0, padh), (0, padw)), constant_values=0.0)
+        return x
 
 
 class OTXOpenVinoDataLoader:
@@ -487,6 +686,7 @@ class OTXOpenVinoDataLoader:
         module_name: str,
         shuffle: bool = True,
         output_model: Optional[ModelEntity] = None,
+        **kwargs,
     ):
         self.dataset = dataset
         self.inferencer = inferencer
@@ -526,7 +726,6 @@ class OTXOpenVinoDataLoader:
             image_embeddings = self.image_encoder(images["images"])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
-            prompt.pop("orig_size")
             prompt.update({"image_embeddings": image_embeddings["image_embeddings"]})
             return prompt
             # TODO (sungchul): change has_mask_input
@@ -546,12 +745,18 @@ class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
         module_name: str,
         shuffle: bool = True,
         output_model: Optional[ModelEntity] = None,
+        reference_feats: Optional[np.ndarray] = None,
+        used_indices: Optional[np.ndarray] = None,
     ):
         super().__init__(
             dataset=dataset, inferencer=inferencer, module_name=module_name, shuffle=shuffle, output_model=output_model
         )
         if self.module_name == "decoder":
             self.prompt_getter = self._load_module("prompt_getter", output_model)
+
+        self.inferencer: OpenVINOZeroShotVisualPromptingInferencer
+        self.reference_feats = reference_feats
+        self.used_indices = used_indices
 
     def __getitem__(self, index: int) -> Dict[str, Any]:
         """Get item from dataset."""
@@ -561,8 +766,8 @@ class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
             index = self.shuffler[index]
 
         items = self.dataset[index]
-        images, meta = self.inferencer.pre_process(items, extra_processing=True)  # type: ignore
-        original_size = np.array(meta["original_shape"][:2])
+        images, meta = self.inferencer.pre_process_image_encoder(items.numpy, extra_processing=True)  # type: ignore
+        original_size = np.asarray([meta["original_shape"][:2]])
         _, _, h, w = images["images"].shape
         pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
         images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
@@ -570,23 +775,32 @@ class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
             return images
         else:
             image_embeddings = self.image_encoder(images["images"])
-            inputs_prompt_getter = self.inferencer.pre_process_prompt_getter(image_embeddings, original_size)
             if self.module_name == "prompt_getter":
-                return inputs_prompt_getter
+                return {
+                    "reference_feat": self.reference_feats[self.used_indices[0][0]],  # only use the first feature
+                    "original_size": original_size,
+                    "threshold": np.array([[self.inferencer.model["prompt_getter"].sim_threshold]], dtype=np.float32),
+                    "num_bg_points": np.array([[self.inferencer.model["prompt_getter"].num_bg_points]], dtype=np.int64),
+                    **image_embeddings,
+                }
 
-            total_prompts = self.prompt_getter(inputs_prompt_getter)
+            total_points_scores, total_bg_coords = self.inferencer.forward_prompt_getter(
+                image_embeddings, self.reference_feats, self.used_indices, original_size
+            )
+
             # only use the first prompt
-            point_score = total_prompts["total_points_scores"][0][0]
-            bg_coords = total_prompts["total_bg_coords"][0]
+            point_score: np.ndarray = total_points_scores[0][0]
+            bg_coords: np.ndarray = total_bg_coords[0]
 
             x, y = point_score[:2]
             point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-            point_coords = self.inferencer.model["decoder"]._apply_coords(point_coords, original_size)
+            point_coords = self.inferencer.model["decoder"]._apply_coords(point_coords, original_size[0])
             point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
             inputs_decoder = {"point_coords": point_coords[None], "point_labels": point_labels[None]}
             inputs_decoder.update(image_embeddings)
             inputs_decoder.update(
                 {
+                    "orig_size": original_size,
                     "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
                     "has_mask_input": np.zeros((1, 1), dtype=np.float32),
                 }
@@ -771,6 +985,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         optimization_parameters: Optional[OptimizationParameters] = None,
         module_names: List[str] = ["image_encoder", "decoder"],
         ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXOpenVinoDataLoader,
+        **kwargs,
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
         logger.info("Start PTQ optimization")
@@ -783,7 +998,9 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset = dataset.get_subset(Subset.TRAINING)
 
         for i, module_name in enumerate(module_names, 1):
-            data_loader = ov_dataloader(dataset, self.inferencer, module_name=module_name, output_model=output_model)
+            data_loader = ov_dataloader(
+                dataset, self.inferencer, module_name=module_name, output_model=output_model, **kwargs
+            )
             quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
 
             with tempfile.TemporaryDirectory() as tempdir:
@@ -863,6 +1080,71 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
             num_requests=get_default_async_reqs_num(),
         )
 
+    def infer(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
+        root: str = "vpm_zsl_reference_infos",
+        path_reference_info: str = "{}/reference_info.pickle",
+    ) -> DatasetEntity:
+        """Infer function of OpenVINOVisualPromptingTask.
+
+        Currently, asynchronous execution is not supported, synchronous execution will be executed instead.
+        """
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+            enable_async_inference = inference_parameters.enable_async_inference
+        else:
+            update_progress_callback = default_progress_callback
+            enable_async_inference = True
+
+        # FIXME (sungchul): Support async inference.
+        if enable_async_inference:
+            logger.warning("Asynchronous inference doesn't work, synchronous inference will be executed.")
+            enable_async_inference = False
+        predicted_validation_dataset = dataset.with_empty_annotations()
+
+        def add_prediction(id: int, annotations: List[Annotation]):
+            dataset_item = predicted_validation_dataset[id]
+            dataset_item.append_annotations(annotations)
+
+        total_time = 0.0
+        dataset_size = len(dataset)
+
+        if self.inferencer.reference_feats is None and self.inferencer.used_indices is None:
+            # set reference_feats and used_indices from previously saved reference_info
+            self.inferencer.reference_feats, self.inferencer.used_indices = self.inferencer._get_reference_info(
+                root, path_reference_info
+            )
+            if self.inferencer.reference_feats is None and self.inferencer.used_indices is None:
+                # if they are empty, stop inference and return empty dataset
+                logger.warning(
+                    (
+                        "reference_feats and used_indices are empty, stop inference and return empty dataset. "
+                        "Please run learn function first."
+                    )
+                )
+                return predicted_validation_dataset
+
+        for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
+
+            annotations = self.inferencer.predict(dataset_item)
+            add_prediction(i - 1, annotations)
+
+            end_time = time.perf_counter() - start_time
+            total_time += end_time
+            update_progress_callback(int(i / dataset_size * 100), None)
+
+        self.inferencer.await_all()
+
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
+        logger.info(f"Total time: {total_time} secs")
+        logger.info("Visual Prompting OpenVINO inference completed")
+
+        return predicted_validation_dataset
+
     def optimize(
         self,
         optimization_type: OptimizationType,
@@ -871,8 +1153,11 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
         optimization_parameters: Optional[OptimizationParameters] = None,
         module_names: List[str] = ["image_encoder", "prompt_getter", "decoder"],
         ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXZeroShotOpenVinoDataLoader,
+        **kwargs,
     ):
         """Optimize function of OpenVINOZeroShotVisualPromptingTask."""
+        self.inferencer: OpenVINOZeroShotVisualPromptingInferencer
+        reference_feats, used_indices = self.inferencer._get_reference_info()
         return super().optimize(
             optimization_type=optimization_type,
             dataset=dataset,
@@ -880,4 +1165,6 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
             optimization_parameters=optimization_parameters,
             module_names=module_names,
             ov_dataloader=ov_dataloader,
+            reference_feats=reference_feats,
+            used_indices=used_indices,
         )
