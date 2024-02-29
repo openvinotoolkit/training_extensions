@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from operator import itemgetter
 from typing import TYPE_CHECKING, Any
 
 import torch
@@ -179,7 +178,7 @@ class MultilabelClsBatchPredEntityWithXAI(MultilabelClsBatchDataEntity, OTXBatch
 
 
 @dataclass
-class HLabelInfo:
+class HLabelData:
     """The label information represents the hierarchy.
 
     All params should be kept since they're also used at the Model API side.
@@ -245,8 +244,8 @@ class HLabelInfo:
     empty_multiclass_head_indices: list[int]
 
     @classmethod
-    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelInfo:
-        """Generate HLabelInfo from the Datumaro LabelCategories.
+    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelData:
+        """Generate HLabelData from the Datumaro LabelCategories.
 
         Args:
             dm_label_categories (LabelCategories): the label categories of datumaro.
@@ -255,7 +254,6 @@ class HLabelInfo:
         def get_exclusive_group_info(all_groups: list[Label | list[Label]]) -> dict[str, Any]:
             """Get exclusive group information."""
             exclusive_groups = [g for g in all_groups if len(g) > 1]
-            exclusive_groups.sort(key=itemgetter(0))
 
             last_logits_pos = 0
             num_single_label_classes = 0
@@ -282,7 +280,6 @@ class HLabelInfo:
         ) -> dict[str, Any]:
             """Get single label group information."""
             single_label_groups = [g for g in all_groups if len(g) == 1]
-            single_label_groups.sort(key=itemgetter(0))
 
             class_to_idx = {}
 
@@ -324,7 +321,7 @@ class HLabelInfo:
             single_label_group_info["class_to_idx"],
         )
 
-        return HLabelInfo(
+        return HLabelData(
             num_multiclass_heads=exclusive_group_info["num_multiclass_heads"],
             num_multilabel_classes=single_label_group_info["num_multilabel_classes"],
             head_idx_to_logits_range=exclusive_group_info["head_idx_to_logits_range"],
