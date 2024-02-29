@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -13,7 +14,7 @@ from datumaro import Image
 from datumaro.plugins.tiling.util import xywh_to_x1y1x2y2
 from omegaconf import DictConfig, OmegaConf
 from openvino.model_api.models import Model
-from openvino.model_api.tilers import Tiler
+from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler, Tiler
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
@@ -24,7 +25,10 @@ from otx.core.data.dataset.tile import OTXTileTransform
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
+from otx.core.model.entity.detection import OVDetectionModel
+from otx.core.model.entity.instance_segmentation import OVInstanceSegmentationModel
 from otx.core.types.task import OTXTaskType
+from otx.engine import Engine
 
 
 class TestOTXTiling:
@@ -91,6 +95,7 @@ class TestOTXTiling:
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
 
     def test_tiler_consistency(self, mocker):
+        # Test that the tiler and tile transform are consistent
         rng = np.random.default_rng()
         rnd_tile_size = rng.integers(low=100, high=500)
         rnd_tile_overlap = rng.random()
@@ -178,3 +183,62 @@ class TestOTXTiling:
 
     def test_tile_merge(self):
         pytest.skip("Not implemented yet")
+
+    def test_ov_det_tile_model(
+        self,
+        tmp_path: Path,
+        fxt_accelerator: str,
+        fxt_target_dataset_per_task: dict,
+    ):
+        tile_recipes = [recipe for recipe in pytest.RECIPE_LIST if "detection" in recipe and "tile" in recipe]
+        tile_recipe = tile_recipes[0]
+
+        engine = Engine.from_config(
+            config_path=tile_recipe,
+            data_root=fxt_target_dataset_per_task[OTXTaskType.DETECTION.value.lower()],
+            work_dir=tmp_path / OTXTaskType.DETECTION,
+            device=fxt_accelerator,
+        )
+        engine.train(max_epochs=1)
+        exported_model_path = engine.export()
+        assert exported_model_path.exists()
+        engine.test(exported_model_path, accelerator="cpu")
+
+        ov_model = OVDetectionModel(model_name=exported_model_path, num_classes=3)
+
+        assert isinstance(ov_model.model, DetectionTiler), "Model should be an instance of DetectionTiler"
+        assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
+        assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+
+    def test_ov_inst_tile_model(
+        self,
+        tmp_path: Path,
+        fxt_accelerator: str,
+        fxt_target_dataset_per_task: dict,
+    ):
+        # Test that tiler is setup correctly for instance segmentation
+        tile_recipes = [
+            recipe for recipe in pytest.RECIPE_LIST if "instance_segmentation" in recipe and "tile" in recipe
+        ]
+
+        tile_recipe = tile_recipes[0]
+
+        engine = Engine.from_config(
+            config_path=tile_recipe,
+            data_root=fxt_target_dataset_per_task[OTXTaskType.INSTANCE_SEGMENTATION.value.lower()],
+            work_dir=tmp_path / OTXTaskType.INSTANCE_SEGMENTATION,
+            device=fxt_accelerator,
+        )
+        engine.train(max_epochs=1)
+        exported_model_path = engine.export()
+        assert exported_model_path.exists()
+        engine.test(exported_model_path, accelerator="cpu")
+
+        ov_model = OVInstanceSegmentationModel(model_name=exported_model_path, num_classes=3)
+
+        assert isinstance(
+            ov_model.model,
+            InstanceSegmentationTiler,
+        ), "Model should be an instance of InstanceSegmentationTiler"
+        assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
+        assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
