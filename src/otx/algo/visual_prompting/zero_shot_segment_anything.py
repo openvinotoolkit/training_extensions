@@ -781,9 +781,9 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
                 transformed_prompts.append(prompt)
         return transformed_prompts
 
-    def get_preprocess_shape(self, oldh: int, oldw: int, long_side_length: int) -> tuple[int, int]:
+    def get_preprocess_shape(self, oldh: int, oldw: int, target_length: int) -> tuple[int, int]:
         """Get preprocess shape."""
-        scale = long_side_length * 1.0 / max(oldh, oldw)
+        scale = target_length * 1.0 / max(oldh, oldw)
         newh, neww = oldh * scale, oldw * scale
         neww = int(neww + 0.5)
         newh = int(newh + 0.5)

@@ -11,7 +11,7 @@ from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OT
 from otx.core.data.entity.base import ImageInfo, Points
 from torch import Tensor
 from torchvision.transforms.v2 import Identity, Transform
-from torchvision.tv_tensors import BoundingBoxes, Mask
+from torchvision.tv_tensors import BoundingBoxes, Image, Mask
 
 
 class TestOTXVisualPromptingDataset:
@@ -97,7 +97,7 @@ class TestOTXZeroShotVisualPromptingDataset:
         entity = dataset._get_item_impl(0)
 
         assert hasattr(entity, "image")
-        assert isinstance(entity.image, np.ndarray)
+        assert isinstance(entity.image, Image)
         assert hasattr(entity, "img_info")
         assert isinstance(entity.img_info, ImageInfo)
         assert hasattr(entity, "masks")

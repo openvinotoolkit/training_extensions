@@ -10,11 +10,7 @@ import pytest
 from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
 from openvino.model_api.models.types import NumericalValue
-from otx.algo.visual_prompting.openvino_models import (
-    Decoder,
-    ImageEncoder,
-    PromptGetter,
-)
+from otx.algo.visual_prompting.openvino_models import Decoder, ImageEncoder
 
 
 class TestImageEncoder:
@@ -23,6 +19,7 @@ class TestImageEncoder:
         params = ImageEncoder.parameters()
 
         assert params.get("resize_type").default_value == "fit_to_window"
+        assert params.get("image_size").default_value == 1024
 
     def test_preproces(self, mocker):
         """Test preprocess."""
@@ -40,34 +37,6 @@ class TestImageEncoder:
         assert meta["resized_shape"] == (4, 4, 3)
         assert "resize_type" in meta
         assert meta["resize_type"] == "fit_to_window"
-
-
-class TestPromptGetter:
-    def test_parameters(self):
-        """Test parameters."""
-        params = PromptGetter.parameters()
-
-        assert params.get("sim_threshold").default_value == 0.5
-        assert params.get("num_bg_points").default_value == 1
-
-    def test_get_inputs(self, mocker):
-        """Test _get_inputs."""
-        mocker.patch.object(ImageModel, "__init__")
-        prompt_getter = PromptGetter("adapter")
-
-        prompt_getter.inputs = {
-            "image_embeddings": np.ones((1, 4, 4, 3)),
-            "reference_feats": np.ones((2, 1, 256)),
-            "used_indices": np.array([[0, 1]], dtype=np.int64),
-            "original_size": np.array([[4, 4]], dtype=np.int64),
-            "threshold": np.array([[0.1]]),
-            "num_bg_points": np.array([[1]], dtype=np.int64),
-        }
-
-        returned_value = prompt_getter._get_inputs()
-
-        assert returned_value[0] == ["image_embeddings"]
-        assert returned_value[1] == ["reference_feats", "used_indices", "original_size", "threshold", "num_bg_points"]
 
 
 class TestDecoder:
@@ -129,11 +98,11 @@ class TestDecoder:
         assert "orig_size" in results[0]
 
     def test_apply_coords(self):
-        """Test _apply_coords."""
+        """Test apply_coords."""
         coords = np.array([[[1, 1], [2, 2]]])
         original_size = (12, 12)
 
-        results = self.decoder._apply_coords(coords, original_size)
+        results = self.decoder.apply_coords(coords, original_size)
 
         assert results.shape == (1, 2, 2)
         assert np.all(results == np.array([[[0.5, 0.5], [1.0, 1.0]]]))

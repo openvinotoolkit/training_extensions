@@ -306,7 +306,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             path_reference_info: Path = (
                 self.model.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
             )
-            Path.mkdir(Path.parent(path_reference_info), parents=True)
+            Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
             if isinstance(self.model, OTXZeroShotVisualPromptingModel):
                 torch.save(reference_info, path_reference_info)
                 pickle.dump(

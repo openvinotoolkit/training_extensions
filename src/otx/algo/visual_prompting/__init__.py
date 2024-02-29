@@ -4,7 +4,7 @@
 """Module for OTX visual prompting models."""
 
 from . import backbones, decoders, encoders
-from .openvino_models import Decoder, ImageEncoder, PromptGetter
+from .openvino_models import Decoder, ImageEncoder
 from .segment_anything import OTXSegmentAnything, SegmentAnything
 from .zero_shot_segment_anything import OTXZeroShotSegmentAnything, ZeroShotSegmentAnything
 
@@ -17,6 +17,5 @@ __all__ = [
     "OTXZeroShotSegmentAnything",
     "ZeroShotSegmentAnything",
     "ImageEncoder",
-    "PromptGetter",
     "Decoder",
 ]
