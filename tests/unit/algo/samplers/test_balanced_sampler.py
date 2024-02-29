@@ -90,15 +90,15 @@ class TestBalancedSampler:
         stats = get_idx_list_per_classes(fxt_imbalanced_dataset.dm_subset)
 
         # Check the expected results
-        assert stats == {"0": list(range(100)), "1": list(range(100, 108))}
+        assert stats == {0: list(range(100)), 1: list(range(100, 108))}
 
     def test_sampler_iter_per_class(self, fxt_imbalanced_dataset):
         batch_size = 4
         sampler = BalancedSampler(fxt_imbalanced_dataset, batch_size)
 
         stats = get_idx_list_per_classes(fxt_imbalanced_dataset.dm_subset)
-        class_0_idx = stats["0"]
-        class_1_idx = stats["1"]
+        class_0_idx = stats[0]
+        class_1_idx = stats[1]
         list_iter = list(iter(sampler))
         for i in range(0, len(sampler), batch_size):
             batch = sorted(list_iter[i : i + batch_size])

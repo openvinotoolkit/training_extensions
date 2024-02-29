@@ -6,10 +6,10 @@
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import torch
-from datumaro.components.annotation import Annotation, AnnotationType, LabelCategories
 from torch.utils.data import Sampler
 
 if TYPE_CHECKING:
@@ -18,25 +18,12 @@ if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset
 
 
-def get_idx_list_per_classes(dm_dataset: DmDataset) -> dict[str, list[int]]:
+def get_idx_list_per_classes(dm_dataset: DmDataset) -> dict[int, list[int]]:
     """Compute class statistics."""
-    labels = dm_dataset.categories().get(AnnotationType.label, LabelCategories())
-
-    def get_label(ann: Annotation) -> str:
-        """Get the name of the label associated with the given annotation."""
-        try:
-            return labels.items[ann.label].name if ann.label is not None else None
-        except IndexError:
-            return ann.label
-
-    stats: dict[str, list[int]] = {}
-    for i, item in enumerate(dm_dataset):
+    stats: dict[int, list[int]] = defaultdict(list)
+    for item_idx, item in enumerate(dm_dataset):
         for ann in item.annotations:
-            label = get_label(ann)
-            if label in stats:
-                stats[label].append(i)
-            else:
-                stats[label] = [i]
+            stats[ann.label].append(item_idx)
     return stats
 
 
@@ -88,7 +75,7 @@ class BalancedSampler(Sampler):
 
         # img_indices: dict[label: list[idx]]
         ann_stats = get_idx_list_per_classes(dataset.dm_subset)
-        self.img_indices = {k: v for k, v in ann_stats.items() if len(v) > 0}
+        self.img_indices = {k: torch.tensor(v, dtype=torch.int64) for k, v in ann_stats.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
         self.num_trials = int(self.data_length / self.num_cls)
@@ -136,15 +123,15 @@ class BalancedSampler(Sampler):
         indices = []
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
-                indice = torch.cat(
+                index = torch.cat(
                     [
-                        torch.tensor(self.img_indices[cls_indices], dtype=torch.int64)[
-                            torch.multinomial(torch.ones(len(self.img_indices[cls_indices])), 1, generator=generator)
+                        self.img_indices[cls_indices][
+                            torch.randint(0, len(self.img_indices[cls_indices]), (1,), generator=self.generator)
                         ]
                         for cls_indices in self.img_indices
                     ],
                 )
-                indices.append(indice)
+                indices.append(index)
 
         indices = torch.cat(indices)
         indices = indices.tolist()
