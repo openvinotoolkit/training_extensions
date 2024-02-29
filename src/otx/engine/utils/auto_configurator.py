@@ -74,6 +74,7 @@ OVMODEL_PER_TASK = {
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.entity.segmentation.OVSegmentationModel",
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVVisualPromptingModel",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVZeroShotVisualPromptingModel",
 }
 
 

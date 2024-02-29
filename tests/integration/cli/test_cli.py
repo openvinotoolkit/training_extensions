@@ -58,14 +58,11 @@ def test_otx_e2e(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "2",
+        "1" if task in ("zero_shot_visual_prompting") else "2",
         *fxt_cli_override_command_per_task[task],
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    if task in ("zero_shot_visual_prompting"):
-        pytest.skip("Full CLI test is not applicable to this task.")
 
     # Currently, a simple output check
     assert (tmp_path_train / "outputs").exists()
@@ -113,16 +110,22 @@ def test_otx_e2e(
             "dino_v2",
             "instance_segmentation",
             "action",
-            "visual_prompting",
         ]
     ):
         return
 
-    format_to_file = {
-        "ONNX": "exported_model.onnx",
-        "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
-    }
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        format_to_file = {
+            "ONNX": "visual_prompting_decoder.onnx",
+            "OPENVINO": "visual_prompting_decoder.xml",
+            # TODO (sungchul): EXPORTABLE_CODE will be supported # noqa: TD003
+        }
+    else:
+        format_to_file = {
+            "ONNX": "exported_model.onnx",
+            "OPENVINO": "exported_model.xml",
+            "EXPORTABLE_CODE": "exportable_code.zip",
+        }
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_file:
@@ -276,7 +279,13 @@ def test_otx_ov_test(
     task = ov_recipe.split("/")[-2]
     model_name = ov_recipe.split("/")[-1].split(".")[0]
 
-    if task in ["multi_label_cls", "instance_segmentation", "h_label_cls", "visual_prompting"]:
+    if task in [
+        "multi_label_cls",
+        "instance_segmentation",
+        "h_label_cls",
+        "visual_prompting",
+        "zero_shot_visual_prompting",
+    ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
@@ -345,7 +354,7 @@ def test_otx_hpo_e2e(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "2",
+        "1" if task in ("zero_shot_visual_prompting") else "2",
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",

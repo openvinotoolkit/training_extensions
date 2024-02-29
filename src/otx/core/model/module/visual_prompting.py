@@ -247,7 +247,6 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.automatic_optimization = False
 
     def set_metrics(self) -> None:
         """Set metrics."""
@@ -269,6 +268,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         if not self.model.load_latest_reference_info(self.device):
             # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
@@ -283,6 +283,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         if not self.model.load_latest_reference_info(self.device):
             # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
             self.training = False
