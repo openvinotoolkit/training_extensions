@@ -127,7 +127,7 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
     # Skip by benchmark type
     benchmark_type: str = request.config.getoption("--benchmark-type")
     if benchmark_type != "all" and benchmark_type not in request.node.name:
-        pytest.skip(f"Non-{benchmark_type} benchmark")
+        pytest.skip(f"non-{benchmark_type} benchmark")
 
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
