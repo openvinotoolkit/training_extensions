@@ -144,6 +144,8 @@ class MMdeployExporter(OTXModelExporter):
             Path: path to the exported model.
         """
         deploy_cfg = self._prepare_onnx_cfg()
+        if export_args is not None:
+            deploy_cfg.merge_from_dict(export_args)
         save_path = self._cvt2onnx(model, output_dir, base_model_name, deploy_cfg)
 
         onnx_model = onnx.load(str(save_path))
