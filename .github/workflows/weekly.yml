@@ -10,19 +10,19 @@ on:
 permissions: read-all
 
 jobs:
-  Performance-Speed-Tests:
-    name: Performance-Speed-py310
-    uses: ./.github/workflows/perf-speed.yml
+  Weekly-Perf-Efficiency-Benchmark:
+    name: Weekly-Perf-Efficiency-Benchmark
+    uses: ./.github/workflows/perf_efficiency.yml
     with:
       model-type: default
       data-size: medium
       num-repeat: 1
-      num-epoch: 3
+      num-epoch: 2
       eval-upto: optimize
-      artifact-prefix: weekly-perf-speed-benchmark
-  Performance-Accuracy-Tests:
-    name: Performance-Accuracy-py310
-    uses: ./.github/workflows/perf-accuracy.yml
+      artifact-prefix: weekly-perf-accuracy-benchmark
+  Weekly-Perf-Accuracy-Benchmark:
+    name: Weekly-Perf-Accuracy-Benchmarky
+    uses: ./.github/workflows/perf_accuracy.yml
     with:
       model-type: default
       data-size: all
