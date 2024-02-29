@@ -182,8 +182,8 @@ jobs:
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
   Integration-Test:
-    if: ${{ success() || cancelled() }}
-    needs: [Unit-Test, Coverage-Test, Unit-Test-tmp, Coverage-Test-tmp]
+    if: ${{ (needs.Unit-Test.result == 'success' || needs.Unit-Test-tmp.result == 'success') && (needs.Coverage-Test.result == 'success' || needs.Coverage-Test-tmp.result == 'success')}}
+    # needs: [Unit-Test, Coverage-Test, Unit-Test-tmp, Coverage-Test-tmp]
     strategy:
       fail-fast: false
       matrix:
