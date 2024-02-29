@@ -4,10 +4,16 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
 from datumaro import Dataset as DmDataset
+from datumaro import Image
+from datumaro.plugins.tiling.util import xywh_to_x1y1x2y2
 from omegaconf import DictConfig, OmegaConf
+from openvino.model_api.models import Model
+from openvino.model_api.tilers import Tiler
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,
@@ -83,6 +89,31 @@ class TestOTXTiling:
         num_tile_rows = (height + h_stride - 1) // h_stride
         num_tile_cols = (width + w_stride - 1) // w_stride
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
+
+    def test_tiler_consistency(self, mocker):
+        rng = np.random.default_rng()
+        rnd_tile_size = rng.integers(low=100, high=500)
+        rnd_tile_overlap = rng.random()
+        image_size = rng.integers(low=1000, high=5000)
+        np_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
+        dm_image = Image.from_numpy(np_image)
+
+        mock_model = MagicMock(spec=Model)
+        mocker.patch("openvino.model_api.tilers.tiler.Tiler.__init__", return_value=None)
+        mocker.patch.multiple(Tiler, __abstractmethods__=set())
+
+        tiler = Tiler(model=mock_model)
+        tiler.tile_size = rnd_tile_size
+        tiler.tiles_overlap = rnd_tile_overlap
+
+        mocker.patch("otx.core.data.dataset.tile.OTXTileTransform.__init__", return_value=None)
+        tile_transform = OTXTileTransform()
+        tile_transform._tile_size = (rnd_tile_size, rnd_tile_size)
+        tile_transform._overlap = (rnd_tile_overlap, rnd_tile_overlap)
+
+        dm_rois = [xywh_to_x1y1x2y2(*roi) for roi in tile_transform._extract_rois(dm_image)]
+        # 0 index in tiler is the full image so we skip it
+        assert np.allclose(dm_rois, tiler._tile(np_image)[1:])
 
     def test_adaptive_tiling(self, fxt_det_data_config):
         # Enable tile adapter
