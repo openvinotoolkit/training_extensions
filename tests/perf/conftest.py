@@ -7,7 +7,7 @@ import logging
 import os
 import platform
 import subprocess
-from datetime import UTC, datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -174,7 +174,8 @@ def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.Tem
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    date_str = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+    tz = timezone(offset=timedelta(hours=9), name="Seoul")
+    date_str = datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
     output_root = Path(output_root) / date_str
     msg = f"{output_root = }"
     log.info(msg)
