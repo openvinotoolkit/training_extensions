@@ -85,7 +85,7 @@ class _AnomalyModelExporter(OTXModelExporter):
             metadata=metadata,
         )
 
-    def to_openvino(
+    def to_openvino(  # type: ignore[override]
         self,
         model: nn.Module,
         output_dir: Path,
@@ -102,13 +102,14 @@ class _AnomalyModelExporter(OTXModelExporter):
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         return Path(save_path)
 
-    def to_onnx(
+    def to_onnx(  # type: ignore[override]
         self,
         model: nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
+        **kwargs,
     ) -> Path:
         save_path = str(output_dir / f"{base_model_name}.onnx")
         torch.onnx.export(
@@ -428,6 +429,7 @@ class OTXAnomaly:
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        export_args: dict[str, Any] | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 

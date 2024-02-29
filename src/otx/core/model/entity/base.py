@@ -263,7 +263,14 @@ class OTXModel(
             Path: path to the exported model.
         """
         self._reset_model_forward()
-        exported_model_path = self._exporter.export(self.model, output_dir, base_name, export_format, precision, export_args)
+        exported_model_path = self._exporter.export(
+            self.model,
+            output_dir,
+            base_name,
+            export_format,
+            precision,
+            export_args,
+        )
         self._restore_model_forward()
         return exported_model_path
 
