@@ -3,6 +3,7 @@
 #
 """Module for OTX base data entities."""
 
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -217,6 +218,21 @@ class ImageInfo(tv_tensors.TVTensor):
         bottom = h_pad - h_img
         self.padding = (left, top, right, bottom)
 
+    def __repr__(self) -> str:
+        return (
+            "ImageInfo("
+            f"img_idx={self.img_idx}, "
+            f"img_shape={self.img_shape}, "
+            f"ori_shape={self.ori_shape}, "
+            f"padding={self.padding}, "
+            f"scale_factor={self.scale_factor}, "
+            f"normalized={self.normalized}, "
+            f"norm_mean={self.norm_mean}, "
+            f"norm_std={self.norm_std}, "
+            f"image_color_channel={self.image_color_channel}, "
+            f"ignored_labels={self.ignored_labels})"
+        )
+
 
 @F.register_kernel(functional=F.resize, tv_tensor_cls=ImageInfo)
 def _resize_image_info(image_info: ImageInfo, size: list[int], **kwargs) -> ImageInfo:  # noqa: ARG001
@@ -366,7 +382,11 @@ def resize_points(
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Resize points."""
     old_height, old_width = canvas_size
-    new_height, new_width = F._geometry._compute_resized_output_size(canvas_size, size=size, max_size=max_size)  # noqa: SLF001
+    new_height, new_width = F._geometry._compute_resized_output_size(  # noqa: SLF001
+        canvas_size,
+        size=size,
+        max_size=max_size,
+    )
 
     if (new_height, new_width) == (old_height, old_width):
         return points, canvas_size

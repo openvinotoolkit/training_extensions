@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 
 import pytest
+import yaml
 from otx.cli import OTXCLI, main
 
 
@@ -50,7 +51,7 @@ class TestOTXCLI:
     def test_subcommand_parser(self, mocker) -> None:
         mocker.patch("otx.cli.cli.OTXCLI.__init__", return_value=None)
         cli = OTXCLI()
-        parser = cli.engine_subcommand_parser()
+        parser, _ = cli.engine_subcommand_parser(subcommand="train")
         assert parser.__class__.__name__ == "ArgumentParser"
         argument_list = [action.dest for action in parser._actions]
         expected_argument = [
@@ -85,7 +86,7 @@ class TestOTXCLI:
             "tests/assets/car_tree_bug",
             "--model.num_classes",
             "3",
-            "--engine.work_dir",
+            "--work_dir",
             str(tmpdir),
         ]
         monkeypatch.setattr("sys.argv", argv)
@@ -111,3 +112,74 @@ class TestOTXCLI:
 
         assert cli.datamodule == cli.engine.datamodule
         assert cli.model == cli.engine.model
+
+    @pytest.fixture()
+    def fxt_print_config_scheduler_override_command(self, monkeypatch) -> None:
+        argv = [
+            "otx",
+            "train",
+            "--config",
+            "src/otx/recipe/detection/atss_mobilenetv2.yaml",
+            "--data_root",
+            "tests/assets/car_tree_bug",
+            "--scheduler.monitor",
+            "val/test_f1",
+            "--print_config",
+        ]
+        monkeypatch.setattr("sys.argv", argv)
+
+    def test_print_config_scheduler_override_command(self, fxt_print_config_scheduler_override_command, capfd) -> None:
+        # Test that main function runs with help -> return 0
+        with pytest.raises(SystemExit, match="0"):
+            OTXCLI()
+        out, _ = capfd.readouterr()
+        result_config = yaml.safe_load(out)
+        expected_str = """
+        scheduler:
+        - class_path: otx.algo.schedulers.LinearWarmupScheduler
+          init_args:
+              num_warmup_steps: 3
+              interval: step
+        - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+              monitor: val/test_f1
+              mode: max
+              factor: 0.5
+              patience: 5
+              threshold: 0.0001
+              threshold_mode: rel
+              cooldown: 0
+              min_lr: 0.0
+              eps: 1.0e-08
+              verbose: false
+        """
+        expected_config = yaml.safe_load(expected_str)
+        assert expected_config["scheduler"] == result_config["scheduler"]
+
+    @pytest.fixture()
+    def fxt_metric_override_command(self, monkeypatch) -> None:
+        argv = [
+            "otx",
+            "train",
+            "--config",
+            "src/otx/recipe/detection/atss_mobilenetv2.yaml",
+            "--data_root",
+            "tests/assets/car_tree_bug",
+            "--metric",
+            "otx.core.metrics.fmeasure.FMeasure",
+            "--print_config",
+        ]
+        monkeypatch.setattr("sys.argv", argv)
+
+    def test_print_metric_override_command(self, fxt_metric_override_command, capfd) -> None:
+        # Test that main function runs with help -> return 0
+        with pytest.raises(SystemExit, match="0"):
+            OTXCLI()
+        out, _ = capfd.readouterr()
+        result_config = yaml.safe_load(out)
+        expected_str = """
+        metric:
+        - class_path: otx.core.metrics.fmeasure.FMeasure
+        """
+        expected_config = yaml.safe_load(expected_str)
+        assert expected_config["metric"][0]["class_path"] == result_config["metric"]["class_path"]

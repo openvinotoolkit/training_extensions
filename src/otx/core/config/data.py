@@ -103,6 +103,7 @@ class DataModuleConfig:
     stack_images: bool = True
 
     include_polygons: bool = False
+    unannotated_items_ratio: float = 0.0
 
     auto_num_workers: bool = False
     device: DeviceType = DeviceType.auto

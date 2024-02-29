@@ -9,10 +9,12 @@ import ast
 import logging
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator, TypeVar
+from typing import Any, Iterator, TypeVar, Union
 
 import docstring_parser
 from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, dict_to_namespace, namespace_to_dict
+
+from otx.core.types import PathLike
 
 logger = logging.getLogger()
 
@@ -264,6 +266,63 @@ def get_defaults_with_overrides(self: ArgumentParser, skip_check: bool = False) 
     return cfg
 
 
+# Workaround for https://github.com/omni-us/jsonargparse/issues/456
+def add_list_type_arguments(
+    parser: ArgumentParser,
+    baseclass: tuple[type, ...],
+    nested_key: str,
+    skip: set[str] | None = None,
+) -> None:
+    """Add list type arguments to the given ArgumentParser.
+
+    From python >= 3.11, add_subclass_arguments no longer allows adding arguments of the form list[Class].
+    Modify it to bypass class checking, allowing you to use the list argument.
+    Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.
+
+    Args:
+        parser (ArgumentParser): The ArgumentParser to add the arguments to.
+        baseclass (tuple[type, ...]): A tuple of base classes for the subclasses.
+        nested_key (str): The nested key for the arguments.
+        skip (set[str] | None, optional): A set of arguments to skip. Defaults to None.
+    """
+    from argparse import SUPPRESS
+
+    from jsonargparse._parameter_resolvers import ParamData
+    from jsonargparse._util import get_import_path, iter_to_set_str
+
+    group = parser._create_group_if_requested(  # noqa: SLF001
+        baseclass,
+        nested_key,
+        True,
+        None,
+        config_load=False,
+        required=False,
+        instantiate=False,
+    )
+    added_args: list[str] = []
+    if skip is not None:
+        skip = {f"{nested_key}.init_args." + s for s in skip}
+    param = ParamData(name=nested_key, annotation=Union[baseclass], component=baseclass)
+    str_baseclass = iter_to_set_str(get_import_path(x) for x in baseclass)
+    kwargs = {
+        "metavar": "CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE",
+        "help": (
+            f"One or more arguments specifying 'class_path' and 'init_args' for any subclass of {str_baseclass}s."
+        ),
+    }
+    kwargs["default"] = SUPPRESS
+    parser._add_signature_parameter(  # noqa: SLF001
+        group,
+        None,
+        param,
+        added_args,
+        skip,
+        sub_configs=True,
+        instantiate=False,
+        fail_untyped=False,
+    )
+
+
 @contextmanager
 def patch_update_configs() -> Iterator[None]:
     """Patch the update and apply_config methods of the given namespace and action_config_file objects."""
@@ -282,7 +341,7 @@ def patch_update_configs() -> Iterator[None]:
         ArgumentParser.get_defaults = original_get_defaults
 
 
-def get_configuration(config_path: str | Path) -> dict:
+def get_configuration(config_path: str | Path, subcommand: str = "train", **kwargs) -> dict:
     """Get the configuration from the given path.
 
     Args:
@@ -294,14 +353,70 @@ def get_configuration(config_path: str | Path) -> dict:
     from otx.cli.cli import OTXCLI
 
     with patch_update_configs():
-        parser = OTXCLI.engine_subcommand_parser()
+        parser, _ = OTXCLI.engine_subcommand_parser(subcommand=subcommand)
+        if kwargs:
+            parser.set_defaults(**kwargs)
+
         args = parser.parse_args(args=["--config", str(config_path)], _skip_check=True)
+
     config = namespace_to_dict(args)
     logger.info(f"{config_path} is loaded.")
 
     # Remove unnecessary cli arguments for API usage
-    cli_args = ["verbose", "data_root", "task", "seed", "callback_monitor", "resume", "disable_infer_num_classes"]
+    cli_args = [
+        "verbose",
+        "data_root",
+        "task",
+        "seed",
+        "callback_monitor",
+        "resume",
+        "disable_infer_num_classes",
+        "workspace",
+    ]
     logger.warning(f"The corresponding keys in config are not used.: {cli_args}")
     for arg in cli_args:
         config.pop(arg, None)
     return config
+
+
+def get_instantiated_classes(
+    config: PathLike,
+    work_dir: PathLike | None,
+    data_root: PathLike | None,
+    **kwargs,
+) -> tuple[dict, dict]:
+    """Get the instantiated classes for training.
+
+    Args:
+        config (PathLike): Path to the configuration file.
+        work_dir (PathLike): Path to the working directory.
+        data_root (PathLike): Path to the data root directory.
+
+    Returns:
+        dict: The instantiated classes for training.
+    """
+    from otx.cli import OTXCLI
+
+    cli_args = [
+        "train",
+        "--config",
+        str(config),
+        "--workspace.use_sub_dir",
+        "false",
+    ]
+    if work_dir is not None:
+        cli_args.extend(["--work_dir", str(work_dir)])
+    if data_root is not None:
+        cli_args.extend(["--data_root", str(data_root)])
+    for key, value in kwargs.items():
+        cli_args.extend([f"--{key}", str(value)])
+    otx_cli = OTXCLI(
+        args=cli_args,
+        run=False,
+    )
+
+    otx_cli.set_seed()
+    otx_cli.instantiate_classes(instantiate_engine=False)
+    instantiated_config = namespace_to_dict(otx_cli.config_init["train"])
+
+    return instantiated_config, otx_cli.prepare_subcommand_kwargs("train")

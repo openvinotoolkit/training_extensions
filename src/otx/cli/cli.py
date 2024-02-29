@@ -17,13 +17,17 @@ from jsonargparse import ActionConfigFile, ArgumentParser, Namespace, namespace_
 from rich.console import Console
 
 from otx import OTX_LOGO, __version__
+from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
-from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
+from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
+from otx.cli.utils.workspace import Workspace
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
+
+    from otx.core.metrics import MetricCallable
 
 _ENGINE_AVAILABLE = True
 try:
@@ -38,17 +42,18 @@ except ImportError:
 class OTXCLI:
     """OTX CLI entrypoint."""
 
-    def __init__(self) -> None:
+    def __init__(self, args: list[str] | None = None, run: bool = True) -> None:
         """Initialize OTX CLI."""
         self.console = Console()
         self._subcommand_method_arguments: dict[str, list[str]] = {}
         with patch_update_configs():
             self.parser = self.init_parser()
             self.add_subcommands()
-            self.config = self.parser.parse_args(_skip_check=True)
+            self.config = self.parser.parse_args(args=args, _skip_check=True)
 
         self.subcommand = self.config["subcommand"]
-        self.run()
+        if run:
+            self.run()
 
     def init_parser(self) -> ArgumentParser:
         """Initialize the argument parser for the OTX CLI.
@@ -72,7 +77,7 @@ class OTXCLI:
         return parser
 
     @staticmethod
-    def engine_subcommand_parser(**kwargs) -> ArgumentParser:
+    def engine_subcommand_parser(subcommand: str, **kwargs) -> tuple[ArgumentParser, list]:
         """Creates an ArgumentParser object for the engine subcommand.
 
         Args:
@@ -101,8 +106,14 @@ class OTXCLI:
         )
         parser.add_argument(
             "--data_root",
-            type=Optional[str],
+            type=absolute_path,
             help="Path to dataset root.",
+        )
+        parser.add_argument(
+            "--work_dir",
+            type=absolute_path,
+            default=absolute_path(Path.cwd()),
+            help="Path to work directory. The default is created as otx-workspace.",
         )
         parser.add_argument(
             "--task",
@@ -127,7 +138,7 @@ class OTXCLI:
             "Setting this option to true will disable this behavior.",
             action="store_true",
         )
-        engine_skip = {"model", "datamodule", "optimizer", "scheduler"}
+        engine_skip = {"model", "datamodule", "optimizer", "scheduler", "work_dir"}
         parser.add_class_arguments(
             Engine,
             "engine",
@@ -157,24 +168,55 @@ class OTXCLI:
             sub_configs=True,
         )
         # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import ReduceLROnPlateau
+        from lightning.pytorch.cli import LRSchedulerTypeUnion, ReduceLROnPlateau
         from torch.optim import Optimizer
         from torch.optim.lr_scheduler import LRScheduler
 
-        optim_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"params"}}
-        scheduler_kwargs = {"instantiate": False, "fail_untyped": False, "skip": {"optimizer"}}
-        parser.add_subclass_arguments(
-            baseclass=(Optimizer, list),
+        add_list_type_arguments(
+            parser,
+            baseclass=(Optimizer, list[Optimizer]),
             nested_key="optimizer",
-            **optim_kwargs,
+            skip={"params"},
         )
-        parser.add_subclass_arguments(
-            baseclass=(LRScheduler, ReduceLROnPlateau, list),
+        add_list_type_arguments(
+            parser,
+            baseclass=(LRScheduler, ReduceLROnPlateau, list[LRSchedulerTypeUnion]),
             nested_key="scheduler",
-            **scheduler_kwargs,
+            skip={"optimizer"},
         )
 
-        return parser
+        parser.add_class_arguments(Workspace, "workspace")
+        parser.link_arguments("work_dir", "workspace.work_dir")
+
+        parser.link_arguments("data_root", "engine.data_root")
+        parser.link_arguments("data_root", "data.config.data_root")
+        parser.link_arguments("engine.device", "data.config.device")
+
+        added_arguments = parser.add_method_arguments(
+            Engine,
+            subcommand,
+            skip=set(OTXCLI.engine_subcommands()[subcommand]),
+            fail_untyped=False,
+        )
+
+        if "callbacks" in added_arguments:
+            parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
+            parser.link_arguments("workspace.work_dir", "callbacks.init_args.dirpath", apply_on="instantiate")
+        if "logger" in added_arguments:
+            parser.link_arguments("workspace.work_dir", "logger.init_args.save_dir", apply_on="instantiate")
+            parser.link_arguments("workspace.work_dir", "logger.init_args.log_dir", apply_on="instantiate")
+        if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
+            # This is code for an OVModel that uses checkpoint in model.model_name.
+            parser.link_arguments("checkpoint", "model.init_args.model_name")
+
+        # Load default subcommand config file
+        default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
+        if default_config_file.exists():
+            with Path(default_config_file).open() as f:
+                default_config = yaml.safe_load(f)
+            parser.set_defaults(**default_config)
+
+        return parser, added_arguments
 
     @staticmethod
     def engine_subcommands() -> dict[str, set[str]]:
@@ -212,45 +254,40 @@ class OTXCLI:
             # If environment is not configured to use Engine, do not add a subcommand for Engine.
             return
         for subcommand in self.engine_subcommands():
-            parser_kwargs = self._set_default_config_from_auto_configurator()
-            sub_parser = self.engine_subcommand_parser(**parser_kwargs)
+            # If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache
+            root_dir = Path(sys.argv[sys.argv.index("--work_dir") + 1]) if "--work_dir" in sys.argv else Path.cwd()
+            self.cache_dir = root_dir / ".latest" / "train"  # The config and checkpoint used in the latest training.
 
-            sub_parser.link_arguments("data_root", "engine.data_root")
-            sub_parser.link_arguments("data_root", "data.config.data_root")
-            sub_parser.link_arguments("engine.device", "data.config.device")
+            parser_kwargs = self._set_default_config()
+            sub_parser, added_arguments = self.engine_subcommand_parser(subcommand=subcommand, **parser_kwargs)
+            if "checkpoint" in added_arguments and self.cache_dir.exists():
+                self._load_cache_ckpt(parser=sub_parser)
 
             fn = getattr(Engine, subcommand)
             description = get_short_docstring(fn)
-
-            added_arguments = sub_parser.add_method_arguments(
-                Engine,
-                subcommand,
-                skip=set(self.engine_subcommands()[subcommand]),
-                fail_untyped=False,
-            )
-
-            if "logger" in added_arguments:
-                sub_parser.link_arguments("engine.work_dir", "logger.init_args.save_dir")
-            if "callbacks" in added_arguments:
-                sub_parser.link_arguments("callback_monitor", "callbacks.init_args.monitor")
-                sub_parser.link_arguments("engine.work_dir", "callbacks.init_args.dirpath")
-            if "checkpoint" in added_arguments and "--checkpoint" in sys.argv:
-                # This is code for an OVModel that uses checkpoint in model.model_name.
-                sub_parser.link_arguments("checkpoint", "model.init_args.model_name")
-
-            # Load default subcommand config file
-            default_config_file = get_otx_root_path() / "recipe" / "_base_" / f"{subcommand}.yaml"
-            if default_config_file.exists():
-                with Path(default_config_file).open() as f:
-                    default_config = yaml.safe_load(f)
-                sub_parser.set_defaults(**default_config)
 
             self._subcommand_method_arguments[subcommand] = added_arguments
             self._subcommand_parsers[subcommand] = sub_parser
             parser_subcommands.add_subcommand(subcommand, sub_parser, help=description)
 
-    def _set_default_config_from_auto_configurator(self) -> dict:
+    def _load_cache_ckpt(self, parser: ArgumentParser) -> None:
+        checkpoint_dir = self.cache_dir / "checkpoints"
+        if not checkpoint_dir.exists():
+            return
+        latest_checkpoint = max(checkpoint_dir.glob("epoch_*.ckpt"), key=lambda p: p.stat().st_mtime)
+        parser.set_defaults(checkpoint=str(latest_checkpoint))
+        if "--print_config" not in sys.argv:
+            warn(f"Load default checkpoint from {latest_checkpoint}.", stacklevel=0)
+
+    def _set_default_config(self) -> dict:
         parser_kwargs = {}
+        if (self.cache_dir / "configs.yaml").exists():
+            parser_kwargs["default_config_files"] = [str(self.cache_dir / "configs.yaml")]
+            if "--print_config" not in sys.argv:
+                warn(f"Load default config from {self.cache_dir / 'configs.yaml'}.", stacklevel=0)
+            return parser_kwargs
+
+        # If don't use cache, use the default config from auto configuration.
         data_root = None
         task = None
         if "--data_root" in sys.argv:
@@ -261,9 +298,12 @@ class OTXCLI:
         if enable_auto_config:
             from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
-            auto_configurator = AutoConfigurator(data_root=data_root, task=OTXTaskType(task))
+            auto_configurator = AutoConfigurator(
+                data_root=data_root,
+                task=OTXTaskType(task) if task is not None else task,
+            )
             config_file_path = DEFAULT_CONFIG_PER_TASK[auto_configurator.task]
-            parser_kwargs["default_config_files"] = [config_file_path]
+            parser_kwargs["default_config_files"] = [str(config_file_path)]
         return parser_kwargs
 
     def _set_extension_subcommands_parser(self, parser_subcommands: _ActionSubCommands) -> None:
@@ -288,27 +328,70 @@ class OTXCLI:
             )
             parser_subcommands.add_subcommand("find", find_parser, help="This shows the model provided by OTX.")
 
-    def instantiate_classes(self) -> None:
+    def instantiate_classes(self, instantiate_engine: bool = True) -> None:
         """Instantiate the necessary classes based on the subcommand.
 
         This method checks if the subcommand is one of the engine subcommands.
         If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.
+
+        Args:
+            instantiate_engine (bool, optional): Whether to instantiate the engine. Defaults to True.
         """
         if self.subcommand in self.engine_subcommands():
-            # For num_classes update, Model is instantiated separately.
+            # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
-            self.config_init = self.parser.instantiate_classes(self.config)
-            self.datamodule = self.get_config_value(self.config_init, "data")
-            self.model, optimizer, scheduler = self.instantiate_model(model_config=model_config)
+            metric_config = self.config[self.subcommand].get("metric")
 
-            engine_kwargs = self.get_config_value(self.config_init, "engine")
-            self.engine = Engine(
-                model=self.model,
-                optimizer=optimizer,
-                scheduler=scheduler,
-                datamodule=self.datamodule,
-                **engine_kwargs,
-            )
+            # Instantiate the things that don't need to special handling
+            self.config_init = self.parser.instantiate_classes(self.config)
+            self.workspace = self.get_config_value(self.config_init, "workspace")
+            self.datamodule = self.get_config_value(self.config_init, "data")
+
+            # Instantiate the model and needed components
+            self.model, self.optimizer, self.scheduler = self.instantiate_model(model_config=model_config)
+
+            # Instantiate the metric with changing the num_classes
+            metric = self.instantiate_metric(metric_config)
+            if metric:
+                self.config_init[self.subcommand]["metric"] = metric
+
+            if instantiate_engine:
+                self.engine = self.instantiate_engine()
+
+    def instantiate_engine(self) -> Engine:
+        """Instantiate an Engine object with the specified parameters.
+
+        Returns:
+            An instance of the Engine class.
+        """
+        engine_kwargs = self.get_config_value(self.config_init, "engine")
+        return Engine(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            datamodule=self.datamodule,
+            work_dir=self.workspace.work_dir,
+            **engine_kwargs,
+        )
+
+    def instantiate_metric(self, metric_config: Namespace) -> MetricCallable | None:
+        """Instantiate the metric based on the metric_config.
+
+        It also pathces the num_classes according to the model classes information.
+
+        Args:
+            metric_config (Namespace): The metric configuration.
+        """
+        from otx.core.utils.instantiators import partial_instantiate_class
+
+        if metric_config and self.subcommand in ["train", "test"]:
+            metric_kwargs = self.get_config_value(metric_config, "metric", namespace_to_dict(metric_config))
+            metric = partial_instantiate_class(metric_kwargs)
+            return metric[0] if isinstance(metric, list) else metric
+
+        msg = "The configuration of metric is None."
+        warn(msg, stacklevel=2)
+        return None
 
     def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.
@@ -326,7 +409,7 @@ class OTXCLI:
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = self.datamodule.meta_info.num_classes
+            num_classes = self.datamodule.label_info.num_classes
             if num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "
@@ -340,6 +423,7 @@ class OTXCLI:
         model_parser = ArgumentParser()
         model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
+        self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
         if self.datamodule.config.tile_config.enable_tiler:
@@ -350,6 +434,9 @@ class OTXCLI:
             self.config[self.subcommand].data.config.tile_config.update(
                 Namespace(dataclasses.asdict(model.tile_config)),
             )
+            # TODO(Eugene): Need to find a better way to configure image size for OV Models
+            # https://github.com/openvinotoolkit/training_extensions/pull/2925
+            model.image_size = model.tile_image_size
 
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
@@ -359,10 +446,16 @@ class OTXCLI:
         optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
         optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
         optimizers = partial_instantiate_class([_opt for _opt in optimizer_kwargs if _opt])
+        if optimizers:
+            # Updates the instantiated optimizer.
+            self.config_init[self.subcommand]["optimizer"] = optimizers
 
         scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
         scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
         schedulers = partial_instantiate_class([_sch for _sch in scheduler_kwargs if _sch])
+        if schedulers:
+            # Updates the instantiated scheduler.
+            self.config_init[self.subcommand]["scheduler"] = schedulers
 
         return model, optimizers, schedulers
 
@@ -395,24 +488,43 @@ class OTXCLI:
         # return the subcommand parser for the subcommand passed
         return self._subcommand_parsers[subcommand]
 
-    def _prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
+    def prepare_subcommand_kwargs(self, subcommand: str) -> dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         return {
             k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
         }
 
-    def save_config(self) -> None:
+    def save_config(self, work_dir: Path) -> None:
         """Save the configuration for the specified subcommand.
+
+        Args:
+            work_dir (Path): The working directory where the configuration file will be saved.
 
         The configuration is saved as a YAML file in the engine's working directory.
         """
+        self.config[self.subcommand].pop("workspace", None)
         self.get_subcommand_parser(self.subcommand).save(
             cfg=self.config.get(str(self.subcommand), self.config),
-            path=Path(self.engine.work_dir) / "configs.yaml",
+            path=work_dir / "configs.yaml",
             overwrite=True,
             multifile=False,
             skip_check=True,
         )
+        # if train -> Update `.latest` folder
+        self.update_latest(work_dir=work_dir)
+
+    def update_latest(self, work_dir: Path) -> None:
+        """Update the latest cache directory with the latest configurations and checkpoint file.
+
+        Args:
+            work_dir (Path): The working directory where the configurations and checkpoint files are located.
+        """
+        latest_dir = work_dir.parent / ".latest"
+        latest_dir.mkdir(exist_ok=True)
+        cache_dir = latest_dir / self.subcommand
+        if cache_dir.exists():
+            cache_dir.unlink()
+        cache_dir.symlink_to(work_dir)
 
     def set_seed(self) -> None:
         """Set the random seed for reproducibility.
@@ -445,13 +557,13 @@ class OTXCLI:
         elif self.subcommand in self.engine_subcommands():
             self.set_seed()
             self.instantiate_classes()
-            fn_kwargs = self._prepare_subcommand_kwargs(self.subcommand)
+            fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand)
             fn = getattr(self.engine, self.subcommand)
             try:
                 fn(**fn_kwargs)
             except Exception:
                 self.console.print_exception(width=self.console.width)
-            self.save_config()
+            self.save_config(work_dir=Path(self.engine.work_dir))
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)

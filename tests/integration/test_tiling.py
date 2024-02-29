@@ -78,8 +78,8 @@ class TestOTXTiling:
             threshold_drop_ann=threshold_drop_ann,
         )
 
-        h_stride = int((1 - overlap[0]) * tile_size[0])
-        w_stride = int((1 - overlap[1]) * tile_size[1])
+        h_stride = max(int((1 - overlap[0]) * tile_size[0]), 1)
+        w_stride = max(int((1 - overlap[1]) * tile_size[1]), 1)
         num_tile_rows = (height + h_stride - 1) // h_stride
         num_tile_cols = (width + w_stride - 1) // w_stride
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"

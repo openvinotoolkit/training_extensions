@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 from otx.core.data.entity.detection import (
@@ -22,6 +23,8 @@ from otx.core.model.module.base import OTXLitModule
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
+    from otx.core.metrics import MetricCallable
+
 
 class OTXDetectionLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX detection task."""
@@ -32,34 +35,17 @@ class OTXDetectionLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable = lambda: MeanAveragePrecision(),
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
 
-        self.val_metric = MeanAveragePrecision()
-        self.test_metric = MeanAveragePrecision()
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
-
-    def on_validation_epoch_end(self) -> None:
-        """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-
-    def on_test_epoch_end(self) -> None:
-        """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
-
-    def _log_metrics(self, meter: MeanAveragePrecision, key: str) -> None:
+    def _log_metrics(self, meter: Metric, key: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -92,9 +78,10 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if isinstance(self.metric, Metric):
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -135,11 +122,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/map_50"
+        if isinstance(self.metric, Metric):
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )

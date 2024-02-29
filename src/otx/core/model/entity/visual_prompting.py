@@ -155,6 +155,9 @@ class OTXVisualPromptingModel(
             },
         )
 
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
+
 
 class OVVisualPromptingModel(
     OVModel[
@@ -960,3 +963,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         ind = np.take_along_axis(partitioned_ind, sorted_trunc_ind, axis=axis)
         scores = np.take_along_axis(partitioned_scores, sorted_trunc_ind, axis=axis)
         return scores, ind
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return

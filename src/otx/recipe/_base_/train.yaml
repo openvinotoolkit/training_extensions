@@ -14,7 +14,7 @@ callbacks:
       leave: false
   - class_path: lightning.pytorch.callbacks.ModelCheckpoint
     init_args:
-      dirpath: null
+      dirpath: ""
       monitor: null
       mode: max
       save_top_k: 1

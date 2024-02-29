@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from torch import Tensor
+from torchmetrics import Metric
 
 from otx.algo.instance_segmentation.otx_instseg_evaluation import (
     OTXMaskRLEMeanAveragePrecision,
@@ -25,6 +26,8 @@ from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
+    from otx.core.metrics import MetricCallable
+
 
 class OTXInstanceSegLitModule(OTXLitModule):
     """Base class for the lightning module used in OTX instance segmentation task."""
@@ -35,36 +38,29 @@ class OTXInstanceSegLitModule(OTXLitModule):
         torch_compile: bool,
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
+        metric: MetricCallable = lambda: OTXMaskRLEMeanAveragePrecision(),
     ):
         super().__init__(
             otx_model=otx_model,
             torch_compile=torch_compile,
             optimizer=optimizer,
             scheduler=scheduler,
+            metric=metric,
         )
-
-        self.val_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
-        self.test_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
-
-    def on_validation_epoch_start(self) -> None:
-        """Callback triggered when the validation epoch starts."""
-        self.val_metric.reset()
-
-    def on_test_epoch_start(self) -> None:
-        """Callback triggered when the test epoch starts."""
-        self.test_metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Callback triggered when the validation epoch ends."""
-        self._log_metrics(self.val_metric, "val")
-        self.val_metric.reset()
+        if isinstance(self.metric, Metric):
+            self._log_metrics(self.metric, "val")
+            self.metric.reset()
 
     def on_test_epoch_end(self) -> None:
         """Callback triggered when the test epoch ends."""
-        self._log_metrics(self.test_metric, "test")
-        self.test_metric.reset()
+        if isinstance(self.metric, Metric):
+            self._log_metrics(self.metric, "test")
+            self.metric.reset()
 
-    def _log_metrics(self, meter: OTXMaskRLEMeanAveragePrecision, subset_name: str) -> None:
+    def _log_metrics(self, meter: Metric, subset_name: str) -> None:
         results = meter.compute()
         if results is None:
             msg = f"{meter} has no data to compute metric or there is an error computing metric"
@@ -103,9 +99,10 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.val_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
+        if isinstance(self.metric, Metric):
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -177,11 +174,7 @@ class OTXInstanceSegLitModule(OTXLitModule):
         if not isinstance(preds, (InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI)):
             raise TypeError(preds)
 
-        self.test_metric.update(
-            **self._convert_pred_entity_to_compute_metric(preds, inputs),
-        )
-
-    @property
-    def lr_scheduler_monitor_key(self) -> str:
-        """Metric name that the learning rate scheduler monitor."""
-        return "val/map_50"
+        if isinstance(self.metric, Metric):
+            self.metric.update(
+                **self._convert_pred_entity_to_compute_metric(preds, inputs),
+            )
