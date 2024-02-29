@@ -671,7 +671,7 @@ class TestOTXZeroShotSegmentAnything:
         )
         mocker.patch(
             "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
-            return_value={"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])}
+            return_value={"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])},
         )
         mocker.patch("builtins.open", return_value="Mocked data")
 
