@@ -8,6 +8,10 @@ import torch
 import torch.nn.functional as F
 from mmcv.ops import multi_scale_deform_attn
 
+from otx.utils.logger import get_logger
+
+logger = get_logger()
+
 
 def multi_scale_deformable_attn_pytorch(
     value: torch.Tensor,
@@ -60,6 +64,8 @@ def multi_scale_deformable_attn_pytorch(
     return output.transpose(1, 2).contiguous()
 
 
+_warning_custom_grid_sample = False
+
 def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: bool = False) -> torch.Tensor:
     """Custom patch for mmcv.ops.point_sample.bilinear_grid_sample.
 
@@ -78,7 +84,18 @@ def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: boo
     Returns:
         torch.Tensor: A tensor with sampled points, shape (N, C, Hg, Wg)
     """
-    device = im.device
+    ori_device = im.device
+
+    if ori_device != "cpu":
+        global _warning_custom_grid_sample
+        if not _warning_custom_grid_sample:
+            logger.warning(
+                "Sampling during 'multi_scale_deformable_attn_pytorch' is executed on CPU to avoid out of memory."
+            )
+        _warning_custom_grid_sample = True
+        im = im.to("cpu")
+        grid = grid.to("cpu")
+
     n, c, h, w = im.shape
     gn, gh, gw, _ = grid.shape
     assert n == gn
@@ -114,14 +131,14 @@ def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: boo
     x0, x1, y0, y1 = x0 + 1, x1 + 1, y0 + 1, y1 + 1
 
     # Clip coordinates to padded image size
-    x0 = torch.where(x0 < 0, torch.tensor(0).to(device), x0)
-    x0 = torch.where(x0 > padded_w - 1, torch.tensor(padded_w - 1).to(device), x0)
-    x1 = torch.where(x1 < 0, torch.tensor(0).to(device), x1)
-    x1 = torch.where(x1 > padded_w - 1, torch.tensor(padded_w - 1).to(device), x1)
-    y0 = torch.where(y0 < 0, torch.tensor(0).to(device), y0)
-    y0 = torch.where(y0 > padded_h - 1, torch.tensor(padded_h - 1).to(device), y0)
-    y1 = torch.where(y1 < 0, torch.tensor(0).to(device), y1)
-    y1 = torch.where(y1 > padded_h - 1, torch.tensor(padded_h - 1).to(device), y1)
+    x0 = torch.where(x0 < 0, torch.tensor(0).to("cpu"), x0)
+    x0 = torch.where(x0 > padded_w - 1, torch.tensor(padded_w - 1).to("cpu"), x0)
+    x1 = torch.where(x1 < 0, torch.tensor(0).to("cpu"), x1)
+    x1 = torch.where(x1 > padded_w - 1, torch.tensor(padded_w - 1).to("cpu"), x1)
+    y0 = torch.where(y0 < 0, torch.tensor(0).to("cpu"), y0)
+    y0 = torch.where(y0 > padded_h - 1, torch.tensor(padded_h - 1).to("cpu"), y0)
+    y1 = torch.where(y1 < 0, torch.tensor(0).to("cpu"), y1)
+    y1 = torch.where(y1 > padded_h - 1, torch.tensor(padded_h - 1).to("cpu"), y1)
 
     im_padded = im_padded.view(n, c, -1)
 
@@ -135,7 +152,11 @@ def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: boo
     Ic = torch.gather(im_padded, 2, x1_y0)
     Id = torch.gather(im_padded, 2, x1_y1)
 
-    return (Ia * wa + Ib * wb + Ic * wc + Id * wd).reshape(n, c, gh, gw)
+    result = (Ia * wa + Ib * wb + Ic * wc + Id * wd).reshape(n, c, gh, gw)
+
+    if ori_device != "cpu":
+        return result.to(ori_device)
+    return result
 
 
 multi_scale_deform_attn.multi_scale_deformable_attn_pytorch = multi_scale_deformable_attn_pytorch
