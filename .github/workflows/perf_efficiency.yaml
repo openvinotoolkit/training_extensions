@@ -39,7 +39,7 @@ on:
           Additional perf-benchmark pytest arguments.
           "-k detection" -> detection task only
           "--dry-run" -> print command w/o execution.
-      dara-root:
+      data-root:
         type: string
         description: Root directory containing validation data in CI server.
         default: /home/validation/data/v2/
@@ -70,7 +70,7 @@ jobs:
           --eval-upto ${{ inputs.eval-upto }}
           --summary-csv .tox/perf-efficiency-benchmark-all.csv
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
-          --user-name ${{ vars.USER_NAME }}
+          --user-name ${{ github.triggering_actor }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
