@@ -101,4 +101,4 @@ jobs:
       task: ${{ matrix.task }}
       timeout-minutes: 8640
       upload-artifact: true
-      artifact-prefix: ${{ inputs.perf-accuracy-benchmark }}
+      artifact-prefix: ${{ inputs.artifact-prefix }}
