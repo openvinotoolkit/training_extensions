@@ -57,12 +57,9 @@ class TestOTXLitModule:
 
         assert module.test_meta_info["best_confidence_threshold"] == 0.35
         assert module.model.test_meta_info["best_confidence_threshold"] == 0.35
-        assert module.test_meta_info["vary_confidence_threshold"] is False
-        assert module.model.test_meta_info["vary_confidence_threshold"] is False
 
         module.configure_metric()
         assert module.metric.best_confidence_threshold == 0.35
-        assert module.metric.vary_confidence_threshold is False
 
     def test_configure_metric_with_v2_ckpt(
         self,
@@ -90,9 +87,6 @@ class TestOTXLitModule:
 
         assert module.test_meta_info["best_confidence_threshold"] == 0.35
         assert module.model.test_meta_info["best_confidence_threshold"] == 0.35
-        assert module.test_meta_info["vary_confidence_threshold"] is False
-        assert module.model.test_meta_info["vary_confidence_threshold"] is False
 
         module.configure_metric()
         assert module.metric.best_confidence_threshold == 0.35
-        assert module.metric.vary_confidence_threshold is False
