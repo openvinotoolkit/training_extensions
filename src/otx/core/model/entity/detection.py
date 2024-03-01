@@ -6,10 +6,10 @@
 from __future__ import annotations
 
 import copy
-import types
-from typing import TYPE_CHECKING, Any, Callable
 import json
 import logging as log
+import types
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from openvino.model_api.models import Model
@@ -26,6 +26,7 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
@@ -38,8 +39,6 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
     from torch import nn
-
-    from otx.core.exporter.base import OTXModelExporter
 
 
 class OTXDetectionModel(
@@ -99,7 +98,6 @@ class OTXDetectionModel(
                 ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
-        parameters["additional_output_names"] = ("saliency_map",) if self.explain_mode else ()
         if self.tile_config.enable_tiler:
             parameters["metadata"].update(
                 {
@@ -123,11 +121,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
-        outputs = (
-            self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
-            else self.model(inputs)
-        )
+        if self._customize_inputs != ExplainableOTXDetModel._customize_inputs:
+            customized_inputs = self._customize_inputs(inputs)
+        else:
+            customized_inputs = {inputs}
+        outputs = self._forward_explain_detection(self.model, **customized_inputs)
 
         return (
             self._customize_outputs(outputs, inputs)
@@ -151,22 +149,29 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         backbone_feat = self.extract_feat(inputs)
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
-        # Return the first output form detection head: classification scores
+        # Process the first output form bbox detection head: classification scores
         saliency_map = self.explain_fn(bbox_head_feat[0])
 
-        if mode == "loss":
-            predictions = self.bbox_head.loss(backbone_feat, data_samples)
-        elif mode == "predict":
-            predictions = self.bbox_head.predict(backbone_feat, data_samples)
+        if mode == "predict":
+            results_list = self.bbox_head.predict(backbone_feat, data_samples)
+            if isinstance(results_list, tuple):
+                # Export case
+                predictions = results_list
+            else:
+                # Predict case, InstanceData or List[InstanceData]
+                predictions = self.add_pred_to_datasample(data_samples, results_list)
+
         elif mode == "tensor":
             predictions = bbox_head_feat
         else:
-            msg = f'Invalid mode "{mode}".'
-            raise RuntimeError(msg)
+            raise RuntimeError(f'Invalid mode "{mode}".')
 
+        # Return dummy feature vector
+        feature_vector = torch.empty(1, dtype=torch.uint8)
         return {
             "predictions": predictions,
             "saliency_map": saliency_map,
+            "feature_vector": feature_vector,
         }
 
     def get_explain_fn(self) -> Callable:
@@ -215,6 +220,13 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             )
 
         return [1] * 10
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["output_names"] = ["saliency_map"] if self.explain_mode else None
+        return parameters
 
 
 class MMDetCompatibleModel(ExplainableOTXDetModel):
@@ -346,6 +358,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 raise ValueError(msg)
 
             saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntityWithXAI(
                 batch_size=len(predictions),
@@ -355,7 +368,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 bboxes=bboxes,
                 labels=labels,
                 saliency_maps=saliency_maps,
-                feature_vectors=[],
+                feature_vectors=feature_vectors,
             )
 
         return DetBatchPredEntity(

@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-import types
 import json
 import logging as log
+import types
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -108,7 +108,6 @@ class OTXInstanceSegModel(
                 ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
-        parameters["additional_output_names"] = ("saliency_map", "feature_vector") if self.explain_mode else ()
 
         # Instance segmentation needs to add empty label
         all_labels = "otx_empty_lbl "
@@ -143,11 +142,11 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
-        outputs = (
-            self._forward_explain_inst_seg(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != ExplainableOTXInstanceSegModel._customize_inputs
-            else self.model(inputs)
-        )
+        if self._customize_inputs != ExplainableOTXInstanceSegModel._customize_inputs:
+            customized_inputs = self._customize_inputs(inputs)
+        else:
+            customized_inputs = {inputs}
+        outputs = self._forward_explain_inst_seg(self.model, **customized_inputs)
 
         return (
             self._customize_outputs(outputs, inputs)
@@ -156,7 +155,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         )
 
     @staticmethod
-    def _forward_explain_inst_seg(self, inputs: torch.Tensor, data_samples: SampleList, _: str) -> dict:
+    def _forward_explain_inst_seg(self, inputs: torch.Tensor, data_samples: SampleList, mode: str) -> dict:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
         # Workaround to remove grads for model parameters, since after class patching
         # convolutions are failing since thay can't process gradients
@@ -171,16 +170,17 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             # Predict case, consists of InstanceData
             predictions = self.add_pred_to_datasample(data_samples, results_list)
 
-            saliency_map = self.explain_fn(data_samples[0].pred_instances)
-            feature_vector = []
+            features_for_sal_map = [data_sample.pred_instances for data_sample in data_samples]
+            saliency_map = self.explain_fn(features_for_sal_map)
+            feature_vector = torch.empty(1, dtype=torch.uint8)
 
         elif isinstance(results_list, tuple) and isinstance(results_list[0], torch.Tensor):  # rewrite
             # Export case, consists of tensors
             predictions = results_list
 
-            saliency_map = torch.empty(1, dtype=torch.uint8)  # .cpu()
+            saliency_map = torch.empty(1, dtype=torch.uint8)
             feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in x]
-            feature_vector = torch.cat(feature_vector, 1)  # .cpu()
+            feature_vector = torch.cat(feature_vector, 1)
 
         return {
             "predictions": predictions,
@@ -222,6 +222,13 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         func_type = types.MethodType
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["output_names"] = ["saliency_map", "feature_vector"] if self.explain_mode else None
+        return parameters
 
 
 class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):

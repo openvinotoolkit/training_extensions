@@ -394,7 +394,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
 
     def func(
         self,
-        prediction: InstanceSegBatchPredEntity | dict,
+        predictions: list[InstanceSegBatchPredEntity],
         _: int = -1,
     ) -> list[np.array]:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
@@ -406,12 +406,18 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
             list[np.array]: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
         # TODO(gzalessk): Add unit tests # noqa: TD003
-        return self.average_and_normalize(prediction, self.num_classes)
+        batch_size = len(predictions)
+        batch_saliency_maps = list(range(batch_size))
+
+        for batch, prediction in enumerate(predictions):
+            class_averaged_masks = self.average_and_normalize(prediction, self.num_classes)
+            batch_saliency_maps[batch] = class_averaged_masks
+        return torch.stack(batch_saliency_maps)  # b,c,h,w
 
     @classmethod
     def average_and_normalize(
         cls,
-        pred: InstanceSegBatchPredEntity | dict,
+        pred: InstanceSegBatchPredEntity,
         num_classes: int,
     ) -> np.array:
         """Average and normalize masks in prediction per-class.
@@ -423,11 +429,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        if isinstance(pred, dict):
-            masks, scores, labels = (pred["masks"], pred["scores"], pred["labels"])
-        else:
-            masks, scores, labels = (pred.masks.data, pred.scores.data, pred.labels.data)
-
+        masks, scores, labels = (pred.masks.data, pred.scores.data, pred.labels.data)
         _, height, width = masks.shape
 
         saliency_maps = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)
@@ -444,6 +446,5 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
 
         saliency_maps = saliency_maps.reshape((num_classes, -1))
         saliency_maps = cls._normalize_map(saliency_maps)
-        saliency_maps = saliency_maps.reshape(num_classes, height, width)
 
-        return saliency_maps  # .numpy
+        return saliency_maps.reshape(num_classes, height, width)

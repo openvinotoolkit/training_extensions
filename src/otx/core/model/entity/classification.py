@@ -77,11 +77,11 @@ class ExplainableOTXClsModel(
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
-        outputs = (
-            self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
-            else self.model(inputs)
-        )
+        if self._customize_inputs != ExplainableOTXClsModel._customize_inputs:
+            customized_inputs = self._customize_inputs(inputs)
+        else:
+            customized_inputs = {inputs}
+        outputs = self._forward_explain_image_classifier(self.model, **customized_inputs)
 
         return (
             self._customize_outputs(outputs, inputs)
