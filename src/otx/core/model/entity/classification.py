@@ -120,9 +120,9 @@ class ExplainableOTXClsModel(
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+        from otx.algo.hooks.recording_forward_hook import ReciproCAM
 
-        explainer = ReciproCAMHook(
+        explainer = ReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,

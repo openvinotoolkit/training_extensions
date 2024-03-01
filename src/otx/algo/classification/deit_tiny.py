@@ -10,7 +10,7 @@ import numpy as np
 import torch
 from mmpretrain.models.utils import resize_pos_embed
 
-from otx.algo.hooks.recording_forward_hook import ViTReciproCAMHook
+from otx.algo.hooks.recording_forward_hook import ViTReciproCAM
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.model.entity.classification import (
@@ -123,7 +123,7 @@ class ExplainableDeit(ExplainableOTXClsModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        explainer = ViTReciproCAMHook(
+        explainer = ViTReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
         )
