@@ -27,7 +27,12 @@ def test_process_all(postprocess) -> None:
     explain_config = ExplainConfig(target_explain_group=TargetExplainGroup.ALL, postprocess=postprocess)
 
     with pytest.raises(ValueError, match="Shape mismatch."):
-        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
+        processed_saliency_maps = process_saliency_maps(
+            SALIENCY_MAPS_IMAGE,
+            explain_config,
+            PRED_LABELS,
+            ORI_IMG_SHAPES,
+        )
 
     processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
@@ -49,7 +54,12 @@ def test_process_predictions(postprocess) -> None:
     explain_config = ExplainConfig(target_explain_group=TargetExplainGroup.PREDICTIONS, postprocess=postprocess)
 
     with pytest.raises(ValueError, match="Shape mismatch."):
-        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
+        processed_saliency_maps = process_saliency_maps(
+            SALIENCY_MAPS_IMAGE,
+            explain_config,
+            PRED_LABELS,
+            ORI_IMG_SHAPES,
+        )
 
     processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
