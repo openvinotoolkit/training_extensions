@@ -342,7 +342,6 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-
         middle_idx = len(cls_scores) // 2
         # Resize to the middle feature map
         batch_size, _, height, width = cls_scores[middle_idx].size()

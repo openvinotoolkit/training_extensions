@@ -225,7 +225,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         parameters = super()._export_parameters
-        parameters["output_names"] = ["saliency_map"] if self.explain_mode else None
+        parameters["output_names"] = ["saliency_map", "feature_vector"] if self.explain_mode else None
         return parameters
 
 
@@ -486,9 +486,10 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
 
         if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_f_vectors = [out.feature_vector for out in outputs]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            predicted_f_vectors = [out.feature_vector for out in outputs]
             return DetBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,

@@ -166,21 +166,21 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         rpn_results_list = self.rpn_head.predict(x, data_samples, rescale=False)
         results_list = self.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
 
-        if isinstance(results_list, list) and isinstance(results_list[0], InstanceData):  # rewrite
+        if isinstance(results_list, tuple) and isinstance(results_list[0], torch.Tensor):  # rewrite
+            # Export case, consists of tensors
+            predictions = results_list
+            # For OV task saliency map are generated on MAPI side
+            saliency_map = torch.empty(1, dtype=torch.uint8)
+            feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in x]
+            feature_vector = torch.cat(feature_vector, 1)
+
+        elif isinstance(results_list, list) and isinstance(results_list[0], InstanceData):  # rewrite
             # Predict case, consists of InstanceData
             predictions = self.add_pred_to_datasample(data_samples, results_list)
 
             features_for_sal_map = [data_sample.pred_instances for data_sample in data_samples]
             saliency_map = self.explain_fn(features_for_sal_map)
             feature_vector = torch.empty(1, dtype=torch.uint8)
-
-        elif isinstance(results_list, tuple) and isinstance(results_list[0], torch.Tensor):  # rewrite
-            # Export case, consists of tensors
-            predictions = results_list
-
-            saliency_map = torch.empty(1, dtype=torch.uint8)
-            feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in x]
-            feature_vector = torch.cat(feature_vector, 1)
 
         return {
             "predictions": predictions,
@@ -504,9 +504,10 @@ class OVInstanceSegmentationModel(
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         if outputs and outputs[0].saliency_map:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_f_vectors = [out.feature_vector for out in outputs]
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            predicted_f_vectors = [out.feature_vector for out in outputs]
             return InstanceSegBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,
