@@ -205,8 +205,8 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
-    if ("_cls" not in task) and (task != "detection"):
-        pytest.skip("Supported only for classification and detection task.")
+    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+        pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     if "dino" in model_name:
         pytest.skip("Dino is not supported.")
@@ -279,8 +279,8 @@ def test_otx_explain_e2e(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification.")
+    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+        pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
@@ -321,12 +321,20 @@ def test_otx_explain_e2e(
     assert sal_map.shape[1] > 0
 
     reference_sal_vals = {
+        # Classification
         "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
         "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+        # Detection
+        "detection_yolox_tiny": np.array([57, 96, 77, 30, 25, 30, 43, 32, 55, 33], dtype=np.uint8),
+        "detection_ssd_mobilenetv2": np.array([62, 32, 27, 13, 6, 11, 18, 21, 21, 19], dtype=np.uint8),
+        "detection_atss_mobilenetv2": np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
+        # Instance Segmentation
+        "instance_segmentation_maskrcnn_efficientnetb2b": np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.uint8),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = sal_map[:, 0, 0]
+        actual_sal_vals = (sal_map[:, 0, 0][:10]).astype(np.uint16)
+        print(test_case_name, actual_sal_vals)
         ref_sal_vals = reference_sal_vals[test_case_name]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
 
