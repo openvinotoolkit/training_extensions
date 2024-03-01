@@ -5,6 +5,7 @@ import pytest
 import torch
 from otx.algo.utils.xai_utils import process_saliency_maps, process_saliency_maps_in_pred_entity
 from otx.core.config.explain import ExplainConfig
+from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI
 from otx.core.types.explain import TargetExplainGroup
 
@@ -17,6 +18,8 @@ PRED_LABELS = [[0, 2, 3], [1], []]
 PRED_LABELS_TOP_ONE = [[1], [0], [4]]
 SALIENCY_MAPS = [np.ones((NUM_CLASSES, RAW_SIZE, RAW_SIZE), dtype=np.uint8) for _ in range(BATCH_SIZE)]
 SALIENCY_MAPS_IMAGE = [np.ones((RAW_SIZE, RAW_SIZE), dtype=np.uint8) for _ in range(BATCH_SIZE)]
+ORI_IMG_SHAPES = [(OUT_SIZE, OUT_SIZE)] * BATCH_SIZE
+IMGS_INFO = [ImageInfo(img_idx=i, img_shape=None, ori_shape=(OUT_SIZE, OUT_SIZE)) for i in range(BATCH_SIZE)]
 
 
 @pytest.mark.parametrize("postprocess", [False, True])
@@ -24,9 +27,9 @@ def test_process_all(postprocess) -> None:
     explain_config = ExplainConfig(target_explain_group=TargetExplainGroup.ALL, postprocess=postprocess)
 
     with pytest.raises(ValueError, match="Shape mismatch."):
-        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS)
+        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
-    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS)
+    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
     assert len(processed_saliency_maps) == BATCH_SIZE
     assert all(len(s_map_dict) == NUM_CLASSES for s_map_dict in processed_saliency_maps)
@@ -46,9 +49,9 @@ def test_process_predictions(postprocess) -> None:
     explain_config = ExplainConfig(target_explain_group=TargetExplainGroup.PREDICTIONS, postprocess=postprocess)
 
     with pytest.raises(ValueError, match="Shape mismatch."):
-        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS)
+        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
-    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS)
+    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
     assert len(processed_saliency_maps) == BATCH_SIZE
     assert all(len(s_map_dict) == len(PRED_LABELS[i]) for (i, s_map_dict) in enumerate(processed_saliency_maps))
@@ -72,9 +75,9 @@ def test_process_image(postprocess) -> None:
     explain_config = ExplainConfig(target_explain_group=TargetExplainGroup.IMAGE, postprocess=postprocess)
 
     with pytest.raises(ValueError, match="Shape mismatch."):
-        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS)
+        processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
-    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS)
+    processed_saliency_maps = process_saliency_maps(SALIENCY_MAPS_IMAGE, explain_config, PRED_LABELS, ORI_IMG_SHAPES)
 
     assert len(processed_saliency_maps) == BATCH_SIZE
     assert all(len(s_map_dict) == 1 for s_map_dict in processed_saliency_maps)
@@ -91,7 +94,7 @@ def _get_pred_result_multiclass(pred_labels) -> MulticlassClsBatchPredEntityWith
     return MulticlassClsBatchPredEntityWithXAI(
         batch_size=BATCH_SIZE,
         images=None,
-        imgs_info=None,
+        imgs_info=IMGS_INFO,
         scores=None,
         labels=pred_labels,
         saliency_maps=SALIENCY_MAPS,
@@ -103,7 +106,7 @@ def _get_pred_result_multilabel(pred_labels) -> MultilabelClsBatchPredEntityWith
     return MultilabelClsBatchPredEntityWithXAI(
         batch_size=BATCH_SIZE,
         images=None,
-        imgs_info=None,
+        imgs_info=IMGS_INFO,
         scores=None,
         labels=pred_labels,
         saliency_maps=SALIENCY_MAPS,
