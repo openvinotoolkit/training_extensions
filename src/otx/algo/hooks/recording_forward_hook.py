@@ -331,23 +331,20 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
 
     def func(
         self,
-        feature_map: torch.Tensor | Sequence[torch.Tensor],
+        cls_scores: torch.Tensor | Sequence[torch.Tensor],
         _: int = -1,
     ) -> torch.Tensor:
         """Generate the saliency map from raw classification head output, then normalizing to (0, 255).
 
         Args:
-            feature_map (torch.Tensor | Sequence[torch.Tensor]): Feature maps from backbone/FPN or
-            classification scores from cls_head.
+            cls_scores (torch.Tensor | Sequence[torch.Tensor]): Classification scores from cls_head.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        # cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
-        cls_scores = feature_map
 
         middle_idx = len(cls_scores) // 2
-        # resize to the middle feature map
+        # Resize to the middle feature map
         batch_size, _, height, width = cls_scores[middle_idx].size()
         saliency_maps = torch.empty(batch_size, self._num_classes, height, width)
         for batch_idx in range(batch_size):
