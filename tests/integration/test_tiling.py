@@ -191,24 +191,23 @@ class TestOTXTiling:
         fxt_target_dataset_per_task: dict,
     ):
         tile_recipes = [recipe for recipe in pytest.RECIPE_LIST if "detection" in recipe and "tile" in recipe]
-        tile_recipe = tile_recipes[0]
+        for tile_recipe in tile_recipes:
+            engine = Engine.from_config(
+                config_path=tile_recipe,
+                data_root=fxt_target_dataset_per_task[OTXTaskType.DETECTION.value.lower()],
+                work_dir=tmp_path / OTXTaskType.DETECTION,
+                device=fxt_accelerator,
+            )
+            engine.train(max_epochs=1)
+            exported_model_path = engine.export()
+            assert exported_model_path.exists()
+            engine.test(exported_model_path, accelerator="cpu")
 
-        engine = Engine.from_config(
-            config_path=tile_recipe,
-            data_root=fxt_target_dataset_per_task[OTXTaskType.DETECTION.value.lower()],
-            work_dir=tmp_path / OTXTaskType.DETECTION,
-            device=fxt_accelerator,
-        )
-        engine.train(max_epochs=1)
-        exported_model_path = engine.export()
-        assert exported_model_path.exists()
-        engine.test(exported_model_path, accelerator="cpu")
+            ov_model = OVDetectionModel(model_name=exported_model_path, num_classes=3)
 
-        ov_model = OVDetectionModel(model_name=exported_model_path, num_classes=3)
-
-        assert isinstance(ov_model.model, DetectionTiler), "Model should be an instance of DetectionTiler"
-        assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
-        assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+            assert isinstance(ov_model.model, DetectionTiler), "Model should be an instance of DetectionTiler"
+            assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
+            assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
 
     def test_ov_inst_tile_model(
         self,
@@ -221,24 +220,23 @@ class TestOTXTiling:
             recipe for recipe in pytest.RECIPE_LIST if "instance_segmentation" in recipe and "tile" in recipe
         ]
 
-        tile_recipe = tile_recipes[0]
+        for tile_recipe in tile_recipes:
+            engine = Engine.from_config(
+                config_path=tile_recipe,
+                data_root=fxt_target_dataset_per_task[OTXTaskType.INSTANCE_SEGMENTATION.value.lower()],
+                work_dir=tmp_path / OTXTaskType.INSTANCE_SEGMENTATION,
+                device=fxt_accelerator,
+            )
+            engine.train(max_epochs=1)
+            exported_model_path = engine.export()
+            assert exported_model_path.exists()
+            engine.test(exported_model_path, accelerator="cpu")
 
-        engine = Engine.from_config(
-            config_path=tile_recipe,
-            data_root=fxt_target_dataset_per_task[OTXTaskType.INSTANCE_SEGMENTATION.value.lower()],
-            work_dir=tmp_path / OTXTaskType.INSTANCE_SEGMENTATION,
-            device=fxt_accelerator,
-        )
-        engine.train(max_epochs=1)
-        exported_model_path = engine.export()
-        assert exported_model_path.exists()
-        engine.test(exported_model_path, accelerator="cpu")
+            ov_model = OVInstanceSegmentationModel(model_name=exported_model_path, num_classes=3)
 
-        ov_model = OVInstanceSegmentationModel(model_name=exported_model_path, num_classes=3)
-
-        assert isinstance(
-            ov_model.model,
-            InstanceSegmentationTiler,
-        ), "Model should be an instance of InstanceSegmentationTiler"
-        assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
-        assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+            assert isinstance(
+                ov_model.model,
+                InstanceSegmentationTiler,
+            ), "Model should be an instance of InstanceSegmentationTiler"
+            assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
+            assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
