@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 def process_saliency_maps_in_pred_entity(
-    predict_result: list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI],
+    predict_result: list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI | Any],
     explain_config: ExplainConfig,
 ) -> list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI]:
     """Process saliency maps in PredEntity."""
@@ -103,10 +103,11 @@ def convert_maps_to_dict_image(saliency_maps: np.array) -> list[dict[Any, np.arr
     return [{"map_per_image": map_per_image} for map_per_image in saliency_maps]
 
 
-def postprocess(saliency_map: np.ndarray, output_size: tuple | None) -> np.ndarray:
+def postprocess(saliency_map: np.ndarray, output_size: tuple[int, int] | None) -> np.ndarray:
     """Postprocess single saliency map."""
     if saliency_map.ndim != 2:
-        raise ValueError
+        msg = "Shape mismatch."
+        raise ValueError(msg)
 
     if output_size:
         h, w = output_size
@@ -115,7 +116,7 @@ def postprocess(saliency_map: np.ndarray, output_size: tuple | None) -> np.ndarr
 
 
 def dump_saliency_maps(
-    predict_result: list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI],
+    predict_result: list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI | Any],
     explain_config: ExplainConfig,
     datamodule: EVAL_DATALOADERS | OTXDataModule,
     output_dir: Path,
