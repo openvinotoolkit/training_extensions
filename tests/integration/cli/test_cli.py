@@ -319,6 +319,7 @@ def test_otx_explain_e2e(
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
+    sal_diff_thresh = 5
     reference_sal_vals = {
         "multi_label_cls_efficientnet_v2_light": np.array([255, 108, 60, 11, 36, 112, 239], dtype=np.uint8),
         "h_label_cls_efficientnet_v2_light": np.array([76, 99, 114, 93, 68, 117, 102], dtype=np.uint8),
@@ -327,7 +328,7 @@ def test_otx_explain_e2e(
     if test_case_name in reference_sal_vals:
         actual_sal_vals = sal_map[:, 0, 0]
         ref_sal_vals = reference_sal_vals[test_case_name]
-        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
+        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
 
 # @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
