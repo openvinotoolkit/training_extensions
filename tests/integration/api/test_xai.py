@@ -81,8 +81,6 @@ def test_predict_with_explain(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "mobilenet_v3_large_light" in model_name:
-        pytest.skip("Dataloader failure during train.")
     if "dino" in model_name:
         pytest.skip("DINO is not supported.")
 
@@ -91,13 +89,6 @@ def test_predict_with_explain(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
         work_dir=tmp_path,
-    )
-
-    # Train
-    engine.train(
-        max_epochs=2,
-        seed=0,
-        deterministic=True,
     )
 
     # Predict with explain torch
@@ -110,7 +101,9 @@ def test_predict_with_explain(
     assert isinstance(predict_result_explain_torch[0].saliency_maps[0], dict)
 
     # Export with explain
-    exported_model_path = engine.export(explain=True)
+    ckpt_path = tmp_path / "checkpoint.ckpt"
+    engine.trainer.save_checkpoint(ckpt_path)
+    exported_model_path = engine.export(checkpoint=ckpt_path, explain=True)
 
     model = ov.Core().read_model(exported_model_path)
     saliency_map_output = None
