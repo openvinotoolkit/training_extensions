@@ -6,11 +6,11 @@ from pathlib import Path
 import numpy as np
 import openvino.runtime as ov
 import pytest
-from otx.core.data.entity.base import OTXBatchPredEntityWithXAI
-from otx.core.data.entity.classification import (
-    MulticlassClsBatchPredEntity,
-    MulticlassClsBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.base import OTXBatchPredEntity, OTXBatchPredEntityWithXAI
+# from otx.core.data.entity.classification import (
+#     MulticlassClsBatchPredEntity,
+#     MulticlassClsBatchPredEntityWithXAI,
+# )
 from otx.engine import Engine
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
@@ -20,14 +20,14 @@ MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
 
 DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe and "tile" not in recipe]
 INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe and "tile" not in recipe]
-EXPLAIN_MODELS = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
+EXPLAIN_MODEL_LIST = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
 
 MEAN_TORCH_OV_DIFF = 150
 
 
 @pytest.mark.parametrize(
     "recipe",
-    MULTI_CLASS_CLS,
+    EXPLAIN_MODEL_LIST,
 )
 def test_forward_explain(
     recipe: str,
@@ -54,10 +54,10 @@ def test_forward_explain(
     )
 
     predict_result = engine.predict()
-    assert isinstance(predict_result[0], MulticlassClsBatchPredEntity)
+    assert isinstance(predict_result[0], OTXBatchPredEntity)
 
     predict_result_explain = engine.predict(explain=True)
-    assert isinstance(predict_result_explain[0], MulticlassClsBatchPredEntityWithXAI)
+    assert isinstance(predict_result_explain[0], OTXBatchPredEntityWithXAI)
 
     for i in range(len(predict_result[0].scores)):
         assert all(predict_result[0].labels[i] == predict_result_explain[0].labels[i])
@@ -66,7 +66,7 @@ def test_forward_explain(
 
 @pytest.mark.parametrize(
     "recipe",
-    EXPLAIN_MODELS,
+    EXPLAIN_MODEL_LIST,
 )
 def test_predict_with_explain(
     recipe: str,

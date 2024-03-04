@@ -383,11 +383,6 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         super().__init__()
         self.num_classes = num_classes
 
-    @classmethod
-    def create_and_register_hook(cls, num_classes: int) -> BaseRecordingForwardHook:
-        """Create this object and register it to the module forward hook."""
-        return cls(num_classes)
-
     def func(
         self,
         predictions: list[InstanceSegBatchPredEntity],
@@ -396,19 +391,17 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            preds (InstanceSegBatchPredEntity | dict): Predictions of Instance Segmentation model.
+            predictions (list[InstanceSegBatchPredEntity]): Predictions of Instance Segmentation model.
 
         Returns:
-            list[np.array]: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
         # TODO(gzalessk): Add unit tests # noqa: TD003
-        batch_size = len(predictions)
-        batch_saliency_maps = list(range(batch_size))
-
-        for batch, prediction in enumerate(predictions):
+        batch_saliency_maps = []
+        for prediction in predictions:
             class_averaged_masks = self.average_and_normalize(prediction, self.num_classes)
-            batch_saliency_maps[batch] = class_averaged_masks
-        return torch.stack(batch_saliency_maps)  # b,c,h,w
+            batch_saliency_maps.append(class_averaged_masks)
+        return torch.stack(batch_saliency_maps)
 
     @classmethod
     def average_and_normalize(
@@ -423,7 +416,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
             num_classes (int): Num classes that model can predict.
 
         Returns:
-            np.array: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+            np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
         masks, scores, labels = (pred.masks.data, pred.scores.data, pred.labels.data)
         _, height, width = masks.shape

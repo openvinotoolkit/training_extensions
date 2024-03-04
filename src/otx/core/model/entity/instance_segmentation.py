@@ -36,6 +36,8 @@ from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
+from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.structures import SampleList
@@ -190,11 +192,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
-
-        explainer = MaskRCNNRecordingForwardHook.create_and_register_hook(
-            num_classes=self.num_classes,
-        )
+        
+        explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
         return explainer.func
 
     def _reset_model_forward(self) -> None:
