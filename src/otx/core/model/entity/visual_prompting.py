@@ -314,7 +314,7 @@ class OVVisualPromptingModel(
             polygons=[],
             points=[],
             bboxes=[],
-            labels=inputs.labels,
+            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
         )
 
 
