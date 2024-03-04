@@ -38,3 +38,8 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
             scheduler=scheduler,
             metric=metric,
         )
+
+    def predict_step(self, *args: torch.Any, **kwargs: torch.Any) -> torch.Any:
+        preds = super().predict_step(*args, **kwargs)
+        # TODO: Convert masks to polygons
+        return preds
