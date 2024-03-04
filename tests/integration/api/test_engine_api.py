@@ -91,11 +91,14 @@ def test_engine_from_config(
     exported_model_with_explain = engine.export(explain=True)
     assert exported_model_with_explain.exists()
 
-    # Infer IR Model with explain
-    if task in OVMODEL_PER_TASK:
-        # Predict
-        predictions = engine.predict(checkpoint=exported_model_with_explain, accelerator="cpu")
-        assert len(predictions) > 0
-        # Explain
-        explain_results = engine.explain(checkpoint=exported_model_with_explain)
-        assert len(explain_results[0].saliency_maps) > 0
+    # Infer IR Model with explain: predict
+    predictions = engine.predict(explain=True, checkpoint=exported_model_with_explain, accelerator="cpu")
+    assert len(predictions) > 0
+    sal_maps_from_prediction = predictions[0].saliency_maps
+    assert len(sal_maps_from_prediction) > 0
+
+    # Infer IR Model with explain: explain
+    explain_results = engine.explain(checkpoint=exported_model_with_explain, accelerator="cpu")
+    assert len(explain_results[0].saliency_maps) > 0
+    sal_maps_from_explain = explain_results[0].saliency_maps
+    assert (sal_maps_from_prediction[0][0] == sal_maps_from_explain[0][0]).all()
