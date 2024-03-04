@@ -5,6 +5,7 @@
 
 import copy
 import os
+from otx.algorithms.common.utils.utils import is_xpu_available
 
 import pytest
 import tempfile
@@ -129,7 +130,7 @@ class TestSegmentationConfigurer:
         config = copy.deepcopy(self.model_cfg)
         self.configurer.configure_device(config)
         assert config.distributed is False
-        assert config.device == "cpu"
+        assert config.device in ["cpu", "xpu"]
 
         mocker.patch(
             "torch.distributed.is_initialized",
@@ -183,6 +184,8 @@ class TestSegmentationConfigurer:
 
     @e2e_pytest_unit
     def test_configure_fp16(self):
+        if is_xpu_available():
+            pytest.skip("FP16 is not supported on XPU")
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
         self.configurer.configure_fp16(model_cfg)

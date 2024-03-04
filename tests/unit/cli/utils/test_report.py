@@ -1,5 +1,6 @@
 from pathlib import Path
 from pprint import pformat
+from otx.algorithms.common.utils.utils import is_xpu_available
 
 from otx.api.entities.model_template import ModelTemplate
 from otx.cli.utils.report import (
@@ -33,7 +34,10 @@ def test_env_info_to_str(mocker):
     expected = "\tOTX: 1.2\n"
     mocker.patch("mmcv.utils.env.collect_env", return_value={"OTX": "1.2"})
     result = env_info_to_str()
-    assert expected == result
+    if is_xpu_available():
+        assert expected in result
+    else:
+        assert expected == result
 
 
 @e2e_pytest_unit

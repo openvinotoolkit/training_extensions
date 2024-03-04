@@ -102,6 +102,9 @@ class TestSAMPromptEncoder:
     @pytest.mark.parametrize("device", ["cpu", "cuda"])
     def test_get_device(self, device: str):
         """Test _get_device."""
+        if device == "cuda" and not torch.cuda.is_available():
+            pytest.skip("CUDA is not available")
+
         self.prompt_encoder.point_embeddings.to(device)
 
         results = self.prompt_encoder._get_device()
