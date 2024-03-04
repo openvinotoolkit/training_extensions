@@ -530,7 +530,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             polygons=[],
             points=[],
             bboxes=[],
-            labels=inputs.labels,
+            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
         )
 
     def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:
