@@ -124,7 +124,7 @@ class OTXVisualPromptingModel(
                 base_model_name=f"visual_prompting_{module}",
                 export_format=export_format,
                 precision=precision,
-                export_args={
+                example_inputs={
                     "args": tuple(dummy_inputs[module].values()),
                     "input_names": list(dummy_inputs[module].keys()),
                     "output_names": output_names[module],
