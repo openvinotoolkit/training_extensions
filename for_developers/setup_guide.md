@@ -60,13 +60,13 @@ Please see [requirements-lock.txt](requirements-lock.txt). This is what I got af
 - Auto-Configuration from dataset & task (Default Model: ATSS-MobilenetV2)
 
   ```console
-  otx train --data_root tests/assets/car_tree_bug --model.num_classes 3 --engine.device gpu --engine.work_dir ./otx-workspace
+  otx train --data_root tests/assets/car_tree_bug --model.num_classes 3 --engine.device gpu --work_dir ./otx-workspace
   ```
 
 - Launch detection task ATSS-MobilenetV2 template
 
   ```console
-  otx train --config src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root tests/assets/car_tree_bug --model.num_classes 3 --max_epochs 50 --check_val_every_n_epoch 10 --engine.device gpu --engine.work_dir ./otx-workspace
+  otx train --config src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root tests/assets/car_tree_bug --model.num_classes 3 --max_epochs 50 --check_val_every_n_epoch 10 --engine.device gpu --work_dir ./otx-workspace
   ```
 
 - Change subset names, e.g., "train" -> "train_16" (for training)

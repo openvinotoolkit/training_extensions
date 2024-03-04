@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 BASE_ARGUMENTS = {"config", "print_config", "help", "engine", "model", "model.help", "task"}
-ENGINE_ARGUMENTS = {"data_root", "engine.help", "engine.device", "engine.work_dir"}
+ENGINE_ARGUMENTS = {"data_root", "engine.help", "engine.device", "work_dir"}
 REQUIRED_ARGUMENTS = {
     "train": {
         "data",

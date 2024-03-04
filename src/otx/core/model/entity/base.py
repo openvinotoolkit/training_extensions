@@ -5,10 +5,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
 
 import numpy as np
 import openvino
@@ -56,6 +57,8 @@ class OTXModel(
         self._label_info = LabelInfo.from_num_classes(num_classes)
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
+        self.original_model_forward = None
+        self._explain_mode = False
 
     def setup_callback(self, trainer: Trainer) -> None:
         """Callback for setup OTX Model.
@@ -95,6 +98,16 @@ class OTXModel(
         """Returns model's number of classes. Can be redefined at the model's level."""
         return self.label_info.num_classes
 
+    @property
+    def explain_mode(self) -> bool:
+        """Get model explain mode."""
+        return self._explain_mode
+
+    @explain_mode.setter
+    def explain_mode(self, explain_mode: bool) -> None:
+        """Set model explain mode."""
+        self._explain_mode = explain_mode
+
     @abstractmethod
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -131,6 +144,23 @@ class OTXModel(
             if self._customize_outputs != OTXModel._customize_outputs
             else outputs
         )
+
+    def forward_explain(
+        self,
+        inputs: T_OTXBatchDataEntity,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward explain function."""
+        raise NotImplementedError
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
+        raise NotImplementedError
+
+    def _reset_model_forward(self) -> None:
+        pass
+
+    def _restore_model_forward(self) -> None:
+        pass
 
     def forward_tiles(
         self,
@@ -228,7 +258,10 @@ class OTXModel(
         Returns:
             Path: path to the exported model.
         """
-        return self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._reset_model_forward()
+        exported_model_path = self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        self._restore_model_forward()
+        return exported_model_path
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -310,6 +343,17 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
         super().__init__(num_classes)
 
+        tile_enabled = False
+        with contextlib.suppress(RuntimeError):
+            tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
+
+        if tile_enabled:
+            self._setup_tiler()
+
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        raise NotImplementedError
+
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
@@ -323,6 +367,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
             self.model_name,
             max_num_requests=self.num_requests,
             plugin_config=plugin_config,
+            model_parameters=self.model_adapter_parameters,
         )
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
@@ -448,3 +493,25 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
+
+    @property
+    def model_adapter_parameters(self) -> dict:
+        """Model parameters for export."""
+        return {}
+
+    @property
+    def label_info(self) -> LabelInfo:
+        """Get this model label information."""
+        return self._label_info
+
+    @label_info.setter
+    def label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information."""
+
+    @property
+    def num_classes(self) -> int:
+        """Returns model's number of classes. Can be redefined at the model's level."""
+        return self.label_info.num_classes

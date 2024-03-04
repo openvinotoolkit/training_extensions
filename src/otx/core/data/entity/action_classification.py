@@ -11,8 +11,10 @@ from typing import TYPE_CHECKING
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
+    OTXPredEntityWithXAI,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -35,6 +37,13 @@ class ActionClsDataEntity(OTXDataEntity):
     video: Video
     labels: LongTensor
 
+    def to_tv_image(self) -> ActionClsDataEntity:
+        """Convert `self.image` to TorchVision Image if it is a Numpy array (inplace operation).
+
+        Action classification data do not have image, so this will return itself.
+        """
+        return self
+
     @property
     def task(self) -> OTXTaskType:
         """OTX Task type definition."""
@@ -44,6 +53,11 @@ class ActionClsDataEntity(OTXDataEntity):
 @dataclass
 class ActionClsPredEntity(ActionClsDataEntity, OTXPredEntity):
     """Data entity to represent the action classification model's output prediction."""
+
+
+@dataclass
+class ActionClsPredEntityWithXAI(ActionClsDataEntity, OTXPredEntityWithXAI):
+    """Data entity to represent the detection model output prediction with explanations."""
 
 
 @dataclass
@@ -82,3 +96,8 @@ class ActionClsBatchDataEntity(OTXBatchDataEntity[ActionClsDataEntity]):
 @dataclass
 class ActionClsBatchPredEntity(ActionClsBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for action classification task."""
+
+
+@dataclass
+class ActionClsBatchPredEntityWithXAI(ActionClsBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for multi-class classification task with explanations."""

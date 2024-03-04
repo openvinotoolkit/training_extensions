@@ -19,6 +19,11 @@ scheduler:
     power: 0.9
     last_epoch: -1
 
+metric:
+  class_path: torchmetrics.Dice
+  init_args:
+    num_classes: 2
+
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto

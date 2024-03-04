@@ -22,6 +22,12 @@ scheduler:
       patience: 5
       monitor: val/map_50
 
+metric:
+  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: segm
+
 engine:
   task: INSTANCE_SEGMENTATION
   device: auto
@@ -49,10 +55,10 @@ overrides:
             with_bbox: true
             with_mask: true
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: RandomFlip
             prob: 0.5
           - type: PackDetInputs
@@ -63,10 +69,10 @@ overrides:
           - type: LoadImageFromFile
             backend_args: null
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
@@ -84,10 +90,10 @@ overrides:
           - type: LoadImageFromFile
             backend_args: null
           - type: Resize
-            keep_ratio: true
+            keep_ratio: false
             scale:
-              - 640
-              - 640
+              - 512
+              - 512
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true

@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from otx.core.types.device import DeviceType
 from otx.core.types.image import ImageColorChannel
 from otx.core.types.transformer_libs import TransformLibType
 
@@ -58,6 +59,7 @@ class SubsetConfig:
 
     transform_lib_type: TransformLibType = TransformLibType.TORCHVISION
     num_workers: int = 2
+    sampler: SamplerConfig = field(default_factory=lambda: SamplerConfig())
 
 
 @dataclass
@@ -102,3 +104,24 @@ class DataModuleConfig:
     stack_images: bool = True
 
     include_polygons: bool = False
+    unannotated_items_ratio: float = 0.0
+
+    auto_num_workers: bool = False
+    device: DeviceType = DeviceType.auto
+
+
+@dataclass
+class SamplerConfig:
+    """Configuration class for defining the sampler used in the data loading process.
+
+    This is passed in the form of a dataclass, which is instantiated when the dataloader is created.
+
+    [TODO]: Need to replace this with a proper Sampler class.
+    Currently, SamplerConfig, which belongs to the sampler of SubsetConfig,
+    belongs to the nested dataclass of dataclass, which is not easy to instantiate from the CLI.
+    So currently replace sampler with a corresponding dataclass that resembles the configuration of another object,
+    providing limited functionality.
+    """
+
+    class_path: str = "torch.utils.data.RandomSampler"
+    init_args: dict[str, Any] = field(default_factory=dict)

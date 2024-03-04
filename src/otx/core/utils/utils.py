@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
+from multiprocessing import cpu_count
 from typing import TYPE_CHECKING, Any
+
+import torch
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
@@ -48,3 +51,11 @@ def get_mean_std_from_data_processing(config: DictConfig) -> dict[str, Any]:
         "mean": config["data_preprocessor"]["mean"],
         "std": config["data_preprocessor"]["std"],
     }
+
+
+def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:
+    """Measure appropriate num_workers value and return it."""
+    num_gpus = torch.cuda.device_count()
+    if num_gpus == 0:
+        return None
+    return min(cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8

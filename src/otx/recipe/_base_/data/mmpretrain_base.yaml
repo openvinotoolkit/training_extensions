@@ -7,6 +7,7 @@ config:
   mem_cache_size: 1GB
   image_color_channel: RGB
   include_polygons: false
+  unannotated_items_ratio: 0.0
   train_subset:
     subset_name: train
     num_workers: 2
@@ -18,6 +19,8 @@ config:
         scale: 224
         type: RandomResizedCrop
       - type: PackInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     num_workers: 2
@@ -32,6 +35,8 @@ config:
       - crop_size: 224
         type: CenterCrop
       - type: PackInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     num_workers: 2
@@ -43,3 +48,5 @@ config:
         scale: 224
         type: Resize
       - type: PackInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler

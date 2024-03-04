@@ -5,6 +5,7 @@ config:
   image_color_channel: RGB
   stack_images: False
   data_format: imagenet_with_subset_dirs
+  unannotated_items_ratio: 0.0
   train_subset:
     subset_name: train
     transform_lib_type: TORCHVISION
@@ -12,6 +13,8 @@ config:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
     num_workers: 2
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     transform_lib_type: TORCHVISION
@@ -19,6 +22,8 @@ config:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
     num_workers: 2
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     transform_lib_type: TORCHVISION
@@ -26,3 +31,5 @@ config:
       - class_path: torchvision.transforms.v2.ToImage
     batch_size: 1
     num_workers: 2
+    sampler:
+      class_path: torch.utils.data.RandomSampler

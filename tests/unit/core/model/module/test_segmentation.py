@@ -46,8 +46,7 @@ class TestOTXSegmentationModule:
         # define lightning model
         model = OTXSegmentationLitModule(otx_model, MagicMock, MagicMock, False)
         model.model.return_value = fxt_seg_data_entity[1]
-        model.val_metric = mocker.MagicMock(spec=Metric)
-        model.test_metric = mocker.MagicMock(spec=Metric)
+        model.metric = mocker.MagicMock(spec=Metric)
 
         return model
 

@@ -22,6 +22,12 @@ scheduler:
       patience: 1
       monitor: val/accuracy
 
+metric:
+  class_path: torchmetrics.classification.accuracy.Accuracy
+  init_args:
+    task: multiclass
+    num_classes: 1000
+
 engine:
   task: MULTI_CLASS_CLS
   device: auto

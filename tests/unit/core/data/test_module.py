@@ -19,8 +19,9 @@ from otx.core.data.module import (
 )
 
 
-def mock_data_filtering(dataset: DmDataset, data_format: str) -> DmDataset:
+def mock_data_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio: float) -> DmDataset:
     del data_format
+    del unannotated_items_ratio
     return dataset
 
 
@@ -92,6 +93,8 @@ class TestModule:
         cfg.mem_cache_size = "1GB"
         cfg.tile_config = {}
         cfg.tile_config.enable_tiler = False
+        cfg.auto_num_workers = False
+        cfg.device = "auto"
         return cfg
 
     @patch("otx.core.data.module.OTXDatasetFactory")

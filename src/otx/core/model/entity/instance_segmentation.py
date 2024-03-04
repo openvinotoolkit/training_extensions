@@ -5,11 +5,15 @@
 
 from __future__ import annotations
 
+import json
+import logging as log
 from copy import copy
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from openvino.model_api.models import Model
+from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
@@ -46,6 +50,7 @@ class OTXInstanceSegModel(
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.tile_config = TileConfig()
+        self.test_meta_info: dict[str, Any] = {}
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -93,6 +98,7 @@ class OTXInstanceSegModel(
                 ("model_info", "task_type"): "instance_segmentation",
                 ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
                 ("model_info", "iou_threshold"): str(0.5),
+                ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
 
@@ -105,6 +111,16 @@ class OTXInstanceSegModel(
 
         parameters["metadata"][("model_info", "labels")] = all_labels.strip()
         parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
+
+        if self.tile_config.enable_tiler:
+            parameters["metadata"].update(
+                {
+                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
+                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
+                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
+                },
+            )
+
         return parameters
 
 
@@ -305,6 +321,7 @@ class OVInstanceSegmentationModel(
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
     ) -> None:
+        self.test_meta_info: dict[str, Any] = {}
         super().__init__(
             num_classes,
             model_name,
@@ -314,6 +331,38 @@ class OVInstanceSegmentationModel(
             use_throughput_mode,
             model_api_configuration,
         )
+
+    def _setup_tiler(self) -> None:
+        """Setup tiler for tile task."""
+        execution_mode = "async" if self.async_inference else "sync"
+        # Note: Disable async_inference as tiling has its own sync/async implementation
+        self.async_inference = False
+        self.model = InstanceSegmentationTiler(self.model, execution_mode=execution_mode)
+        log.info(
+            f"Enable tiler with tile size: {self.model.tile_size} \
+                and overlap: {self.model.tiles_overlap}",
+        )
+
+    def _create_model(self) -> Model:
+        """Create a OV model with help of Model API."""
+        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+
+        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.use_throughput_mode:
+            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
+
+        model_adapter = OpenvinoAdapter(
+            create_core(),
+            self.model_name,
+            max_num_requests=self.num_requests,
+            plugin_config=plugin_config,
+            model_parameters=self.model_adapter_parameters,
+        )
+        for name, info in model_adapter.model.rt_info["model_info"].items():
+            if name == "test_meta_info":
+                for key, value in json.loads(info.value).items():
+                    self.test_meta_info[key] = value
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,
@@ -338,8 +387,12 @@ class OVInstanceSegmentationModel(
                     canvas_size=inputs.imgs_info[-1].img_shape,
                 ),
             )
+            # NOTE: OTX 1.5 filter predictions with result_based_confidence_threshold,
+            # but OTX 2.0 doesn't have it in configuration.
+            _masks = [output.mask for output in output_objects]
+            _masks = np.stack(_masks) if len(_masks) else []
             scores.append(torch.tensor([output.score for output in output_objects]))
-            masks.append(torch.tensor([output.mask for output in output_objects]))
+            masks.append(torch.tensor(_masks))
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         if outputs and outputs[0].saliency_map:

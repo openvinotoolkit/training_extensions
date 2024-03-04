@@ -5,6 +5,7 @@ config:
   image_color_channel: RGB
   data_format: coco_instances
   include_polygons: false
+  unannotated_items_ratio: 0.0
   train_subset:
     subset_name: train
     batch_size: 8
@@ -23,6 +24,8 @@ config:
       - prob: 0.5
         type: RandomFlip
       - type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   val_subset:
     subset_name: val
     num_workers: 2
@@ -45,6 +48,8 @@ config:
           - img_shape
           - scale_factor
         type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler
   test_subset:
     subset_name: test
     num_workers: 2
@@ -67,3 +72,5 @@ config:
           - img_shape
           - scale_factor
         type: PackDetInputs
+    sampler:
+      class_path: torch.utils.data.RandomSampler

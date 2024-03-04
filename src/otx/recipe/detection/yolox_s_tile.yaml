@@ -22,6 +22,12 @@ scheduler:
       patience: 5
       monitor: val/map_50
 
+metric:
+  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: bbox
+
 engine:
   task: DETECTION
   device: auto
@@ -50,7 +56,7 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: True
+            keep_ratio: false
           - type: RandomFlip
             prob: 0.5
           - type: Pad
@@ -78,7 +84,7 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: True
+            keep_ratio: false
           - type: Pad
             pad_to_square: true
             pad_val: 114
@@ -102,7 +108,7 @@ overrides:
             scale:
               - 640
               - 640
-            keep_ratio: True
+            keep_ratio: false
           - type: Pad
             pad_to_square: true
             pad_val: 114

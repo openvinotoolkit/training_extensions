@@ -6,28 +6,28 @@
 from __future__ import annotations
 
 import logging
-import os
+from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
+from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
+from otx.core.types import PathLike
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from typing_extensions import TypeAlias
+    from torchmetrics import Metric
 
     from otx.core.model.entity.base import OTXModel
 
-PathLike: TypeAlias = Union[str, Path, os.PathLike]
 
 logger = logging.getLogger()
 RECIPE_PATH = get_otx_root_path() / "recipe"
@@ -41,6 +41,9 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.INSTANCE_SEGMENTATION: RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
     OTXTaskType.ACTION_DETECTION: RECIPE_PATH / "action" / "action_detection" / "x3d_fastrcnn.yaml",
+    OTXTaskType.ANOMALY_CLASSIFICATION: RECIPE_PATH / "anomaly" / "anomaly_classification" / "padim.yaml",
+    OTXTaskType.ANOMALY_SEGMENTATION: RECIPE_PATH / "anomaly" / "anomaly_segmentation" / "padim.yaml",
+    OTXTaskType.ANOMALY_DETECTION: RECIPE_PATH / "anomaly" / "anomaly_detection" / "padim.yaml",
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
 }
@@ -73,6 +76,7 @@ OVMODEL_PER_TASK = {
     OTXTaskType.ROTATED_DETECTION: "otx.core.model.entity.rotated_detection.OVRotatedDetectionModel",
     OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel",
     OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.entity.segmentation.OVSegmentationModel",
+    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.entity.action_classification.OVActionClsModel",
 }
 
 
@@ -204,24 +208,27 @@ class AutoConfigurator:
         if self.data_root is None:
             return None
         self.config["data"]["config"]["data_root"] = self.data_root
-        data_config = self.config["data"]["config"].copy()
+        data_config = deepcopy(self.config["data"]["config"])
+        train_config = data_config.pop("train_subset")
+        val_config = data_config.pop("val_subset")
+        test_config = data_config.pop("test_subset")
         return OTXDataModule(
             task=self.config["data"]["task"],
             config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
+                train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
+                val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
+                test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
                 tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),
         )
 
-    def get_model(self, model_name: str | None = None, meta_info: LabelInfo | None = None) -> OTXModel:
+    def get_model(self, model_name: str | None = None, label_info: LabelInfo | None = None) -> OTXModel:
         """Retrieves the OTXModel instance based on the provided model name and meta information.
 
         Args:
             model_name (str | None): The name of the model to retrieve. If None, the default model will be used.
-            meta_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
+            label_info (LabelInfo | None): The meta information about the labels. If provided, the number of classes
                 will be updated in the model's configuration.
 
         Returns:
@@ -232,19 +239,19 @@ class AutoConfigurator:
 
             # If model_name is None, the default model will be used from task.
             >>> auto_configurator.get_model(
-            ...     meta_info=<LabelInfo>,
+            ...     label_info=<LabelInfo>,
             ... )
 
             # If model_name is str, the default config file is changed.
             >>> auto_configurator.get_model(
             ...     model_name=<model_name, str>,
-            ...     meta_info=<LabelInfo>,
+            ...     label_info=<LabelInfo>,
             ... )
         """
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
-        if meta_info is not None:
-            num_classes = meta_info.num_classes
+        if label_info is not None:
+            num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
@@ -269,12 +276,29 @@ class AutoConfigurator:
         logger.warning(f"Set Default Scheduler: {scheduler_config}")
         return partial_instantiate_class(init=scheduler_config)
 
-    def get_ov_model(self, model_name: str, meta_info: LabelInfo) -> OVModel:
+    def get_metric(self) -> Metric | None:
+        """Returns the instantiated metric based on the configuration.
+
+        Returns:
+            Metric | None: The instantiated metric.
+        """
+        if self.task in DEFAULT_CONFIG_PER_TASK:
+            metric_config = self.config.get("metric", None)
+            logger.warning(f"Set Default Metric: {metric_config}")
+
+            # Currently, single metric only available.
+            if metric_config:
+                metric = partial_instantiate_class(init=metric_config)
+                return metric[0] if isinstance(metric, list) else metric
+
+        return None
+
+    def get_ov_model(self, model_name: str, label_info: LabelInfo) -> OVModel:
         """Retrieves the OVModel instance based on the given model name and label information.
 
         Args:
             model_name (str): The name of the model.
-            meta_info (LabelInfo): The label information.
+            label_info (LabelInfo): The label information.
 
         Returns:
             OVModel: The OVModel instance.
@@ -291,7 +315,7 @@ class AutoConfigurator:
         ov_model = getattr(module, class_name)
         return ov_model(
             model_name=model_name,
-            num_classes=meta_info.num_classes,
+            num_classes=label_info.num_classes,
         )
 
     def get_ov_datamodule(self) -> OTXDataModule:

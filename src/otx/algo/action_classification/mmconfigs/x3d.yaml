@@ -25,4 +25,4 @@ data_preprocessor:
   type: ActionDataPreprocessor
 test_cfg: null
 train_cfg: null
-type: Recognizer3D
+type: OTXRecognizer3D
