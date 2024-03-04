@@ -85,44 +85,46 @@ class _AnomalyModelExporter(OTXModelExporter):
             metadata=metadata,
         )
 
-    def to_openvino(  # type: ignore[override]
+    def to_openvino(
         self,
         model: nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
+        if example_inputs is None:
+            example_inputs = {
+                "input": (openvino.runtime.PartialShape(self.input_size)),
+                "example_input": torch.rand(self.input_size),
+            }
+
         save_path = str(output_dir / f"{base_model_name}.xml")
-        exported_model = openvino.convert_model(
-            input_model=model,
-            example_input=torch.rand(self.input_size),
-            input=(openvino.runtime.PartialShape(self.input_size)),
-        )
+        exported_model = openvino.convert_model(input_model=model, **example_inputs)
         exported_model = self._postprocess_openvino_model(exported_model)
         openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
         return Path(save_path)
 
-    def to_onnx(  # type: ignore[override]
+    def to_onnx(
         self,
         model: nn.Module,
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
+        example_inputs: dict[str, Any] | None = None,
         **kwargs,
     ) -> Path:
+        if example_inputs is None:
+            example_inputs = {
+                "args": (torch.rand(1, 3, self.orig_height, self.orig_width)).to(next(model.parameters()).device),
+                "dynamic_axes": {"input": {0: "batch_size"}, "output": {0: "batch_size"}},
+                "input_names": ["input"],
+                "output_names": ["output"],
+            }
+
         save_path = str(output_dir / f"{base_model_name}.onnx")
-        torch.onnx.export(
-            model=model,
-            args=(torch.rand(1, 3, self.orig_height, self.orig_width)).to(
-                next(model.parameters()).device,
-            ),
-            f=save_path,
-            opset_version=14,
-            dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
-            input_names=["input"],
-            output_names=["output"],
-        )
+        torch.onnx.export(model=model, f=save_path, opset_version=14, **example_inputs)
         onnx_model = onnx.load(save_path)
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
         onnx.save(onnx_model, save_path)
