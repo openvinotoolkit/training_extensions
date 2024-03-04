@@ -4,31 +4,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import numpy as np
-import pytest
-from datumaro import Dataset as DmDataset
 from datumaro import Image
 from datumaro.plugins.tiling.util import xywh_to_x1y1x2y2
-from omegaconf import DictConfig, OmegaConf
 from openvino.model_api.models import Model
-from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler, Tiler
-from otx.core.config.data import (
-    DataModuleConfig,
-    SubsetConfig,
-    TileConfig,
-    VisualPromptingConfig,
-)
+from openvino.model_api.tilers import Tiler
 from otx.core.data.dataset.tile import OTXTileTransform
-from otx.core.data.entity.detection import DetBatchDataEntity
-from otx.core.data.entity.tile import TileBatchDetDataEntity
-from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.detection import OVDetectionModel
-from otx.core.model.entity.instance_segmentation import OVInstanceSegmentationModel
-from otx.core.types.task import OTXTaskType
-from otx.engine import Engine
 
 
 def test_tile_transform_consistency(mocker):
