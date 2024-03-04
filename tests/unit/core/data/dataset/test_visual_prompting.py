@@ -53,7 +53,7 @@ class TestOTXVisualPromptingDataset:
         assert hasattr(entity, "masks")
         assert isinstance(entity.masks, Mask)
         assert hasattr(entity, "labels")
-        assert isinstance(entity.labels, Tensor)
+        assert isinstance(entity.labels, dict)
         assert hasattr(entity, "polygons")
         assert isinstance(entity.polygons, list)
         assert hasattr(entity, "bboxes")
