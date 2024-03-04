@@ -548,7 +548,10 @@ class Engine:
         model = self.model
         if not isinstance(model, OVModel):
             datamodule = self._auto_configurator.get_ov_datamodule()
-            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=optimize_datamodule.label_info)
+            model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=optimize_datamodule.label_info,
+            )
 
         ptq_config = {}
         if max_data_subset_size is not None:
