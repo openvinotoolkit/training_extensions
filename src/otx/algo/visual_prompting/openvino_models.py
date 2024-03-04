@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 
 
-class ImageEncoder(ImageModel):
+class VisualPromptingImageEncoder(ImageModel):
     """Image Encoder class of OTX Visual Prompting model for openvino task."""
 
     __model__ = "image_encoder"
@@ -47,7 +47,7 @@ class ImageEncoder(ImageModel):
         return dict_inputs, meta
 
 
-class Decoder(SegmentationModel):
+class VisualPromptingDecoder(SegmentationModel):
     """Decoder class of OTX Visual Prompting model for openvino task."""
 
     __model__ = "decoder"
