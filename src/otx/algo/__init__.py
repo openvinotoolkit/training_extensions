@@ -3,13 +3,6 @@
 #
 """Module for OTX custom algorithms, e.g., model, losses, hook, etc..."""
 
-from . import action_classification, classification, detection, instance_segmentation, segmentation, visual_prompting
+from . import action_classification, classification, detection, segmentation, visual_prompting
 
-__all__ = [
-    "action_classification",
-    "classification",
-    "detection",
-    "segmentation",
-    "visual_prompting",
-    "instance_segmentation",
-]
+__all__ = ["action_classification", "classification", "detection", "segmentation", "visual_prompting"]
