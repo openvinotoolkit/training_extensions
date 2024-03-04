@@ -1,32 +1,33 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Balanced sampler for imbalanced data."""
+"""Class incremental sampler for cls-incremental learning."""
 
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING
+import random
 
+import numpy as np
 import torch
 from torch.utils.data import Sampler
 
+from otx.core.data.dataset.base import OTXDataset
 from otx.core.utils.utils import get_idx_list_per_classes
 
-if TYPE_CHECKING:
-    from otx.core.data.dataset.base import OTXDataset
 
-
-class BalancedSampler(Sampler):
-    """Balanced sampler for imbalanced data for class-incremental task.
+class ClassIncrementalSampler(Sampler):
+    """Sampler for Class-Incremental Task.
 
     This sampler is a sampler that creates an effective batch
-    In reduce mode,
-    reduce the iteration size by estimating the trials
-    that all samples in the tail class are selected more than once with probability 0.999
+    For default setting,
+    the square root of (number of old data/number of new data) is used as the ratio of old data
+    In effective mode,
+    the ratio of old and new data is used as 1:1
 
     Args:
         dataset (OTXDataset): A built-up dataset
+        batch_size (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
         num_replicas (int, optional): Number of processes participating in
             distributed training. By default, :attr:`world_size` is retrieved from the
@@ -38,12 +39,15 @@ class BalancedSampler(Sampler):
             tail of the data to make it evenly divisible across the number of
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
-        n_repeats (int, optional) : number of iterations for manual setting
+        n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
     """
 
     def __init__(
         self,
         dataset: OTXDataset,
+        batch_size: int,
+        old_classes: list[str],
+        new_classes: list[str],
         efficient_mode: bool = False,
         num_replicas: int = 1,
         rank: int = 0,
@@ -52,6 +56,7 @@ class BalancedSampler(Sampler):
         generator: torch.Generator | None = None,
     ):
         self.dataset = dataset
+        self.batch_size = batch_size
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
@@ -60,25 +65,38 @@ class BalancedSampler(Sampler):
 
         super().__init__(dataset)
 
-        # img_indices: dict[label: list[idx]]
-        ann_stats = get_idx_list_per_classes(dataset.dm_subset)
-        self.img_indices = {k: torch.tensor(v, dtype=torch.int64) for k, v in ann_stats.items() if len(v) > 0}
-        self.num_cls = len(self.img_indices.keys())
-        self.data_length = len(self.dataset)
-        self.num_trials = int(self.data_length / self.num_cls)
+        # Need to split new classes dataset indices & old classses dataset indices
+        ann_stats = get_idx_list_per_classes(dataset.dm_subset, True)
+        new_indices, old_indices = [], []
+        for cls in new_classes:
+            new_indices.extend(ann_stats[cls])
+        self.new_indices = torch.tensor(new_indices, dtype=torch.int64)
+        for cls in old_classes:
+            old_indices.extend(ann_stats[cls])
+        self.old_indices = torch.tensor(old_indices, dtype=torch.int64)
+
+        if not len(self.new_indices) > 0:
+            self.new_indices = self.old_indices
+            self.old_indices = torch.tensor([], dtype=torch.int64)
+
+        old_new_ratio = np.sqrt(len(self.old_indices) / len(self.new_indices))
 
         if efficient_mode:
-            # Reduce the # of sampling (sampling data for a single epoch)
-            num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
-            if num_tail > 1:
-                base = 1 - (1 / num_tail)
-                num_reduced_trials = int(math.log(0.001, base))
-                self.num_trials = min(num_reduced_trials, self.num_trials)
+            self.data_length = int(len(self.new_indices) * (1 + old_new_ratio))
+            self.old_new_ratio = 1
+        else:
+            self.data_length = len(self.dataset)
+            self.old_new_ratio = int(old_new_ratio)
 
-        self.num_samples = self._calculate_num_samples()
+        self.num_samples = self._calcuate_num_samples()
 
-    def _calculate_num_samples(self) -> int:
-        num_samples = self.num_trials * self.num_cls * self.repeat
+    def _calcuate_num_samples(self) -> int:
+        num_samples = self.repeat * (1 + self.old_new_ratio) * int(self.data_length / (1 + self.old_new_ratio))
+
+        if not self.drop_last:
+            num_samples += (
+                int(np.ceil(self.data_length * self.repeat / self.batch_size)) * self.batch_size - num_samples
+            )
 
         if self.num_replicas > 1:
             # If the dataset length is evenly divisible by # of replicas, then there
@@ -109,24 +127,37 @@ class BalancedSampler(Sampler):
 
         indices = []
         for _ in range(self.repeat):
-            for _ in range(self.num_trials):
-                index = torch.cat(
+            for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
+                indice = torch.cat(
                     [
-                        self.img_indices[cls_indices][
-                            torch.randint(0, len(self.img_indices[cls_indices]), (1,), generator=self.generator)
-                        ]
-                        for cls_indices in self.img_indices
+                        self.new_indices[torch.randint(0, len(self.new_indices), (1,), generator=generator)],
+                        # random_generator.choice(self.new_indices, 1),
+                        self.old_indices[
+                            torch.randint(0, len(self.old_indices), (self.old_new_ratio,), generator=generator)
+                        ],
+                        # random_generator.choice(self.old_indices, self.old_new_ratio),
                     ],
                 )
-                indices.append(index)
+                indices.append(indice)
 
         indices = torch.cat(indices)
+        if not self.drop_last:
+            num_extra = int(
+                np.ceil(self.data_length * self.repeat / self.batch_size),
+            ) * self.batch_size - len(indices)
+            indices = torch.cat(
+                [
+                    indices,
+                    indices[torch.randint(0, len(indices), (num_extra,), generator=generator)],
+                ],
+            )
         indices = indices.tolist()
 
         if self.num_replicas > 1:
             if not self.drop_last:
                 # add extra samples to make it evenly divisible
                 padding_size = self.total_size - len(indices)
+                # add extra samples to make it evenly divisible
                 if padding_size <= len(indices):
                     indices += indices[:padding_size]
                 else:
@@ -135,11 +166,11 @@ class BalancedSampler(Sampler):
                 # remove tail of data to make it evenly divisible.
                 indices = indices[: self.total_size]
 
-            # split and distribute indices
-            len_indices = len(indices)
-            indices = indices[
-                self.rank * len_indices // self.num_replicas : (self.rank + 1) * len_indices // self.num_replicas
-            ]
+            # shuffle before distributing indices
+            random.shuffle(indices)
+
+            # subsample
+            indices = indices[self.rank : self.total_size : self.num_replicas]
 
         return iter(indices)
 
