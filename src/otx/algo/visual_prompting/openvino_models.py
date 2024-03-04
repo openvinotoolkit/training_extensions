@@ -80,9 +80,9 @@ class Decoder(SegmentationModel):
         processed_prompts: list[dict[str, Any]] = []
         idx: int = 0
         for prompt_name in ["bboxes", "points"]:
-            prompts = inputs.get(prompt_name, None)
-            if prompts is None:
+            if (prompts := inputs.get(prompt_name, None)) is None:
                 continue
+
             for prompt in prompts:
                 label = inputs["labels"][idx]
                 if prompt_name == "bboxes":
