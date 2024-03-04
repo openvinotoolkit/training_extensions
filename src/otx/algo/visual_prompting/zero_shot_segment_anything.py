@@ -241,11 +241,14 @@ class ZeroShotSegmentAnything(SegmentAnything):
             images (list[tv_tensors.Image]): List of given images for reference features.
             processed_prompts (dict[int, list[tv_tensors.TVTensor]]): The class-wise prompts
                 processed at OTXZeroShotSegmentAnything._gather_prompts_with_labels.
+            reference_feats (Tensor): Reference features for target prediction.
+            used_indices (Tensor): To check which indices of reference features are validate.
             ori_shapes (List[Tensor]): List of original shapes per image.
         """
         # initialize tensors to contain reference features and prompts
         largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
         reference_feats = self.expand_reference_info(reference_feats, largest_label)
+        new_used_indices: list[Tensor] = []
         # TODO (sungchul): consider how to handle multiple reference features, currently replace it # noqa: TD003
 
         reference_masks: list[Tensor] = []
@@ -304,10 +307,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     default_threshold_reference -= 0.05
 
                 reference_feats[label] = ref_feat.detach().cpu()
-                used_indices = torch.cat((used_indices, torch.tensor([label])), dim=0)
+                new_used_indices.append(torch.tensor([label]))
                 ref_masks[label] = ref_mask.detach().cpu()
             reference_masks.append(ref_masks)
-        used_indices = used_indices.unique()
+        used_indices = torch.cat((used_indices, *new_used_indices), dim=0).unique()
         return {"reference_feats": reference_feats, "used_indices": used_indices}, reference_masks
 
     @torch.no_grad()
