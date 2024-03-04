@@ -2,6 +2,10 @@ name: Code Scanning
 
 on:
   workflow_dispatch: # run on request (no need for PR)
+  push:
+    branches:
+      - "releases/*"
+      - "v2"
   schedule:
     # every UTC 6PM from Mon to Fri
     - cron: "0 18 * * 1-5"
