@@ -11,6 +11,11 @@ from otx.core.data.entity.base import OTXBatchPredEntity, OTXBatchPredEntityWith
 #     MulticlassClsBatchPredEntity,
 #     MulticlassClsBatchPredEntityWithXAI,
 # )
+from otx.core.data.entity.classification import (
+    MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
+    MultilabelClsBatchPredEntityWithXAI,
+)
 from otx.engine import Engine
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
@@ -128,6 +133,7 @@ def test_predict_with_explain(
     assert len(maps_torch) == len(maps_ov)
 
     for i in range(len(maps_torch)):
+        class_id = 0
         for class_id in maps_torch[i]:
             assert class_id in maps_ov[i]
             assert (

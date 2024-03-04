@@ -58,6 +58,7 @@ data_preprocessor:
     - 57.12
     - 58.395
   type: DetDataPreprocessor
+  non_blocking: true
 neck:
   act_cfg:
     inplace: true
