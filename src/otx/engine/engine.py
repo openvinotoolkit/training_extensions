@@ -572,18 +572,34 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
-        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-        if explain_config is None:
-            explain_config = ExplainConfig()
+        model = self.model
+
+        if checkpoint is not None:
+            checkpoint = str(checkpoint)
+        elif self.checkpoint is not None:
+            checkpoint = str(self.checkpoint)
+        else:
+            checkpoint = None
+
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.label_info = datamodule.label_info
+
+        # NOTE, trainer.test takes only lightning based checkpoint.
+        # So, it can't take the OTX1.x checkpoint.
+        if checkpoint is not None and not is_ir_ckpt:
+            loaded_checkpoint = torch.load(checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
 
         lit_module.model.explain_mode = True
 
@@ -592,8 +608,10 @@ class Engine:
         predict_result = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
-            ckpt_path=ckpt_path,
         )
+
+        if explain_config is None:
+            explain_config = ExplainConfig()
 
         predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, Path(self.work_dir))
         lit_module.model.explain_mode = False

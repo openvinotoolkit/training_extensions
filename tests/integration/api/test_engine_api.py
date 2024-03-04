@@ -71,3 +71,31 @@ def test_engine_from_config(
     if task in OVMODEL_PER_TASK:
         test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
         assert len(test_metric_from_ov_model) > 0
+
+    # List of models with explain supported.
+    if task not in [
+        OTXTaskType.MULTI_CLASS_CLS,
+        OTXTaskType.MULTI_LABEL_CLS,
+        # Will be supported after merging PR#2997
+        # OTXTaskType.DETECTION,
+        # OTXTaskType.ROTATED_DETECTION,
+        # OTXTaskType.INSTANCE_SEGMENTATION,
+    ]:
+        return
+
+    # Predict Torch model with explain
+    predictions = engine.predict(explain=True)
+    assert len(predictions[0].saliency_maps) > 0
+
+    # Export IR model with explain
+    exported_model_with_explain = engine.export(explain=True)
+    assert exported_model_with_explain.exists()
+
+    # Infer IR Model with explain
+    if task in OVMODEL_PER_TASK:
+        # Predict
+        predictions = engine.predict(checkpoint=exported_model_with_explain, accelerator="cpu")
+        assert len(predictions) > 0
+        # Explain
+        explain_results = engine.explain(checkpoint=exported_model_with_explain)
+        assert len(explain_results[0].saliency_maps) > 0
