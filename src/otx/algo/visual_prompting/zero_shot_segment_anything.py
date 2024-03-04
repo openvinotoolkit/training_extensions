@@ -60,18 +60,10 @@ class PromptGetter(nn.Module):
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shape: Tensor,
-        threshold: Tensor | None = None,
-        num_bg_points: Tensor | None = None,
-        device: str | torch.device = "cpu",
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
     ) -> tuple[dict[int, Tensor], dict[int, Tensor]]:
         """Get prompt candidates."""
-        if threshold is None:
-            threshold = torch.tensor([[0.0]], dtype=torch.float32)
-        if num_bg_points is None:
-            num_bg_points = torch.tensor([[1]], dtype=torch.int64)
-
-        threshold = threshold.to(device)
-
         total_points_scores: dict[int, Tensor] = {}
         total_bg_coords: dict[int, Tensor] = {}
         for label in map(int, used_indices):
@@ -93,20 +85,11 @@ class PromptGetter(nn.Module):
         image_embeddings: Tensor,
         reference_feat: Tensor,
         ori_shape: Tensor,
-        threshold: Tensor | None = None,
-        num_bg_points: Tensor | None = None,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
     ) -> tuple[Tensor, Tensor]:
         """Get prompt candidates from given reference and target features."""
-        if threshold is None:
-            threshold = torch.tensor([[0.0]], dtype=torch.float32)
-        if num_bg_points is None:
-            num_bg_points = torch.tensor([[1]], dtype=torch.int64)
-
-        ori_shape = ori_shape.squeeze()
-        threshold = threshold.squeeze()
-        num_bg_points = num_bg_points.squeeze()
-
-        target_feat = image_embeddings.squeeze()
+        target_feat = image_embeddings.squeeze() # (256, 64, 64)
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
@@ -129,19 +112,14 @@ class PromptGetter(nn.Module):
         self,
         mask_sim: Tensor,
         ori_shape: Tensor,
-        threshold: Tensor | None = None,
-        num_bg_points: Tensor | None = None,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
     ) -> tuple[Tensor, Tensor]:
         """Select point used as point prompts."""
-        if threshold is None:
-            threshold = torch.tensor([0.0], dtype=torch.float32)
-        if num_bg_points is None:
-            num_bg_points = torch.tensor(1, dtype=torch.int64)
-
         _, w_sim = mask_sim.shape
 
         # Top-last point selection
-        bg_indices = mask_sim.flatten().topk(num_bg_points.item(), largest=False)[1]
+        bg_indices = mask_sim.flatten().topk(num_bg_points, largest=False)[1]
         bg_x = (bg_indices // w_sim).unsqueeze(0)
         bg_y = bg_indices - bg_x * w_sim
         bg_coords = torch.cat((bg_y, bg_x), dim=0).permute(1, 0)
@@ -339,6 +317,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
         is_cascade: bool = False,
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
@@ -350,6 +330,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
             reference_feats (Tensor): Reference features for target prediction.
             used_indices (Tensor): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
+            threshold (float): Threshold to control masked region. Defaults to 0.0.
+            num_bg_points (1): Number of background points. Defaults to 1.
             is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
@@ -368,7 +350,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 reference_feats=reference_feats,
                 used_indices=used_indices,
                 ori_shape=ori_shape,
-                device=image_embeddings.device,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
             )
             predicted_masks: defaultdict = defaultdict(list)
             used_points: defaultdict = defaultdict(list)
