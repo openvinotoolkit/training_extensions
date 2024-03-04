@@ -78,13 +78,11 @@ class Decoder(SegmentationModel):
     def preprocess(self, inputs: dict[str, Any]) -> list[dict[str, Any]]:
         """Preprocess prompts."""
         processed_prompts: list[dict[str, Any]] = []
-        idx: int = 0
         for prompt_name in ["bboxes", "points"]:
-            if (prompts := inputs.get(prompt_name, None)) is None:
+            if (prompts := inputs.get(prompt_name, None)) is None or (labels := inputs.get("labels").get(prompt_name, None)) is None:
                 continue
 
-            for prompt in prompts:
-                label = inputs["labels"][idx]
+            for prompt, label in zip(prompts, labels):
                 if prompt_name == "bboxes":
                     point_coords = self.apply_coords(prompt.reshape(-1, 2, 2), inputs["orig_size"])
                     point_labels = np.array([2, 3], dtype=np.float32).reshape(-1, 2)
@@ -102,7 +100,6 @@ class Decoder(SegmentationModel):
                         "label": label,
                     },
                 )
-                idx += 1
         return processed_prompts
 
     def apply_coords(self, coords: np.ndarray, orig_size: np.ndarray | list[int] | tuple[int, int]) -> np.ndarray:

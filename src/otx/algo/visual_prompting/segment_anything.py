@@ -214,7 +214,6 @@ class SegmentAnything(nn.Module):
         ori_shapes: list[Tensor],
         bboxes: list[tv_tensors.BoundingBoxes | None],
         points: list[tuple[Points, Tensor] | None],
-        labels: list[Tensor],
         gt_masks: list[tv_tensors.Mask] | None = None,
     ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
         """Forward method for SAM training/validation/prediction.
@@ -228,7 +227,6 @@ class SegmentAnything(nn.Module):
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
                 1 indicates a foreground point and 0 indicates a background point.
-            labels (List[Tensor]): List of labels stacked in the order, points and bounding boxes.
             gt_masks (List[tv_tensors.Mask], optional): Ground truth masks for loss calculation.
 
         Returns:
@@ -289,7 +287,7 @@ class SegmentAnything(nn.Module):
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
-        return post_processed_pred_masks, ious, labels
+        return post_processed_pred_masks, ious
 
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
@@ -506,7 +504,6 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
                 else None
                 for point in self._inspect_prompts(inputs.points)
             ],
-            "labels": inputs.labels,
         }
 
     def _customize_outputs(
@@ -520,11 +517,9 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
 
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
-        for mask, score, label in zip(*outputs):
+        for mask, score in zip(*outputs):
             masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
             scores.append(score)
-            labels.append(label)
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -535,7 +530,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             polygons=[],
             points=[],
             bboxes=[],
-            labels=labels,
+            labels=inputs.labels,
         )
 
     def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:

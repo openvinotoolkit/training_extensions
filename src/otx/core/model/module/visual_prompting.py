@@ -195,7 +195,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 {
                     "masks": masks.data,
                     "scores": scores,
-                    "labels": labels,
+                    "labels": torch.cat([v for v in labels.values()]),
                 },
             )
 
@@ -209,7 +209,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             target_info.append(
                 {
                     "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
-                    "labels": labels,
+                    "labels": torch.cat([v for v in labels.values()]),
                 },
             )
 

@@ -118,7 +118,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
 
         bboxes = tv_tensors.wrap(torch.cat(gt_bboxes, dim=0), like=gt_bboxes[0]) if len(gt_bboxes) > 0 else None
         points = tv_tensors.wrap(torch.stack(gt_points, dim=0), like=gt_points[0]) if len(gt_points) > 0 else None
-        labels = torch.as_tensor(gt_labels.get("bboxes", []) + gt_labels.get("points", []), dtype=torch.int64)
+        labels = {prompt_type: torch.as_tensor(values, dtype=torch.int64) for prompt_type, values in gt_labels.items()}
         masks = tv_tensors.Mask(
             torch.stack(gt_masks.get("bboxes", []) + gt_masks.get("points", []), dim=0),
             dtype=torch.uint8,

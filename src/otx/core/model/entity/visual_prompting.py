@@ -285,7 +285,7 @@ class OVVisualPromptingModel(
                 {
                     "bboxes": bbox.cpu().numpy() if bbox is not None else bbox,
                     "points": point.cpu().numpy() if point is not None else point,
-                    "labels": label.cpu().numpy(),
+                    "labels": {k: v.cpu().numpy() for k, v in label.items()},
                     "orig_size": imgs_info.ori_shape,
                 },
             )
@@ -301,11 +301,9 @@ class OVVisualPromptingModel(
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
         for output in outputs:
             masks.append(torch.as_tensor(output["hard_prediction"]))
             scores.append(torch.as_tensor(output["scores"]))
-            labels.append(torch.tensor([output["labels"]]))
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -316,7 +314,7 @@ class OVVisualPromptingModel(
             polygons=[],
             points=[],
             bboxes=[],
-            labels=[torch.cat(labels)],
+            labels=inputs.labels,
         )
 
 
