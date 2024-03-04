@@ -89,7 +89,7 @@ class PromptGetter(nn.Module):
         num_bg_points: int = 1,
     ) -> tuple[Tensor, Tensor]:
         """Get prompt candidates from given reference and target features."""
-        target_feat = image_embeddings.squeeze() # (256, 64, 64)
+        target_feat = image_embeddings.squeeze()  # (256, 64, 64)
         c_feat, h_feat, w_feat = target_feat.shape
         target_feat = target_feat / target_feat.norm(dim=0, keepdim=True)
         target_feat = target_feat.reshape(c_feat, h_feat * w_feat)

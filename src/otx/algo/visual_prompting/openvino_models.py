@@ -79,7 +79,9 @@ class VisualPromptingDecoder(SegmentationModel):
         """Preprocess prompts."""
         processed_prompts: list[dict[str, Any]] = []
         for prompt_name in ["bboxes", "points"]:
-            if (prompts := inputs.get(prompt_name, None)) is None or (labels := inputs.get("labels").get(prompt_name, None)) is None:
+            if (prompts := inputs.get(prompt_name, None)) is None or (
+                labels := inputs["labels"].get(prompt_name, None)
+            ) is None:
                 continue
 
             for prompt, label in zip(prompts, labels):
