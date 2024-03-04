@@ -52,7 +52,7 @@ otx_dir = os.getcwd()
 
 templates = [
     template
-    for template in Registry("src/otx/algorithms/visual_prompting", experimental=True)
+    for template in Registry("src/otx/algorithms/visual_prompting")
     .filter(task_type="VISUAL_PROMPTING")
     .templates
     if "Zero_Shot" not in template.name

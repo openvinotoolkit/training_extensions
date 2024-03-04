@@ -54,7 +54,7 @@ otx_dir = os.getcwd()
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("src/otx/algorithms/visual_prompting/configs", "sam_vit_b", "template_experimental.yaml")
+        os.path.join("src/otx/algorithms/visual_prompting/configs", "sam_vit_b", "template.yaml")
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
@@ -62,7 +62,7 @@ if TT_STABILITY_TESTS:
 else:
     templates = [
         template
-        for template in Registry("src/otx/algorithms/visual_prompting", experimental=True)
+        for template in Registry("src/otx/algorithms/visual_prompting")
         .filter(task_type="VISUAL_PROMPTING")
         .templates
         if "Zero_Shot" not in template.name
