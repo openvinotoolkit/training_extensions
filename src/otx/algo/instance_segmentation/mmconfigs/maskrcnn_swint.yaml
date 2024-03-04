@@ -43,6 +43,7 @@ data_preprocessor:
     - 57.12
     - 57.375
   type: DetDataPreprocessor
+  non_blocking: true
 neck:
   in_channels:
     - 96
