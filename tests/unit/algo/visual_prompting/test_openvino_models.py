@@ -10,13 +10,13 @@ import pytest
 from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
 from openvino.model_api.models.types import NumericalValue
-from otx.algo.visual_prompting.openvino_models import Decoder, ImageEncoder
+from otx.algo.visual_prompting.openvino_models import VisualPromptingDecoder, VisualPromptingImageEncoder
 
 
-class TestImageEncoder:
+class TestVisualPromptingImageEncoder:
     def test_parameters(self):
         """Test parameters."""
-        params = ImageEncoder.parameters()
+        params = VisualPromptingImageEncoder.parameters()
 
         assert params.get("resize_type").default_value == "fit_to_window"
         assert params.get("image_size").default_value == 1024
@@ -24,7 +24,7 @@ class TestImageEncoder:
     def test_preproces(self, mocker):
         """Test preprocess."""
         mocker.patch.object(ImageModel, "__init__")
-        image_encoder = ImageEncoder("adapter")
+        image_encoder = VisualPromptingImageEncoder("adapter")
         fake_inputs = np.ones((4, 4, 3))
         image_encoder.h, image_encoder.w, image_encoder.c = fake_inputs.shape
         image_encoder.image_blob_name = "images"
@@ -39,17 +39,17 @@ class TestImageEncoder:
         assert meta["resize_type"] == "fit_to_window"
 
 
-class TestDecoder:
+class TestVisualPromptingDecoder:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
         mocker.patch.object(SegmentationModel, "__init__")
         mocker_model_adapter = mocker.Mock(spec=OpenvinoAdapter)
-        self.decoder = Decoder(mocker_model_adapter)
+        self.decoder = VisualPromptingDecoder(mocker_model_adapter)
         self.decoder.image_size = 6
 
     def test_parameters(self):
         """Test parameters."""
-        params = Decoder.parameters()
+        params = VisualPromptingDecoder.parameters()
 
         assert isinstance(params.get("image_size"), NumericalValue)
         assert params.get("image_size").default_value == 1024
@@ -67,7 +67,7 @@ class TestDecoder:
                 {
                     "bboxes": [np.array([[1, 1], [2, 2]])],
                     "points": [],
-                    "labels": [1],
+                    "labels": {"bboxes": [1]},
                     "orig_size": (4, 4),
                 },
                 {
@@ -76,7 +76,7 @@ class TestDecoder:
                 },
             ),
             (
-                {"bboxes": [], "points": [np.array([[1, 1]])], "labels": [1], "orig_size": (4, 4)},
+                {"bboxes": [], "points": [np.array([[1, 1]])], "labels": {"points": [1]}, "orig_size": (4, 4)},
                 {
                     "point_coords": (1, 1, 2),
                     "point_labels": (1, 1),
