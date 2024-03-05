@@ -113,7 +113,6 @@ class _AnomalyModelExporter(OTXModelExporter):
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
         example_inputs: dict[str, Any] | None = None,
-        **kwargs,
     ) -> Path:
         if example_inputs is None:
             example_inputs = {
