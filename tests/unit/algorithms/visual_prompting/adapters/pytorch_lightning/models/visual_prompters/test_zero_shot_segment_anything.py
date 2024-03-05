@@ -467,7 +467,7 @@ class TestZeroShotSegmentAnything:
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything.torch.load",
             return_value=torch.nn.ParameterDict(
-                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([[0.0]])}
+                {"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])}
             ),
         )
         mocker.patch("builtins.open", return_value="Mocked data")
@@ -475,7 +475,7 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything.on_predict_start()
         assert isinstance(zero_shot_segment_anything.reference_info, torch.nn.ParameterDict)
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (1, 1, 256)
-        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1, 1)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1,)
 
         # no saved reference info
         mocker.patch(
@@ -487,7 +487,7 @@ class TestZeroShotSegmentAnything:
         zero_shot_segment_anything.on_predict_start()
 
         assert zero_shot_segment_anything.reference_info["reference_feats"].shape == (0,)
-        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (1, 0)
+        assert zero_shot_segment_anything.reference_info["used_indices"].shape == (0,)
 
     @e2e_pytest_unit
     def test_expand_reference_info(self, set_zero_shot_segment_anything):

@@ -62,9 +62,7 @@ if TT_STABILITY_TESTS:
 else:
     templates = [
         template
-        for template in Registry("src/otx/algorithms/visual_prompting")
-        .filter(task_type="VISUAL_PROMPTING")
-        .templates
+        for template in Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
         if "Zero_Shot" not in template.name
     ]
     templates_ids = [template.model_template_id for template in templates]

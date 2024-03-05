@@ -40,6 +40,7 @@ class ImageEncoder(ImageModel):
             {
                 "resize_type": StringValue(default_value="fit_to_window"),
                 "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
+                "downsizing": NumericalValue(value_type=int, default_value=64, min=1, max=1024),
             }
         )
         return parameters
@@ -55,38 +56,6 @@ class ImageEncoder(ImageModel):
             )[None]
         meta["resize_type"] = self.resize_type
         return dict_inputs, meta
-
-
-class PromptGetter(ImageModel):
-    """PromptGetter class for zero-shot visual prompting of openvino model wrapper."""
-
-    __model__ = "prompt_getter"
-
-    def __init__(self, inference_adapter, configuration=None, preload=False):
-        super().__init__(inference_adapter, configuration, preload)
-
-    @classmethod
-    def parameters(cls) -> Dict[str, Any]:  # noqa: D102
-        parameters = super().parameters()
-        parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
-        parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
-        parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
-        parameters.update(
-            {"default_threshold_reference": NumericalValue(value_type=float, default_value=0.3, min=-1.0, max=1.0)}
-        )
-        return parameters
-
-    def _get_inputs(self):
-        """Defines the model inputs for images and additional info."""
-        image_blob_names, image_info_blob_names = [], []
-        for name, metadata in self.inputs.items():
-            if len(metadata.shape) == 4:
-                image_blob_names.append(name)
-            else:
-                image_info_blob_names.append(name)
-        if not image_blob_names:
-            self.raise_error("Failed to identify the input for the image: no 4D input layer found")
-        return image_blob_names, image_info_blob_names
 
 
 class Decoder(SegmentationModel):

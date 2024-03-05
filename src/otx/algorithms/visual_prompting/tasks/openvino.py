@@ -242,29 +242,13 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         num_requests: int = 1,
     ):
 
-        assert all(module in model_files for module in ["image_encoder", "prompt_getter", "decoder"])
+        assert all(module in model_files for module in ["image_encoder", "decoder"])
 
         self.model = {}
-        model_parameters = {
-            "prompt_getter": {"input_layouts": "image_embeddings:NCHW"},
-            "decoder": {"input_layouts": "image_embeddings:NCHW"},
-        }
+        model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         self.configuration = {
             "image_encoder": {
                 **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
-            },
-            "prompt_getter": {
-                **attr.asdict(
-                    hparams.postprocessing,
-                    filter=lambda attr, value: attr.name
-                    in [
-                        "image_size",
-                        "sim_threshold",
-                        "num_bg_points",
-                        "embedded_processing",
-                        "default_threshold_reference",
-                    ],
-                )
             },
             "decoder": {
                 **attr.asdict(
@@ -284,7 +268,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         }
 
         core = create_core()
-        for name in ["image_encoder", "prompt_getter", "decoder"]:
+        for name in ["image_encoder", "decoder"]:
             model_adapter = OpenvinoAdapter(
                 core=core,
                 model=model_files.get(name),
@@ -318,6 +302,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         use_bbox: bool = False,
         use_point: bool = False,
         path_reference_info: str = "vpm_zsl_reference_infos/{}/reference_info.pickle",
+        default_threshold_reference: float = 0.3,
     ) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
         """Learn for reference features."""
         ref_masks: np.ndarray
@@ -356,16 +341,16 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 continue
 
             ref_feat = None
-            default_threshold_reference = deepcopy(self.model["prompt_getter"].default_threshold_reference)
+            cur_default_threshold_reference = deepcopy(default_threshold_reference)
             while ref_feat is None:
-                logger.info(f"[*] default_threshold_reference : {default_threshold_reference:.4f}")
+                logger.info(f"[*] default_threshold_reference : {cur_default_threshold_reference:.4f}")
                 ref_feat = self._generate_masked_features(
-                    processed_embedding, ref_masks[label], default_threshold_reference
+                    processed_embedding, ref_masks[label], cur_default_threshold_reference
                 )
-                default_threshold_reference -= 0.05
+                cur_default_threshold_reference -= 0.05
 
             self.reference_feats[label] = ref_feat
-            self.used_indices = np.concatenate((self.used_indices, np.array([[label]])), axis=1)
+            self.used_indices = np.concatenate((self.used_indices, np.array([label])))
 
         reference_info = {"reference_feats": self.reference_feats, "used_indices": self.used_indices}
         path_reference_info = path_reference_info.format(time.strftime("%Y%m%d-%H%M%S"))
@@ -379,18 +364,29 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
         is_cascade: bool = False,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
+        default_threshold_target: float = 0.65,
     ) -> Tuple[List[Any], DefaultDict[Any, Any], DefaultDict[Any, Any]]:
         """Perform a prediction for a given input image."""
         points_score: np.ndarray
 
         # forward image encoder
         images, meta = self.pre_process_image_encoder(images)
-        original_size = np.asarray([meta["original_shape"][:2]], dtype=np.int64)
+        original_shape = np.asarray(meta["original_shape"][:2], dtype=np.int64)
         image_embeddings = self.forward_image_encoder(images)
 
         # get point candidates
-        total_points_scores, total_bg_coords = self.forward_prompt_getter(
-            image_embeddings, reference_feats, used_indices, original_size
+        total_points_scores, total_bg_coords = self._get_prompt_candidates(
+            image_embeddings=image_embeddings["image_embeddings"],
+            reference_feats=reference_feats,
+            used_indices=used_indices,
+            original_shape=original_shape,
+            threshold=threshold,
+            num_bg_points=num_bg_points,
+            default_threshold_target=default_threshold_target,
+            image_size=self.model["image_encoder"].image_size,
+            downsizing=self.model["image_encoder"].downsizing,
         )
 
         annotations: DefaultDict = defaultdict(list)
@@ -414,16 +410,16 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                     continue
 
                 point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-                point_coords = self.model["decoder"]._apply_coords(point_coords, original_size[0])
+                point_coords = self.model["decoder"]._apply_coords(point_coords, original_shape)
                 point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
                 inputs_decoder = {
                     "point_coords": point_coords[None],
                     "point_labels": point_labels[None],
-                    "orig_size": original_size,
+                    "orig_size": original_shape[None],
                 }
                 inputs_decoder.update(image_embeddings)
 
-                prediction = self.forward_decoder(inputs_decoder, original_size, is_cascade)
+                prediction = self.forward_decoder(inputs_decoder, original_shape, is_cascade)
                 prediction.update({"scores": points_score[-1]})
 
                 predicted_masks[label].append(prediction[self.model["decoder"].output_blob_name])
@@ -436,7 +432,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 continue
             metadata = {
                 "label": [_label for _label in self.labels if int(_label.id_) == label][0],
-                "original_size": original_size,
+                "original_size": original_shape,
             }
             for prediction, used_point in zip(predictions, used_points[label]):
                 annotation, _, _ = self.post_process(
@@ -445,32 +441,6 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 annotations[label].extend(annotation)
 
         return sum(annotations.values(), []), predicted_masks, used_points
-
-    def forward_prompt_getter(
-        self,
-        image_embeddings: Dict[str, np.ndarray],
-        reference_feats: np.ndarray,
-        used_indices: np.ndarray,
-        original_size: np.ndarray,
-    ) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
-        """Forward function of OpenVINO Visual Prompting Inferencer."""
-        inputs = {
-            "original_size": original_size,
-            "threshold": np.array([[self.model["prompt_getter"].sim_threshold]], dtype=np.float32),
-            "num_bg_points": np.array([[self.model["prompt_getter"].num_bg_points]], dtype=np.int64),
-            **image_embeddings,
-        }
-        total_points_scores: Dict[int, np.ndarray] = {}
-        total_bg_coords: Dict[int, np.ndarray] = {}
-        for label in used_indices[0]:
-            reference_feat = reference_feats[label]
-            inputs["reference_feat"] = reference_feat
-            outputs = self.model["prompt_getter"].infer_sync(inputs)
-
-            total_points_scores[label] = outputs["points_scores"]
-            total_bg_coords[label] = outputs["bg_coords"]
-
-        return total_points_scores, total_bg_coords
 
     def forward_decoder(  # type: ignore
         self,
@@ -508,7 +478,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"]._apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size[0]
+                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32), original_size
                 )
                 inputs.update(
                     {
@@ -528,6 +498,97 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         _, masks = self._postprocess_masks(masks, logits, scores)
         return {"upscaled_masks": masks}
+
+    def _get_prompt_candidates(
+        self,
+        image_embeddings: np.ndarray,
+        reference_feats: np.ndarray,
+        used_indices: np.ndarray,
+        original_shape: np.ndarray,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
+        default_threshold_target: float = 0.65,
+        image_size: int = 1024,
+        downsizing: int = 64,
+    ) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
+        """Get prompt candidates."""
+        target_feat = image_embeddings.squeeze()
+        c_feat, h_feat, w_feat = target_feat.shape
+        target_feat = target_feat / np.linalg.norm(target_feat, axis=0, keepdims=True)
+        target_feat = target_feat.reshape(c_feat, h_feat * w_feat)
+
+        total_points_scores: Dict[int, np.ndarray] = {}
+        total_bg_coords: Dict[int, np.ndarray] = {}
+        for label in used_indices:
+            sim = reference_feats[label] @ target_feat
+            sim = sim.reshape(h_feat, w_feat)
+            sim = self._resize_to_original_shape(sim, image_size, original_shape)
+
+            threshold = (threshold == 0) * default_threshold_target + threshold
+            points_scores, bg_coords = self._point_selection(
+                mask_sim=sim,
+                original_shape=original_shape,
+                threshold=threshold,
+                num_bg_points=num_bg_points,
+                image_size=image_size,
+                downsizing=downsizing,
+            )
+
+            if points_scores is not None:
+                total_points_scores[label] = points_scores
+                total_bg_coords[label] = bg_coords
+        return total_points_scores, total_bg_coords
+
+    def _point_selection(
+        self,
+        mask_sim: np.ndarray,
+        original_shape: np.ndarray,
+        threshold: float = 0.0,
+        num_bg_points: int = 1,
+        image_size: int = 1024,
+        downsizing: int = 64,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Select point used as point prompts."""
+        _, w_sim = mask_sim.shape
+
+        # Top-first point selection
+        point_coords = np.where(mask_sim > threshold)
+        fg_coords_scores = np.stack(point_coords[::-1] + (mask_sim[point_coords],), axis=0).T
+
+        ## skip if there is no point coords
+        if len(fg_coords_scores) == 0:
+            return None, None
+
+        ratio = image_size / original_shape.max()
+        width = (original_shape[1] * ratio).astype(np.int64)
+        n_w = width // downsizing
+
+        ## get grid numbers
+        idx_grid = fg_coords_scores[:, 1] * ratio // downsizing * n_w + fg_coords_scores[:, 0] * ratio // downsizing
+        idx_grid_unique = np.unique(idx_grid.astype(np.int64))
+
+        ## get matched indices
+        matched_matrix = np.expand_dims(idx_grid, axis=-1) == idx_grid_unique  # (totalN, uniqueN)
+
+        ## sample fg_coords_scores matched by matched_matrix
+        matched_grid = np.expand_dims(fg_coords_scores, axis=1) * np.expand_dims(matched_matrix, axis=-1)
+
+        ## sample the highest score one of the samples that are in the same grid
+        matched_indices = self._topk_numpy(matched_grid[..., -1], k=1, axis=0, largest=True)[1][0].astype(np.int64)
+        points_scores = matched_grid[matched_indices].diagonal().T
+
+        ## sort by the highest score
+        sorted_points_scores_indices = np.flip(np.argsort(points_scores[:, -1]), axis=-1).astype(np.int64)
+        points_scores = points_scores[sorted_points_scores_indices]
+
+        # Top-last point selection
+        bg_indices = self._topk_numpy(mask_sim.flatten(), num_bg_points, largest=False)[1]
+        bg_x = np.expand_dims(bg_indices // w_sim, axis=0)
+        bg_y = bg_indices - bg_x * w_sim
+        bg_coords = np.concatenate((bg_y, bg_x), axis=0).transpose(1, 0)
+        bg_coords = bg_coords.astype(np.float32)
+
+        return points_scores, bg_coords
 
     def _postprocess_masks(
         self, masks: np.ndarray, logits: np.ndarray, scores: np.ndarray, is_single: bool = False
@@ -551,6 +612,26 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
             best_idx = np.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
+
+    def _resize_to_original_shape(self, masks: np.ndarray, image_size: int, original_shape: np.ndarray) -> np.ndarray:
+        """Resize feature size to original shape."""
+        # resize feature size to input size
+        masks = cv2.resize(masks, (image_size, image_size), interpolation=cv2.INTER_LINEAR)
+
+        # remove pad
+        prepadded_size = self._get_prepadded_size(original_shape, image_size)
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]
+
+        # resize unpadded one to original shape
+        original_shape = original_shape.astype(np.int64)
+        h, w = original_shape[0], original_shape[1]
+        return cv2.resize(masks, (w, h), interpolation=cv2.INTER_LINEAR)
+
+    def _get_prepadded_size(self, original_shape: int, image_size: int) -> np.ndarray:
+        """Get pre-padded size."""
+        scale = image_size / np.max(original_shape)
+        transformed_size = scale * original_shape
+        return np.floor(transformed_size + 0.5).astype(np.int64)
 
     def _inspect_overlapping_areas(
         self,
@@ -586,9 +667,9 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
                     # refine the slightly overlapping region
                     overlapped_coords = np.where(np.logical_and(mask, other_mask))
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
-                        other_mask[overlapped_coords] = 0.
+                        other_mask[overlapped_coords] = 0.0
                     else:
-                        mask[overlapped_coords] = 0. 
+                        mask[overlapped_coords] = 0.0
 
             for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
@@ -625,7 +706,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
         self.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
-        self.used_indices = np.array([[]], dtype=np.int64)
+        self.used_indices = np.array([], dtype=np.int64)
 
     def expand_reference_info(self, new_largest_label: int) -> None:
         """Expand reference info dimensions if newly given processed prompts have more lables."""
@@ -682,6 +763,20 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         padw = self.model["image_encoder"].image_size - w
         x = np.pad(x, ((0, padh), (0, padw)), constant_values=0.0)
         return x
+
+    def _topk_numpy(self, x: np.ndarray, k: int, axis: int = -1, largest: bool = True) -> np.ndarray:
+        """Top-k function for numpy same with torch.topk."""
+        if largest:
+            k = -k
+            indices = range(k, 0)
+        else:
+            indices = range(k)
+        partitioned_ind = np.argpartition(x, k, axis=axis).take(indices=indices, axis=axis)
+        partitioned_scores = np.take_along_axis(x, partitioned_ind, axis=axis)
+        sorted_trunc_ind = np.flip(np.argsort(partitioned_scores, axis=axis), axis=axis)
+        ind = np.take_along_axis(partitioned_ind, sorted_trunc_ind, axis=axis)
+        scores = np.take_along_axis(partitioned_scores, sorted_trunc_ind, axis=axis)
+        return scores, ind
 
 
 class OTXOpenVinoDataLoader:
@@ -740,92 +835,6 @@ class OTXOpenVinoDataLoader:
 
     def __len__(self):
         """Get length of dataset."""
-        return len(self.dataset)
-
-
-class OTXZeroShotOpenVinoDataLoader(OTXOpenVinoDataLoader):
-    """DataLoader implementation for ZeroShotVisualPromptingOpenVINOTask."""
-
-    def __init__(
-        self,
-        dataset: Any,
-        inferencer: OpenVINOZeroShotVisualPromptingInferencer,
-        module_name: str,
-        shuffle: bool = True,
-        output_model: Optional[ModelEntity] = None,
-        reference_feats: Optional[np.ndarray] = None,
-        used_indices: Optional[np.ndarray] = None,
-    ):
-        super().__init__(
-            dataset=dataset, inferencer=inferencer, module_name=module_name, shuffle=shuffle, output_model=output_model
-        )
-        if self.module_name == "decoder":
-            self.prompt_getter = self._load_module("prompt_getter", output_model)
-
-        self.inferencer: OpenVINOZeroShotVisualPromptingInferencer
-        self.reference_feats = reference_feats
-        self.used_indices = used_indices
-
-    def __getitem__(self, index: int) -> Dict[str, Any]:
-        """Get item from dataset."""
-        images: Dict[str, np.ndarray]
-        meta: Dict[str, Any]
-        if self.shuffler is not None:
-            index = self.shuffler[index]
-
-        items = self.dataset[index]
-        images, meta = self.inferencer.pre_process_image_encoder(items.numpy, extra_processing=True)  # type: ignore
-        original_size = np.asarray([meta["original_shape"][:2]])
-        _, _, h, w = images["images"].shape
-        pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
-        images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
-        if self.module_name == "image_encoder":
-            return images
-        else:
-            image_embeddings = self.image_encoder(images["images"])
-            if self.module_name == "prompt_getter":
-                return {
-                    "reference_feat": self.reference_feats[self.used_indices[0][0]],  # only use the first feature
-                    "original_size": original_size,
-                    "threshold": np.array([[self.inferencer.model["prompt_getter"].sim_threshold]], dtype=np.float32),
-                    "num_bg_points": np.array([[self.inferencer.model["prompt_getter"].num_bg_points]], dtype=np.int64),
-                    **image_embeddings,
-                }
-
-            total_points_scores, total_bg_coords = self.inferencer.forward_prompt_getter(
-                image_embeddings, self.reference_feats, self.used_indices, original_size
-            )
-
-            # only use the first prompt
-            point_score: np.ndarray = total_points_scores[0][0]
-            bg_coords: np.ndarray = total_bg_coords[0]
-
-            x, y = point_score[:2]
-            point_coords = np.concatenate((np.array([[x, y]]), bg_coords), axis=0, dtype=np.float32)
-            point_coords = self.inferencer.model["decoder"]._apply_coords(point_coords, original_size[0])
-            point_labels = np.array([1] + [0] * len(bg_coords), dtype=np.float32)
-            inputs_decoder = {"point_coords": point_coords[None], "point_labels": point_labels[None]}
-            inputs_decoder.update(image_embeddings)
-            inputs_decoder.update(
-                {
-                    "orig_size": original_size,
-                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                }
-            )
-            if index % 2 == 0:
-                prediction = self.inferencer.model["decoder"].infer_sync(inputs_decoder)
-                scores, low_res_masks = prediction["iou_predictions"], prediction["low_res_masks"]
-                best_idx = scores.argmax()
-                inputs_decoder.update(
-                    {"mask_input": low_res_masks[:, [best_idx]], "has_mask_input": np.ones((1, 1), dtype=np.float32)}
-                )
-            return inputs_decoder
-
-    def __len__(self):
-        """Get length of dataset."""
-        if self.module_name == "decoder":
-            return len(self.dataset) * 2
         return len(self.dataset)
 
 
@@ -1077,12 +1086,10 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
             self.task_environment.label_schema,
             model_files={
                 "image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"),
-                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.xml"),
                 "decoder": self.model.get_data("visual_prompting_decoder.xml"),
             },
             weight_files={
                 "image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"),
-                "prompt_getter": self.model.get_data("visual_prompting_prompt_getter.bin"),
                 "decoder": self.model.get_data("visual_prompting_decoder.bin"),
             },
             num_requests=get_default_async_reqs_num(),
@@ -1159,8 +1166,8 @@ class OpenVINOZeroShotVisualPromptingTask(OpenVINOVisualPromptingTask):
         dataset: DatasetEntity,
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
-        module_names: List[str] = ["image_encoder", "prompt_getter", "decoder"],
-        ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXZeroShotOpenVinoDataLoader,
+        module_names: List[str] = ["image_encoder", "decoder"],
+        ov_dataloader: Type[OTXOpenVinoDataLoader] = OTXOpenVinoDataLoader,
         **kwargs,
     ):
         """Optimize function of OpenVINOZeroShotVisualPromptingTask."""

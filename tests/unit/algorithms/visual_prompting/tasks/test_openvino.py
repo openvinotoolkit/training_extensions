@@ -25,7 +25,6 @@ from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingTask,
     OpenVINOZeroShotVisualPromptingTask,
     OTXOpenVinoDataLoader,
-    OTXZeroShotOpenVinoDataLoader,
 )
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.annotation import Annotation
@@ -197,8 +196,8 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         self.zero_shot_visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
             visual_prompting_hparams,
             label_schema,
-            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
-            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+            {"image_encoder": "", "decoder": ""},
+            {"image_encoder": "", "decoder": ""},
         )
         self.zero_shot_visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
             "otx.algorithms.visual_prompting.tasks.openvino.model_wrappers.Decoder",
@@ -243,7 +242,6 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
         }
         mocker_pickle_dump = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.pickle.dump")
         mocker.patch("builtins.open", return_value="Mocked data")
-        self.zero_shot_visual_prompting_ov_inferencer.model["prompt_getter"].default_threshold_reference = 0.3
 
         fake_input = mocker.Mock(spec=DatasetItemEntity)
         results = self.zero_shot_visual_prompting_ov_inferencer.learn(fake_input, reset_feat=True)
@@ -269,9 +267,9 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
             "forward_image_encoder",
             return_value={"image_embeddings": np.empty((4, 2, 2))},
         )
-        mocker_forward_decoder = mocker.patch.object(
+        mocker_get_prompt_candidates = mocker.patch.object(
             OpenVINOZeroShotVisualPromptingInferencer,
-            "forward_prompt_getter",
+            "_get_prompt_candidates",
             return_value=({0: np.array([[1, 1, 1]])}, {0: np.array([[2, 2]])}),
         )
         mocker_forward_decoder = mocker.patch.object(
@@ -288,27 +286,10 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
 
         mocker_pre_process.assert_called_once()
         mocker_forward.assert_called_once()
+        mocker_get_prompt_candidates.assert_called_once()
         mocker_forward_decoder.assert_called_once()
         mocker_post_process.assert_called_once()
         assert results == self.fake_annotation
-
-    @e2e_pytest_unit
-    def test_forward_prompt_getter(self):
-        """Test forward_prompt_getter."""
-        self.zero_shot_visual_prompting_ov_inferencer.model["prompt_getter"].infer_sync.return_value = {
-            "points_scores": np.array([[1, 1, 0.5]]),
-            "bg_coords": np.array([[0, 0]]),
-        }
-
-        total_points_scores, total_bg_coords = self.zero_shot_visual_prompting_ov_inferencer.forward_prompt_getter(
-            image_embeddings={"image_embeddings": np.empty((4, 2, 2))},
-            reference_feats=np.random.rand(1, 1, 1),
-            used_indices=np.array([[0]]),
-            original_size=np.array([4, 4]),
-        )
-
-        assert np.all(total_points_scores[0] == np.array([[1, 1, 0.5]]))
-        assert np.all(total_bg_coords[0] == np.array([[0, 0]]))
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
@@ -623,66 +604,6 @@ class TestOTXOpenVinoDataLoader:
             assert "image_embeddings" in results
 
 
-class TestOTXZeroShotOpenVinoDataLoader:
-    @pytest.fixture
-    def load_dataloader(self, mocker):
-        def _load_dataloader(module_name: str, output_model: Optional[ModelEntity] = None):
-            dataset = generate_visual_prompting_dataset()
-            dataset = dataset.get_subset(Subset.TRAINING)
-            return OTXZeroShotOpenVinoDataLoader(
-                dataset,
-                self.mocker_inferencer,
-                module_name,
-                output_model=output_model,
-                reference_feats=np.zeros((1, 1, 1)),
-                used_indices=np.array([[0]]),
-            )
-
-        return _load_dataloader
-
-    @pytest.fixture(autouse=True)
-    def setup(self, mocker):
-        self.mocker_read_model = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model")
-        self.mocker_compile_model = mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.compile_model")
-        self.mocker_inferencer = mocker.patch.object(OpenVINOZeroShotVisualPromptingTask, "__init__")
-
-    @e2e_pytest_unit
-    @pytest.mark.parametrize("module_name", ["image_encoder", "prompt_getter", "decoder"])
-    def test_getitem(self, mocker, load_dataloader, module_name: str):
-        """Test __getitem__."""
-        mocker_output_model = mocker.patch("otx.api.entities.model.ModelEntity")
-        if module_name in ["prompt_getter", "decoder"]:
-            mocker.patch.object(mocker_output_model, "get_data")
-            self.mocker_read_model.reset_mock()
-            self.mocker_compile_model.reset_mock()
-
-        dataloader = load_dataloader(module_name, mocker_output_model)
-
-        setattr(dataloader, "target_length", 8)
-        mocker.patch.object(
-            dataloader.inferencer,
-            "pre_process_image_encoder",
-            return_value=({"images": np.zeros((1, 3, 4, 4), dtype=np.uint8)}, {"original_shape": (4, 4)}),
-        )
-        if module_name == "decoder":
-            mocker.patch.object(
-                dataloader.inferencer,
-                "forward_prompt_getter",
-                return_value=({0: np.array([[0, 0, 0.5]])}, {0: np.array([[1, 1]])}),
-            )
-
-        results = dataloader.__getitem__(0)
-
-        if module_name == "image_encoder":
-            assert results["images"].shape == (1, 3, 8, 8)
-        elif module_name == "prompt_getter":
-            self.mocker_read_model.assert_called_once()
-            self.mocker_compile_model.assert_called_once()
-        else:  # decoder
-            self.mocker_read_model.call_count == 2
-            self.mocker_compile_model.call_count == 2
-
-
 class TestOpenVINOVisualPromptingTask:
     @pytest.fixture
     def otx_model(self):
@@ -833,8 +754,8 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         visual_prompting_ov_inferencer = OpenVINOZeroShotVisualPromptingInferencer(
             visual_prompting_hparams,
             self.task_environment.label_schema,
-            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
-            {"image_encoder": "", "prompt_getter": "", "decoder": ""},
+            {"image_encoder": "", "decoder": ""},
+            {"image_encoder": "", "decoder": ""},
         )
 
         # self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
@@ -852,7 +773,7 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         dataset = generate_visual_prompting_dataset()
 
         updated_dataset = self.zero_shot_visual_prompting_ov_task.infer(
-            dataset, InferenceParameters(enable_async_inference=False)
+            dataset, InferenceParameters(enable_async_inference=False), "empty_dir"
         )
 
         for updated in updated_dataset:
@@ -908,12 +829,6 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         self.zero_shot_visual_prompting_ov_task.model.set_data(
             "visual_prompting_image_encoder.bin", b"image_encoder_bin"
         )
-        self.zero_shot_visual_prompting_ov_task.model.set_data(
-            "visual_prompting_prompt_getter.xml", b"prompt_getter_xml"
-        )
-        self.zero_shot_visual_prompting_ov_task.model.set_data(
-            "visual_prompting_prompt_getter.bin", b"prompt_getter_bin"
-        )
         self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"decoder_xml")
         self.zero_shot_visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.ov.Core.read_model", autospec=True)
@@ -926,7 +841,7 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         )
 
         fake_quantize.assert_called()
-        assert fake_quantize.call_count == 3
+        assert fake_quantize.call_count == 2
 
         assert (
             self.zero_shot_visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.xml")
@@ -935,14 +850,6 @@ class TestOpenVINOZeroShotVisualPromptingTask:
         assert (
             self.zero_shot_visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin")
             == b"compressed_visual_prompting_image_encoder.bin"
-        )
-        assert (
-            self.zero_shot_visual_prompting_ov_task.model.get_data("visual_prompting_prompt_getter.xml")
-            == b"compressed_visual_prompting_prompt_getter.xml"
-        )
-        assert (
-            self.zero_shot_visual_prompting_ov_task.model.get_data("visual_prompting_prompt_getter.bin")
-            == b"compressed_visual_prompting_prompt_getter.bin"
         )
         assert (
             self.zero_shot_visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml")
