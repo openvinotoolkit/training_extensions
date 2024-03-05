@@ -59,7 +59,7 @@ class OTXLitModule(LightningModule):
         self.warmup_steps: int = warmup_steps
         self.warmup_by_epoch: bool = warmup_by_epochs
 
-        self.init_lr: float = 0.
+        self.init_lr: float = 0.0
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -157,8 +157,7 @@ class OTXLitModule(LightningModule):
             optimizer(params=self.parameters()) if callable(optimizer) else optimizer
             for optimizer in ensure_list(self.hparams.optimizer)
         ]
-        self.init_lr = optimizers[0].param_groups[0]['initial_lr']
-            
+        self.init_lr = optimizers[0].param_groups[0]["initial_lr"]
 
         lr_schedulers = []
         for scheduler_config in ensure_list(self.hparams.scheduler):
