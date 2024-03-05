@@ -189,13 +189,13 @@ class OVVisualPromptingModel(
             async_inference = False
 
         basename: str = Path(model_name).name
-        _model_name: dict[str, str] = {
+        self.model_names: dict[str, str] = {
             module: model_name.replace(basename, f"visual_prompting_{module}.xml")
             for module in ["image_encoder", "decoder"]
         }
         super().__init__(
             num_classes,
-            _model_name,
+            model_name,
             model_type,
             async_inference,
             max_num_requests,
@@ -203,11 +203,11 @@ class OVVisualPromptingModel(
             model_api_configuration,
         )
 
+
     def _create_model(self) -> dict[str, Model]:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
-        self.model_name: dict[str, str]
         ov_models: dict[str, Model] = {}
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
@@ -218,7 +218,7 @@ class OVVisualPromptingModel(
         for module in ["image_encoder", "decoder"]:
             model_adapter = OpenvinoAdapter(
                 core=create_core(),
-                model=self.model_name.get(module),
+                model=self.model_names.get(module),
                 model_parameters=model_parameters.get(module, {}),
                 max_num_requests=self.num_requests,
                 plugin_config=plugin_config,
