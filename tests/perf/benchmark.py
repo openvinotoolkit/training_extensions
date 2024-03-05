@@ -172,7 +172,7 @@ class Benchmark:
             start_time = time()
             self._run_command(command)
             extra_metrics = {"train/e2e_time": time() - start_time}
-            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"epoch": "train/epoch"})
+            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"train_": "train/", "{pre}": "train/"})
             self._log_metrics(
                 work_dir=sub_work_dir / ".latest" / "train",
                 tags=tags,
@@ -187,6 +187,7 @@ class Benchmark:
                 str(sub_work_dir),
             ]
             self._run_command(command)
+            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test_": "test/", "{pre}": "test/"})
             self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Export & test
@@ -215,7 +216,7 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
-                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export"})
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export", "{pre}": "export/"})
                 self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Optimize & test
@@ -250,7 +251,7 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
-                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize", "{pre}": "optimize/"})
                 self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Force memory clean up
@@ -310,11 +311,24 @@ class Benchmark:
         metrics.to_csv(work_dir / "benchmark.raw.csv", index=False)
 
     def _rename_raw_data(self, work_dir: Path, replaces: dict[str, str]) -> None:
+        replaces = {**self.NAME_MAPPING, **replaces}
+        def _rename_col(col_name: str) -> str:
+            for src_str, dst_str in replaces.items():
+                if src_str == "{pre}":
+                    if not col_name.startswith(dst_str):
+                        col_name = dst_str + col_name
+                elif src_str == "{post}":
+                    if not col_name.endswith(dst_str):
+                        col_name = col_name + dst_str
+                else:
+                    col_name = col_name.replace(src_str, dst_str)
+            return col_name
+
         csv_files = work_dir.glob("**/metrics.csv")
         for csv_file in csv_files:
             data = pd.read_csv(csv_file)
-            for src_str, dst_str in replaces.items():
-                data.columns = data.columns.str.replace(src_str, dst_str)
+            data = data.rename(columns=_rename_col)  # Column names
+            data = data.replace(replaces)  # Values
             data.to_csv(csv_file, index=False)
 
     @staticmethod
@@ -338,7 +352,7 @@ class Benchmark:
         return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
 
     @staticmethod
-    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
+    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame | None:
         """Average result w.r.t. given keys
 
         Args:
@@ -348,6 +362,9 @@ class Benchmark:
         Retruns:
             pd.DataFrame: Averaged result table
         """
+        if data is None:
+            return None
+
         # Flatten index
         index_names = data.index.names
         column_names = data.columns
@@ -391,3 +408,6 @@ class Benchmark:
 
             for criterion in criteria:
                 criterion(result_entry, target_entry)
+
+    NAME_MAPPING: dict[str, str] = {
+    }
