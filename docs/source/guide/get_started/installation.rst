@@ -46,7 +46,8 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
 .. note::
 
-    Currently, only torch==1.13.1 ~ 2.0.1 was fully validated. (older versions are not supported due to security issues).
+    Currently, only torch==1.13.1 ~ 2.0.1 have been fully validated.
+    (Older versions are not supported due to the security issues. Newer versions might not work correctly)
 
 .. code-block::
 
@@ -55,6 +56,9 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
     # Or, install command for torch==1.13.1 for CUDA 11.7:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu117
+
+    # On CPU only systems:
+    pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cpu
 
 4. Install OpenVINO™ Training Extensions package from either:
 
@@ -183,3 +187,13 @@ please use pip with proxy call as demonstrated by command below:
 .. code-block::
 
     python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+
+5. If you get ``mmcv`` kernel compilation error message, e.g. ModuleNotFoundEffor: no module named 'mmcv._ext',
+please try to delete the pre-compiled MMCV wheel from the cache directory, and then try again.
+Then the kernels would be compiled on your environment.
+
+.. code-block::
+
+    find ~/.cache/pip/wheels/ -name "mmcv*" -delete
+    pip uninstall mmcv-full
+    pip install otx[full]  # pip install -e .[full]
