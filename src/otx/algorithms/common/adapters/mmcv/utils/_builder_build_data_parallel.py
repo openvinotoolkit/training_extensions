@@ -102,7 +102,7 @@ class XPUDataParallel(MMDataParallel):
             elif isinstance(obj, tuple):
                 obj = tuple(map(change_tensor_device, obj))
             elif isinstance(obj, dict):
-                obj = {key : change_tensor_device(val) for key, val in obj.items()}
+                obj = {key: change_tensor_device(val) for key, val in obj.items()}
             elif isinstance(obj, torch.Tensor):
                 obj = obj.to(target_device)
             return obj

@@ -66,6 +66,7 @@ def multi_scale_deformable_attn_pytorch(
 
 _warning_custom_grid_sample = False
 
+
 def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: bool = False) -> torch.Tensor:
     """Custom patch for mmcv.ops.point_sample.bilinear_grid_sample.
 
@@ -87,7 +88,7 @@ def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: boo
     ori_device = im.device
 
     if ori_device != "cpu":
-        global _warning_custom_grid_sample
+        global _warning_custom_grid_sample  # noqa: PLW0603
         if not _warning_custom_grid_sample:
             logger.warning(
                 "Sampling during 'multi_scale_deformable_attn_pytorch' is executed on CPU to avoid out of memory."
