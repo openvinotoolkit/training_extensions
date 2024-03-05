@@ -187,8 +187,8 @@ def test_otx_export_infer(
         )
         assert latest_dir.exists()
         if task in ("visual_prompting", "zero_shot_visual_prompting"):
-            assert (latest_dir / f"visual_prompting_image_encoder.{format_to_ext[fmt]}").exists()
-            assert (latest_dir / f"visual_prompting_decoder.{format_to_ext[fmt]}").exists()
+            assert (latest_dir / f"exported_model_image_encoder.{format_to_ext[fmt]}").exists()
+            assert (latest_dir / f"exported_model_decoder.{format_to_ext[fmt]}").exists()
         else:
             assert (latest_dir / f"exported_model.{format_to_ext[fmt]}").exists()
 
@@ -201,7 +201,7 @@ def test_otx_export_infer(
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
 
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        exported_model_path = str(latest_dir / "visual_prompting_decoder.xml")
+        exported_model_path = str(latest_dir / "exported_model_decoder.xml")
     else:
         exported_model_path = str(latest_dir / "exported_model.xml")
 

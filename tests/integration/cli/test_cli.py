@@ -135,8 +135,8 @@ def test_otx_e2e(
 
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
         format_to_file = {
-            "ONNX": "visual_prompting_decoder.onnx",
-            "OPENVINO": "visual_prompting_decoder.xml",
+            "ONNX": "exported_model_decoder.onnx",
+            "OPENVINO": "exported_model_decoder.xml",
             # TODO (sungchul): EXPORTABLE_CODE will be supported # noqa: TD003
         }
     else:

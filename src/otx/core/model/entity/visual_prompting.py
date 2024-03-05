@@ -121,7 +121,7 @@ class OTXVisualPromptingModel(
             export_paths[module] = self._exporter.export(
                 model=model[module],
                 output_dir=output_dir,
-                base_model_name=f"visual_prompting_{module}",
+                base_model_name=f"{base_name}_{module}",
                 export_format=export_format,
                 precision=precision,
                 example_inputs={
@@ -190,7 +190,7 @@ class OVVisualPromptingModel(
 
         basename: str = Path(model_name).name
         self.model_names: dict[str, str] = {
-            module: model_name.replace(basename, f"visual_prompting_{module}.xml")
+            module: model_name.replace(basename, f"exported_model_{module}.xml")
             for module in ["image_encoder", "decoder"]
         }
         super().__init__(
