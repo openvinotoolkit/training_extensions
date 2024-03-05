@@ -169,8 +169,34 @@ class Benchmark:
             self._run_command(command)
 
             # Export & test
-            # Optimize & test
+            if self.eval_upto in ["export", "optimize"]:
+                command = [
+                    "otx",
+                    "export",
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
 
+                command = [
+                    "otx",
+                    "test",
+                    "--config",
+                    str(sub_work_dir / ".latest" / "export" / "configs.yaml"),
+                    "--checkpoint",
+                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export"})
+
+            # Optimize & test
+            if self.eval_upto == "optimize":
+                pass  # To be enabled after CLI fixes
+
+            # Parse raw data into raw metrics
             self._log_metrics(work_dir=sub_work_dir, tags=tags)
 
             # Force memory clean up
@@ -187,10 +213,12 @@ class Benchmark:
     def _log_metrics(self, work_dir: Path, tags: dict[str, str]) -> None:
         if not work_dir.exists():
             return
+
         # Load raw metrics
         csv_files = work_dir.glob("**/metrics.csv")
         raw_data = [pd.read_csv(csv_file) for csv_file in csv_files]
         raw_data = pd.concat(raw_data, ignore_index=True)
+
         # Summarize
         metrics = []
         for criterion in self.criteria:
@@ -211,10 +239,19 @@ class Benchmark:
         if len(metrics) == 0:
             return
         metrics = pd.concat(metrics, axis=1)
+
         # Write csv w/ tags
         for k, v in tags.items():
             metrics[k] = v
         metrics.to_csv(work_dir / "benchmark.raw.csv", index=False)
+
+    def _rename_raw_data(self, work_dir: Path, replaces: dict[str, str]) -> None:
+        csv_files = work_dir.glob("**/metrics.csv")
+        for csv_file in csv_files:
+            data = pd.read_csv(csv_file)
+            for src_str, dst_str in replaces.items():
+                data.columns = data.columns.str.replace(src_str, dst_str)
+            data.to_csv(csv_file, index=False)
 
     @staticmethod
     def load_result(result_path: Path) -> pd.DataFrame | None:
