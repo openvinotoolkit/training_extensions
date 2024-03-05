@@ -203,7 +203,6 @@ class OVVisualPromptingModel(
             model_api_configuration,
         )
 
-
     def _create_model(self) -> dict[str, Model]:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
