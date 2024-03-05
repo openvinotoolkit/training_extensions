@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import pytest
+from openvino.model_api.tilers import Tiler
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
@@ -71,3 +72,34 @@ def test_engine_from_config(
     if task in OVMODEL_PER_TASK:
         test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
         assert len(test_metric_from_ov_model) > 0
+
+
+@pytest.mark.parametrize("recipe", pytest.TILE_RECIPE_LIST)
+def test_engine_from_tile_recipe(
+    recipe: str,
+    tmp_path: Path,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+):
+    task = OTXTaskType.DETECTION if "detection" in recipe else OTXTaskType.INSTANCE_SEGMENTATION
+
+    engine = Engine.from_config(
+        config_path=recipe,
+        data_root=fxt_target_dataset_per_task[task.value.lower()],
+        work_dir=tmp_path / task,
+        device=fxt_accelerator,
+    )
+    engine.train(max_epochs=1)
+    exported_model_path = engine.export()
+    assert exported_model_path.exists()
+    metric = engine.test(exported_model_path, accelerator="cpu")
+    assert len(metric) > 0
+
+    # Check OVModel & OVTiler is set correctly
+    ov_model = engine._auto_configurator.get_ov_model(
+        model_name=exported_model_path,
+        label_info=engine.datamodule.label_info,
+    )
+    assert isinstance(ov_model.model, Tiler), "Model should be an instance of Tiler"
+    assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
+    assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
