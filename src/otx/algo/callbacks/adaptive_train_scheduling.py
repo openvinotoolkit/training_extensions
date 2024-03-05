@@ -113,6 +113,8 @@ class AdaptiveTrainScheduling(Callback):
 
                 saved_frequency = config.frequency
                 config.frequency = adaptive_interval
+                
+                breakpoint()
 
                 self._revert_frequency += [partial(_revert_func, config, saved_frequency)]
 

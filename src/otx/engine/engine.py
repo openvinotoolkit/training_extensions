@@ -161,6 +161,8 @@ class Engine:
         metric: Metric | MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig | None = None,
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -231,6 +233,8 @@ class Engine:
             optimizer=self.optimizer,
             scheduler=self.scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs
         )
         lit_module.label_info = self.datamodule.label_info
 
@@ -761,6 +765,8 @@ class Engine:
         optimizer: list[OptimizerCallable] | OptimizerCallable | None,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
         metric: Metric | MetricCallable | None = None,
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -789,6 +795,8 @@ class Engine:
                 "optimizer": optimizer,
                 "scheduler": scheduler,
                 "torch_compile": False,
+                "warmup_steps": warmup_steps,
+                "warmup_by_epochs": warmup_by_epochs
             }
             if metric:
                 lightning_kwargs["metric"] = metric

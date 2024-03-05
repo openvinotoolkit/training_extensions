@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from lightning.pytorch.utilities.types import LRSchedulerTypeUnion
 
     from otx.core.data.dataset.base import LabelInfo
     from otx.core.metrics import MetricCallable
@@ -45,6 +46,8 @@ class OTXLitModule(LightningModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = lambda: Metric(),
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False
     ):
         super().__init__()
 
@@ -54,6 +57,10 @@ class OTXLitModule(LightningModule):
         self.torch_compile = torch_compile
         self.metric_callable = metric
 
+        self.warmup_steps: int = warmup_steps
+        self.warmup_by_epoch: bool = warmup_by_epochs
+        self.init_lr: float = self.optimizer[0].keywords['lr'] if self.optimizer else 0
+        
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False, ignore=["otx_model"])
@@ -150,7 +157,7 @@ class OTXLitModule(LightningModule):
             optimizer(params=self.parameters()) if callable(optimizer) else optimizer
             for optimizer in ensure_list(self.hparams.optimizer)
         ]
-
+        
         lr_schedulers = []
         for scheduler_config in ensure_list(self.hparams.scheduler):
             scheduler = scheduler_config(optimizers[0]) if callable(scheduler_config) else scheduler_config
@@ -159,10 +166,27 @@ class OTXLitModule(LightningModule):
                 lr_scheduler_config["interval"] = scheduler.interval
             if hasattr(scheduler, "monitor"):
                 lr_scheduler_config["monitor"] = scheduler.monitor
+                
             lr_schedulers.append(lr_scheduler_config)
-
         return optimizers, lr_schedulers
+    
+    def optimizer_step(self, epoch: int, batch: int, optimizer: torch.optim.Optimizer, closure: callable[[], Tensor | None]):
+        """Override the optimizer_step to enable the warmup scheduling."""
+        def _scale_lr(start_point: int, end_point: int, init_lr: float) -> float:
+            return min(1.0, float(start_point + 1) / end_point) * init_lr
 
+        optimizer.step(closure=closure)
+         
+        if self.warmup_by_epoch:
+            if self.trainer.current_epoch < self.warmup_steps:
+                for pg in optimizer.param_groups:
+                    pg['lr'] = _scale_lr(self.trainer.current_epoch, self.warmup_steps, self.init_lr)
+        else: 
+            if self.trainer.global_step < self.warmup_steps:
+                for pg in optimizer.param_groups:
+                    pg['lr'] = _scale_lr(self.trainer.global_step, self.warmup_steps, self.init_lr)
+                    print(f"warmup: , {pg['lr']}")
+        
     def configure_metric(self) -> None:
         """Configure the metric."""
         if isinstance(self.metric_callable, partial):
@@ -237,7 +261,7 @@ class OTXLitModule(LightningModule):
                 ckpt_label_info.label_names,
             )
         return super().load_state_dict(state_dict, *args, **kwargs)
-
+    
     @property
     def label_info(self) -> LabelInfo:
         """Get the member `OTXModel` label information."""
