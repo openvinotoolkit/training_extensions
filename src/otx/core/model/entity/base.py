@@ -247,7 +247,7 @@ class OTXModel(
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        export_args: dict[str, Any] | None = None,
+        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -256,7 +256,7 @@ class OTXModel(
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
-            export_args (dict, optional): manual arguments for the export function.
+            example_inputs (dict, optional): manual arguments for the export function.
                 If not provided, the exporter will set dummy inputs
 
         Returns:
@@ -269,7 +269,7 @@ class OTXModel(
             base_name,
             export_format,
             precision,
-            export_args,
+            example_inputs,
         )
         self._restore_model_forward()
         return exported_model_path
