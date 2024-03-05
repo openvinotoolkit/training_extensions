@@ -31,6 +31,10 @@ def test_engine_from_config(
         pytest.skip("Only the Task has Default config is tested to reduce unnecessary resources.")
     if task.lower() in ("action_classification"):
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+    if task.lower() in ("h_label_cls"):
+        pytest.skip(
+            reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
+        )
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
