@@ -12,6 +12,7 @@ test_cfg:
 type: YOLOX
 data_preprocessor:
   type: DetDataPreprocessor
+  non_blocking: true
   mean:
     - 0.0
     - 0.0
