@@ -97,10 +97,12 @@ def pytest_configure(config):
 
         target_recipe_list.extend(recipe_list)
         target_ov_recipe_list.extend(recipe_ov_list)
+    tile_recipe_list = [recipe for recipe in target_recipe_list if "tile" in recipe]
 
     pytest.TASK_LIST = task_list
     pytest.RECIPE_LIST = target_recipe_list
     pytest.RECIPE_OV_LIST = target_ov_recipe_list
+    pytest.TILE_RECIPE_LIST = tile_recipe_list
 
 
 @pytest.fixture(scope="session")

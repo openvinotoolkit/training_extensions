@@ -684,7 +684,7 @@ class Engine:
 
         return cls(
             work_dir=instantiated_config.get("work_dir", work_dir),
-            datamodule=instantiated_config.get("datamodule"),
+            datamodule=instantiated_config.get("data"),
             model=instantiated_config.get("model"),
             optimizer=instantiated_config.get("optimizer"),
             scheduler=instantiated_config.get("scheduler"),
