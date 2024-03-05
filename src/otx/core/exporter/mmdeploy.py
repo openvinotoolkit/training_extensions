@@ -10,7 +10,7 @@ import logging as log
 from contextlib import contextmanager
 from copy import copy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
+from typing import TYPE_CHECKING, Callable, Iterator, Literal
 
 import numpy as np
 import onnx
@@ -87,7 +87,6 @@ class MMdeployExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
@@ -97,19 +96,14 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str], str] | None, optional): metadata to embed to the exported model.
-            example_inputs (dict, optional): manual input arguments for the export function.
-                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.
         """
-        if example_inputs is None:
-            example_inputs = {"input": (openvino.runtime.PartialShape(self.input_size),)}
-
         onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
         exported_model = openvino.convert_model(
             str(onnx_path),
-            **example_inputs,
+            input=(openvino.runtime.PartialShape(self.input_size),),
         )
         exported_model = self._postprocess_openvino_model(exported_model)
 
@@ -127,7 +121,6 @@ class MMdeployExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
-        example_inputs: dict[str, Any] | None = None,  # TODO (sungchul): how to apply this argument? # noqa: TD003
     ) -> Path:
         """Export to ONNX format.
 
@@ -137,15 +130,11 @@ class MMdeployExporter(OTXModelExporter):
             base_model_name (str, optional): exported model name
             precision (OTXPrecisionType, optional): precision of the exported model's weights
             metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
-            example_inputs (dict, optional): manual input arguments for the export function.
-                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: path to the exported model.
         """
         deploy_cfg = self._prepare_onnx_cfg()
-        if example_inputs is not None:
-            deploy_cfg.merge_from_dict(example_inputs)
         save_path = self._cvt2onnx(model, output_dir, base_model_name, deploy_cfg)
 
         onnx_model = onnx.load(str(save_path))

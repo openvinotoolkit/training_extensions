@@ -46,16 +46,14 @@ class OTXNativeModelExporter(OTXModelExporter):
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
         """Export to OpenVINO Intermediate Representation format.
 
         In this implementation the export is done only via standard OV/ONNX tools.
         """
-        if self.via_onnx:
-            if example_inputs is None:
-                example_inputs = {"args": torch.rand(self.input_size).to(next(model.parameters()).device)}
+        dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
 
+        if self.via_onnx:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_dir = Path(tmpdirname)
 
@@ -65,25 +63,17 @@ class OTXNativeModelExporter(OTXModelExporter):
                     base_model_name,
                     OTXPrecisionType.FP32,
                     False,
-                    example_inputs,
-                )
-
-                ov_input = (
-                    tuple(openvino.runtime.PartialShape(x.shape) for x in example_inputs["args"])
-                    if isinstance(example_inputs["args"], tuple)
-                    else (openvino.runtime.PartialShape(example_inputs["args"].shape),)
                 )
                 exported_model = openvino.convert_model(
                     tmp_dir / (base_model_name + ".onnx"),
-                    input=ov_input,
+                    input=(openvino.runtime.PartialShape(self.input_size),),
                 )
         else:
-            if example_inputs is None:
-                example_inputs = {
-                    "input": (openvino.runtime.PartialShape(self.input_size),),
-                    "example_input": torch.rand(self.input_size).to(next(model.parameters()).device),
-                }
-            exported_model = openvino.convert_model(input_model=model, **example_inputs)
+            exported_model = openvino.convert_model(
+                model,
+                example_input=dummy_tensor,
+                input=(openvino.runtime.PartialShape(self.input_size),),
+            )
         exported_model = self._postprocess_openvino_model(exported_model)
 
         save_path = output_dir / (base_model_name + ".xml")
@@ -99,7 +89,6 @@ class OTXNativeModelExporter(OTXModelExporter):
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
         embed_metadata: bool = True,
-        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
         """Export the given PyTorch model to ONNX format and save it to the specified output directory.
 
@@ -110,18 +99,14 @@ class OTXNativeModelExporter(OTXModelExporter):
             precision (OTXPrecisionType, optional): The precision type for the exported model.
             Defaults to OTXPrecisionType.FP32.
             embed_metadata (bool, optional): Whether to embed metadata in the ONNX model. Defaults to True.
-            example_inputs (dict, optional): Manual arguments for the export function.
-                If not provided, the exporter will set dummy inputs.
 
         Returns:
             Path: The path to the saved ONNX model.
         """
-        if example_inputs is None:
-            example_inputs = {"args": torch.rand(self.input_size).to(next(model.parameters()).device)}
-
+        dummy_tensor = torch.rand(self.input_size).to(next(model.parameters()).device)
         save_path = str(output_dir / (base_model_name + ".onnx"))
 
-        torch.onnx.export(model=model, f=save_path, **example_inputs, **self.onnx_export_configuration)
+        torch.onnx.export(model, dummy_tensor, save_path, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
