@@ -379,13 +379,7 @@ class Engine:
 
         model = self.model
 
-        if checkpoint is not None:
-            checkpoint = str(checkpoint)
-        elif self.checkpoint is not None:
-            checkpoint = str(self.checkpoint)
-        else:
-            checkpoint = None
-
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
@@ -400,8 +394,6 @@ class Engine:
         )
         lit_module.label_info = datamodule.label_info
 
-        # NOTE, trainer.test takes only lightning based checkpoint.
-        # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
@@ -574,13 +566,7 @@ class Engine:
 
         model = self.model
 
-        if checkpoint is not None:
-            checkpoint = str(checkpoint)
-        elif self.checkpoint is not None:
-            checkpoint = str(self.checkpoint)
-        else:
-            checkpoint = None
-
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
@@ -595,8 +581,6 @@ class Engine:
         )
         lit_module.label_info = datamodule.label_info
 
-        # NOTE, trainer.test takes only lightning based checkpoint.
-        # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
