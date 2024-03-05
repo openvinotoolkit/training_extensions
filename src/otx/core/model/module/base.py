@@ -157,7 +157,7 @@ class OTXLitModule(LightningModule):
             optimizer(params=self.parameters()) if callable(optimizer) else optimizer
             for optimizer in ensure_list(self.hparams.optimizer)
         ]
-        self.init_lr = optimizers[0].param_groups[0]["initial_lr"]
+        self.init_lr = optimizers[0].param_groups[0]["lr"]
 
         lr_schedulers = []
         for scheduler_config in ensure_list(self.hparams.scheduler):

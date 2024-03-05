@@ -12,9 +12,6 @@ optimizer:
     weight_decay: 0.00001
 
 scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 100
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
@@ -37,6 +34,7 @@ callback_monitor: val/map_50
 data: ../../_base_/data/mmaction_base.yaml
 overrides:
   precision: 32
+  warmup_steps: 100
   data:
     task: ACTION_DETECTION
     config:
