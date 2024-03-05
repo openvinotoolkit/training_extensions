@@ -61,7 +61,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             },
         )
 
-    def configure_metric(self, cond: str = "") -> None:
+    def configure_metric(self) -> None:
         """Configure metrics."""
         self.val_metric = MetricCollection(
             {
@@ -246,10 +246,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     """Base class for the lightning module used in OTX zero-shot visual prompting task."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def configure_metric(self, cond: str = "") -> None:
+    def configure_metric(self) -> None:
         """Configure metrics."""
         self.test_metric = MetricCollection(
             {
