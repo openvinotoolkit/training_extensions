@@ -1,0 +1,37 @@
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime AS base
+
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+ARG NON_ROOT_HOME=/home/non-root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libsm6=2:1.2.3-1 \
+    libxext6=2:1.3.4-0ubuntu1 \
+    ffmpeg=7:4.2.7-0ubuntu0.1 \
+    libfontconfig1=2.13.1-2ubuntu3 \
+    libxrender1=1:0.9.10-1 \
+    libgl1-mesa-glx=21.2.6-0ubuntu0.1~20.04.2 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -l -u 10001 non-root \
+    && mkdir -p ${NON_ROOT_HOME}
+
+WORKDIR ${NON_ROOT_HOME}
+COPY . src_dir
+RUN chown -R non-root:non-root ${NON_ROOT_HOME}
+
+USER non-root
+
+ENV PATH=${PATH}:${NON_ROOT_HOME}/.local/bin
+
+RUN pip install --no-cache-dir src_dir/ && \
+    otx install --do-not-install-torch && \
+    rm -rf src_dir/
+
+FROM base AS cuda
+
+
+FROM base AS cuda_pretrained_ready
+COPY docker/download_pretrained_weights.py download_pretrained_weights.py
+RUN python download_pretrained_weights.py
