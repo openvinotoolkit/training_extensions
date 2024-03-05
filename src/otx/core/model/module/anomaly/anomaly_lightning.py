@@ -430,7 +430,7 @@ class OTXAnomaly:
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        export_args: dict[str, Any] | None = None,
+        example_inputs: dict[str, Any] | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -459,4 +459,5 @@ class OTXAnomaly:
             base_model_name=base_name,
             export_format=export_format,
             precision=precision,
+            example_inputs=example_inputs,
         )
