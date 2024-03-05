@@ -83,8 +83,7 @@ class OTXNativeModelExporter(OTXModelExporter):
                     "input": (openvino.runtime.PartialShape(self.input_size),),
                     "example_input": torch.rand(self.input_size).to(next(model.parameters()).device),
                 }
-            example_inputs.update({"input_model": model})
-            exported_model = openvino.convert_model(**example_inputs)
+            exported_model = openvino.convert_model(input_model=model, **example_inputs)
         exported_model = self._postprocess_openvino_model(exported_model)
 
         save_path = output_dir / (base_model_name + ".xml")
@@ -121,9 +120,8 @@ class OTXNativeModelExporter(OTXModelExporter):
             example_inputs = {"args": torch.rand(self.input_size).to(next(model.parameters()).device)}
 
         save_path = str(output_dir / (base_model_name + ".onnx"))
-        example_inputs.update({"model": model, "f": save_path})
 
-        torch.onnx.export(**example_inputs, **self.onnx_export_configuration)
+        torch.onnx.export(model=model, f=save_path, **example_inputs, **self.onnx_export_configuration)
 
         onnx_model = onnx.load(save_path)
         onnx_model = self._postprocess_onnx_model(onnx_model, embed_metadata, precision)
