@@ -542,7 +542,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         explain_config: ExplainConfig | None = None,
-        dump: bool | None = False,
+        dump: bool = False,
         **kwargs,
     ) -> list | None:
         """Run XAI using the specified model and data (test subset).
