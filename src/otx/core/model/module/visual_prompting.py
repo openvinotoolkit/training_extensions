@@ -40,6 +40,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: Metric = MeanMetric,  # TODO (sungmanc): dictionary metric will be supported # noqa: TD003
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -47,6 +49,8 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs,
         )
 
         self.train_metric = MetricCollection(

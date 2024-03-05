@@ -30,6 +30,8 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = lambda: OTXMaskRLEMeanAveragePrecision(),
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -37,4 +39,6 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs,
         )

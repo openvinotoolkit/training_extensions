@@ -47,6 +47,8 @@ class OTXMulticlassClsLitModule(OTXLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = lambda num_classes: Accuracy(task="multiclass", num_classes=num_classes),
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -54,6 +56,8 @@ class OTXMulticlassClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs,
         )
 
     def configure_metric(self) -> None:
@@ -131,6 +135,8 @@ class OTXMultilabelClsLitModule(OTXLitModule):
         optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -138,6 +144,8 @@ class OTXMultilabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs,
         )
 
     def configure_metric(self) -> None:
@@ -230,6 +238,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
             num_multilabel_classes=2,
             head_logits_info={"default": (0, 2)},
         ),  # lambda: MixedHLabelAccuracy() doesn't return the partial class. So, use the partial() directly.
+        warmup_steps: int = 0,
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -237,6 +247,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
+            warmup_steps=warmup_steps,
+            warmup_by_epochs=warmup_by_epochs,
         )
         self.hlabel_data: HLabelData
 
