@@ -75,9 +75,9 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
             polygons = []
 
             for bbox, score, label, mask in zip(pred_bboxes, pred_scores, pred_labels, pred_masks):
-                np_mask = mask.detach().cpu().numpy().astype(int)
-                if np_mask.sum() == 0:
+                if mask.sum() == 0:
                     continue
+                np_mask = mask.detach().cpu().numpy().astype(int)
                 contours, hierarchies = cv2.findContours(np_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
                     continue
@@ -99,13 +99,16 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
                     masks.append(mask)
 
             if len(boxes):
-                batch_scores.append(torch.stack(scores))
-                batch_bboxes.append(
-                    tv_tensors.BoundingBoxes(torch.stack(boxes), format="XYXY", canvas_size=img_info.ori_shape),
-                )
-                batch_labels.append(torch.stack(labels))
-                batch_polygons.append(polygons)
-                batch_masks.append(tv_tensors.Mask(torch.stack(masks)))
+                scores = torch.stack(scores)
+                boxes = tv_tensors.BoundingBoxes(torch.stack(boxes), format="XYXY", canvas_size=img_info.ori_shape)
+                labels = torch.stack(labels)
+                masks = torch.stack(masks)
+
+            batch_scores.append(scores)
+            batch_bboxes.append(boxes)
+            batch_labels.append(labels)
+            batch_polygons.append(polygons)
+            batch_masks.append(masks)
 
         return InstanceSegBatchPredEntity(
             batch_size=preds.batch_size,
