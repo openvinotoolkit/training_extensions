@@ -497,7 +497,7 @@ class Engine:
 
     def optimize(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
     ) -> Path:
@@ -531,13 +531,7 @@ class Engine:
                     --model.model_name=<PATH_TO_IR_XML, str>
                 ```
         """
-        if checkpoint is not None:
-            checkpoint = str(checkpoint)
-        elif self.checkpoint is not None:
-            checkpoint = str(self.checkpoint)
-        else:
-            checkpoint = None
-
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         optimize_datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
