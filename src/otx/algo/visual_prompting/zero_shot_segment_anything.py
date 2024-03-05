@@ -30,7 +30,7 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.model.entity.visual_prompting import OTXZeroShotVisualPromptingModel
+from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 
 if TYPE_CHECKING:
     import numpy as np
@@ -590,7 +590,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         return logits[:, best_idx], masks[0, best_idx]
 
 
-class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
+class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
     def __init__(

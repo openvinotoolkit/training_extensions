@@ -24,7 +24,7 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel, OTXZeroShotVisualPromptingModel
+from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -307,7 +307,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                 self.model.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
             )
             Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
-            if isinstance(self.model, OTXZeroShotVisualPromptingModel):
+            if isinstance(self.model, OTXVisualPromptingModel):
                 torch.save(reference_info, path_reference_info)
                 pickle.dump(
                     {k: v.numpy() for k, v in reference_info.items()},
