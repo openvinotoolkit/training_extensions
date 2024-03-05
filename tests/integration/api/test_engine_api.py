@@ -35,6 +35,8 @@ def test_engine_from_config(
         pytest.skip(
             reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
         )
+    if "anomaly" in task.lower():
+        pytest.skip(reason="There's no dataset for anomaly tasks.")
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
@@ -107,6 +109,7 @@ def test_engine_from_config(
     assert len(explain_results[0].saliency_maps) > 0
     sal_maps_from_explain = explain_results[0].saliency_maps
     assert (sal_maps_from_prediction[0][0] == sal_maps_from_explain[0][0]).all()
+
 
 @pytest.mark.parametrize("recipe", pytest.TILE_RECIPE_LIST)
 def test_engine_from_tile_recipe(
