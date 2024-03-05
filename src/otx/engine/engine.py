@@ -234,7 +234,7 @@ class Engine:
             scheduler=self.scheduler,
             metric=metric,
             warmup_steps=warmup_steps,
-            warmup_by_epochs=warmup_by_epochs
+            warmup_by_epochs=warmup_by_epochs,
         )
         lit_module.label_info = self.datamodule.label_info
 
@@ -766,7 +766,7 @@ class Engine:
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
         metric: Metric | MetricCallable | None = None,
         warmup_steps: int = 0,
-        warmup_by_epochs: bool = False
+        warmup_by_epochs: bool = False,
     ) -> OTXLitModule:
         """Builds a LightningModule for engine workflow.
 
@@ -796,7 +796,7 @@ class Engine:
                 "scheduler": scheduler,
                 "torch_compile": False,
                 "warmup_steps": warmup_steps,
-                "warmup_by_epochs": warmup_by_epochs
+                "warmup_by_epochs": warmup_by_epochs,
             }
             if metric:
                 lightning_kwargs["metric"] = metric

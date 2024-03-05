@@ -10,7 +10,6 @@ from unittest.mock import create_autospec
 
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
-from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.metrics.fmeasure import FMeasure
 from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.model.module.base import OTXLitModule
@@ -28,8 +27,8 @@ class TestOTXLitModule:
         return create_autospec(Optimizer)
 
     @pytest.fixture()
-    def mock_scheduler(self) -> list[LinearWarmupScheduler | ReduceLROnPlateau]:
-        return create_autospec([LinearWarmupScheduler, ReduceLROnPlateau])
+    def mock_scheduler(self) -> list[ReduceLROnPlateau]:
+        return create_autospec([ReduceLROnPlateau])
 
     def test_configure_metric_with_v1_ckpt(
         self,

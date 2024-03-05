@@ -136,10 +136,6 @@ class TestOTXCLI:
         result_config = yaml.safe_load(out)
         expected_str = """
         scheduler:
-        - class_path: otx.algo.schedulers.LinearWarmupScheduler
-          init_args:
-              num_warmup_steps: 3
-              interval: step
         - class_path: lightning.pytorch.cli.ReduceLROnPlateau
           init_args:
               monitor: val/test_f1

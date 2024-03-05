@@ -12,9 +12,6 @@ optimizer:
     weight_decay: 0.001
 
 scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 100
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
@@ -38,6 +35,7 @@ data: ../_base_/data/mmdet_base.yaml
 overrides:
   max_epochs: 100
   gradient_clip_val: 35.0
+  warmup_steps: 100
   data:
     task: INSTANCE_SEGMENTATION
     config:

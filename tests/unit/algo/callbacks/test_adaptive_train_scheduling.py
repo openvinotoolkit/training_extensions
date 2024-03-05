@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from lightning import LightningModule, Trainer
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+from lightning.pytorch.cli import ReduceLROnPlateau
 from lightning.pytorch.utilities.types import LRSchedulerConfig
 from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from torch.utils.data import DataLoader
@@ -31,6 +32,8 @@ class TestAdaptiveTrainScheduling:
         mock_trainer.callbacks = [mock_callback]
 
         mock_lr_scheduler_config = MagicMock(spec=LRSchedulerConfig)
+        mock_lr_scheduler_config.scheduler = MagicMock(spec=ReduceLROnPlateau)
+        mock_lr_scheduler_config.scheduler.patience = 5
         mock_lr_scheduler_config.frequency = 1
         mock_lr_scheduler_config.interval = "epoch"
         mock_trainer.lr_scheduler_configs = [mock_lr_scheduler_config]
@@ -40,6 +43,7 @@ class TestAdaptiveTrainScheduling:
             assert mock_trainer.check_val_every_n_epoch != 1  # Adaptively updated
             assert mock_trainer.callbacks[0].patience != 5
             assert mock_trainer.lr_scheduler_configs[0].frequency != 1
+            assert mock_trainer.lr_scheduler_configs[0].scheduler.patience != 5
             assert mock_trainer.log_every_n_steps == 10  # Equal to len(train_dataloader)
             assert len(caplog.records) == 4  # Warning two times
 
@@ -49,3 +53,4 @@ class TestAdaptiveTrainScheduling:
         assert mock_trainer.log_every_n_steps == 50
         assert mock_trainer.callbacks[0].patience == 5
         assert mock_trainer.lr_scheduler_configs[0].frequency == 1
+        assert mock_trainer.lr_scheduler_configs[0].scheduler.patience == 1

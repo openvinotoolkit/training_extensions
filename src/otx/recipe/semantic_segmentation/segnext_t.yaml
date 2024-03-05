@@ -14,9 +14,6 @@ optimizer:
     weight_decay: 0.01
 
 scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 20
   - class_path: torch.optim.lr_scheduler.PolynomialLR
     init_args:
       total_iters: 100
@@ -37,3 +34,4 @@ callback_monitor: val/Dice
 data: ../_base_/data/mmseg_base.yaml
 overrides:
   max_epochs: 170
+  warmup_steps: 100

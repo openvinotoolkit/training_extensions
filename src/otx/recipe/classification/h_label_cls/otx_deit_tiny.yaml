@@ -12,9 +12,6 @@ optimizer:
     weight_decay: 0.05
 
 scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 10
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
@@ -37,6 +34,7 @@ callback_monitor: val/accuracy
 data: ../../_base_/data/mmpretrain_base.yaml
 overrides:
   max_epochs: 90
+  warmup_steps: 10
   callbacks:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:

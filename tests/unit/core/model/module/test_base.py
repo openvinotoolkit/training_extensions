@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, create_autospec
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
 from lightning.pytorch.trainer import Trainer
-from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.base import OTXLitModule
 from torch.optim import Optimizer
@@ -22,7 +21,7 @@ class TestOTXLitModule:
         return create_autospec(OTXModel)
 
     @pytest.fixture()
-    def mock_optimizer(self) -> Optimizer:
+    def mock_optimizer(self) -> list[Optimizer]:
         optimizer = MagicMock(spec=Optimizer)
         optimizer.step = MagicMock()
         optimizer.keywords = {"lr": 0.01}
@@ -31,22 +30,17 @@ class TestOTXLitModule:
         def optimizer_factory(*args, **kargs) -> Optimizer:  # noqa: ARG001
             return optimizer
 
-        return optimizer_factory
+        return [optimizer_factory]
 
     @pytest.fixture()
-    def mock_scheduler(self) -> list[LinearWarmupScheduler | ReduceLROnPlateau]:
-        scheduler_object_1 = MagicMock()
-        warmup_scheduler = MagicMock(spec=LinearWarmupScheduler)
-        warmup_scheduler.num_warmup_steps = 10
-        warmup_scheduler.interval = "step"
-        scheduler_object_1.return_value = warmup_scheduler
+    def mock_scheduler(self) -> list[ReduceLROnPlateau]:
+        scheduler_object = MagicMock()
 
-        scheduler_object_2 = MagicMock()
         lr_scheduler = MagicMock(spec=ReduceLROnPlateau)
         lr_scheduler.monitor = "val/loss"
-        scheduler_object_2.return_value = lr_scheduler
+        scheduler_object.return_value = lr_scheduler
 
-        return [scheduler_object_1, scheduler_object_2]
+        return [scheduler_object]
 
     def test_configure_optimizers(self, mock_otx_model, mock_optimizer, mock_scheduler) -> None:
         module = OTXLitModule(
@@ -62,9 +56,54 @@ class TestOTXLitModule:
 
         optimizers, lr_schedulers = module.configure_optimizers()
         assert isinstance(optimizers[0], Optimizer)
-        assert isinstance(lr_schedulers[0]["scheduler"], LinearWarmupScheduler)
-        assert lr_schedulers[0]["scheduler"].num_warmup_steps == 10
-        assert lr_schedulers[0]["interval"] == "step"
 
-        assert "scheduler" in lr_schedulers[1]
-        assert "monitor" in lr_schedulers[1]
+        assert "scheduler" in lr_schedulers[0]
+        assert "monitor" in lr_schedulers[0]
+        assert module.warmup_steps == 0
+        assert module.warmup_by_epoch is False
+
+    def test_optimzier_step_by_iter(self, mock_otx_model, mock_optimizer, mock_scheduler) -> None:
+        module = OTXLitModule(
+            otx_model=mock_otx_model,
+            torch_compile=False,
+            optimizer=mock_optimizer,
+            scheduler=mock_scheduler,
+            metric=MagicMock(),
+            warmup_steps=10,
+            warmup_by_epochs=False,
+        )
+        optimizers, _ = module.configure_optimizers()
+        module.init_lr = 0.01
+
+        module.trainer = MagicMock()
+        module.trainer.global_step = 5
+
+        param_group = {"lr": 0.01}
+        optimizers[0].param_groups = [param_group]
+
+        module.optimizer_step(epoch=0, batch=5, optimizer=optimizers[0], closure=lambda: None)
+        expected_lr = min(1.0, float(module.trainer.global_step + 1) / module.warmup_steps) * module.init_lr
+        assert optimizers[0].param_groups[0]["lr"] == expected_lr
+
+    def test_optimzier_step_by_epoch(self, mock_otx_model, mock_optimizer, mock_scheduler) -> None:
+        module = OTXLitModule(
+            otx_model=mock_otx_model,
+            torch_compile=False,
+            optimizer=mock_optimizer,
+            scheduler=mock_scheduler,
+            metric=MagicMock(),
+            warmup_steps=10,
+            warmup_by_epochs=True,
+        )
+        optimizers, _ = module.configure_optimizers()
+        module.init_lr = 0.01
+
+        module.trainer = MagicMock()
+        module.trainer.current_epoch = 5
+
+        param_group = {"lr": 0.01}
+        optimizers[0].param_groups = [param_group]
+
+        module.optimizer_step(epoch=5, batch=0, optimizer=optimizers[0], closure=lambda: None)
+        expected_lr = min(1.0, float(module.trainer.current_epoch + 1) / module.warmup_steps) * module.init_lr
+        assert optimizers[0].param_groups[0]["lr"] == expected_lr

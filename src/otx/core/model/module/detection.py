@@ -37,7 +37,7 @@ class OTXDetectionLitModule(OTXLitModule):
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
         metric: MetricCallable = lambda: MeanAveragePrecision(),
         warmup_steps: int = 0,
-        warmup_by_epochs: bool = False
+        warmup_by_epochs: bool = False,
     ):
         super().__init__(
             otx_model=otx_model,
@@ -46,7 +46,7 @@ class OTXDetectionLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
             warmup_steps=warmup_steps,
-            warmup_by_epochs=warmup_by_epochs
+            warmup_by_epochs=warmup_by_epochs,
         )
         self.test_meta_info: dict[str, Any] = self.model.test_meta_info if hasattr(self.model, "test_meta_info") else {}
 
