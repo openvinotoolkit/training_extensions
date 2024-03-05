@@ -12,17 +12,17 @@ permissions: read-all
 jobs:
   Weekly-Perf-Efficiency-Benchmark:
     name: Weekly-Perf-Efficiency-Benchmark
-    uses: ./.github/workflows/perf_efficiency.yml
+    uses: ./.github/workflows/perf_efficiency.yaml
     with:
       model-type: default
       data-size: medium
       num-repeat: 1
       num-epoch: 2
       eval-upto: optimize
-      artifact-prefix: weekly-perf-accuracy-benchmark
+      artifact-prefix: weekly-perf-efficiency-benchmark
   Weekly-Perf-Accuracy-Benchmark:
     name: Weekly-Perf-Accuracy-Benchmarky
-    uses: ./.github/workflows/perf_accuracy.yml
+    uses: ./.github/workflows/perf_accuracy.yaml
     with:
       model-type: default
       data-size: all

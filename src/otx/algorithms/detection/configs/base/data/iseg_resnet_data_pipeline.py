@@ -23,7 +23,7 @@ train_pipeline = [
         resize_cfg=dict(
             type="Resize",
             img_scale=__img_size,
-            keep_ratio=True,
+            keep_ratio=False,
         ),
         enable_memcache=True,  # Cache after resizing image & annotations
     ),
@@ -53,7 +53,7 @@ train_pipeline = [
 val_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
-        resize_cfg=dict(type="Resize", img_scale=__img_size, keep_ratio=True),
+        resize_cfg=dict(type="Resize", img_scale=__img_size, keep_ratio=False),
         enable_memcache=True,  # Cache after resizing image
     ),
     dict(
@@ -77,7 +77,7 @@ test_pipeline = [
         img_scale=__img_size,
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=True),
+            dict(type="Resize", keep_ratio=False),
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="Pad", size_divisor=32),
