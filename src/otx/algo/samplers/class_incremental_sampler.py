@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import math
-import random
 
 import numpy as np
 import torch
@@ -127,18 +126,22 @@ class ClassIncrementalSampler(Sampler):
 
         indices = []
         for _ in range(self.repeat):
-            for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
-                indice = torch.cat(
-                    [
-                        self.new_indices[torch.randint(0, len(self.new_indices), (1,), generator=generator)],
-                        # random_generator.choice(self.new_indices, 1),
-                        self.old_indices[
-                            torch.randint(0, len(self.old_indices), (self.old_new_ratio,), generator=generator)
-                        ],
-                        # random_generator.choice(self.old_indices, self.old_new_ratio),
-                    ],
+            num_batches = self.data_length // self.batch_size
+            for _ in range(num_batches):
+                num_new_per_batch = self.batch_size // (1 + self.old_new_ratio)
+
+                new_indices_random = torch.randint(0, len(self.new_indices), (num_new_per_batch,), generator=generator)
+                old_indices_random = torch.randint(
+                    0,
+                    len(self.old_indices),
+                    (self.batch_size - num_new_per_batch,),
+                    generator=generator,
                 )
-                indices.append(indice)
+
+                new_samples = self.new_indices[new_indices_random]
+                old_samples = self.old_indices[old_indices_random]
+
+                indices.append(torch.cat([new_samples, old_samples]))
 
         indices = torch.cat(indices)
         if not self.drop_last:
@@ -151,7 +154,6 @@ class ClassIncrementalSampler(Sampler):
                     indices[torch.randint(0, len(indices), (num_extra,), generator=generator)],
                 ],
             )
-        indices = indices.tolist()
 
         if self.num_replicas > 1:
             if not self.drop_last:
@@ -159,15 +161,15 @@ class ClassIncrementalSampler(Sampler):
                 padding_size = self.total_size - len(indices)
                 # add extra samples to make it evenly divisible
                 if padding_size <= len(indices):
-                    indices += indices[:padding_size]
+                    indices = torch.cat([indices, indices[:padding_size]])
                 else:
-                    indices += (indices * math.ceil(padding_size / len(indices)))[:padding_size]
+                    indices = torch.cat([indices, (indices * math.ceil(padding_size / len(indices)))[:padding_size]])
             else:
                 # remove tail of data to make it evenly divisible.
                 indices = indices[: self.total_size]
 
             # shuffle before distributing indices
-            random.shuffle(indices)
+            indices = indices[torch.randperm(len(indices))]
 
             # subsample
             indices = indices[self.rank : self.total_size : self.num_replicas]
