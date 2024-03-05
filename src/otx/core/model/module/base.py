@@ -193,7 +193,6 @@ class OTXLitModule(LightningModule):
         if not self.warmup_by_epoch and (self.trainer.global_step < self.warmup_steps):
             for pg in optimizer.param_groups:
                 pg["lr"] = _scale_lr(self.trainer.global_step, self.warmup_steps, self.init_lr)
-                print(f"warmup: , {pg['lr']}")
 
     def configure_metric(self) -> None:
         """Configure the metric."""
