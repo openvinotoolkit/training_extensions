@@ -76,9 +76,13 @@ class ActionClsBatchDataEntity(OTXBatchDataEntity[ActionClsDataEntity]):
         return OTXTaskType.ACTION_CLASSIFICATION
 
     @classmethod
-    def collate_fn(cls, entities: list[ActionClsDataEntity]) -> ActionClsBatchDataEntity:
+    def collate_fn(
+        cls,
+        entities: list[ActionClsDataEntity],
+        stack_images: bool = True,
+    ) -> ActionClsBatchDataEntity:
         """Collection function to collect `ActionClsDataEntity` into `ActionClsBatchDataEntity`."""
-        batch_data = super().collate_fn(entities)
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return ActionClsBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,

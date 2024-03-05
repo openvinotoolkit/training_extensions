@@ -57,3 +57,4 @@ check_val_every_n_epoch: 1
 gradient_clip_val: null
 warmup_steps: 0
 warmup_by_epochs: False
+num_sanity_val_steps: 0

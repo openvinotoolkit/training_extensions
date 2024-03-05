@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import inspect
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -111,6 +112,9 @@ def instantiate_sampler(sampler_config: SamplerConfig, dataset: Dataset, **kwarg
     class_module, class_name = sampler_config.class_path.rsplit(".", 1)
     module = __import__(class_module, fromlist=[class_name])
     sampler_class = getattr(module, class_name)
+    init_signature = list(inspect.signature(sampler_class.__init__).parameters.keys())
+    if "batch_size" not in init_signature:
+        kwargs.pop("batch_size", None)
     sampler_kwargs = {**sampler_config.init_args, **kwargs}
 
     return sampler_class(dataset, **sampler_kwargs)

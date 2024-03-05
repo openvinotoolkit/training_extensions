@@ -8,9 +8,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-import torch
-from torchvision import tv_tensors
-
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
@@ -74,13 +71,10 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
         stack_images: bool = True,
     ) -> MulticlassClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch_data = super().collate_fn(entities)
-        batch_images = (
-            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
-        )
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return MulticlassClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_images,
+            images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
@@ -149,13 +143,10 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
         stack_images: bool = True,
     ) -> MultilabelClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch_data = super().collate_fn(entities)
-        batch_images = (
-            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
-        )
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return MultilabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_images,
+            images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
@@ -383,13 +374,10 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
         stack_images: bool = True,
     ) -> HlabelClsBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch_data = super().collate_fn(entities)
-        batch_images = (
-            tv_tensors.Image(data=torch.stack(batch_data.images, dim=0)) if stack_images else batch_data.images
-        )
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return HlabelClsBatchDataEntity(
             batch_size=batch_data.batch_size,
-            images=batch_images,
+            images=batch_data.images,
             imgs_info=batch_data.imgs_info,
             labels=[entity.labels for entity in entities],
         )
