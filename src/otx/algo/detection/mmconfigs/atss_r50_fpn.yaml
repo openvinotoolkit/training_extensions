@@ -71,6 +71,7 @@ data_preprocessor:
     - 57.12
     - 57.375
   type: DetDataPreprocessor
+  non_blocking: true
 neck:
   add_extra_convs: on_output
   in_channels:

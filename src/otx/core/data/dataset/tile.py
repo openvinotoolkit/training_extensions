@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging as log
+from itertools import product
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -92,22 +93,22 @@ class OTXTileTransform(Tile):
         img_h, img_w = image.size
         tile_h, tile_w = self._tile_size
         h_ovl, w_ovl = self._overlap
-        stride_h, stride_w = max(int(tile_h * (1 - h_ovl)), 1), max(int(tile_w * (1 - w_ovl)), 1)
-        n_row, n_col = (img_h + stride_h - 1) // stride_h, (img_w + stride_w - 1) // stride_w
 
         rois: list[BboxIntCoords] = []
+        cols = range(0, img_w, int(tile_w * (1 - w_ovl)))
+        rows = range(0, img_h, int(tile_h * (1 - h_ovl)))
 
-        for r in range(n_row):
-            for c in range(n_col):
-                y1, x1 = stride_h * r, stride_w * c
-                y2, x2 = y1 + stride_h, x1 + stride_w
+        for offset_x, offset_y in product(cols, rows):
+            x2 = min(offset_x + tile_w, img_w)
+            y2 = min(offset_y + tile_h, img_h)
+            c_x, c_y, w, h = x1y1x2y2_to_cxcywh(offset_x, offset_y, x2, y2)
+            x1, y1, x2, y2 = cxcywh_to_x1y1x2y2(c_x, c_y, w, h)
+            x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, img_w, img_h)
+            x1, y1, x2, y2 = (int(v) for v in [x1, y1, x2, y2])
+            rois += [x1y1x2y2_to_xywh(x1, y1, x2, y2)]
 
-                c_x, c_y, w, h = x1y1x2y2_to_cxcywh(x1, y1, x2, y2)
-                x1, y1, x2, y2 = cxcywh_to_x1y1x2y2(c_x, c_y, w, h)
-                x1, y1, x2, y2 = clip_x1y1x2y2(x1, y1, x2, y2, img_w, img_h)
-                rois += [x1y1x2y2_to_xywh(x1, y1, x2, y2)]
         log.info(f"image: {img_h}x{img_w} ~ tile_size: {self._tile_size}")
-        log.info(f"{n_row}x{n_col} tiles -> {len(rois)} tiles")
+        log.info(f"{len(rows)}x{len(cols)} tiles -> {len(rois)} tiles")
         return rois
 
 

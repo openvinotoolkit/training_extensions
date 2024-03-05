@@ -73,16 +73,22 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
         return OTXTaskType.INSTANCE_SEGMENTATION
 
     @classmethod
-    def collate_fn(cls, entities: list[InstanceSegDataEntity]) -> InstanceSegBatchDataEntity:
+    def collate_fn(
+        cls,
+        entities: list[InstanceSegDataEntity],
+        stack_images: bool = True,
+    ) -> InstanceSegBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
 
         Args:
             entities (list[InstanceSegDataEntity]): List of InstanceSegDataEntity objects.
+            stack_images: If True, return 4D B x C x H x W image tensor.
+                Otherwise return a list of 3D C x H x W image tensor.
 
         Returns:
             InstanceSegBatchDataEntity: The collated batch data entity.
         """
-        batch_data = super().collate_fn(entities)
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return InstanceSegBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
