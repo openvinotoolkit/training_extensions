@@ -81,7 +81,7 @@ class TVModelWithLossComputation(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.criterion = nn.CrossEntropyLoss() if loss is None else loss
 
-    def forward(self, images: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+    def forward(self, images: torch.Tensor, labels: torch.Tensor | None = None) -> torch.Tensor:
         """Performs forward pass of the model.
 
         Args:
@@ -166,3 +166,13 @@ class OTXTVModel(OTXMulticlassClsModel):
             scores=scores,
             labels=preds,
         )
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        export_params: dict[str, Any] = {}
+        export_params["input_size"] = (1, 3, 224, 224)
+
+        parameters = super()._export_parameters
+        parameters.update(export_params)
+        return parameters
