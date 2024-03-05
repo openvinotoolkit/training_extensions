@@ -35,6 +35,7 @@ RECIPE_PATH = get_otx_root_path() / "recipe"
 DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
     OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
+    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0_light.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
     OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
@@ -49,7 +50,7 @@ DEFAULT_CONFIG_PER_TASK = {
 }
 
 TASK_PER_DATA_FORMAT = {
-    "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS],
+    "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.H_LABEL_CLS],
     "datumaro": [OTXTaskType.MULTI_LABEL_CLS],
     "coco_instances": [
         OTXTaskType.DETECTION,
