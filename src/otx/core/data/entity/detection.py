@@ -72,9 +72,22 @@ class DetBatchDataEntity(OTXBatchDataEntity[DetDataEntity]):
         return OTXTaskType.DETECTION
 
     @classmethod
-    def collate_fn(cls, entities: list[DetDataEntity]) -> DetBatchDataEntity:
-        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch_data = super().collate_fn(entities)
+    def collate_fn(
+        cls,
+        entities: list[DetDataEntity],
+        stack_images: bool = True,
+    ) -> DetBatchDataEntity:
+        """Collection function to collect `DetDataEntity` into `DetBatchDataEntity` in data loader.
+
+        Args:
+            entities: List of `DetDataEntity`.
+            stack_images: If True, return 4D B x C x H x W image tensor.
+                Otherwise return a list of 3D C x H x W image tensor.
+
+        Returns:
+            Collated `DetBatchDataEntity`
+        """
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return DetBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,

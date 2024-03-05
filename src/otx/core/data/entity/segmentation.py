@@ -62,9 +62,13 @@ class SegBatchDataEntity(OTXBatchDataEntity[SegDataEntity]):
         return OTXTaskType.SEMANTIC_SEGMENTATION
 
     @classmethod
-    def collate_fn(cls, entities: list[SegDataEntity]) -> SegBatchDataEntity:
+    def collate_fn(
+        cls,
+        entities: list[SegDataEntity],
+        stack_images: bool = True,
+    ) -> SegBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch_data = super().collate_fn(entities)
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return SegBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,

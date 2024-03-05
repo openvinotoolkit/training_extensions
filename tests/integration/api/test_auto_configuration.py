@@ -28,6 +28,11 @@ def test_auto_configuration(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task.lower() in ("h_label_cls"):
+        pytest.skip(
+            reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
+        )
+
     tmp_path_train = tmp_path / f"auto_train_{task}"
     data_root = fxt_target_dataset_per_task[task.lower()]
     engine = Engine(
