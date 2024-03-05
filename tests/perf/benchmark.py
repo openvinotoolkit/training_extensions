@@ -178,7 +178,7 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
-                command = [
+                command = [  # NOTE: not working for h_label_cls. to be fixed
                     "otx",
                     "test",
                     "--config",
@@ -194,7 +194,33 @@ class Benchmark:
 
             # Optimize & test
             if self.eval_upto == "optimize":
-                pass  # To be enabled after CLI fixes
+                command = [
+                    "otx",
+                    "optimize",
+                    # NOTE: auto config should be implemented
+                    "--config",
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
+                    "--model.model_name",  # To be fixed to "--checkpoint" after #3028 merged
+                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                command = [
+                    "otx",
+                    "test",
+                    # NOTE: auto config should be implemented
+                    "--config",
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
+                    "--checkpoint",
+                    str(sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
 
             # Parse raw data into raw metrics
             self._log_metrics(work_dir=sub_work_dir, tags=tags)
