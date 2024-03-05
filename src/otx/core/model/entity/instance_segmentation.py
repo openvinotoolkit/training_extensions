@@ -503,9 +503,10 @@ class OVInstanceSegmentationModel(
             labels.append(torch.tensor([output.id - 1 for output in output_objects]))
 
         if outputs and outputs[0].saliency_map:
-            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
-            predicted_s_maps = [out.saliency_map[0] for out in outputs]
-
+            predicted_s_maps = []
+            for out in outputs:
+                image_map = np.array([map for map in out.saliency_map if map.ndim > 1])
+                predicted_s_maps.append(image_map)
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return InstanceSegBatchPredEntityWithXAI(
                 batch_size=len(outputs),

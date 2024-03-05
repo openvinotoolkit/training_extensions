@@ -7,15 +7,6 @@ import numpy as np
 import openvino.runtime as ov
 import pytest
 from otx.core.data.entity.base import OTXBatchPredEntity, OTXBatchPredEntityWithXAI
-# from otx.core.data.entity.classification import (
-#     MulticlassClsBatchPredEntity,
-#     MulticlassClsBatchPredEntityWithXAI,
-# )
-from otx.core.data.entity.classification import (
-    MulticlassClsBatchPredEntity,
-    MulticlassClsBatchPredEntityWithXAI,
-    MultilabelClsBatchPredEntityWithXAI,
-)
 from otx.engine import Engine
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
@@ -119,7 +110,10 @@ def test_predict_with_explain(
             saliency_map_output = output
             break
     assert saliency_map_output is not None
-    assert len(saliency_map_output.get_shape()) in [3, 4]
+    if "instance_segmentation" in recipe:
+        assert len(saliency_map_output.get_shape()) == 1
+    else:
+        assert len(saliency_map_output.get_shape()) in [3, 4]
 
     # Predict OV model with xai & process maps
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
