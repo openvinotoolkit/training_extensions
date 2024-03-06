@@ -3,6 +3,7 @@
 import pytest
 import torch
 from otx.algorithms.common.utils import is_xpu_available
+
 if is_xpu_available():
     from otx.algorithms.common.adapters.torch.amp.xpu_grad_scaler import XPUGradScaler
 

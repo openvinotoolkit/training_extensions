@@ -1,3 +1,9 @@
+"""Test for otx.algorithms.segmentation.adapters.mmseg.api.train"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 from unittest import mock
 from otx.algorithms.segmentation.adapters.mmseg.apis.train import train_segmentor
@@ -10,25 +16,62 @@ from otx.algorithms.common.utils.utils import is_xpu_available
 class TestTrainSegmentor:
     @pytest.fixture
     def mock_modules(self, mocker):
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.get_root_logger', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dp', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_ddp', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_optimizer', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_runner', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataset', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.DistEvalHook', return_value=mock.MagicMock())
-        mocker.patch('otx.algorithms.segmentation.adapters.mmseg.apis.train.EvalHook', return_value=mock.MagicMock())
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.get_root_logger", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader", return_value=mock.MagicMock()
+        )
+        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dp", return_value=mock.MagicMock())
+        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.apis.train.build_ddp", return_value=mock.MagicMock())
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_optimizer", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_runner", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataset", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.build_dataloader", return_value=mock.MagicMock()
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.apis.train.DistEvalHook", return_value=mock.MagicMock()
+        )
+        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.apis.train.EvalHook", return_value=mock.MagicMock())
 
     @pytest.fixture
     def mmcv_cfg(self):
-        return mmcv.Config({"gpu_ids" : [0], "seed": 42, "data": mock.MagicMock(), "device": "cpu", "optimizer": "Adam", "optimizer_config": {},
-                        "total_epochs": 1, "work_dir": "test", "lr_config": {}, "checkpoint_config": {}, "log_config": {}, "resume_from": False, "load_from": "",
-                        "workflow": "", "log_level": 1, "total_iters": 1000})
+        return mmcv.Config(
+            {
+                "gpu_ids": [0],
+                "seed": 42,
+                "data": mock.MagicMock(),
+                "device": "cpu",
+                "optimizer": "Adam",
+                "optimizer_config": {},
+                "total_epochs": 1,
+                "work_dir": "test",
+                "lr_config": {},
+                "checkpoint_config": {},
+                "log_config": {},
+                "resume_from": False,
+                "load_from": "",
+                "workflow": "",
+                "log_level": 1,
+                "total_iters": 1000,
+            }
+        )
 
     @pytest.fixture
     def model(self):

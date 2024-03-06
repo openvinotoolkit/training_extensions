@@ -1,3 +1,9 @@
+"""Test for otx.algorithms.common.adapters.mmcv.configurer"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 from mmcv.utils import Config
 from otx.algorithms.common.adapters.mmcv import configurer

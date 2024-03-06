@@ -1,3 +1,8 @@
+"""Tests the XPU strategy."""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 import torch
 import pytorch_lightning as pl

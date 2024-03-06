@@ -1,3 +1,9 @@
+"""Test for otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 import torch
 from torch.optim import Optimizer
@@ -24,7 +30,9 @@ class TestMixedPrecisionXPUPlugin:
         optimizer_idx = 0
         closure = mocker.MagicMock()
         kwargs = {}
-        mock_optimizer_step = mocker.patch("otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision.PrecisionPlugin.optimizer_step")
+        mock_optimizer_step = mocker.patch(
+            "otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision.PrecisionPlugin.optimizer_step"
+        )
         out = plugin.optimizer_step(optimizer, model, optimizer_idx, closure, **kwargs)
         assert isinstance(out, mocker.MagicMock)
         mock_optimizer_step.assert_called_once()
@@ -43,6 +51,8 @@ class TestMixedPrecisionXPUPlugin:
         optimizer = mocker.MagicMock(Optimizer)
         clip_val = 0.1
         gradient_clip_algorithm = "norm"
-        mock_clip_gradients = mocker.patch("otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision.PrecisionPlugin.clip_gradients")
+        mock_clip_gradients = mocker.patch(
+            "otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision.PrecisionPlugin.clip_gradients"
+        )
         plugin.clip_gradients(optimizer, clip_val, gradient_clip_algorithm)
         mock_clip_gradients.assert_called_once()

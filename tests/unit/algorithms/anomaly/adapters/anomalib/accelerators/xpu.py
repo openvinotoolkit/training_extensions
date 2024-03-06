@@ -1,3 +1,9 @@
+"""Test for otx.algorithms.anomaly.adapters.anomalib.accelerators.xpu"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import pytest
 import torch
 from otx.algorithms.anomaly.adapters.anomalib.accelerators import XPUAccelerator

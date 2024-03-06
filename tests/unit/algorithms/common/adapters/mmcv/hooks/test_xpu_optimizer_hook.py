@@ -1,5 +1,11 @@
+"""Test for XPU optimizer hook"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 from otx.algorithms.common.utils.utils import is_xpu_available
+
 
 @pytest.mark.skipif(not is_xpu_available(), reason="XPU is not available")
 def test_init():

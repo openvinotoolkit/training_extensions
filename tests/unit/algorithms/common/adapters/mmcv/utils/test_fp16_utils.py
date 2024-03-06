@@ -1,4 +1,8 @@
-# test_custom_auto_fp16.py
+"""Test for otx.algorithms.common.adapters.mmcv.utils.fp16_utils"""
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 import pytest
 from unittest.mock import MagicMock, patch
@@ -46,7 +50,7 @@ class TestCustomAutoFP16:
         assert test_func(torch.tensor(5.3), torch.tensor(8.3)).dtype == torch.float32
 
     def test_fp16_enabled_true(self, test_module):
-        test_module.set_fp16(enabled = True)
+        test_module.set_fp16(enabled=True)
         test_func = test_module.test_method_fp16
         # check fp16 casting
         if not is_xpu_available():
@@ -55,7 +59,7 @@ class TestCustomAutoFP16:
             assert test_func(torch.tensor(5.3), torch.tensor(8.3)).dtype == torch.bfloat16
 
     def test_out_fp32_true(self, test_module):
-        test_module.set_fp16(enabled = True)
+        test_module.set_fp16(enabled=True)
         test_func = test_module.test_method_force_out_fp32
         # cast back to fp32
         assert test_func(torch.tensor(5.3), torch.tensor(8.3)).dtype == torch.float32
@@ -71,14 +75,14 @@ class TestCustomForceFP32:
 
     @pytest.mark.skipif(is_xpu_available(), reason="cuda is not available")
     def test_fp16_enabled_true(self, test_module):
-        test_module.set_fp16(enabled = True)
+        test_module.set_fp16(enabled=True)
         test_func = test_module.test_func_force_fp16_to_fp32
         output_type = test_func(torch.tensor(5.3, dtype=torch.float16), torch.tensor(8.3, dtype=torch.float16)).dtype
         # check fp16 casting
         assert output_type == torch.float32
 
     def test_out_fp32_true(self, test_module):
-        test_module.set_fp16(enabled = True)
+        test_module.set_fp16(enabled=True)
         test_func = test_module.test_func_force_fp32_out_fp16
         output_type = test_func(torch.tensor(5.3, dtype=torch.float16), torch.tensor(8.3, dtype=torch.float16)).dtype
         # cast back to fp32
@@ -87,7 +91,7 @@ class TestCustomForceFP32:
     @pytest.mark.skipif(not is_xpu_available(), reason="XPU is not available")
     def test_fp16_enabled_xpu(self, test_module):
         # setup
-        test_module.set_fp16(enabled = True)
+        test_module.set_fp16(enabled=True)
         test_func = test_module.test_func_force_fp16_to_fp32
         output_type = test_func(torch.tensor(5.3, dtype=torch.bfloat16), torch.tensor(8.3, dtype=torch.bfloat16)).dtype
         # assertion
