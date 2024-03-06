@@ -1,4 +1,8 @@
-# test_xpu_grad_scaler.py
+"""Test for otx.algorithms.common.adapters.torch.amp.xpu_grad_scaler """
+
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 import pytest
 import torch
