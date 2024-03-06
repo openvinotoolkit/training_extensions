@@ -1,6 +1,7 @@
 load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/instance_segmentation/v2/efficientnet_b2b-mask_rcnn-576x576.pth
 data_preprocessor:
   type: "DetDataPreprocessor"
+  non_blocking: true
   bgr_to_rgb: false
   mean:
     - 123.675

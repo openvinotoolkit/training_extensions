@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable
 
 import numpy as np
@@ -84,4 +85,4 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect InstanceSegDataEntity into InstanceSegDataEntity in dataloader."""
-        return InstanceSegBatchDataEntity.collate_fn
+        return partial(InstanceSegBatchDataEntity.collate_fn, stack_images=self.stack_images)

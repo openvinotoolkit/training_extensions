@@ -379,13 +379,7 @@ class Engine:
 
         model = self.model
 
-        if checkpoint is not None:
-            checkpoint = str(checkpoint)
-        elif self.checkpoint is not None:
-            checkpoint = str(self.checkpoint)
-        else:
-            checkpoint = None
-
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
@@ -400,8 +394,6 @@ class Engine:
         )
         lit_module.label_info = datamodule.label_info
 
-        # NOTE, trainer.test takes only lightning based checkpoint.
-        # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             lit_module.load_state_dict(loaded_checkpoint)
@@ -438,7 +430,7 @@ class Engine:
             checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
-            explain (bool): Whether to dump "saliency_map" and "feature_vector" or not.
+            explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
 
         Returns:
             Path: Path to the exported model.
@@ -497,6 +489,7 @@ class Engine:
 
     def optimize(
         self,
+        checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
     ) -> Path:
@@ -506,6 +499,7 @@ class Engine:
         comes in mixed precision (some operations, however, remain in FP32).
 
         Args:
+            checkpoint (str | Path | None, optional): Checkpoint to optimize. Defaults to None.
             datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
             used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
@@ -516,6 +510,7 @@ class Engine:
 
         Example:
             >>> engine.optimize(
+            ...     checkpoint=<checkpoint/path>,
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
@@ -523,17 +518,34 @@ class Engine:
             To optimize a model, run
                 ```python
                 otx optimize
+                    --checkpoint <CKPT_PATH, str>
                     --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
                     --model.model_name=<PATH_TO_IR_XML, str>
                 ```
         """
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        optimize_datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
+        if not is_ir_ckpt:
+            msg = "Engine.optimize() supports only OV IR or ONNX checkpoints"
+            raise RuntimeError(msg)
+
+        model = self.model
+        if not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=optimize_datamodule.label_info,
+            )
+
         ptq_config = {}
         if max_data_subset_size is not None:
             ptq_config["subset_size"] = max_data_subset_size
 
-        return self.model.optimize(
+        return model.optimize(
             Path(self.work_dir),
-            datamodule if datamodule is not None else self.datamodule,
+            optimize_datamodule,
             ptq_config,
         )
 
@@ -542,14 +554,16 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
         explain_config: ExplainConfig | None = None,
+        dump: bool | None = False,
         **kwargs,
     ) -> list | None:
-        """Run XAI using the specified model and data.
+        """Run XAI using the specified model and data (test subset).
 
         Args:
             checkpoint (PathLike | None, optional): The path to the checkpoint file to load the model from.
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module to use for predictions.
             explain_config (ExplainConfig | None, optional): Config used to handle saliency maps.
+            dump (bool): Whether to dump "saliency_map" or not.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -560,6 +574,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ...     explain_config=ExplainConfig(),
+            ...     dump=True,
             ... )
 
         CLI Usage:
@@ -570,20 +585,28 @@ class Engine:
                     --checkpoint <CKPT_PATH, str>
                 ```
         """
-        from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
+        from otx.algo.utils.xai_utils import dump_saliency_maps, process_saliency_maps_in_pred_entity
 
-        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-        if explain_config is None:
-            explain_config = ExplainConfig()
+        model = self.model
+
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
+        if is_ir_ckpt and not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         lit_module = self._build_lightning_module(
-            model=self.model,
+            model=model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        if datamodule is None:
-            datamodule = self.datamodule
         lit_module.label_info = datamodule.label_info
+
+        if checkpoint is not None and not is_ir_ckpt:
+            loaded_checkpoint = torch.load(checkpoint)
+            lit_module.load_state_dict(loaded_checkpoint)
 
         lit_module.model.explain_mode = True
 
@@ -592,10 +615,19 @@ class Engine:
         predict_result = self.trainer.predict(
             model=lit_module,
             datamodule=datamodule,
-            ckpt_path=ckpt_path,
         )
 
-        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config, Path(self.work_dir))
+        if explain_config is None:
+            explain_config = ExplainConfig()
+
+        predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
+        if dump:
+            dump_saliency_maps(
+                predict_result,
+                explain_config,
+                datamodule,
+                output_dir=Path(self.work_dir),
+            )
         lit_module.model.explain_mode = False
         return predict_result
 
@@ -658,7 +690,7 @@ class Engine:
 
         return cls(
             work_dir=instantiated_config.get("work_dir", work_dir),
-            datamodule=instantiated_config.get("datamodule"),
+            datamodule=instantiated_config.get("data"),
             model=instantiated_config.get("model"),
             optimizer=instantiated_config.get("optimizer"),
             scheduler=instantiated_config.get("scheduler"),
