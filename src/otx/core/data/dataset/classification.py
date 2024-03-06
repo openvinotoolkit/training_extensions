@@ -19,7 +19,6 @@ from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsDataEntity,
-    HLabelData,
     MulticlassClsBatchDataEntity,
     MulticlassClsDataEntity,
     MultilabelClsBatchDataEntity,
@@ -96,7 +95,7 @@ class HLabelInfo(LabelInfo):
     empty_multiclass_head_indices: list[int]
 
     @classmethod
-    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelData:
+    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> HLabelInfo:
         """Generate HLabelData from the Datumaro LabelCategories.
 
         Args:
@@ -273,7 +272,6 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
 
         # Hlabel classification used HLabelInfo to insert the HLabelData.
         self.label_info = HLabelInfo.from_dm_label_groups(self.dm_categories)
-
         if self.label_info.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
