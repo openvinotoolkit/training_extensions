@@ -23,6 +23,11 @@ from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
+try:
+    import intel_extension_for_pytorch
+except ImportError:
+    pass
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
