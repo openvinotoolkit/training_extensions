@@ -255,11 +255,18 @@ class OTXModel(
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+
         Returns:
             Path: path to the exported model.
         """
         self._reset_model_forward()
-        exported_model_path = self._exporter.export(self.model, output_dir, base_name, export_format, precision)
+        exported_model_path = self._exporter.export(
+            self.model,
+            output_dir,
+            base_name,
+            export_format,
+            precision,
+        )
         self._restore_model_forward()
         return exported_model_path
 
@@ -345,7 +352,8 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
         tile_enabled = False
         with contextlib.suppress(RuntimeError):
-            tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
+            if isinstance(self.model, Model):
+                tile_enabled = "tile_size" in self.model.inference_adapter.get_rt_info(["model_info"]).astype(dict)
 
         if tile_enabled:
             self._setup_tiler()

@@ -67,6 +67,7 @@ class SegmentAnything(nn.Module):
         self.mask_threshold = mask_threshold
         self.image_size = image_size
         self.embed_dim = embed_dim
+        self.image_embedding_size = image_embedding_size
         self.use_stability_score = use_stability_score
         self.return_single_mask = return_single_mask
         self.return_extra_metrics = return_extra_metrics
@@ -135,7 +136,7 @@ class SegmentAnything(nn.Module):
                 f"To manually load {load_from}, try to set it to trainer.checkpoint.",
             )
 
-    def forward(self, mode: str, *args, **kwargs) -> Any:  # noqa: ANN401
+    def forward(self, *args, mode: str = "infer", **kwargs) -> Any:  # noqa: ANN401
         """Forward method for visual prompting task."""
         assert mode in ["finetuning", "learn", "infer"]  # noqa: S101
         if mode == "finetuning":
@@ -213,7 +214,6 @@ class SegmentAnything(nn.Module):
         ori_shapes: list[Tensor],
         bboxes: list[tv_tensors.BoundingBoxes | None],
         points: list[tuple[Points, Tensor] | None],
-        labels: list[Tensor],
         gt_masks: list[tv_tensors.Mask] | None = None,
     ) -> Tensor | tuple[list[Tensor], list[Tensor]]:
         """Forward method for SAM training/validation/prediction.
@@ -227,7 +227,6 @@ class SegmentAnything(nn.Module):
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
                 1 indicates a foreground point and 0 indicates a background point.
-            labels (List[Tensor]): List of labels stacked in the order, points and bounding boxes.
             gt_masks (List[tv_tensors.Mask], optional): Ground truth masks for loss calculation.
 
         Returns:
@@ -240,7 +239,7 @@ class SegmentAnything(nn.Module):
         ious = []
         for idx, embedding in enumerate(image_embeddings):
             low_res_masks, iou_predictions = [], []
-            for prompt in [points[idx], bboxes[idx]]:
+            for prompt in [bboxes[idx], points[idx]]:
                 if prompt is None:
                     continue
 
@@ -288,7 +287,7 @@ class SegmentAnything(nn.Module):
         for pred_mask, ori_shape in zip(pred_masks, ori_shapes):
             post_processed_pred_mask = self.postprocess_masks(pred_mask, self.image_size, ori_shape)
             post_processed_pred_masks.append(post_processed_pred_mask.squeeze(1).sigmoid())
-        return post_processed_pred_masks, ious, labels
+        return post_processed_pred_masks, ious
 
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
@@ -418,6 +417,7 @@ class SegmentAnything(nn.Module):
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
+        orig_size = orig_size.squeeze()
         masks = F.interpolate(masks, size=(input_size, input_size), mode="bilinear", align_corners=False)
 
         prepadded_size = cls.get_prepadded_size(cls, orig_size, input_size)  # type: ignore[arg-type]
@@ -489,7 +489,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         """Create a PyTorch model for this class."""
         return SegmentAnything(**self.config)
 
-    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:
+    def _customize_inputs(self, inputs: VisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
         """Customize the inputs for the model."""
         images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
         return {
@@ -504,13 +504,12 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
                 else None
                 for point in self._inspect_prompts(inputs.points)
             ],
-            "labels": inputs.labels,
         }
 
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
-        inputs: VisualPromptingBatchDataEntity,
+        inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
     ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
@@ -518,11 +517,9 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
 
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
-        labels: list[torch.LongTensor] = []
-        for mask, score, label in zip(*outputs):
+        for mask, score in zip(*outputs):
             masks.append(tv_tensors.Mask(mask, dtype=torch.float32))
             scores.append(score)
-            labels.append(label)
 
         return VisualPromptingBatchPredEntity(
             batch_size=len(outputs),
@@ -533,7 +530,7 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             polygons=[],
             points=[],
             bboxes=[],
-            labels=labels,
+            labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
         )
 
     def _inspect_prompts(self, prompts: list[tv_tensors.TVTensor]) -> list[tv_tensors.TVTensor | None]:

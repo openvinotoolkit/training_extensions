@@ -8,7 +8,7 @@ model:
     freeze_mask_decoder: False
     # options
     use_stability_score: False
-    return_single_mask: False
+    return_single_mask: True
     return_extra_metrics: False
     stability_score_offset: 1.
 
