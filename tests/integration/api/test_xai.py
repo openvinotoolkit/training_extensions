@@ -125,12 +125,12 @@ def test_predict_with_explain(
     assert predict_result_explain_ov[0].saliency_maps is not None
     assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
 
-    if task == "instance_segmentation" or "atss_r50_fpn"in recipe:
-        # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2. 
-        # That why the predictions have different format and we can't compare them.
+    if task == "instance_segmentation" or "atss_r50_fpn" in recipe:
+        # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2.
+        # That why the predict_results have different format and we can't compare them.
 
-        # The OV saliency maps are different from Torch and incorrect, possible root cause can be on MAPI side 
-        #TODO: remove this if statement when the issue is resolved
+        # The OV saliency maps are different from Torch and incorrect, possible root cause can be on MAPI side
+        # TODO(gzalessk): remove this if statement when the issue is resolved # noqa: TD003
         return
 
     maps_torch = predict_result_explain_torch[0].saliency_maps
