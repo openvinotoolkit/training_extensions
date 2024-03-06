@@ -9,7 +9,6 @@ from collections import defaultdict
 from functools import partial
 from typing import Callable
 
-import numpy as np
 import torch
 import torchvision.transforms.v2.functional as F  # noqa: N812
 from datumaro import Bbox as dmBbox
@@ -74,13 +73,13 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
 
         for annotation in item.annotations:
             if isinstance(annotation, dmPolygon):
-                mask = polygon_to_bitmap([annotation], *img_shape)[0]
-                mask_points = np.nonzero(mask)
+                mask = tv_tensors.Mask(polygon_to_bitmap([annotation], *img_shape)[0])
+                mask_points = torch.nonzero(mask)
                 if len(mask_points[0]) == 0:
                     # skip very small region
                     continue
 
-                if np.random.rand() < self.prob:  # noqa: NPY002
+                if torch.rand(1) < self.prob:
                     # get bbox
                     bbox = tv_tensors.BoundingBoxes(
                         annotation.get_bbox(),
@@ -100,7 +99,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     # get point
                     if self.dm_subset.name == "train":
                         # get random point from the mask
-                        idx_chosen = np.random.permutation(len(mask_points[0]))[0]  # noqa: NPY002
+                        idx_chosen = torch.randperm(len(mask_points[0]))[0]
                         point = Points(
                             (mask_points[1][idx_chosen], mask_points[0][idx_chosen]),
                             canvas_size=img_shape,
@@ -109,7 +108,7 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
                     else:
                         # get center point
                         point = Points(
-                            np.array(annotation.get_points()).mean(axis=0),
+                            torch.tensor(annotation.get_points()).mean(dim=0),
                             canvas_size=img_shape,
                             dtype=torch.float32,
                         )
@@ -124,12 +123,12 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
 
         bboxes = tv_tensors.wrap(torch.cat(gt_bboxes, dim=0), like=gt_bboxes[0]) if len(gt_bboxes) > 0 else None
         points = tv_tensors.wrap(torch.stack(gt_points, dim=0), like=gt_points[0]) if len(gt_points) > 0 else None
-        labels = torch.as_tensor(gt_labels.get("points", []) + gt_labels.get("bboxes", []), dtype=torch.int64)
+        labels = {prompt_type: torch.as_tensor(values, dtype=torch.int64) for prompt_type, values in gt_labels.items()}
         masks = tv_tensors.Mask(
-            np.stack(gt_masks.get("points", []) + gt_masks.get("bboxes", []), axis=0),
+            torch.stack(gt_masks.get("bboxes", []) + gt_masks.get("points", []), dim=0),
             dtype=torch.uint8,
         )
-        polygons = gt_polygons.get("points", []) + gt_polygons.get("bboxes", [])
+        polygons = gt_polygons.get("bboxes", []) + gt_polygons.get("points", [])
 
         # set entity without masks to avoid resizing masks
         entity = VisualPromptingDataEntity(
@@ -196,13 +195,13 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         for annotation in item.annotations:
             if isinstance(annotation, dmPolygon):
                 # generate prompts from polygon
-                mask = polygon_to_bitmap([annotation], *img_shape)[0]
-                mask_points = np.nonzero(mask)
+                mask = tv_tensors.Mask(polygon_to_bitmap([annotation], *img_shape)[0])
+                mask_points = torch.nonzero(mask)
                 if len(mask_points[0]) == 0:
                     # skip very small region
                     continue
 
-                if np.random.rand() < self.prob:  # noqa: NPY002
+                if torch.rand(1) < self.prob:
                     # get bbox
                     bbox = tv_tensors.BoundingBoxes(
                         annotation.get_bbox(),
@@ -218,7 +217,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                 else:
                     # get center point
                     point = Points(
-                        np.array(annotation.get_points()).mean(axis=0),
+                        torch.tensor(annotation.get_points()).mean(dim=0),
                         canvas_size=img_shape,
                         dtype=torch.float32,
                     )
@@ -235,26 +234,21 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         assert len(gt_prompts) > 0, "#prompts must be greater than 0."  # noqa: S101
 
         labels = torch.as_tensor(gt_labels, dtype=torch.int64)
-        masks = tv_tensors.Mask(np.stack(gt_masks, axis=0), dtype=torch.uint8)
+        masks = tv_tensors.Mask(torch.stack(gt_masks, dim=0), dtype=torch.uint8)
 
         # set entity without masks to avoid resizing masks
-        entity = ZeroShotVisualPromptingDataEntity(
-            image=img_data,
+        return ZeroShotVisualPromptingDataEntity(
+            image=F.to_image(img_data),
             img_info=ImageInfo(
                 img_idx=index,
                 img_shape=img_shape,
                 ori_shape=img_shape,
             ),
-            masks=None,
+            masks=masks,
             labels=labels,
             polygons=gt_polygons,
             prompts=gt_prompts,
         )
-        transformed_entity = self._apply_transforms(entity)
-
-        # insert masks to transformed_entity
-        transformed_entity.masks = masks  # type: ignore[union-attr]
-        return transformed_entity
 
     @property
     def collate_fn(self) -> Callable:

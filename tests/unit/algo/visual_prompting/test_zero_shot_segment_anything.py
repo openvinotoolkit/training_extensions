@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Callable
-from unittest.mock import MagicMock
 
 import pytest
 import torch
@@ -20,76 +20,84 @@ from torchvision import tv_tensors
 
 
 class TestPromptGetter:
-    @pytest.fixture(autouse=True)
-    def setup(self) -> None:
-        self.prompt_getter = PromptGetter(image_size=3, downsizing=1)
+    @pytest.fixture()
+    def prompt_getter(self) -> PromptGetter:
+        return PromptGetter(image_size=3, downsizing=1)
 
-    def test_set_default_thresholds(self) -> None:
+    def test_set_default_thresholds(self, prompt_getter) -> None:
         """Test set_default_thresholds."""
-        assert self.prompt_getter.default_threshold_reference == 0.3
-        assert self.prompt_getter.default_threshold_target == 0.65
+        assert prompt_getter.default_threshold_reference == 0.3
+        assert prompt_getter.default_threshold_target == 0.65
 
-        self.prompt_getter.set_default_thresholds(default_threshold_reference=0.5, default_threshold_target=0.7)
+        prompt_getter.set_default_thresholds(default_threshold_reference=0.5, default_threshold_target=0.7)
 
-        assert self.prompt_getter.default_threshold_reference == 0.5
-        assert self.prompt_getter.default_threshold_target == 0.7
+        assert prompt_getter.default_threshold_reference == 0.5
+        assert prompt_getter.default_threshold_target == 0.7
 
-    def test_forward(self, mocker) -> None:
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
+    def test_forward(self, mocker, prompt_getter, result_point_selection: Tensor) -> None:
         """Test forward."""
-        mocker.patch.object(
-            self.prompt_getter,
-            "_get_prompt_candidates",
-            return_value=(torch.tensor([[0, 0, 0.5], [1, 1, 0.7]]), torch.tensor([[2, 2]])),
-        )
-        image_embedding = torch.ones(1, 4, 4, 4)
-        reference_feats = torch.rand(1, 1, 4)
-        used_indices = [0]
-        ori_shape = torch.tensor((self.prompt_getter.image_size, self.prompt_getter.image_size), dtype=torch.int64)
+        mocker.patch("otx.algo.visual_prompting.zero_shot_segment_anything.ZeroShotSegmentAnything")
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
 
-        total_points_scores, total_bg_coords = self.prompt_getter(
-            image_embedding=image_embedding,
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        reference_feat = torch.rand(1, 4)
+        ori_shape = torch.tensor((prompt_getter.image_size, prompt_getter.image_size), dtype=torch.int64)
+
+        points_scores, bg_coords = prompt_getter(
+            image_embeddings=image_embeddings,
+            reference_feat=reference_feat,
+            ori_shape=ori_shape,
+        )
+
+        assert torch.all(points_scores == result_point_selection)
+        assert torch.all(bg_coords == torch.zeros(1, 2))
+
+    @pytest.mark.parametrize(
+        "result_point_selection",
+        [torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), torch.tensor([[-1, -1, -1]])],
+    )
+    def test_get_prompt_candidates(self, mocker, prompt_getter, result_point_selection: Tensor) -> None:
+        """Test get_prompt_candidates."""
+        mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
+        image_embeddings = torch.ones(1, 4, 4, 4)
+        reference_feats = torch.rand(1, 1, 4)
+        used_indices = torch.as_tensor([[0]])
+        ori_shape = torch.tensor([prompt_getter.image_size, prompt_getter.image_size], dtype=torch.int64)
+
+        total_points_scores, total_bg_coords = prompt_getter.get_prompt_candidates(
+            image_embeddings=image_embeddings,
             reference_feats=reference_feats,
             used_indices=used_indices,
             ori_shape=ori_shape,
         )
 
-        assert total_points_scores.shape == torch.Size((1, 2, 3))
-        assert total_bg_coords.shape == torch.Size((1, 1, 2))
+        assert total_points_scores[0].shape[0] == len(result_point_selection)
+        assert total_bg_coords[0].shape[0] == 1
 
-    def test_get_prompt_candidates(self, mocker) -> None:
-        """Test _get_prompt_candidates."""
-        mocker.patch.object(self.prompt_getter, "_point_selection", return_value=("points_scores", "bg_coords"))
-        image_embedding = torch.ones(1, 4, 4, 4)
-        reference_feat = torch.rand(1, 4)
-        ori_shape = torch.tensor(
-            [self.prompt_getter.image_size, self.prompt_getter.image_size],
-            dtype=torch.int64,
-        )
-
-        points_scores, bg_coords = self.prompt_getter._get_prompt_candidates(
-            image_embedding=image_embedding,
-            reference_feat=reference_feat,
-            ori_shape=ori_shape,
-            threshold=torch.tensor([[0.0]], dtype=torch.float32),
-            num_bg_points=torch.tensor([[1]], dtype=torch.int64),
-        )
-
-        assert points_scores == "points_scores"
-        assert bg_coords == "bg_coords"
-
-    def test_point_selection(self) -> None:
+    @pytest.mark.parametrize(
+        ("mask_sim", "expected"),
+        [
+            (
+                torch.arange(0.1, 1.0, 0.1).reshape(3, 3),
+                torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]),
+            ),
+            (torch.zeros(3, 3), torch.tensor([[-1, -1, -1]])),
+        ],
+    )
+    def test_point_selection(self, prompt_getter, mask_sim: torch.Tensor, expected: torch.Tensor) -> None:
         """Test _point_selection."""
-        mask_sim = torch.arange(0.1, 1.0, 0.1).reshape(self.prompt_getter.image_size, self.prompt_getter.image_size)
-
-        points_scores, bg_coords = self.prompt_getter._point_selection(
+        points_scores, bg_coords = prompt_getter._point_selection(
             mask_sim=mask_sim,
-            ori_shape=torch.tensor([self.prompt_getter.image_size, self.prompt_getter.image_size]),
+            ori_shape=torch.tensor([prompt_getter.image_size, prompt_getter.image_size]),
             threshold=torch.tensor([[0.5]]),
             num_bg_points=torch.tensor([[1]], dtype=torch.int64),
         )
 
-        assert torch.equal(points_scores, torch.tensor([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]))
-        assert torch.equal(bg_coords, torch.tensor([[0, 0]]))
+        assert torch.equal(points_scores, expected)
 
 
 class TestZeroShotSegmentAnything:
@@ -161,9 +169,6 @@ class TestZeroShotSegmentAnything:
         for param in zero_shot_segment_anything.mask_decoder.parameters():
             assert not param.requires_grad
 
-        assert zero_shot_segment_anything.reference_info["reference_feats"] is None
-        assert zero_shot_segment_anything.reference_info["used_indices"] is None
-
     @pytest.mark.parametrize(
         "kwargs",
         [
@@ -200,19 +205,18 @@ class TestZeroShotSegmentAnything:
                 continue
             assert getattr(zero_shot_segment_anything, key) == value
 
-    def test_initialize_reference_info_expand_reference_info(self, build_zero_shot_segment_anything) -> None:
-        """Test initialize_reference_info and expand_reference_info."""
+    @pytest.mark.parametrize("new_largest_label", [0, 3])
+    def test_expand_reference_info(self, build_zero_shot_segment_anything, new_largest_label: int) -> None:
+        """Test expand_reference_info."""
         zero_shot_segment_anything = build_zero_shot_segment_anything()
+        reference_feats = torch.zeros(0, 1, 256)
 
-        zero_shot_segment_anything.initialize_reference_info(largest_label=0)
+        results = zero_shot_segment_anything.expand_reference_info(
+            reference_feats=reference_feats,
+            new_largest_label=new_largest_label,
+        )
 
-        assert isinstance(zero_shot_segment_anything.reference_info["reference_feats"], Tensor)
-        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
-        assert isinstance(zero_shot_segment_anything.reference_info["used_indices"], set)
-
-        zero_shot_segment_anything.expand_reference_info(new_largest_label=3)
-
-        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((4, 1, 256))
+        assert len(results) == new_largest_label + 1
 
     def test_learn(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test learn."""
@@ -232,18 +236,21 @@ class TestZeroShotSegmentAnything:
                 ],
             },
         ]
+        reference_feats = torch.zeros(0, 1, 256)
+        used_indices = torch.tensor([], dtype=torch.int64)
         ori_shapes = [torch.tensor((1024, 1024))]
 
-        _, ref_masks = zero_shot_segment_anything.learn(
+        reference_info, ref_masks = zero_shot_segment_anything.learn(
             images=images,
             processed_prompts=processed_prompts,
+            reference_feats=reference_feats,
+            used_indices=used_indices,
             ori_shapes=ori_shapes,
-            return_outputs=True,
         )
 
-        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
+        assert reference_info["reference_feats"].shape == torch.Size((1, 1, 256))
         assert ref_masks[0].shape == torch.Size((1, *ori_shapes[0]))
-        assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
+        assert 0 in reference_info["used_indices"]
 
         new_processed_prompts = [
             {
@@ -259,25 +266,27 @@ class TestZeroShotSegmentAnything:
             },
         ]
 
-        _, ref_masks = zero_shot_segment_anything.learn(
+        reference_info, ref_masks = zero_shot_segment_anything.learn(
             images=images,
             processed_prompts=new_processed_prompts,
+            reference_feats=reference_info["reference_feats"],
+            used_indices=reference_info["used_indices"],
             ori_shapes=ori_shapes,
-            return_outputs=True,
         )
 
-        assert zero_shot_segment_anything.reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
+        assert reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
         assert ref_masks[0].shape == torch.Size((2, *ori_shapes[0]))
-        assert 0 in zero_shot_segment_anything.reference_info["used_indices"]
-        assert 1 in zero_shot_segment_anything.reference_info["used_indices"]
+        assert 0 in reference_info["used_indices"]
+        assert 1 in reference_info["used_indices"]
 
     def test_infer(self, mocker, build_zero_shot_segment_anything) -> None:
         """Test infer."""
         mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
         zero_shot_segment_anything = build_zero_shot_segment_anything()
-        zero_shot_segment_anything.prompt_getter = MagicMock(
-            spec=PromptGetter,
-            return_value=(torch.tensor([[[0, 0, 0.5], [1000, 1000, 0.7]]]), torch.tensor([[[500, 500]]])),
+        mocker.patch.object(
+            zero_shot_segment_anything.prompt_getter,
+            "get_prompt_candidates",
+            return_value=({0: torch.tensor([[0, 0, 0.5], [1000, 1000, 0.7]])}, {0: torch.tensor([[500, 500]])}),
         )
 
         def _patch_predict_masks(**kwargs) -> Tensor:
@@ -406,6 +415,29 @@ class TestZeroShotSegmentAnything:
         assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
         assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
+    @pytest.mark.parametrize(
+        ("masks", "logits", "expected"),
+        [
+            (torch.ones(1, 4, 8, 8), torch.ones(1, 4, 4, 4), torch.ones(8, 8)),
+            (torch.zeros(1, 4, 8, 8), torch.zeros(1, 4, 4, 4), torch.zeros(8, 8)),
+        ],
+    )
+    def test_decide_cascade_results(
+        self,
+        mocker,
+        build_zero_shot_segment_anything,
+        masks: Tensor,
+        logits: Tensor,
+        expected: Tensor,
+    ) -> None:
+        mocker.patch("otx.algo.visual_prompting.segment_anything.SegmentAnything.load_checkpoint")
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        scores = torch.tensor([[0.0, 0.1, 0.2, 0.3]])
+
+        _, result = zero_shot_segment_anything._decide_cascade_results(masks, logits, scores)
+
+        assert torch.equal(result, expected)
+
 
 class TestOTXZeroShotSegmentAnything:
     @pytest.fixture()
@@ -419,22 +451,37 @@ class TestOTXZeroShotSegmentAnything:
         assert isinstance(zero_shot_segment_anything, torch.nn.Module)
         assert zero_shot_segment_anything.__class__.__name__ == "ZeroShotSegmentAnything"
 
-    def test_customize_inputs_learn(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
+    @pytest.mark.parametrize("is_training", [True, False])
+    def test_customize_inputs_learn(
+        self,
+        model: OTXZeroShotSegmentAnything,
+        fxt_zero_shot_vpm_data_entity,
+        is_training: bool,
+    ) -> None:
         """Test _customize_inputs with training=True."""
-        model.training = True
+        model.training = is_training
+        model.initialize_reference_info()
         output_data = model._customize_inputs(fxt_zero_shot_vpm_data_entity[1])
 
         assert output_data is not None
         assert isinstance(output_data["images"][0], tv_tensors.Image)
         assert output_data["images"][0].shape[-2:] == torch.Size(output_data["ori_shapes"][0])
         assert isinstance(output_data["ori_shapes"][0], Tensor)
-        assert "processed_prompts" in output_data
+        assert isinstance(output_data["reference_feats"], Tensor)
+        assert torch.all(output_data["reference_feats"] == model.reference_feats)
+        assert isinstance(output_data["used_indices"], Tensor)
+        assert torch.all(output_data["used_indices"] == model.used_indices)
+
+        if is_training:
+            assert "processed_prompts" in output_data
+        else:
+            assert "is_cascade" in output_data
 
     def test_customize_inputs_infer(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_inputs with training=False."""
         model.training = False
-        model.model.reference_info["reference_feats"] = torch.rand(1, 1, 1, 256)
-        model.model.reference_info["used_indices"] = {0: [0]}
+        model.reference_feats = torch.rand(1, 1, 256)
+        model.used_indices = torch.tensor([0.0])
         output_data = model._customize_inputs(fxt_zero_shot_vpm_data_entity[1])
 
         assert output_data is not None
@@ -442,20 +489,25 @@ class TestOTXZeroShotSegmentAnything:
         assert output_data["images"][0].shape[-2:] == torch.Size(output_data["ori_shapes"][0])
         assert isinstance(output_data["ori_shapes"][0], Tensor)
         assert "reference_feats" in output_data
-        assert torch.all(output_data["reference_feats"] == model.model.reference_info["reference_feats"])
-        assert output_data["used_indices"] == model.model.reference_info["used_indices"]
+        assert torch.all(output_data["reference_feats"] == model.reference_feats)
+        assert torch.all(output_data["used_indices"] == model.used_indices)
 
     def test_customize_outputs(self, model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_outputs."""
-        label = torch.tensor(0)
-        outputs = [[{label: [torch.tensor(0)]}, {label: [torch.tensor([1, 1, 1])]}]]
 
         # training
+        outputs = [
+            {"reference_feats": torch.zeros(0, 1, 256)},
+            {"used_indices": torch.tensor([1, 1, 1])},
+            "reference_masks",
+        ]
         model.training = True
         result = model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
         assert result == outputs
 
         # inference
+        label = 0
+        outputs = [[{label: [torch.tensor(0)]}, {label: [torch.tensor([1, 1, 1])]}]]
         model.training = False
         result = model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
         assert isinstance(result, ZeroShotVisualPromptingBatchPredEntity)
@@ -475,3 +527,161 @@ class TestOTXZeroShotSegmentAnything:
         assert results[0][1][0] == prompts[0][1]
         assert results[0][2] == prompts[0][2:4]
         assert results[0][4][0] == prompts[0][4]
+
+    @pytest.mark.parametrize(
+        ("image", "expected"),
+        [
+            (tv_tensors.Image(torch.zeros(3, 2, 4)), (3, 4, 8)),
+            (tv_tensors.Image(torch.zeros(3, 12, 16)), (3, 6, 8)),
+        ],
+    )
+    def test_apply_image(self, model, image: tv_tensors.Image, expected: tuple[int, ...]) -> None:
+        """Test apply_image."""
+        results = model.apply_image(image, target_length=8)
+
+        assert results.shape == expected
+
+    @pytest.mark.parametrize(
+        ("coords", "ori_shape", "expected"),
+        [
+            (torch.tensor([[1, 1], [2, 2]]), (4, 4), torch.tensor([[2, 2], [4, 4]])),
+            (torch.tensor([[4, 4], [8, 8]]), (16, 16), torch.tensor([[2, 2], [4, 4]])),
+        ],
+    )
+    def test_apply_points(self, model, coords: Tensor, ori_shape: tuple[int, int], expected: Tensor) -> None:
+        """Test apply_points."""
+        result = model.apply_points(Points(coords, canvas_size=ori_shape), ori_shape, target_length=8)
+
+        assert isinstance(result, torch.Tensor)
+        assert torch.equal(result, expected)
+
+    @pytest.mark.parametrize(
+        ("boxes", "ori_shape", "expected"),
+        [
+            (torch.tensor([[1, 1, 2, 2], [2, 2, 3, 3]]), (4, 4), torch.tensor([[2, 2, 4, 4], [4, 4, 6, 6]])),
+            (torch.tensor([[4, 4, 8, 8], [8, 8, 12, 12]]), (16, 16), torch.tensor([[2, 2, 4, 4], [4, 4, 6, 6]])),
+        ],
+    )
+    def test_apply_boxes(self, model, boxes: Tensor, ori_shape: tuple[int, int], expected: Tensor) -> None:
+        """Test apply_boxes."""
+        result = model.apply_boxes(
+            tv_tensors.BoundingBoxes(boxes, format="xyxy", canvas_size=ori_shape),
+            ori_shape,
+            target_length=8,
+        )
+
+        assert isinstance(result, torch.Tensor)
+        assert torch.equal(result, expected)
+
+    @pytest.mark.parametrize(
+        ("prompts", "ori_shape", "expected"),
+        [
+            (
+                [
+                    Points([[4, 4], [8, 8]], canvas_size=(16, 16)),
+                    tv_tensors.BoundingBoxes([[4, 4, 8, 8], [8, 8, 12, 12]], format="xyxy", canvas_size=(16, 16)),
+                ],
+                (16, 16),
+                [
+                    Points([[2, 2], [4, 4]], canvas_size=(8, 8)),
+                    tv_tensors.BoundingBoxes([[2, 2, 4, 4], [4, 4, 6, 6]], format="xyxy", canvas_size=(8, 8)),
+                ],
+            ),
+        ],
+    )
+    def test_apply_prompts(
+        self,
+        model,
+        prompts: list[Points | tv_tensors.BoundingBoxes],
+        ori_shape: tuple[int, int],
+        expected: list[Points | tv_tensors.BoundingBoxes],
+    ) -> None:
+        """Test apply_prompts."""
+        results = model.apply_prompts(prompts, ori_shape, target_length=8)
+
+        for r, e in zip(results, expected):
+            assert torch.all(r == e)
+
+    @pytest.mark.parametrize(
+        ("oldh", "oldw", "expected"),
+        [
+            (3, 4, (6, 8)),
+            (12, 16, (6, 8)),
+        ],
+    )
+    def test_get_preprocess_shape(self, model, oldh: int, oldw: int, expected: tuple[int, int]):
+        """Test get_preprocess_shape."""
+        results = model.get_preprocess_shape(oldh, oldw, target_length=8)
+
+        assert results == expected
+
+    @pytest.mark.parametrize("image", (tv_tensors.Image(torch.zeros(1, 3, 2, 4, dtype=torch.uint8))))
+    def test_preprocess(self, model, image: tv_tensors.Image) -> None:
+        """Test preprocess."""
+        model.pixel_mean = torch.ones_like(model.pixel_mean)
+        model.pixel_std = torch.ones_like(model.pixel_std) * 2
+        model.model.image_size = 8
+
+        results = model.preprocess(image)
+
+        assert results.shape == (3, 8, 8)
+        assert torch.all(torch.unique(results) == torch.tensor((-0.5, 0.0)))
+
+    def test_initialize_reference_info(self, model) -> None:
+        """Test initialize_reference_info."""
+        model.initialize_reference_info()
+
+        assert model.reference_feats.shape == (0, 1, 256)
+        assert model.used_indices.shape == (0,)
+
+    def test_find_latest_reference_info(self, mocker, model) -> None:
+        """Test _find_latest_reference_info."""
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.path.isdir",
+            return_value=True,
+        )
+
+        # there are some saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=["1", "2"],
+        )
+        results = model._find_latest_reference_info(Path())
+        assert results == "2"
+
+        # there are no saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
+            return_value=[],
+        )
+        results = model._find_latest_reference_info(Path())
+        assert results is None
+
+    def test_load_latest_reference_info(self, mocker, model) -> None:
+        """Test load_latest_reference_info."""
+        # get previously saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
+            return_value="1",
+        )
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
+            return_value={"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])},
+        )
+        mocker.patch("builtins.open", return_value="Mocked data")
+
+        model.load_latest_reference_info()
+        assert model.reference_feats.shape == (1, 1, 256)
+        assert model.used_indices.shape == (1,)
+
+        # no saved reference info
+        mocker.patch(
+            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
+            return_value=None,
+        )
+
+        model.initialize_reference_info()
+        model.load_latest_reference_info()
+
+        assert model.reference_feats.shape == (0, 1, 256)
+        assert model.used_indices.shape == (0,)
