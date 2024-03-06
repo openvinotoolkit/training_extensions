@@ -40,6 +40,7 @@ assert_text_explain_predicted = "The number of saliency maps should be equal to 
 if is_xpu_available():
     pytest.skip("Instance segmentation task is not supported on XPU", allow_module_level=True)
 
+
 class TestISegmXAIAPI:
     def _prepare_task_env(self, temp_dir, train=True, tile=False):
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
