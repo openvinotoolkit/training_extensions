@@ -45,85 +45,71 @@ overrides:
       include_polygons: true
       train_subset:
         num_workers: 10
-        batch_size: 32
+        batch_size: 8
         transforms:
           - type: LoadImageFromFile
             backend_args: null
-            to_float32: true
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
           - type: CachedMosaic
             img_scale:
-            - 640
-            - 640
+              - 640
+              - 640
             pad_val: 114.0
             max_cached_images: 20
             random_pop: false
           - type: RandomResize
             scale:
-            - 1280
-            - 1280
+              - 1280
+              - 1280
             ratio_range:
-            - 0.5
-            - 2.0
+              - 0.5
+              - 2.0
             keep_ratio: true
           - type: RandomCrop
             crop_size:
-            - 640
-            - 640
+              - 640
+              - 640
           - type: YOLOXHSVRandomAug
           - type: RandomFlip
             prob: 0.5
           - type: Pad
-            size:
-            - 640
-            - 640
-            pad_val:
-              img:
-              - 114
-              - 114
-              - 114
+            pad_to_square: true
+            pad_val: 114
           - type: CachedMixUp
             img_scale:
-            - 640
-            - 640
+              - 640
+              - 640
             ratio_range:
-            - 1.0
-            - 1.0
+              - 1.0
+              - 1.0
             max_cached_images: 10
             random_pop: false
             pad_val:
-            - 114
-            - 114
-            - 114
+              - 114
+              - 114
+              - 114
             prob: 0.5
           - type: FilterAnnotations
             min_gt_bbox_wh:
-            - 1
-            - 1
+              - 1
+              - 1
           - type: PackDetInputs
       val_subset:
-        batch_size: 5
+        batch_size: 4
         num_workers: 10
         transforms:
           - type: LoadImageFromFile
             backend_args: null
-            to_float32: true
           - type: Resize
             scale:
-            - 640
-            - 640
+              - 640
+              - 640
             keep_ratio: true
           - type: Pad
-            size:
-            - 640
-            - 640
-            pad_val:
-              img:
-              - 114
-              - 114
-              - 114
+            pad_to_square: true
+            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
@@ -135,26 +121,19 @@ overrides:
               - img_shape
               - scale_factor
       test_subset:
-        batch_size: 5
+        batch_size: 4
         num_workers: 10
         transforms:
           - type: LoadImageFromFile
             backend_args: null
-            to_float32: true
           - type: Resize
             scale:
-            - 640
-            - 640
+              - 640
+              - 640
             keep_ratio: true
           - type: Pad
-            size:
-            - 640
-            - 640
-            pad_val:
-              img:
-              - 114
-              - 114
-              - 114
+            pad_to_square: true
+            pad_val: 114
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
