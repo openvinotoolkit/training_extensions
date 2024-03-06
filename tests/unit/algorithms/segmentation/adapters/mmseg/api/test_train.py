@@ -65,8 +65,7 @@ class TestTrainSegmentor:
     def test_train_model_xpu_device(self, mock_modules, mmcv_cfg, model, dataset):
         # Create mock inputs
         _ = mock_modules
-        device = "xpu"
         mmcv_cfg.device = "xpu"
 
         # Call the function
-        train_segmentor(model, dataset, mmcv_cfg, device=device)
+        train_segmentor(model, dataset, mmcv_cfg)
