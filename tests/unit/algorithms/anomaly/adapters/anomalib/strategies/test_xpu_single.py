@@ -9,7 +9,7 @@ from otx.algorithms.common.utils.utils import is_xpu_available
 class TestSingleXPUStrategy:
     def test_init(self):
         strategy = SingleXPUStrategy(device="xpu:0")
-        assert strategy._root_device == "xpu:0"
+        assert strategy._root_device.type == "xpu"
         assert strategy.accelerator is None
 
     def test_is_distributed(self):
