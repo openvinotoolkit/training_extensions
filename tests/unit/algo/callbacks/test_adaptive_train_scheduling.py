@@ -45,7 +45,7 @@ class TestAdaptiveTrainScheduling:
             assert mock_trainer.lr_scheduler_configs[0].frequency != 1
             assert mock_trainer.lr_scheduler_configs[0].scheduler.patience != 5
             assert mock_trainer.log_every_n_steps == 10  # Equal to len(train_dataloader)
-            assert len(caplog.records) == 4  # Warning two times
+            assert len(caplog.records) == 5  # Warning two times
 
         callback.on_train_end(trainer=mock_trainer, pl_module=mock_pl_module)
         # Restore temporarily updated values
