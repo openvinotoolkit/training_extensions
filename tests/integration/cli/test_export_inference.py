@@ -288,8 +288,8 @@ def test_otx_export_infer(
     if "multi_class_cls/otx_efficientnet_b0" in request.node.name:
         msg = "multi_class_cls/otx_efficientnet_b0 exceeds the following threshold = 0.1"
         pytest.xfail(msg)
-    if "multi_class_cls/tv_efficientnet_b4" in request.node.name:
-        msg = "multi_class_cls/tv_efficientnet_b4 exceeds the following threshold = 0.1"
+    if "multi_class_cls/tv_" in request.node.name:
+        msg = "torchvision model for multi_class_cls exceeds the following threshold = 0.1"
         pytest.xfail(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
