@@ -15,6 +15,7 @@ from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
+    MulticlassClsBatchPredEntityWithXAI,
 )
 from otx.core.model.entity.classification import OTXMulticlassClsModel
 
@@ -67,36 +68,52 @@ class TVModelWithLossComputation(nn.Module):
         self.num_classes = num_classes
         net = getattr(models, backbone)(weights=TV_WEIGHTS[backbone])
 
+        self.backbone = nn.Sequential(*list(net.children())[:-1])
+
         last_layer = list(net.children())[-1]
         classifier_len = len(list(last_layer.children()))
         if classifier_len >= 1:
             feature_channel = list(last_layer.children())[-1].in_features
             layers = list(last_layer.children())[:-1]
-            net.classifier = nn.Sequential(*layers, nn.Linear(feature_channel, num_classes))
+            self.head = nn.Sequential(*layers, nn.Linear(feature_channel, num_classes))
         else:
             feature_channel = last_layer.in_features
-            net.classifier = nn.Linear(feature_channel, num_classes)
+            self.head = nn.Linear(feature_channel, num_classes)
 
-        self.net = net
         self.softmax = nn.Softmax(dim=-1)
-        self.criterion = nn.CrossEntropyLoss() if loss is None else loss
+        self.loss = nn.CrossEntropyLoss() if loss is None else loss
 
-    def forward(self, images: torch.Tensor, labels: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self,
+        images: torch.Tensor,
+        labels: torch.Tensor | None = None,
+        mode: str = "tensor",
+    ) -> torch.Tensor:
         """Performs forward pass of the model.
 
         Args:
             images (torch.Tensor): The input images.
             labels (torch.Tensor): The ground truth labels.
+            mode (str, optional): The mode of the forward pass. Defaults to "tensor".
 
         Returns:
             torch.Tensor: The output logits or loss, depending on the training mode.
         """
-        logits = self.net(images)
-
-        if self.training:
-            return self.criterion(logits, labels)
-
+        # logits = self.net(images)
+        feats = self.backbone(images)
+        if len(feats.shape) == 4:  # If feats is a 4D tensor: (batch_size, channels, height, width)
+            feats = feats.view(feats.size(0), -1)  # Flatten the output of the backbone: (batch_size, features)
+        logits = self.head(feats)
+        if mode == "tensor":
+            return logits
+        if mode == "loss":
+            return self.loss(logits, labels)
         return self.softmax(logits)
+
+        # if self.training:
+        #     return self.loss(logits, labels)
+
+        # return self.softmax(logits)
 
 
 class OTXTVModel(OTXMulticlassClsModel):
@@ -145,19 +162,38 @@ class OTXTVModel(OTXMulticlassClsModel):
         return {
             "images": images,
             "labels": torch.cat(inputs.labels, dim=0),
+            "mode": "loss" if self.training else "predict",
         }
 
     def _customize_outputs(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
+    ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
         # To list, batch-wise
-        scores = torch.unbind(outputs, 0)
-        preds = outputs.argmax(-1).unbind(0)
+        logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
+        scores = torch.unbind(logits, 0)
+        preds = logits.argmax(-1, keepdim=True).unbind(0)
+
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+
+            return MulticlassClsBatchPredEntityWithXAI(
+                batch_size=len(preds),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=scores,
+                labels=preds,
+                saliency_maps=list(saliency_maps),
+                feature_vectors=[],
+            )
 
         return MulticlassClsBatchPredEntity(
             batch_size=inputs.batch_size,
@@ -172,7 +208,49 @@ class OTXTVModel(OTXMulticlassClsModel):
         """Defines parameters required to export a particular model implementation."""
         export_params: dict[str, Any] = {}
         export_params["input_size"] = (1, 3, 224, 224)
+        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
+        export_params["resize_mode"] = "standard"
+        export_params["pad_value"] = 0
+        export_params["swap_rgb"] = False
+        export_params["via_onnx"] = False
+        export_params["onnx_export_configuration"] = None
+        export_params["mean"] = [0.485, 0.456, 0.406]
+        export_params["std"] = [0.229, 0.224, 0.225]
 
         parameters = super()._export_parameters
         parameters.update(export_params)
         return parameters
+
+    @staticmethod
+    def _forward_explain_image_classifier(
+        self: TVModelWithLossComputation,
+        images: torch.Tensor,
+        labels: torch.Tensor | None = None,  # noqa: ARG004
+        mode: str = "tensor",
+    ) -> dict:
+        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
+        x = self.backbone(images)
+        backbone_feat = x
+
+        saliency_map = self.explain_fn(backbone_feat)
+
+        if len(x.shape) == 4:
+            x = x.view(x.size(0), -1)
+        logits = self.head(x)
+        if mode == "predict":
+            logits = self.softmax(logits)
+
+        return {
+            "logits": logits,
+            "saliency_map": saliency_map,
+        }
+
+    @torch.no_grad()
+    def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs model's neck and head forward. Can be redefined at the model's level."""
+        if (head := getattr(self.model, "head", None)) is None:
+            raise ValueError
+
+        if len(x.shape) == 4:
+            x = x.view(x.size(0), -1)
+        return head(x)
