@@ -327,6 +327,7 @@ def test_otx_explain_e2e(
 
     sal_diff_thresh = 3
     reference_sal_vals = {
+        # Classification
         "multi_label_cls_efficientnet_v2_light": (
             np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
             "Slide6_class_0_saliency_map.png",
@@ -335,10 +336,33 @@ def test_otx_explain_e2e(
             np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
             "5_class_0_saliency_map.png",
         ),
+        # Detection
+        "detection_yolox_tiny": (
+            np.array([111, 163, 141, 141, 146, 147, 158, 169, 184, 193], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        "detection_ssd_mobilenetv2": (
+            np.array([135, 80, 74, 34, 27, 32, 47, 42, 32, 34], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        "detection_atss_mobilenetv2": (
+            np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        # Instance Segmentation
+        "instance_segmentation_maskrcnn_efficientnetb2b": (
+            np.array([54, 54, 54, 54, 0, 0, 0, 54, 0, 0], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))[:, 0, 0]
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
+        if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
+            # Take corner values due to map sparsity of InstSeg
+            actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
+        else:
+            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
