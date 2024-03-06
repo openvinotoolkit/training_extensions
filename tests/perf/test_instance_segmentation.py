@@ -32,7 +32,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=3,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -48,7 +48,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=3,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -62,7 +62,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -140,7 +140,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=3,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -156,7 +156,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_repeat=3,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
