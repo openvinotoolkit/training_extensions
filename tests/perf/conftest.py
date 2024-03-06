@@ -169,21 +169,25 @@ def fxt_data_root(request: pytest.FixtureRequest) -> Path:
 
 
 @pytest.fixture(scope="session")
-def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> Path:
+def fxt_current_date() -> str:
+    tz = timezone(offset=timedelta(hours=9), name="Seoul")
+    return datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
+
+
+@pytest.fixture(scope="session")
+def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory, fxt_current_date: str) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    tz = timezone(offset=timedelta(hours=9), name="Seoul")
-    date_str = datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
-    output_root = Path(output_root) / date_str
+    output_root = Path(output_root) / fxt_current_date
     msg = f"{output_root = }"
     log.info(msg)
     return output_root
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags() -> dict[str, str]:
+def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     """Version / branch / commit info."""
     import otx
 
@@ -200,6 +204,7 @@ def fxt_version_tags() -> dict[str, str]:
         "version": version_str,
         "branch": branch_str,
         "commit": commit_str,
+        "date": fxt_current_date,
     }
     msg = f"{version_tags = }"
     log.info(msg)
