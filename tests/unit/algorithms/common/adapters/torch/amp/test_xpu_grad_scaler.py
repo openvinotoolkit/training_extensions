@@ -29,7 +29,8 @@ class TestXPUGradScaler:
     def test_scale(self, grad_scaler):
         outputs = torch.tensor([1.0, 2.0, 3.0], device="xpu:0")
         scaled_outputs = grad_scaler.scale(outputs)
-        assert torch.all(scaled_outputs == outputs)
+        assert scaled_outputs.device.type == "xpu"
+        assert scaled_outputs == outputs * grad_scaler._scale
 
     def test_unscale_grads(self, grad_scaler, optimizer):
         inv_scale = 1.0
