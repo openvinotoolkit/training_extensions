@@ -59,10 +59,15 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
         help="Set Logger level to INFO",
         action="store_true",
     )
+    parser.add_argument(
+        "--do-not-install-torch",
+        help="Do not install PyTorch. Choose this option if you already install PyTorch.",
+        action="store_true",
+    )
     subcommands_action.add_subcommand("install", parser, help="Install OTX requirements.")
 
 
-def otx_install(option: str | None = None, verbose: bool = False) -> int:
+def otx_install(option: str | None = None, verbose: bool = False, do_not_install_torch: bool = False) -> int:
     """Install OTX requirements.
 
     Args:
@@ -92,12 +97,15 @@ def otx_install(option: str | None = None, verbose: bool = False) -> int:
     # This is done to parse the correct version of torch (cpu/cuda) and mmcv (mmcv/mmcv-full).
     torch_requirement, mmcv_requirements, other_requirements = parse_requirements(requirements)
 
-    # Get install args for torch to install it from a specific index-url
     install_args: list[str] = []
-    torch_install_args = get_torch_install_args(torch_requirement)
 
     # Combine torch and other requirements.
-    install_args = other_requirements + torch_install_args
+    install_args = (
+        # Get install args for torch to install it from a specific index-url
+        other_requirements + get_torch_install_args(torch_requirement)
+        if not do_not_install_torch
+        else other_requirements
+    )
 
     # Parse mmX requirements if the task requires mmX packages.
     mmcv_install_args = []
