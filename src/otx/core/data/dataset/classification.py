@@ -127,6 +127,14 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         if self.label_info.hlabel_data.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
+    
+    def _find_parent_recursively(self, label_anns: Label):
+        def _label_idx_to_name(self, idx: int) -> str:
+            return self.label_info.label_names[idx]
+        
+        for ann in label_anns:
+            label_idx = ann.label
+            label_name = _label_idx_to_name(label_idx)
 
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -135,6 +143,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
+        breakpoint()
         hlabel_labels = self._convert_label_to_hlabel_format(label_anns, ignored_labels)
 
         entity = HlabelClsDataEntity(
