@@ -200,7 +200,7 @@ class Benchmark:
                     # NOTE: auto config should be implemented
                     "--config",
                     f"src/otx/recipe/{model.task}/openvino_model.yaml",
-                    "--model.model_name",  # To be fixed to "--checkpoint" after #3028 merged
+                    "--checkpoint",
                     str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
                     "--work_dir",
                     str(sub_work_dir),
