@@ -18,6 +18,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
+from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -35,8 +36,6 @@ from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import InstanceSegTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
-
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
@@ -192,7 +191,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        
         explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
         return explainer.func
 
