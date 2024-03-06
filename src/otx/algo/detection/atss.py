@@ -20,6 +20,7 @@ class ATSS(MMDetCompatibleModel):
         config = read_mmconfig(model_name=model_name)
         super().__init__(num_classes=num_classes, config=config)
         self.image_size = (1, 3, 736, 992)
+        self.tile_image_size = self.image_size
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -44,6 +45,7 @@ class ATSSR50FPN(ATSS):
     def __init__(self, num_classes: int) -> None:
         super().__init__(num_classes=num_classes, variant="r50_fpn")
         self.image_size = (1, 3, 800, 1333)
+        self.tile_image_size = self.image_size
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

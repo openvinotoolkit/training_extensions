@@ -1,0 +1,37 @@
+model:
+  class_path: otx.core.model.entity.visual_prompting.OVVisualPromptingModel
+  init_args:
+    num_classes: 0
+    model_name: segment_anything
+    model_type: Visual_Prompting
+    async_inference: False
+    use_throughput_mode: True
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    lr: 0.00001
+
+scheduler:
+  class_path: torch.optim.lr_scheduler.ConstantLR
+  init_args:
+    factor: 1
+    total_iters: -1
+
+engine:
+  task: VISUAL_PROMPTING
+  device: cpu
+
+callback_monitor: val/Dice
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: VISUAL_PROMPTING
+    config:
+      data_format: coco_instances
+      vpm_config:
+        use_bbox: True
+        use_point: False
+      test_subset:
+        batch_size: 1
