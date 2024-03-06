@@ -497,6 +497,7 @@ class Engine:
 
     def optimize(
         self,
+        checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
     ) -> Path:
@@ -506,6 +507,7 @@ class Engine:
         comes in mixed precision (some operations, however, remain in FP32).
 
         Args:
+            checkpoint (str | Path | None, optional): Checkpoint to optimize. Defaults to None.
             datamodule (TRAIN_DATALOADERS | OTXDataModule | None, optional): The data module to use for optimization.
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
             used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
@@ -516,6 +518,7 @@ class Engine:
 
         Example:
             >>> engine.optimize(
+            ...     checkpoint=<checkpoint/path>,
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
@@ -523,17 +526,34 @@ class Engine:
             To optimize a model, run
                 ```python
                 otx optimize
+                    --checkpoint <CKPT_PATH, str>
                     --model <CONFIG | CLASS_PATH_OR_NAME> --data_root <DATASET_PATH, str>
                     --model.model_name=<PATH_TO_IR_XML, str>
                 ```
         """
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+        optimize_datamodule = datamodule if datamodule is not None else self.datamodule
+
+        is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
+        if not is_ir_ckpt:
+            msg = "Engine.optimize() supports only OV IR or ONNX checkpoints"
+            raise RuntimeError(msg)
+
+        model = self.model
+        if not isinstance(model, OVModel):
+            datamodule = self._auto_configurator.get_ov_datamodule()
+            model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=optimize_datamodule.label_info,
+            )
+
         ptq_config = {}
         if max_data_subset_size is not None:
             ptq_config["subset_size"] = max_data_subset_size
 
-        return self.model.optimize(
+        return model.optimize(
             Path(self.work_dir),
-            datamodule if datamodule is not None else self.datamodule,
+            optimize_datamodule,
             ptq_config,
         )
 

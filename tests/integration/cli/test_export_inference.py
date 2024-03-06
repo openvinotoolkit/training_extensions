@@ -225,7 +225,7 @@ def test_otx_export_infer(
         "--engine.device",
         "cpu",
         *fxt_cli_override_command_per_task[task],
-        "--model.model_name",
+        "--checkpoint",
         exported_model_path,
     ]
 
