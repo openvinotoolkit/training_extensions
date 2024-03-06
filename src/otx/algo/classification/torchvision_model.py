@@ -99,7 +99,6 @@ class TVModelWithLossComputation(nn.Module):
         Returns:
             torch.Tensor: The output logits or loss, depending on the training mode.
         """
-        # logits = self.net(images)
         feats = self.backbone(images)
         if len(feats.shape) == 4:  # If feats is a 4D tensor: (batch_size, channels, height, width)
             feats = feats.view(feats.size(0), -1)  # Flatten the output of the backbone: (batch_size, features)
@@ -109,11 +108,6 @@ class TVModelWithLossComputation(nn.Module):
         if mode == "loss":
             return self.loss(logits, labels)
         return self.softmax(logits)
-
-        # if self.training:
-        #     return self.loss(logits, labels)
-
-        # return self.softmax(logits)
 
 
 class OTXTVModel(OTXMulticlassClsModel):
