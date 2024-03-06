@@ -2,9 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
+import numpy as np
+
+from datumaro import Label
+from datumaro.components.dataset import Dataset, DatasetSubset, DatasetItem 
+from datumaro.components.media import Image
+
 from otx.core.config import register_configs
 from otx.core.data.dataset.base import LabelInfo
-from otx.core.data.entity.classification import HLabelData
+from otx.core.data.dataset.classification import HLabelInfo
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -36,10 +42,43 @@ def fxt_multilabel_labelinfo() -> LabelInfo:
         ],
     )
 
+@pytest.fixture()
+def fxt_hlabel_dataset_subset() -> Dataset:
+    return Dataset.from_iterable(
+        [
+            DatasetItem(
+                id=0,
+                subset='train',
+                media=Image.from_numpy(np.zeros((3, 10, 10))),
+                annotations=[
+                    Label(
+                        label=0,
+                        id=0,
+                        group=0,
+                    ),
+                ]
+            ),
+            DatasetItem(
+                id=1,
+                subset='train',
+                media=Image.from_numpy(np.zeros((3, 10, 10))),
+                annotations=[
+                    Label(
+                        label=1,
+                        id=1,
+                        group=0,
+                    ),
+                ]
+            )
+        ]
+    ).get_subset("train")
+
 
 @pytest.fixture()
-def fxt_hlabel_multilabel_info() -> HLabelData:
-    return HLabelData(
+def fxt_hlabel_multilabel_info() -> HLabelInfo:
+    return HLabelInfo(
+        label_names=["0", "1", "2", "3", "4", "5", "6", "7", "8"],
+        label_groups=[["0", "1"], ["2", "3"], ["4", "5"], ["6"], ["7"], ["8"]],
         num_multiclass_heads=3,
         num_multilabel_classes=3,
         head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
