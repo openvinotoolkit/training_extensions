@@ -25,18 +25,10 @@ class RTMDetInst(MMDetInstanceSegCompatibleModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Parameters for an exporter."""
         export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.algo.instance_segmentation.rtmdet_inst.RTMDetInst"
+        export_params["deploy_cfg"] = "otx.algo.instance_segmentation.mmdeploy.rtmdet_inst"
         export_params["input_size"] = self.image_size
         export_params["resize_mode"] = "fit_to_window_letterbox"
         export_params["pad_value"] = 114
         export_params["swap_rgb"] = False
-
-        # TODO: Add more export parameters if necessary
-        # codebase_config = dict(
-        #     post_processing=dict(
-        #         max_output_boxes_per_class=100,
-        #         pre_top_k=300,
-        #     )
-        # )
 
         return export_params

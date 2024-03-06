@@ -5,16 +5,15 @@ model:
     variant: tiny
 
 optimizer:
-  class_path: torch.optim.SGD
+  class_path: torch.optim.AdamW
   init_args:
-    lr: 0.001
-    momentum: 0.9
-    weight_decay: 0.0001
+    lr: 0.004
+    weight_decay: 0.05
 
 scheduler:
   - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
     init_args:
-      num_warmup_steps: 3
+      num_warmup_steps: 20
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
@@ -37,6 +36,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
+  precision: 32 # 16/"16-true" does not work
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
@@ -44,8 +44,8 @@ overrides:
     config:
       include_polygons: true
       train_subset:
+        batch_size: 4
         num_workers: 10
-        batch_size: 8
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -97,7 +97,7 @@ overrides:
               - 1
           - type: PackDetInputs
       val_subset:
-        batch_size: 4
+        batch_size: 2
         num_workers: 10
         transforms:
           - type: LoadImageFromFile
@@ -121,7 +121,7 @@ overrides:
               - img_shape
               - scale_factor
       test_subset:
-        batch_size: 4
+        batch_size: 2
         num_workers: 10
         transforms:
           - type: LoadImageFromFile
