@@ -21,7 +21,9 @@ def _check_relative_metric_diff(ref: float, value: float, eps: float) -> None:
     avg = max(0.5 * (ref + value), 1e-9)
     diff = abs(value - ref)
 
-    assert diff / avg <= eps, f"Relative difference exceeded {eps} threshold. Absolute difference: {diff}"
+    assert diff / avg <= eps and value < ref, (
+        f"Relative difference exceeded {eps} threshold. Absolute difference: {diff}"
+    )
 
 
 @pytest.fixture(scope="module", autouse=True)
