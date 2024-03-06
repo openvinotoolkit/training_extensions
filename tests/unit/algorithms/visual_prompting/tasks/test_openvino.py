@@ -348,6 +348,61 @@ class TestOpenVINOZeroShotVisualPromptingInferencer:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
+        "result_point_selection",
+        [np.array([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]), np.array([[-1, -1, -1]])],
+    )
+    def test_get_prompt_candidates(self, mocker, result_point_selection: np.ndarray) -> None:
+        """Test _get_prompt_candidates."""
+        mocker.patch.object(
+            OpenVINOZeroShotVisualPromptingInferencer,
+            "_point_selection",
+            return_value=(result_point_selection, np.zeros((1, 2))),
+        )
+        image_embeddings = np.ones((1, 4, 4, 4))
+        reference_feats = np.random.rand(1, 1, 4)
+        used_indices = np.array([0])
+        original_shape = np.array([4, 4], dtype=np.int64)
+
+        total_points_scores, total_bg_coords = self.zero_shot_visual_prompting_ov_inferencer._get_prompt_candidates(
+            image_embeddings=image_embeddings,
+            reference_feats=reference_feats,
+            used_indices=used_indices,
+            original_shape=original_shape,
+            image_size=4,
+            downsizing=1,
+        )
+
+        assert total_points_scores[0].shape[0] == len(result_point_selection)
+        assert total_bg_coords[0].shape[0] == 1
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "mask_sim,expected",
+        [
+            (
+                np.arange(0.1, 1.0, 0.1).reshape(3, 3),
+                np.array([[2, 2, 0.9], [1, 2, 0.8], [0, 2, 0.7], [2, 1, 0.6]]),
+            ),
+            (np.zeros((3, 3)), None),
+        ],
+    )
+    def test_point_selection(self, mask_sim: np.ndarray, expected: np.ndarray) -> None:
+        """Test _point_selection."""
+        points_scores, bg_coords = self.zero_shot_visual_prompting_ov_inferencer._point_selection(
+            mask_sim=mask_sim,
+            original_shape=np.array([4, 4]),
+            threshold=0.5,
+            image_size=4,
+            downsizing=1,
+        )
+
+        if points_scores is not None:
+            assert np.allclose(points_scores, expected)
+        else:
+            assert points_scores == expected
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
         "masks,expected_masks",
         [
             (
