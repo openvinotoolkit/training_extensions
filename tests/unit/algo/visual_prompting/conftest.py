@@ -32,7 +32,7 @@ def fxt_vpm_data_entity() -> (
     )
     fake_points = Points([[2, 2]], canvas_size=img_size, dtype=torch.float32)
     fake_masks = tv_tensors.Mask(torch.rand(img_size))
-    fake_labels = torch.as_tensor([1], dtype=torch.int64)
+    fake_labels = {"bboxes": torch.as_tensor([1], dtype=torch.int64)}
     fake_polygons = [None]
     # define data entity
     single_data_entity = VisualPromptingDataEntity(

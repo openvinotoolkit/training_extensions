@@ -28,7 +28,7 @@ class TestInstall:
         assert parser_subcommands.choices.get("install") is not None
         install_parser = parser_subcommands.choices.get("install")
         argument_list = [action.dest for action in install_parser._actions]
-        expected_argument = ["help", "option", "verbose"]
+        expected_argument = ["help", "option", "verbose", "do_not_install_torch"]
         assert argument_list == expected_argument
 
     def test_install_extra(self, mocker: MockerFixture) -> None:
