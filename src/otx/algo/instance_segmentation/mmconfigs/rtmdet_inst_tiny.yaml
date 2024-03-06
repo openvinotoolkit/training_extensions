@@ -33,9 +33,9 @@ backbone:
 neck:
   type: CSPNeXtPAFPN
   in_channels:
-  - 96
-  - 192
-  - 384
+    - 96
+    - 192
+    - 384
   out_channels: 96
   num_csp_blocks: 1
   expand_ratio: 0.5
@@ -62,9 +62,9 @@ bbox_head:
     type: MlvlPointGenerator
     offset: 0
     strides:
-    - 8
-    - 16
-    - 32
+      - 8
+      - 16
+      - 32
   bbox_coder:
     type: DistancePointBBoxCoder
   loss_cls:
