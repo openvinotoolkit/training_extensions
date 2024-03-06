@@ -21,8 +21,6 @@ from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
-    T_OTXBatchDataEntity,
-    T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
@@ -115,22 +113,22 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def forward_explain(
         self,
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
-        if self._customize_inputs != ExplainableOTXDetModel._customize_inputs:
-            customized_inputs = self._customize_inputs(inputs)
-        else:
-            customized_inputs = {inputs}
-        outputs = self._forward_explain_detection(self.model, **customized_inputs)
+        outputs = (
+            self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
+            else self._forward_explain_detection(self.model, inputs)
+        )
 
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
-            else outputs
+            else outputs["predictions"]
         )
 
     @staticmethod
@@ -139,7 +137,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: torch.Tensor,
         data_samples: OptSampleList = None,
         mode: str = "tensor",
-    ) -> dict:
+    ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
         # Workaround to remove grads for model parameters, since after class patching
         # convolutions are failing since thay can't process gradients
@@ -164,7 +162,8 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         elif mode == "tensor":
             predictions = bbox_head_feat
         else:
-            raise RuntimeError(f'Invalid mode "{mode}".')
+            msg = f'Invalid mode "{mode}".'
+            raise RuntimeError(msg)
 
         # Return dummy feature vector
         feature_vector = torch.empty(1, dtype=torch.uint8)
@@ -314,7 +313,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: dict[str, Any],
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
@@ -485,7 +484,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             scores.append(torch.tensor([output.score for output in output_objects]))
             labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
 
-        if outputs and outputs[0].saliency_map.size != 1:
+        if outputs and outputs[0].saliency_map.size > 1:
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
             predicted_s_maps = [out.saliency_map[0] for out in outputs]
 

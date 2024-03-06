@@ -22,8 +22,6 @@ from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
-    T_OTXBatchDataEntity,
-    T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.instance_segmentation import (
     InstanceSegBatchDataEntity,
@@ -39,7 +37,8 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.structures import SampleList
+    from mmdet.models.detectors.base import TwoStageDetector
+    from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import nn
@@ -137,26 +136,31 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def forward_explain(
         self,
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
+        inputs: InstanceSegBatchDataEntity,
+    ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
-        if self._customize_inputs != ExplainableOTXInstanceSegModel._customize_inputs:
-            customized_inputs = self._customize_inputs(inputs)
-        else:
-            customized_inputs = {inputs}
-        outputs = self._forward_explain_inst_seg(self.model, **customized_inputs)
+        outputs = (
+            self._forward_explain_inst_seg(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != ExplainableOTXInstanceSegModel._customize_inputs
+            else self._forward_explain_inst_seg(self.model, inputs)
+        )
 
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXInstanceSegModel._customize_outputs
-            else outputs
+            else outputs["predictions"]
         )
 
     @staticmethod
-    def _forward_explain_inst_seg(self, inputs: torch.Tensor, data_samples: SampleList, mode: str) -> dict:
+    def _forward_explain_inst_seg(
+        self: TwoStageDetector,
+        inputs: torch.Tensor,
+        data_samples: OptSampleList = None,
+        mode: str = "tensor",  # noqa: ARG004
+    ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model."""
         # Workaround to remove grads for model parameters, since after class patching
         # convolutions are failing since thay can't process gradients
@@ -325,7 +329,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: dict[str, Any],
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
@@ -367,29 +371,16 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             masks.append(output_masks)
             labels.append(output.pred_instances.labels)
 
-            if self.explain_mode:
-                if not isinstance(outputs, dict) or "saliency_map" not in outputs:
-                    msg = "No saliency maps in the model output."
-                    raise ValueError(msg)
+        if self.explain_mode:
+            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
 
-                saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
-                feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
 
-                return InstanceSegBatchPredEntityWithXAI(
-                    batch_size=len(outputs),
-                    images=inputs.images,
-                    imgs_info=inputs.imgs_info,
-                    scores=scores,
-                    bboxes=bboxes,
-                    masks=masks,
-                    polygons=[],
-                    labels=labels,
-                    saliency_maps=list(saliency_maps),
-                    feature_vectors=list(feature_vectors),
-                )
-
-            return InstanceSegBatchPredEntity(
-                batch_size=len(outputs),
+            return InstanceSegBatchPredEntityWithXAI(
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
@@ -397,7 +388,20 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 masks=masks,
                 polygons=[],
                 labels=labels,
+                saliency_maps=list(saliency_maps),
+                feature_vectors=list(feature_vectors),
             )
+
+        return InstanceSegBatchPredEntity(
+            batch_size=len(predictions),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            masks=masks,
+            polygons=[],
+            labels=labels,
+        )
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -503,7 +507,7 @@ class OVInstanceSegmentationModel(
         if outputs and outputs[0].saliency_map:
             predicted_s_maps = []
             for out in outputs:
-                image_map = np.array([map for map in out.saliency_map if map.ndim > 1])
+                image_map = np.array([s_map for s_map in out.saliency_map if s_map.ndim > 1])
                 predicted_s_maps.append(image_map)
             predicted_f_vectors = [out.feature_vector for out in outputs]
             return InstanceSegBatchPredEntityWithXAI(

@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING, Callable, Sequence
 import numpy as np
 import torch
 
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
-
 if TYPE_CHECKING:
+    from mmengine.structures.instance_data import InstanceData
     from torch.utils.hooks import RemovableHandle
 
 
@@ -385,13 +384,13 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
 
     def func(
         self,
-        predictions: list[InstanceSegBatchPredEntity],
+        predictions: list[InstanceData],
         _: int = -1,
     ) -> list[np.array]:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            predictions (list[InstanceSegBatchPredEntity]): Predictions of Instance Segmentation model.
+            predictions (list[InstanceData]): Predictions of Instance Segmentation model.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
@@ -406,19 +405,19 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     @classmethod
     def average_and_normalize(
         cls,
-        pred: InstanceSegBatchPredEntity,
+        pred: InstanceData,
         num_classes: int,
     ) -> np.array:
         """Average and normalize masks in prediction per-class.
 
         Args:
-            preds (InstanceSegBatchPredEntity | dict): Predictions of Instance Segmentation model.
+            preds (InstanceData): Predictions of Instance Segmentation model.
             num_classes (int): Num classes that model can predict.
 
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        masks, scores, labels = (pred.masks.data, pred.scores.data, pred.labels.data)
+        masks, scores, labels = (pred.masks, pred.scores, pred.labels)
         _, height, width = masks.shape
 
         saliency_maps = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)
