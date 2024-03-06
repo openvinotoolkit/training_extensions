@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
+from functools import partial
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
@@ -104,4 +105,4 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect SegDataEntity into SegBatchDataEntity in data loader."""
-        return SegBatchDataEntity.collate_fn
+        return partial(SegBatchDataEntity.collate_fn, stack_images=self.stack_images)

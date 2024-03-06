@@ -24,6 +24,7 @@ from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.device import DeviceType
 from otx.core.types.task import OTXTaskType
+from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
 
 if TYPE_CHECKING:
@@ -139,6 +140,7 @@ class OTXDataModule(LightningDataModule):
         """Get train dataloader."""
         config = self.config.train_subset
         dataset = self._get_dataset(config.subset_name)
+        sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
 
         common_args = {
             "dataset": dataset,
@@ -147,6 +149,8 @@ class OTXDataModule(LightningDataModule):
             "pin_memory": True,
             "collate_fn": dataset.collate_fn,
             "persistent_workers": config.num_workers > 0,
+            "sampler": sampler,
+            "shuffle": sampler is None,
         }
 
         tile_config = self.config.tile_config
@@ -159,8 +163,6 @@ class OTXDataModule(LightningDataModule):
                     "sampler": RandomSampler(dataset, num_samples=num_samples),
                 },
             )
-        else:
-            common_args["shuffle"] = True
         return DataLoader(**common_args)
 
     def val_dataloader(self) -> DataLoader:

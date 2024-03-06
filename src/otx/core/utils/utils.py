@@ -5,12 +5,15 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from multiprocessing import cpu_count
 from typing import TYPE_CHECKING, Any
 
 import torch
+from datumaro.components.annotation import AnnotationType, LabelCategories
 
 if TYPE_CHECKING:
+    from datumaro import Dataset as DmDataset
     from omegaconf import DictConfig
 
 
@@ -59,3 +62,16 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:
     if num_gpus == 0:
         return None
     return min(cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
+
+
+def get_idx_list_per_classes(dm_dataset: DmDataset, use_string_label: bool = False) -> dict[int | str, list[int]]:
+    """Compute class statistics."""
+    stats: dict[int | str, list[int]] = defaultdict(list)
+    labels = dm_dataset.categories().get(AnnotationType.label, LabelCategories())
+    for item_idx, item in enumerate(dm_dataset):
+        for ann in item.annotations:
+            if use_string_label:
+                stats[labels.items[ann.label].name].append(item_idx)
+            else:
+                stats[ann.label].append(item_idx)
+    return stats

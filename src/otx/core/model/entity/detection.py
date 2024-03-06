@@ -6,10 +6,12 @@
 from __future__ import annotations
 
 import copy
+import json
 import logging as log
 from typing import TYPE_CHECKING, Any
 
 import torch
+from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
@@ -39,6 +41,7 @@ class OTXDetectionModel(
     def __init__(self, *arg, **kwargs) -> None:
         super().__init__(*arg, **kwargs)
         self.tile_config = TileConfig()
+        self.test_meta_info: dict[str, Any] = {}
 
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | DetBatchPredEntityWithXAI:
         """Unpack detection tiles.
@@ -84,6 +87,7 @@ class OTXDetectionModel(
                 ("model_info", "task_type"): "detection",
                 ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
                 ("model_info", "iou_threshold"): str(0.5),
+                ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
         if self.tile_config.enable_tiler:
@@ -330,6 +334,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
     ) -> None:
+        self.test_meta_info: dict[str, Any] = {}
         super().__init__(
             num_classes,
             model_name,
@@ -350,6 +355,27 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             f"Enable tiler with tile size: {self.model.tile_size} \
                 and overlap: {self.model.tiles_overlap}",
         )
+
+    def _create_model(self) -> Model:
+        """Create a OV model with help of Model API."""
+        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+
+        plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
+        if self.use_throughput_mode:
+            plugin_config["PERFORMANCE_HINT"] = "THROUGHPUT"
+
+        model_adapter = OpenvinoAdapter(
+            create_core(),
+            self.model_name,
+            max_num_requests=self.num_requests,
+            plugin_config=plugin_config,
+            model_parameters=self.model_adapter_parameters,
+        )
+        for name, info in model_adapter.model.rt_info["model_info"].items():
+            if name == "test_meta_info":
+                for key, value in json.loads(info.value).items():
+                    self.test_meta_info[key] = value
+        return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
         self,

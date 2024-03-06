@@ -1,0 +1,96 @@
+name: Perf-Accuracy Benchmark
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+    inputs:
+      model-category:
+        type: choice
+        description: Model category to run benchmark
+        options:
+          - default # speed, balance, accuracy models only
+          - all # default + other models
+        default: default
+      data-size:
+        type: choice
+        description: Dataset size to run benchmark
+        options:
+          - small
+          - medium
+          - large
+          - all
+        default: all
+      num-repeat:
+        description: Overrides default per-data-size number of repeat setting
+        default: 0
+      num-epoch:
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: choice
+        description: The last operation to evaluate. 'optimize' means all.
+        options:
+          - train
+          - export
+          - optimize
+        default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      data-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: "/home/validation/data/v2/"
+
+jobs:
+  Perf-Accuracy-Benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task-short: "ano"
+            task: "anomaly"
+          - task-short: "cls"
+            task: "classification"
+          - task-short: "det"
+            task: "detection"
+          - task-short: "isg"
+            task: "instance_segmentation"
+          - task-short: "ssg"
+            task: "semantic_segmentation"
+          - task-short: "vsp"
+            task: "visual_prompting"
+    name: Perf-Accuracy-Benchmark-${{ matrix.task-short }}
+    runs-on: [self-hosted, linux, x64, dmount]
+    timeout-minutes: 8640
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install tox
+        run: python -m pip install tox
+      - name: Run Performance Test
+        run: >
+          tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
+          --benchmark-type accuracy
+          --model-category ${{ inputs.model-category }}
+          --data-root ${{ inputs.data-root }}
+          --data-size ${{ inputs.data-size }}
+          --num-repeat ${{ inputs.num-repeat }}
+          --num-epoch ${{ inputs.num-epoch }}
+          --eval-upto ${{ inputs.eval-upto }}
+          --summary-csv .tox/perf-accuracy-benchmark-${{ matrix.task-short }}.csv
+          --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          --user-name ${{ github.triggering_actor }}
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: perf-accuracy-benchmark-${{ matrix.task-short }}
+          path: .tox/perf-*.csv
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}

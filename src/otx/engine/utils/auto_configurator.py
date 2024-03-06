@@ -6,13 +6,14 @@
 from __future__ import annotations
 
 import logging
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
 
-from otx.core.config.data import DataModuleConfig, SubsetConfig, TileConfig
+from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OVModel
@@ -34,6 +35,7 @@ RECIPE_PATH = get_otx_root_path() / "recipe"
 DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: RECIPE_PATH / "classification" / "multi_class_cls" / "otx_efficientnet_b0.yaml",
     OTXTaskType.MULTI_LABEL_CLS: RECIPE_PATH / "classification" / "multi_label_cls" / "efficientnet_b0_light.yaml",
+    OTXTaskType.H_LABEL_CLS: RECIPE_PATH / "classification" / "h_label_cls" / "efficientnet_b0_light.yaml",
     OTXTaskType.DETECTION: RECIPE_PATH / "detection" / "atss_mobilenetv2.yaml",
     OTXTaskType.ROTATED_DETECTION: RECIPE_PATH / "rotated_detection" / "maskrcnn_r50.yaml",
     OTXTaskType.SEMANTIC_SEGMENTATION: RECIPE_PATH / "semantic_segmentation" / "litehrnet_18.yaml",
@@ -48,7 +50,7 @@ DEFAULT_CONFIG_PER_TASK = {
 }
 
 TASK_PER_DATA_FORMAT = {
-    "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS],
+    "imagenet_with_subset_dirs": [OTXTaskType.MULTI_CLASS_CLS, OTXTaskType.H_LABEL_CLS],
     "datumaro": [OTXTaskType.MULTI_LABEL_CLS],
     "coco_instances": [
         OTXTaskType.DETECTION,
@@ -209,13 +211,16 @@ class AutoConfigurator:
         if self.data_root is None:
             return None
         self.config["data"]["config"]["data_root"] = self.data_root
-        data_config = self.config["data"]["config"].copy()
+        data_config = deepcopy(self.config["data"]["config"])
+        train_config = data_config.pop("train_subset")
+        val_config = data_config.pop("val_subset")
+        test_config = data_config.pop("test_subset")
         return OTXDataModule(
             task=self.config["data"]["task"],
             config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
+                train_subset=SubsetConfig(sampler=SamplerConfig(**train_config.pop("sampler", {})), **train_config),
+                val_subset=SubsetConfig(sampler=SamplerConfig(**val_config.pop("sampler", {})), **val_config),
+                test_subset=SubsetConfig(sampler=SamplerConfig(**test_config.pop("sampler", {})), **test_config),
                 tile_config=TileConfig(**data_config.pop("tile_config", {})),
                 **data_config,
             ),

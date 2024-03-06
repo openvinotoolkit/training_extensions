@@ -12,7 +12,7 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import numpy as np

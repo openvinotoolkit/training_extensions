@@ -76,6 +76,7 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
     def collate_fn(
         cls,
         entities: list[VisualPromptingDataEntity],
+        stack_images: bool = True,
     ) -> VisualPromptingBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
 
@@ -85,7 +86,7 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
         Returns:
             VisualPromptingBatchDataEntity: The collated batch data entity.
         """
-        batch_data = super().collate_fn(entities)
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return VisualPromptingBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
@@ -166,6 +167,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
     def collate_fn(
         cls,
         entities: list[ZeroShotVisualPromptingDataEntity],
+        stack_images: bool = True,
     ) -> ZeroShotVisualPromptingBatchDataEntity:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
 
@@ -175,7 +177,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
         Returns:
             ZeroShotVisualPromptingBatchDataEntity: The collated batch data entity.
         """
-        batch_data = super().collate_fn(entities)
+        batch_data = super().collate_fn(entities, stack_images=stack_images)
         return ZeroShotVisualPromptingBatchDataEntity(
             batch_size=batch_data.batch_size,
             images=batch_data.images,
