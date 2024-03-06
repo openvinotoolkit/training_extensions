@@ -66,6 +66,5 @@ class TestTrainDetector:
         # Create mock inputs
         _ = mock_modules
         mmcv_cfg.device = "xpu"
-
         # Call the function
         train_detector(model, dataset, mmcv_cfg)

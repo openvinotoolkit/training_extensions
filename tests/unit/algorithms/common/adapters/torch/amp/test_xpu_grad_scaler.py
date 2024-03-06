@@ -27,7 +27,7 @@ class TestXPUGradScaler:
         assert grad_scaler._growth_interval == 2000
 
     def test_scale(self, grad_scaler):
-        outputs = torch.tensor([1.0, 2.0, 3.0])
+        outputs = torch.tensor([1.0, 2.0, 3.0], device="xpu:0")
         scaled_outputs = grad_scaler.scale(outputs)
         assert torch.all(scaled_outputs == outputs)
 
@@ -35,4 +35,5 @@ class TestXPUGradScaler:
         inv_scale = 1.0
         found_inf = False
         output = grad_scaler._unscale_grads_(optimizer, inv_scale, found_inf, allow_bf16=False)
-        print(output)
+        assert isinstance(output, dict)
+        assert not output
