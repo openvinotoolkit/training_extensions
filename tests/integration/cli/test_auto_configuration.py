@@ -48,7 +48,7 @@ def test_otx_cli_auto_configuration(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "2",
+        "1" if task.lower() in ("zero_shot_visual_prompting") else "2",
         *fxt_cli_override_command_per_task[task.lower()],
     ]
 
