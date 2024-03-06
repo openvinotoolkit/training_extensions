@@ -32,6 +32,11 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 
+if TYPE_CHECKING:
+    from openvino.model_api.models import Model
+
+    from otx.core.data.module import OTXDataModule
+
 
 class OTXVisualPromptingModel(
     OTXModel[
@@ -62,7 +67,15 @@ class OTXVisualPromptingModel(
             },
         )
         export_params["input_size"] = (1, 3, self.model.image_size, self.model.image_size)
+        export_params["resize_mode"] = "fit_to_window"
+        export_params["mean"] = (123.675, 116.28, 103.53)
+        export_params["std"] = (58.395, 57.12, 57.375)
         return export_params
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for visual prompting models."""
+        return {"model_type": "transformer"}
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
@@ -848,9 +861,9 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     # refine the slightly overlapping region
                     overlapped_coords = np.where(np.logical_and(mask, other_mask))
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
-                        other_mask[overlapped_coords] = 0.
+                        other_mask[overlapped_coords] = 0.0
                     else:
-                        mask[overlapped_coords] = 0. 
+                        mask[overlapped_coords] = 0.0
 
             for im in sorted(set(overlapped_label), reverse=True):
                 masks.pop(im)
