@@ -7,8 +7,8 @@ import pytest
 import torch
 from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
-from otx.core.data.entity.base import ImageInfo
 from otx.core.data.dataset.classification import HLabelInfo, MulticlassClsBatchDataEntity
+from otx.core.data.entity.base import ImageInfo
 from torchvision import tv_tensors
 
 
@@ -136,7 +136,6 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
             ["Spade_King", "Spade"],
         ],
     )
-
 
 
 @pytest.fixture()
