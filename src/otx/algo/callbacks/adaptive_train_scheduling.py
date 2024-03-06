@@ -112,19 +112,23 @@ class AdaptiveTrainScheduling(Callback):
             if hasattr(config, "frequency") and hasattr(config, "interval") and config.interval == "epoch":
                 saved_frequency = config.frequency
                 config.frequency = adaptive_interval
+                msg = (
+                    "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
+                    f"Frequency: {saved_frequency} --> {adaptive_interval}, "
+                )
+                log.warning(msg)
+                self._revert_lr_frequency += [partial(_revert_frequency, config, saved_frequency)]
 
+            if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
                 saved_patience = config.scheduler.patience
                 adjusted_patience = int(config.scheduler.patience / adaptive_interval)
                 config.scheduler.patience = adjusted_patience
 
                 msg = (
                     "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
-                    f"Frequency: {saved_frequency} --> {adaptive_interval}, "
                     f"Patience: {saved_patience} --> {adjusted_patience}."
                 )
                 log.warning(msg)
-
-                self._revert_lr_frequency += [partial(_revert_frequency, config, saved_frequency)]
                 self._revert_lr_patience += [partial(_revert_patience, config, saved_patience)]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
