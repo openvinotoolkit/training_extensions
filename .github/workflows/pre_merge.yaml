@@ -58,7 +58,26 @@ jobs:
       - name: Install tox
         run: python -m pip install tox
       - name: Run unit test
-        run: tox -vv -e unit-test
+        run: tox -vv -e unit-test-${{ matrix.tox-env }}
+      - name: Upload coverage reports to Codecov
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage_unit-test-${{ matrix.tox-env }}.xml -F ${{ matrix.tox-env }}
+
   Integration-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Unit-Test
