@@ -38,9 +38,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -347,7 +344,7 @@ document.write(`
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reduction_factor should be greater than 2.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;your value : </span><span class="si">{</span><span class="n">reduction_factor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="AshaTrial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.AshaTrial">[docs]</a><span class="k">class</span> <span class="nc">AshaTrial</span><span class="p">(</span><span class="n">Trial</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">AshaTrial</span><span class="p">(</span><span class="n">Trial</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ASHA trial class.</span>
 
 <span class="sd">    Args:</span>
@@ -385,7 +382,7 @@ document.write(`
         <span class="n">check_not_negative</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;bracket&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bracket</span> <span class="o">=</span> <span class="n">val</span>
 
-<div class="viewcode-block" id="AshaTrial.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.AshaTrial.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a result of the trial at &#39;save_path&#39;.&quot;&quot;&quot;</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -396,10 +393,10 @@ document.write(`
         <span class="p">}</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div></div>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Rung"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung">[docs]</a><span class="k">class</span> <span class="nc">Rung</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Rung</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Rung class.</span>
 
 <span class="sd">    Rung is in charge of selecting a trial to train and deciding which trial to promote to next rung in the bracket.</span>
@@ -446,7 +443,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Current rung index.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rung_idx</span>
 
-<div class="viewcode-block" id="Rung.add_new_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.add_new_trial">[docs]</a>    <span class="k">def</span> <span class="nf">add_new_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial</span><span class="p">:</span> <span class="n">AshaTrial</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_new_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial</span><span class="p">:</span> <span class="n">AshaTrial</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new trial to the rung.</span>
 
 <span class="sd">        Args:</span>
@@ -460,9 +457,9 @@ document.write(`
         <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span>
         <span class="n">trial</span><span class="o">.</span><span class="n">rung</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rung_idx</span>
         <span class="n">trial</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">READY</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Rung.get_best_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_best_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best trial in the rung.</span>
 
 <span class="sd">        Args:</span>
@@ -483,26 +480,26 @@ document.write(`
                 <span class="n">best_trial</span> <span class="o">=</span> <span class="n">trial</span>
                 <span class="n">best_score</span> <span class="o">=</span> <span class="n">trial_score</span>
 
-        <span class="k">return</span> <span class="n">best_trial</span></div>
+        <span class="k">return</span> <span class="n">best_trial</span>
 
-<div class="viewcode-block" id="Rung.need_more_trials"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.need_more_trials">[docs]</a>    <span class="k">def</span> <span class="nf">need_more_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">need_more_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether the rung needs more trials.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_required_trial</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_trials</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_required_trial</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_num_trials</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Rung.get_num_trials"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_num_trials">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_num_trials</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of trials the rung has.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Rung.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the rung is done.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_more_trials</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="Rung.get_trial_to_promote"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_trial_to_promote">[docs]</a>    <span class="k">def</span> <span class="nf">get_trial_to_promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_trial_to_promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a trial to promote.</span>
 
 <span class="sd">        Args:</span>
@@ -535,9 +532,9 @@ document.write(`
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_num_required_trial</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span> <span class="o">&gt;</span> <span class="n">num_promoted_trial</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">best_trial</span>
 
-        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Rung.get_next_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Rung.get_next_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to trian.</span>
 
 <span class="sd">        Returns:</span>
@@ -546,10 +543,10 @@ document.write(`
         <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">trial</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span> <span class="ow">and</span> <span class="n">trial</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">trial</span>
-        <span class="k">return</span> <span class="kc">None</span></div></div>
+        <span class="k">return</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="Bracket"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket">[docs]</a><span class="k">class</span> <span class="nc">Bracket</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">Bracket</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bracket class. It operates a single SHA using multiple rungs.</span>
 
 <span class="sd">    Args:</span>
@@ -619,7 +616,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of rungs the bracket has.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calcuate_max_rung_idx</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_minimum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reduction_factor</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Bracket.calcuate_max_rung_idx"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.calcuate_max_rung_idx">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calcuate_max_rung_idx</span><span class="p">(</span>
         <span class="n">minimum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">maximum_resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -646,7 +643,7 @@ document.write(`
                 <span class="sa">f</span><span class="s2">&quot;but minimum_resource : </span><span class="si">{</span><span class="n">minimum_resource</span><span class="si">}</span><span class="s2"> / maximum_resource : </span><span class="si">{</span><span class="n">maximum_resource</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">maximum_resource</span> <span class="o">/</span> <span class="n">minimum_resource</span><span class="p">,</span> <span class="n">reduction_factor</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">maximum_resource</span> <span class="o">/</span> <span class="n">minimum_resource</span><span class="p">,</span> <span class="n">reduction_factor</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_initialize_rungs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameter_configurations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]):</span>
         <span class="n">num_trials</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hyper_parameter_configurations</span><span class="p">)</span>
@@ -688,7 +685,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">best_trial</span>
 
-<div class="viewcode-block" id="Bracket.get_next_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.get_next_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_next_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to train.</span>
 
 <span class="sd">        Returns:</span>
@@ -710,17 +707,17 @@ document.write(`
 
             <span class="n">current_rung</span> <span class="o">-=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">next_sample</span></div>
+        <span class="k">return</span> <span class="n">next_sample</span>
 
-<div class="viewcode-block" id="Bracket.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the bracket is done.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Whether bracket is done or not.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">is_done</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Bracket.get_best_trial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.get_best_trial">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_best_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best trial in the bracket.</span>
 
 <span class="sd">        Returns:</span>
@@ -736,9 +733,9 @@ document.write(`
                 <span class="k">continue</span>
             <span class="k">break</span>
 
-        <span class="k">return</span> <span class="n">trial</span></div>
+        <span class="k">return</span> <span class="n">trial</span>
 
-<div class="viewcode-block" id="Bracket.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a bracket result to &#39;save_path&#39;.</span>
 
 <span class="sd">        Args:</span>
@@ -749,9 +746,9 @@ document.write(`
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">trial_id</span><span class="p">,</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">trial</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trial_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">))</span></div>
+            <span class="n">trial</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trial_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">))</span>
 
-<div class="viewcode-block" id="Bracket.print_result"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.Bracket.print_result">[docs]</a>    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a bracket result.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">20</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> bracket&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">20</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_result</span><span class="p">()</span>
@@ -771,7 +768,7 @@ document.write(`
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;all trials:&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;id : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> / score : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">get_best_score</span><span class="p">()</span><span class="si">}</span><span class="s2"> / config : </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">configuration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">()</span></div>
+        <span class="nb">print</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_get_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -790,10 +787,10 @@ document.write(`
                 <span class="p">}</span>
                 <span class="k">for</span> <span class="n">rung</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rungs</span>
             <span class="p">],</span>
-        <span class="p">}</span></div>
+        <span class="p">}</span>
 
 
-<div class="viewcode-block" id="HyperBand"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand">[docs]</a><span class="k">class</span> <span class="nc">HyperBand</span><span class="p">(</span><span class="n">HpoBase</span><span class="p">):</span>
+<div class="viewcode-block" id="HyperBand"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand">[docs]</a><span class="k">class</span> <span class="nc">HyperBand</span><span class="p">(</span><span class="n">HpoBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;It implements the Asyncronous HyperBand scheduler with iterations only.</span>
 
 <span class="sd">    Please refer the below papers for the detailed algorithm.</span>
@@ -991,7 +988,7 @@ document.write(`
         <span class="n">train_environment</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;subset_ratio&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_ratio</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">train_environment</span>
 
-<div class="viewcode-block" id="HyperBand.get_next_sample"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_next_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
+<div class="viewcode-block" id="HyperBand.get_next_sample"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_next_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AshaTrial</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get next trial to train.</span>
 
 <span class="sd">        Returns:</span>
@@ -1026,14 +1023,14 @@ document.write(`
             <span class="n">trial</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span>
         <span class="k">return</span> <span class="n">trial</span>
 
-<div class="viewcode-block" id="HyperBand.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="HyperBand.save_results"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.save_results">[docs]</a>    <span class="k">def</span> <span class="nf">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save a ASHA result.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">bracket</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brackets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">bracket</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HyperBand.auto_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.auto_config">[docs]</a>    <span class="k">def</span> <span class="nf">auto_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<div class="viewcode-block" id="HyperBand.auto_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.auto_config">[docs]</a>    <span class="k">def</span> <span class="nf">auto_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure ASHA automatically aligning with possible resource.</span>
 
 <span class="sd">        Configure ASHA automatically. If resource is lesser than full ASHA, decrease ASHA scale.</span>
@@ -1197,7 +1194,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">used_resource</span>
 
-<div class="viewcode-block" id="HyperBand.get_progress"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_progress">[docs]</a>    <span class="k">def</span> <span class="nf">get_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="HyperBand.get_progress"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_progress">[docs]</a>    <span class="k">def</span> <span class="nf">get_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current progress of ASHA.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_done</span><span class="p">():</span>
             <span class="k">return</span> <span class="mi">1</span>
@@ -1211,7 +1208,7 @@ document.write(`
 
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HyperBand.report_score"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.report_score">[docs]</a>    <span class="k">def</span> <span class="nf">report_score</span><span class="p">(</span>
+<div class="viewcode-block" id="HyperBand.report_score"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.report_score">[docs]</a>    <span class="k">def</span> <span class="nf">report_score</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">resource</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">trial_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">done</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="n">TrialStatus</span><span class="o">.</span><span class="n">STOP</span><span class="p">,</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Report a score to ASHA.</span>
@@ -1244,7 +1241,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">TrialStatus</span><span class="o">.</span><span class="n">RUNNING</span></div>
 
-<div class="viewcode-block" id="HyperBand.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="HyperBand.is_done"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the ASHA is done.</span>
 
 <span class="sd">        Returns:</span>
@@ -1257,7 +1254,7 @@ document.write(`
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="HyperBand.get_best_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.get_best_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<div class="viewcode-block" id="HyperBand.get_best_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_best_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get best configuration in ASHA.</span>
 
 <span class="sd">        Returns:</span>
@@ -1276,7 +1273,7 @@ document.write(`
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">best_trial</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">best_trial</span><span class="o">.</span><span class="n">configuration</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="HyperBand.print_result"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hyperband.html#otx.hpo.HyperBand.print_result">[docs]</a>    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="HyperBand.print_result"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.print_result">[docs]</a>    <span class="k">def</span> <span class="nf">print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a ASHA result.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="s2">&quot;HPO(ASHA) result summary</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -1338,7 +1335,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

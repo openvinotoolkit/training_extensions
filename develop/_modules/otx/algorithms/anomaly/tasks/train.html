@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -349,10 +346,10 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="TrainingTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.train.html#otx.algorithms.anomaly.tasks.TrainingTask">[docs]</a><span class="k">class</span> <span class="nc">TrainingTask</span><span class="p">(</span><span class="n">InferenceTask</span><span class="p">,</span> <span class="n">ITrainingTask</span><span class="p">):</span>
+<div class="viewcode-block" id="TrainingTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.TrainingTask">[docs]</a><span class="k">class</span> <span class="nc">TrainingTask</span><span class="p">(</span><span class="n">InferenceTask</span><span class="p">,</span> <span class="n">ITrainingTask</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Anomaly Task.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TrainingTask.train"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.train.html#otx.algorithms.anomaly.tasks.TrainingTask.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+<div class="viewcode-block" id="TrainingTask.train"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.TrainingTask.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
         <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
@@ -405,7 +402,7 @@ document.write(`
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Training completed.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TrainingTask.load_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.train.html#otx.algorithms.anomaly.tasks.TrainingTask.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AnomalyModule</span><span class="p">:</span>
+<div class="viewcode-block" id="TrainingTask.load_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.TrainingTask.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AnomalyModule</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and Load Anomalib Module from OTX Model.</span>
 
 <span class="sd">        This method checks if the task environment has a saved OTX Model,</span>
@@ -495,7 +492,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

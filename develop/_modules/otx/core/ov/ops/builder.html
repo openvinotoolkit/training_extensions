@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -316,14 +313,14 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.registry</span> <span class="kn">import</span> <span class="n">Registry</span>
 
 
-<div class="viewcode-block" id="OperationRegistry"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.builder.html#otx.core.ov.ops.OperationRegistry">[docs]</a><span class="k">class</span> <span class="nc">OperationRegistry</span><span class="p">(</span><span class="n">Registry</span><span class="p">):</span>
+<div class="viewcode-block" id="OperationRegistry"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.OperationRegistry">[docs]</a><span class="k">class</span> <span class="nc">OperationRegistry</span><span class="p">(</span><span class="n">Registry</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OperationRegistry class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">add_name_as_attr</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">add_name_as_attr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_registry_dict_by_type</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="OperationRegistry.register"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.builder.html#otx.core.ov.ops.OperationRegistry.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OperationRegistry.register"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.OperationRegistry.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register function from name.&quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -349,11 +346,11 @@ document.write(`
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> is already registered in </span><span class="si">{</span><span class="n">types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_registry_dict_by_type</span><span class="p">[</span><span class="n">types</span><span class="p">][</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
 
-<div class="viewcode-block" id="OperationRegistry.get_by_name"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.builder.html#otx.core.ov.ops.OperationRegistry.get_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="OperationRegistry.get_by_name"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.OperationRegistry.get_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get obj from name.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OperationRegistry.get_by_type_version"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.builder.html#otx.core.ov.ops.OperationRegistry.get_by_type_version">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_type_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
+<div class="viewcode-block" id="OperationRegistry.get_by_type_version"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.OperationRegistry.get_by_type_version">[docs]</a>    <span class="k">def</span> <span class="nf">get_by_type_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get obj from type and version.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">types</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry_dict_by_type</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;type </span><span class="si">{</span><span class="n">types</span><span class="si">}</span><span class="s2"> is not registered in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -415,7 +412,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

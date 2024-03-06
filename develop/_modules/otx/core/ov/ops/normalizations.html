@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -321,15 +318,15 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.ops.poolings</span> <span class="kn">import</span> <span class="n">AvgPoolV1</span>
 
 
-<div class="viewcode-block" id="BatchNormalizationV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.BatchNormalizationV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">BatchNormalizationV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;BatchNormalizationV0Attribute class.&quot;&quot;&quot;</span>
 
     <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">max_init_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+    <span class="n">max_init_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="BatchNormalizationV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.BatchNormalizationV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="BatchNormalizationV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.BatchNormalizationV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">BatchNormalizationV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">BatchNormalizationV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;BatchNormalizationV0 class.&quot;&quot;&quot;</span>
 
@@ -341,7 +338,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;_num_init_iter&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
-<div class="viewcode-block" id="BatchNormalizationV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.BatchNormalizationV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchNormalizationV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.BatchNormalizationV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">variance</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;BatchNormalizationV0&#39;s forward function.&quot;&quot;&quot;</span>
 
         <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span>
@@ -375,17 +372,17 @@ document.write(`
         <span class="k">return</span> <span class="n">output</span></div></div>
 
 
-<div class="viewcode-block" id="LocalResponseNormalizationV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.LocalResponseNormalizationV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">LocalResponseNormalizationV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LocalResponseNormalizationV0Attribute class.&quot;&quot;&quot;</span>
 
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">bias</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">size</span><span class="p">:</span> <span class="nb">int</span></div>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">int</span>
 
 
-<div class="viewcode-block" id="LocalResponseNormalizationV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.LocalResponseNormalizationV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="LocalResponseNormalizationV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.LocalResponseNormalizationV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">LocalResponseNormalizationV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">LocalResponseNormalizationV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;LocalResponseNormalizationV0 class.&quot;&quot;&quot;</span>
 
@@ -393,7 +390,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">LocalResponseNormalizationV0Attribute</span>
 
-<div class="viewcode-block" id="LocalResponseNormalizationV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.LocalResponseNormalizationV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="LocalResponseNormalizationV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.LocalResponseNormalizationV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;LocalResponseNormalizationV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
 
@@ -429,7 +426,7 @@ document.write(`
         <span class="k">return</span> <span class="n">output</span></div></div>
 
 
-<div class="viewcode-block" id="NormalizeL2V0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.NormalizeL2V0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NormalizeL2V0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NormalizeL2V0Attribute class.&quot;&quot;&quot;</span>
 
@@ -441,10 +438,10 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="n">valid_eps_mode</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_eps_mode</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid eps_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_eps_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid eps_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_eps_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="NormalizeL2V0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.NormalizeL2V0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="NormalizeL2V0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NormalizeL2V0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">NormalizeL2V0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">NormalizeL2V0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NormalizeL2V0 class.&quot;&quot;&quot;</span>
 
@@ -452,7 +449,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">NormalizeL2V0Attribute</span>
 
-<div class="viewcode-block" id="NormalizeL2V0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.NormalizeL2V0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="NormalizeL2V0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NormalizeL2V0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;NormalizeL2V0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="n">eps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">eps</span>
         <span class="n">eps_mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">eps_mode</span>
@@ -477,7 +474,7 @@ document.write(`
         <span class="k">return</span> <span class="p">(</span><span class="n">input_float</span> <span class="o">/</span> <span class="n">norm</span><span class="o">.</span><span class="n">sqrt</span><span class="p">())</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MVNV6Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.MVNV6Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">MVNV6Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MVNV6Attribute class.&quot;&quot;&quot;</span>
 
@@ -490,10 +487,10 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="n">valid_eps_mode</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;INSIDE_SQRT&quot;</span><span class="p">,</span> <span class="s2">&quot;OUTSIDE_SQRT&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_eps_mode</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid eps_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_eps_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid eps_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_eps_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="MVNV6"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.MVNV6">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="MVNV6"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.MVNV6">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">MVNV6</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">MVNV6Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MVNV6 class.&quot;&quot;&quot;</span>
 
@@ -501,7 +498,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">MVNV6Attribute</span>
 
-<div class="viewcode-block" id="MVNV6.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.normalizations.html#otx.core.ov.ops.MVNV6.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="MVNV6.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.MVNV6.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;MVNV6&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">-</span> <span class="n">inputs</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">normalize_variance</span><span class="p">:</span>
@@ -565,7 +562,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.detection.utils';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.detection.utils.data" href="otx.algorithms.detection.utils.data.html" />
+    <link rel="next" title="otx.algorithms.segmentation" href="otx.algorithms.segmentation.html" />
     <link rel="prev" title="otx.algorithms.detection.tools.instance_segmentation_sample" href="otx.algorithms.detection.tools.instance_segmentation_sample.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,6 +461,35 @@ document.write(`
   <section id="module-otx.algorithms.detection.utils">
 <span id="otx-algorithms-detection-utils"></span><h1>otx.algorithms.detection.utils<a class="headerlink" href="#module-otx.algorithms.detection.utils" title="Permalink to this heading">#</a></h1>
 <p>Collection of utils for task implementation in Detection Task.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.get_det_model_api_configuration" title="otx.algorithms.detection.utils.get_det_model_api_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_det_model_api_configuration</span></code></a>(...)</p></td>
+<td><p>Get ModelAPI config.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.load_dataset_items_coco_format" title="otx.algorithms.detection.utils.load_dataset_items_coco_format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_dataset_items_coco_format</span></code></a>(...[, ...])</p></td>
+<td><p>Load dataset from CocoDataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.get_sizes_from_dataset_entity" title="otx.algorithms.detection.utils.get_sizes_from_dataset_entity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sizes_from_dataset_entity</span></code></a>(dataset, target_wh)</p></td>
+<td><p>Function to get sizes of instances in DatasetEntity and to resize it to the target size.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.get_anchor_boxes" title="otx.algorithms.detection.utils.get_anchor_boxes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_anchor_boxes</span></code></a>(wh_stats, group_as)</p></td>
+<td><p>Get anchor box widths &amp; heights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.format_list_to_str" title="otx.algorithms.detection.utils.format_list_to_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_list_to_str</span></code></a>(value_lists)</p></td>
+<td><p>Decrease floating point digits in logs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.generate_label_schema" title="otx.algorithms.detection.utils.generate_label_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_label_schema</span></code></a>(label_names[, ...])</p></td>
+<td><p>Generating label_schema function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.create_detection_shapes" title="otx.algorithms.detection.utils.create_detection_shapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_detection_shapes</span></code></a>(pred_results, width, ...)</p></td>
+<td><p>Create prediction detection shapes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.utils.create_mask_shapes" title="otx.algorithms.detection.utils.create_mask_shapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_mask_shapes</span></code></a>(pred_results, width, ...)</p></td>
+<td><p>Create prediction mask shapes.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.detection.utils.create_detection_shapes">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">create_detection_shapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ellipse_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/utils/utils.html#create_detection_shapes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.utils.create_detection_shapes" title="Permalink to this definition">#</a></dt>
@@ -564,21 +582,10 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.detection.utils.load_dataset_items_coco_format">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">load_dataset_items_coco_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ann_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.label.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.subset.html#otx.api.entities.subset.Subset" title="otx.api.entities.subset.Subset"><span class="pre">Subset</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Subset.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="otx.api.entities.label.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/utils/data.html#load_dataset_items_coco_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.utils.load_dataset_items_coco_format" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">load_dataset_items_coco_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ann_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.label.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.entities.subset.html#otx.api.entities.subset.Subset" title="otx.api.entities.subset.Subset"><span class="pre">Subset</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Subset.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="otx.api.entities.label.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/utils/data.html#load_dataset_items_coco_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.utils.load_dataset_items_coco_format" title="Permalink to this definition">#</a></dt>
 <dd><p>Load dataset from CocoDataset.</p>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.utils.data.html#module-otx.algorithms.detection.utils.data" title="otx.algorithms.detection.utils.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.utils.data</span></code></a></p></td>
-<td><p>Collection of utils for data in Detection Task.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.utils.utils.html#module-otx.algorithms.detection.utils.utils" title="otx.algorithms.detection.utils.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.utils.utils</span></code></a></p></td>
-<td><p>Utils for OTX Detection.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -601,11 +608,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.detection.utils.data.html"
+       href="otx.algorithms.segmentation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.detection.utils.data</p>
+        <p class="prev-next-title">otx.algorithms.segmentation</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -681,7 +688,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

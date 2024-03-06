@@ -13,6 +13,12 @@ otx.algorithms.classification.configs
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClassificationConfig
+   
    
 
    
@@ -20,18 +26,4 @@ otx.algorithms.classification.configs
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.classification.configs.base
-   otx.algorithms.classification.configs.deit_tiny
-   otx.algorithms.classification.configs.efficientnet_b0_cls_incr
-   otx.algorithms.classification.configs.efficientnet_v2_s_cls_incr
-   otx.algorithms.classification.configs.mobilenet_v3_large_075_cls_incr
-   otx.algorithms.classification.configs.mobilenet_v3_large_1_cls_incr
-   otx.algorithms.classification.configs.mobilenet_v3_small_cls_incr
 

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -344,7 +341,7 @@ document.write(`
 <span class="n">ALL_CLASSES_NAME</span> <span class="o">=</span> <span class="s2">&quot;All Classes&quot;</span>
 
 
-<div class="viewcode-block" id="intersection_box"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.intersection_box">[docs]</a><span class="k">def</span> <span class="nf">intersection_box</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">intersection_box</span><span class="p">(</span>
     <span class="n">box1</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">box2</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the intersection box of two bounding boxes.</span>
@@ -360,10 +357,10 @@ document.write(`
     <span class="n">y_top</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">box1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">box2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">x_right</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">box1</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">box2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="n">y_bottom</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">box1</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">box2</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x_left</span><span class="p">,</span> <span class="n">x_right</span><span class="p">,</span> <span class="n">y_bottom</span><span class="p">,</span> <span class="n">y_top</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x_left</span><span class="p">,</span> <span class="n">x_right</span><span class="p">,</span> <span class="n">y_bottom</span><span class="p">,</span> <span class="n">y_top</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="bounding_box_intersection_over_union"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.bounding_box_intersection_over_union">[docs]</a><span class="k">def</span> <span class="nf">bounding_box_intersection_over_union</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">bounding_box_intersection_over_union</span><span class="p">(</span>
     <span class="n">box1</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">box2</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the Intersection over Union (IoU) of two bounding boxes.</span>
@@ -394,10 +391,10 @@ document.write(`
             <span class="n">iou</span> <span class="o">=</span> <span class="n">intersection_area</span> <span class="o">/</span> <span class="n">union_area</span>
     <span class="k">if</span> <span class="n">iou</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">iou</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;intersection over union should be in range [0,1], actual=</span><span class="si">{</span><span class="n">iou</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">iou</span></div>
+    <span class="k">return</span> <span class="n">iou</span>
 
 
-<div class="viewcode-block" id="get_iou_matrix"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.get_iou_matrix">[docs]</a><span class="k">def</span> <span class="nf">get_iou_matrix</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">get_iou_matrix</span><span class="p">(</span>
     <span class="n">ground_truth</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
     <span class="n">predicted</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -424,10 +421,10 @@ document.write(`
     <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[[</span><span class="n">bounding_box_intersection_over_union</span><span class="p">(</span><span class="n">gts</span><span class="p">,</span> <span class="n">preds</span><span class="p">)</span> <span class="k">for</span> <span class="n">preds</span> <span class="ow">in</span> <span class="n">predicted</span><span class="p">]</span> <span class="k">for</span> <span class="n">gts</span> <span class="ow">in</span> <span class="n">ground_truth</span><span class="p">]</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">matrix</span></div>
+    <span class="k">return</span> <span class="n">matrix</span>
 
 
-<div class="viewcode-block" id="get_n_false_negatives"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.get_n_false_negatives">[docs]</a><span class="k">def</span> <span class="nf">get_n_false_negatives</span><span class="p">(</span><span class="n">iou_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">get_n_false_negatives</span><span class="p">(</span><span class="n">iou_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">iou_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the number of false negatives inside the IoU matrix for a given threshold.</span>
 
 <span class="sd">    The first loop accounts for all the ground truth boxes which do not have a high enough iou with any predicted</span>
@@ -449,7 +446,7 @@ document.write(`
     <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">iou_matrix</span><span class="p">):</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">column</span> <span class="o">&gt;</span> <span class="n">iou_threshold</span><span class="p">)</span>
         <span class="n">n_false_negatives</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">n_false_negatives</span></div>
+    <span class="k">return</span> <span class="n">n_false_negatives</span>
 
 
 <span class="k">class</span> <span class="nc">_Metrics</span><span class="p">:</span>
@@ -947,7 +944,7 @@ document.write(`
         <span class="k">return</span> <span class="n">_ResultCounters</span><span class="p">(</span><span class="n">n_false_negatives</span><span class="p">,</span> <span class="n">n_true</span><span class="p">,</span> <span class="n">n_predicted</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="FMeasure"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.FMeasure">[docs]</a><span class="k">class</span> <span class="nc">FMeasure</span><span class="p">(</span><span class="n">IPerformanceProvider</span><span class="p">):</span>
+<div class="viewcode-block" id="FMeasure"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.html#otx.api.usecases.evaluation.FMeasure">[docs]</a><span class="k">class</span> <span class="nc">FMeasure</span><span class="p">(</span><span class="n">IPerformanceProvider</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the f-measure (also known as F1-score) for a resultset.</span>
 
 <span class="sd">    The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision</span>
@@ -1066,7 +1063,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the best NMS threshold as ScoreMetric if exists.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_nms_threshold</span>
 
-<div class="viewcode-block" id="FMeasure.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.f_measure.html#otx.api.usecases.evaluation.FMeasure.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiScorePerformance</span><span class="p">:</span>
+<div class="viewcode-block" id="FMeasure.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.html#otx.api.usecases.evaluation.FMeasure.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MultiScorePerformance</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the performance which consists of the F-Measure score and the dashboard metrics.</span>
 
 <span class="sd">        Returns:</span>
@@ -1229,7 +1226,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

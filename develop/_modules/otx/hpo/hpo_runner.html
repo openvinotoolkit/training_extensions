@@ -38,9 +38,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -340,16 +337,16 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="RunningTrial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.RunningTrial">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">RunningTrial</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Data class for a running trial.&quot;&quot;&quot;</span>
 
     <span class="n">process</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span>
     <span class="n">trial</span><span class="p">:</span> <span class="n">Trial</span>
-    <span class="n">queue</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span></div>
+    <span class="n">queue</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span>
 
 
-<div class="viewcode-block" id="HpoLoop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.HpoLoop">[docs]</a><span class="k">class</span> <span class="nc">HpoLoop</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">HpoLoop</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HPO loop manager to run trials.</span>
 
 <span class="sd">    Args:</span>
@@ -389,7 +386,7 @@ document.write(`
         <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_signal_handler</span><span class="p">)</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_signal_handler</span><span class="p">)</span>
 
-<div class="viewcode-block" id="HpoLoop.run"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.HpoLoop.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a HPO loop.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;HPO loop starts.&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -412,7 +409,7 @@ document.write(`
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HPO trials exited abnormally more than three times. HPO is suspended.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_reports</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_join_all_processes</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_join_all_processes</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_start_trial_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial</span><span class="p">:</span> <span class="n">Trial</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> trial is now running.&quot;</span><span class="p">)</span>
@@ -498,7 +495,7 @@ document.write(`
         <span class="n">singal_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;SIGINT&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">:</span> <span class="s2">&quot;SIGTERM&quot;</span><span class="p">}</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">singal_name</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span><span class="si">}</span><span class="s2"> is sent. process exited.&quot;</span><span class="p">)</span>
 
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_run_train</span><span class="p">(</span><span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">hp_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">report_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
@@ -533,7 +530,7 @@ document.write(`
     <span class="k">return</span> <span class="n">trial_status</span>
 
 
-<div class="viewcode-block" id="run_hpo_loop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.run_hpo_loop">[docs]</a><span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
+<div class="viewcode-block" id="run_hpo_loop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.run_hpo_loop">[docs]</a><span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
     <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
     <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
@@ -609,7 +606,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

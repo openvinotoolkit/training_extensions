@@ -13,6 +13,12 @@ otx.algorithms.detection.adapters.mmdet.models.roi\_heads.roi\_extractors
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SingleRoIExtractor
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.detection.adapters.mmdet.models.roi\_heads.roi\_extractors
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor
 

@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.assigners';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner" href="otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner.html" />
+    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.backbones" href="otx.algorithms.detection.adapters.mmdet.models.backbones.html" />
     <link rel="prev" title="otx.algorithms.detection.adapters.mmdet.models" href="otx.algorithms.detection.adapters.mmdet.models.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,6 +461,14 @@ document.write(`
   <section id="module-otx.algorithms.detection.adapters.mmdet.models.assigners">
 <span id="otx-algorithms-detection-adapters-mmdet-models-assigners"></span><h1>otx.algorithms.detection.adapters.mmdet.models.assigners<a class="headerlink" href="#module-otx.algorithms.detection.adapters.mmdet.models.assigners" title="Permalink to this heading">#</a></h1>
 <p>Initial file for mmdetection assigners.</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner" title="otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomMaxIoUAssigner</span></code></a>(pos_iou_thr, neg_iou_thr)</p></td>
+<td><p>Assign a corresponding gt bbox or background to each bbox.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.assigners.</span></span><span class="sig-name descname"><span class="pre">CustomMaxIoUAssigner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_iou_thr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_iou_thr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_pos_iou</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_max_assign_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_iof_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_wrt_candidates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_low_quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_assign_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_calculator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BboxOverlaps2D'}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/assigners/custom_max_iou_assigner.html#CustomMaxIoUAssigner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner" title="Permalink to this definition">#</a></dt>
@@ -485,16 +482,54 @@ indicating the ground truth index.</p>
 </ul>
 <p>This CustomMaxIoUAssigner patches assign funtion of mmdet’s MaxIouAssigner
 so that it can prevent CPU OOM for images whose gt is extremely large</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner.assign">
+<span class="sig-name descname"><span class="pre">assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/assigners/custom_max_iou_assigner.html#CustomMaxIoUAssigner.assign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner.assign" title="Permalink to this definition">#</a></dt>
+<dd><p>Assign gt to bboxes.</p>
+<p>This method assign a gt bbox to every bbox (proposal/anchor), each bbox
+will be assigned with -1, or a semi-positive number. -1 means negative
+sample, semi-positive number is the index (0-based) of assigned gt.
+The assignment is done in following steps, the order matters.</p>
+<p>Especially CustomMaxIoUAssigner split gt_bboxes tensor into small tensors
+when gt_bboxes is too large.</p>
+<ol class="arabic simple">
+<li><p>assign every bbox to the background</p></li>
+<li><p>assign proposals whose iou with all gts &lt; neg_iou_thr to 0</p></li>
+<li><p>for each bbox, if the iou with its nearest gt &gt;= pos_iou_thr,
+assign it to that bbox</p></li>
+<li><p>for each gt bbox, assign its nearest proposals (may be more than
+one) to itself</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bboxes</strong> (<em>Tensor</em>) – Bounding boxes to be assigned, shape(n, 4).</p></li>
+<li><p><strong>gt_bboxes</strong> (<em>Tensor</em>) – Groundtruth boxes, shape (k, 4).</p></li>
+<li><p><strong>gt_bboxes_ignore</strong> (<em>Tensor</em><em>, </em><em>optional</em>) – Ground truth bboxes that are
+labelled as <cite>ignored</cite>, e.g., crowd boxes in COCO.</p></li>
+<li><p><strong>gt_labels</strong> (<em>Tensor</em><em>, </em><em>optional</em>) – Label of gt_bboxes, shape (k, ).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The assign result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">AssignResult</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span> <span class="o">=</span> <span class="n">MaxIoUAssigner</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt_bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assign_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expected_gt_inds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">assign_result</span><span class="o">.</span><span class="n">gt_inds</span> <span class="o">==</span> <span class="n">expected_gt_inds</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner.html#module-otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner" title="otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner</span></code></a></p></td>
-<td><p>Custom assigner for mmdet MaxIouAssigner.</p></td>
-</tr>
-</tbody>
-</table>
+</dd></dl>
+
 </section>
 
 
@@ -517,11 +552,11 @@ so that it can prevent CPU OOM for images whose gt is extremely large</p>
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner.html"
+       href="otx.algorithms.detection.adapters.mmdet.models.backbones.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner</p>
+        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.backbones</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -543,7 +578,10 @@ so that it can prevent CPU OOM for images whose gt is extremely large</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner"><code class="docutils literal notranslate"><span class="pre">CustomMaxIoUAssigner</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner"><code class="docutils literal notranslate"><span class="pre">CustomMaxIoUAssigner</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner.assign"><code class="docutils literal notranslate"><span class="pre">CustomMaxIoUAssigner.assign()</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
@@ -590,7 +628,7 @@ so that it can prevent CPU OOM for images whose gt is extremely large</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

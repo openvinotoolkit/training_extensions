@@ -13,6 +13,14 @@ otx.algorithms.detection.adapters.mmdet.models.dense\_heads
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVRPNHead
+      MMOVSSDHead
+      MMOVYOLOV3Head
+   
    
 
    
@@ -20,14 +28,4 @@ otx.algorithms.detection.adapters.mmdet.models.dense\_heads
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_rpn_head
-   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_ssd_head
-   otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head
 

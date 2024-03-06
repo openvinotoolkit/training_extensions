@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -319,14 +316,14 @@ document.write(`
 <span class="c1"># pylint: disable=unused-argument</span>
 
 
-<div class="viewcode-block" id="MMOVBackbone"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov_backbone.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone">[docs]</a><span class="nd">@BACKBONES</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="MMOVBackbone"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone">[docs]</a><span class="nd">@BACKBONES</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">MMOVBackbone</span><span class="p">(</span><span class="n">MMOVModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MMOVBackbone.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MMOVBackbone.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov_backbone.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MMOVBackbone.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -334,7 +331,7 @@ document.write(`
         <span class="c1"># must return tuple</span>
         <span class="k">return</span> <span class="n">outputs</span></div>
 
-<div class="viewcode-block" id="MMOVBackbone.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov_backbone.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="MMOVBackbone.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the weights.&quot;&quot;&quot;</span>
         <span class="c1"># TODO</span>
         <span class="k">return</span></div></div>
@@ -390,7 +387,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

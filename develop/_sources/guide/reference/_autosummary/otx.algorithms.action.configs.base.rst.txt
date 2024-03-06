@@ -13,6 +13,12 @@ otx.algorithms.action.configs.base
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionConfig
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.action.configs.base
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.action.configs.base.configuration
 

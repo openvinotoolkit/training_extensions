@@ -13,6 +13,12 @@ otx.cli.manager
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigManager
+   
    
 
    
@@ -20,12 +26,4 @@ otx.cli.manager
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.cli.manager.config_manager
 

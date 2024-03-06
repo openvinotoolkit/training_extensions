@@ -9,6 +9,13 @@ otx.algorithms.common.adapters.mmdeploy
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      squeeze__default
+      is_mmdeploy_enabled
+   
    
 
    
@@ -20,14 +27,4 @@ otx.algorithms.common.adapters.mmdeploy
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.adapters.mmdeploy.apis
-   otx.algorithms.common.adapters.mmdeploy.ops
-   otx.algorithms.common.adapters.mmdeploy.utils
 

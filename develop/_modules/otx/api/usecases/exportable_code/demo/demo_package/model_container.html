@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -329,7 +326,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_model_path</span><span class="p">,</span> <span class="n">get_parameters</span>
 
 
-<div class="viewcode-block" id="ModelContainer"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.model_container.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer">[docs]</a><span class="k">class</span> <span class="nc">ModelContainer</span><span class="p">:</span>
+<div class="viewcode-block" id="ModelContainer"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer">[docs]</a><span class="k">class</span> <span class="nc">ModelContainer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for storing the model wrapper based on Model API and needed parameters of model.</span>
 
 <span class="sd">    Args:</span>
@@ -384,7 +381,7 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_tiler</span><span class="p">(</span><span class="n">model_dir</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ModelContainer.setup_tiler"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.model_container.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.setup_tiler">[docs]</a>    <span class="k">def</span> <span class="nf">setup_tiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">DetectionTiler</span><span class="p">,</span> <span class="n">InstanceSegmentationTiler</span><span class="p">]]:</span>
+<div class="viewcode-block" id="ModelContainer.setup_tiler"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.setup_tiler">[docs]</a>    <span class="k">def</span> <span class="nf">setup_tiler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">DetectionTiler</span><span class="p">,</span> <span class="n">InstanceSegmentationTiler</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup tiler for model.</span>
 
 <span class="sd">        Args:</span>
@@ -434,7 +431,7 @@ document.write(`
         <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using model wrapper from ModelAPI&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ModelContainer.infer"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.model_container.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+<div class="viewcode-block" id="ModelContainer.infer"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer with original image.</span>
 
 <span class="sd">        Args:</span>
@@ -452,7 +449,7 @@ document.write(`
             <span class="n">predictions</span> <span class="o">=</span> <span class="n">detection2array</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">frame_meta</span></div>
 
-<div class="viewcode-block" id="ModelContainer.infer_tile"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.model_container.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.infer_tile">[docs]</a>    <span class="k">def</span> <span class="nf">infer_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+<div class="viewcode-block" id="ModelContainer.infer_tile"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.infer_tile">[docs]</a>    <span class="k">def</span> <span class="nf">infer_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer by patching full image to tiles.</span>
 
 <span class="sd">        Args:</span>
@@ -465,7 +462,7 @@ document.write(`
         <span class="n">detections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">detections</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;original_shape&quot;</span><span class="p">:</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="ModelContainer.__call__"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.model_container.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<div class="viewcode-block" id="ModelContainer.__call__"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer entry wrapper.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_tile</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
@@ -522,7 +519,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

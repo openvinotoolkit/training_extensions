@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -320,18 +317,18 @@ document.write(`
 <span class="n">_is_nncf_enabled</span> <span class="o">=</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;nncf&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="is_nncf_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.is_nncf_enabled">[docs]</a><span class="k">def</span> <span class="nf">is_nncf_enabled</span><span class="p">():</span>
+<div class="viewcode-block" id="is_nncf_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.is_nncf_enabled">[docs]</a><span class="k">def</span> <span class="nf">is_nncf_enabled</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;is_nncf_enabled.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_is_nncf_enabled</span></div>
 
 
-<div class="viewcode-block" id="check_nncf_is_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.check_nncf_is_enabled">[docs]</a><span class="k">def</span> <span class="nf">check_nncf_is_enabled</span><span class="p">():</span>
+<div class="viewcode-block" id="check_nncf_is_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.check_nncf_is_enabled">[docs]</a><span class="k">def</span> <span class="nf">check_nncf_is_enabled</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;check_nncf_is_enabled.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Tried to use NNCF, but NNCF is not installed&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_nncf_version"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.get_nncf_version">[docs]</a><span class="k">def</span> <span class="nf">get_nncf_version</span><span class="p">():</span>
+<div class="viewcode-block" id="get_nncf_version"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.get_nncf_version">[docs]</a><span class="k">def</span> <span class="nf">get_nncf_version</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;get_nncf_version.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -340,7 +337,7 @@ document.write(`
     <span class="k">return</span> <span class="n">nncf</span><span class="o">.</span><span class="n">__version__</span></div>
 
 
-<div class="viewcode-block" id="load_checkpoint"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.load_checkpoint">[docs]</a><span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load checkpoint from a file or URI.</span>
 
 <span class="sd">    Args:</span>
@@ -372,16 +369,16 @@ document.write(`
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No state_dict found in checkpoint file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">load_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">base_state</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">compression_state</span><span class="p">,</span> <span class="n">nncf_state</span></div>
+    <span class="k">return</span> <span class="n">compression_state</span><span class="p">,</span> <span class="n">nncf_state</span>
 
 
-<div class="viewcode-block" id="nullcontext"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.nullcontext">[docs]</a><span class="nd">@contextmanager</span>
+<span class="nd">@contextmanager</span>
 <span class="k">def</span> <span class="nf">nullcontext</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Context which does nothing.&quot;&quot;&quot;</span>
-    <span class="k">yield</span></div>
+    <span class="k">yield</span>
 
 
-<div class="viewcode-block" id="no_nncf_trace"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.no_nncf_trace">[docs]</a><span class="k">def</span> <span class="nf">no_nncf_trace</span><span class="p">():</span>
+<div class="viewcode-block" id="no_nncf_trace"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.no_nncf_trace">[docs]</a><span class="k">def</span> <span class="nf">no_nncf_trace</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper for original NNCF no_nncf_trace context.&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
@@ -393,7 +390,7 @@ document.write(`
     <span class="k">return</span> <span class="n">nullcontext</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="nncf_trace"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.nncf_trace">[docs]</a><span class="k">def</span> <span class="nf">nncf_trace</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">nncf_trace</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Trace nncf context.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
 
@@ -410,10 +407,10 @@ document.write(`
                 <span class="k">yield</span>
 
         <span class="k">return</span> <span class="n">_nncf_trace</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">nullcontext</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">nullcontext</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="is_in_nncf_tracing"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.is_in_nncf_tracing">[docs]</a><span class="k">def</span> <span class="nf">is_in_nncf_tracing</span><span class="p">():</span>
+<div class="viewcode-block" id="is_in_nncf_tracing"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.is_in_nncf_tracing">[docs]</a><span class="k">def</span> <span class="nf">is_in_nncf_tracing</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;is_in_nncf_tracing.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -427,7 +424,7 @@ document.write(`
     <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">is_tracing</span></div>
 
 
-<div class="viewcode-block" id="is_accuracy_aware_training_set"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.utils.utils.html#otx.algorithms.common.adapters.nncf.is_accuracy_aware_training_set">[docs]</a><span class="k">def</span> <span class="nf">is_accuracy_aware_training_set</span><span class="p">(</span><span class="n">nncf_config</span><span class="p">):</span>
+<div class="viewcode-block" id="is_accuracy_aware_training_set"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.nncf.html#otx.algorithms.common.adapters.nncf.is_accuracy_aware_training_set">[docs]</a><span class="k">def</span> <span class="nf">is_accuracy_aware_training_set</span><span class="p">(</span><span class="n">nncf_config</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;is_accuracy_aware_training_set.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_nncf_enabled</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -487,7 +484,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -330,7 +327,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
 
 
-<div class="viewcode-block" id="CustomSSDHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomSSDHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomSSDHead</span><span class="p">(</span><span class="n">SSDHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomSSDHead class for OTX.&quot;&quot;&quot;</span>
 
@@ -389,7 +386,7 @@ document.write(`
                     <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="p">)</span>
 
-<div class="viewcode-block" id="CustomSSDHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomSSDHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cls_score</span><span class="p">,</span>
         <span class="n">bbox_pred</span><span class="p">,</span>
@@ -478,7 +475,7 @@ document.write(`
         <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_cls_pos</span> <span class="o">+</span> <span class="n">loss_cls_neg</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_total_samples</span>
         <span class="k">return</span> <span class="n">loss_cls</span>
 
-    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomSSDHead.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss">[docs]</a>    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loss function.&quot;&quot;&quot;</span>
         <span class="n">losses</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span>
         <span class="n">losses_cls</span> <span class="o">=</span> <span class="n">losses</span><span class="p">[</span><span class="s2">&quot;loss_cls&quot;</span><span class="p">]</span>
@@ -487,7 +484,7 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_balancing</span><span class="p">:</span>
             <span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_balance_losses</span><span class="p">(</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_bbox</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">losses_bbox</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">losses_bbox</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_balance_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_reg</span><span class="p">):</span>
         <span class="n">loss_cls</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">_loss</span> <span class="ow">in</span> <span class="n">losses_cls</span><span class="p">)</span>
@@ -499,7 +496,7 @@ document.write(`
         <span class="k">return</span> <span class="p">(</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_reg</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomSSDHeadTrackingLossDynamics</span><span class="p">(</span><span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span> <span class="n">CustomSSDHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomSSDHead which supports tracking loss dynamics.&quot;&quot;&quot;</span>
 
@@ -510,14 +507,14 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss from the head and prepare for loss dynamics tracking.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics.loss_single">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss_single</span>
+    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss_single</span>
     <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of a single image and increase `self.cur_loss_idx` counter for loss dynamics tracking.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss_single</span><span class="p">(</span>
             <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">num_total_samples</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_loss_cls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_total_samples</span><span class="p">,</span> <span class="n">loss_cls_all</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">topk_loss_cls_neg</span><span class="p">):</span>
         <span class="n">loss_cls_pos</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span>
@@ -540,7 +537,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_store_loss_dyns</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_inds</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">TrackingLossType</span><span class="o">.</span><span class="n">bbox</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_loss</span><span class="p">(</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">avg_factor</span><span class="o">=</span><span class="n">num_total_samples</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomSSDHeadTrackingLossDynamics.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHeadTrackingLossDynamics.get_targets">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="n">concatenate_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="n">concatenate_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchor_list</span><span class="p">,</span>
@@ -564,7 +561,7 @@ document.write(`
             <span class="n">label_channels</span><span class="p">,</span>
             <span class="n">unmap_outputs</span><span class="p">,</span>
             <span class="n">return_sampling_results</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_targets_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -666,7 +663,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">cur_batch_idx</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="c1">########################################################################</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">neg_inds</span><span class="p">,</span> <span class="n">sampling_result</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">neg_inds</span><span class="p">,</span> <span class="n">sampling_result</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -719,7 +716,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

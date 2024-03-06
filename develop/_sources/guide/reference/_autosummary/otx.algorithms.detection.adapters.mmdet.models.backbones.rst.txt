@@ -13,6 +13,12 @@ otx.algorithms.detection.adapters.mmdet.models.backbones
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVBackbone
+   
    
 
    
@@ -28,5 +34,4 @@ otx.algorithms.detection.adapters.mmdet.models.backbones
    :recursive:
 
    otx.algorithms.detection.adapters.mmdet.models.backbones.imgclsmob
-   otx.algorithms.detection.adapters.mmdet.models.backbones.mmov_backbone
 

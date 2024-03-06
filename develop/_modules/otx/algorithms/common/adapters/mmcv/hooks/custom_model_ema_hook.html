@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -323,7 +320,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="CustomModelEMAHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.CustomModelEMAHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomModelEMAHook</span><span class="p">(</span><span class="n">EMAHook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom EMAHook to update momentum for ema over training.&quot;&quot;&quot;</span>
 
@@ -333,7 +330,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch_momentum</span> <span class="o">=</span> <span class="n">epoch_momentum</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
 
-<div class="viewcode-block" id="CustomModelEMAHook.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.CustomModelEMAHook.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;To resume model with it&#39;s ema parameters more friendly.</span>
 
 <span class="sd">        Register ema parameter as ``named_buffer`` to model</span>
@@ -351,9 +348,9 @@ document.write(`
             <span class="n">model</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="n">buffer_name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_buffers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">(</span><span class="n">recurse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">runner</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span></div>
+            <span class="n">runner</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomModelEMAHook.before_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.CustomModelEMAHook.before_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the momentum.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_momentum</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">iter_per_epoch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">data_loader</span><span class="p">)</span>
@@ -363,10 +360,10 @@ document.write(`
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Update EMA momentum: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">momentum</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">epoch_momentum</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># disable re-compute</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">before_train_epoch</span><span class="p">(</span><span class="n">runner</span><span class="p">)</span></div></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">before_train_epoch</span><span class="p">(</span><span class="n">runner</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="EMAMomentumUpdateHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="EMAMomentumUpdateHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EMAMomentumUpdateHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exponential moving average (EMA) momentum update hook for self-supervised methods.</span>
 
@@ -384,7 +381,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">end_momentum</span> <span class="o">=</span> <span class="n">end_momentum</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_interval</span> <span class="o">=</span> <span class="n">update_interval</span>
 
-<div class="viewcode-block" id="EMAMomentumUpdateHook.before_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
+<div class="viewcode-block" id="EMAMomentumUpdateHook.before_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called before_train_epoch in EMAMomentumUpdateHook.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">by_epoch</span><span class="p">:</span>
             <span class="k">return</span>
@@ -408,7 +405,7 @@ document.write(`
             <span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">updated_m</span></div>
 
-<div class="viewcode-block" id="EMAMomentumUpdateHook.before_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
+<div class="viewcode-block" id="EMAMomentumUpdateHook.before_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.before_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called before_train_iter in EMAMomentumUpdateHook.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">by_epoch</span><span class="p">:</span>
             <span class="k">return</span>
@@ -432,7 +429,7 @@ document.write(`
             <span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">updated_m</span></div>
 
-<div class="viewcode-block" id="EMAMomentumUpdateHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
+<div class="viewcode-block" id="EMAMomentumUpdateHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EMAMomentumUpdateHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called after_train_iter in EMAMomentumUpdateHook.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">every_n_iters</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_interval</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">is_module_wrapper</span><span class="p">(</span><span class="n">runner</span><span class="o">.</span><span class="n">model</span><span class="p">):</span>
@@ -491,7 +488,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -317,17 +314,17 @@ document.write(`
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
 
 
-<div class="viewcode-block" id="get_dist_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.dist_utils.html#otx.algorithms.common.utils.get_dist_info">[docs]</a><span class="k">def</span> <span class="nf">get_dist_info</span><span class="p">():</span>  <span class="c1"># pylint: disable=inconsistent-return-statements</span>
+<span class="k">def</span> <span class="nf">get_dist_info</span><span class="p">():</span>  <span class="c1"># pylint: disable=inconsistent-return-statements</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that retrieves information about the current distributed training environment.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
         <span class="c1"># data distributed parallel</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(),</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(),</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="append_dist_rank_suffix"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.dist_utils.html#otx.algorithms.common.utils.append_dist_rank_suffix">[docs]</a><span class="k">def</span> <span class="nf">append_dist_rank_suffix</span><span class="p">(</span><span class="n">file_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="append_dist_rank_suffix"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.append_dist_rank_suffix">[docs]</a><span class="k">def</span> <span class="nf">append_dist_rank_suffix</span><span class="p">(</span><span class="n">file_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Append distributed training rank suffix to the file name.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;LOCAL_RANK&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
         <span class="n">file_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
@@ -387,7 +384,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

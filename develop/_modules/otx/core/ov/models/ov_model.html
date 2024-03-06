@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -341,7 +338,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="OVModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel">[docs]</a><span class="k">class</span> <span class="nc">OVModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<div class="viewcode-block" id="OVModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel">[docs]</a><span class="k">class</span> <span class="nc">OVModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OVModel class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
@@ -495,7 +492,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Property output_shapes.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_shapes</span>
 
-<div class="viewcode-block" id="OVModel.build_graph"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.build_graph">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OVModel.build_graph"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.build_graph">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">build_graph</span><span class="p">(</span><span class="n">model_path_or_model</span><span class="p">,</span> <span class="n">weight_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function build_graph.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tempdir</span><span class="p">:</span>
@@ -513,7 +510,7 @@ document.write(`
         <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">from_ov</span><span class="p">(</span><span class="n">ov_model</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">graph</span></div>
 
-<div class="viewcode-block" id="OVModel.build_custom_outputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.build_custom_outputs">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OVModel.build_custom_outputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.build_custom_outputs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">build_custom_outputs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>  <span class="c1"># noqa: C901</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function build_custom_outputs.&quot;&quot;&quot;</span>
         <span class="n">cls_result</span> <span class="o">=</span> <span class="n">OPS</span><span class="o">.</span><span class="n">get_by_type_version</span><span class="p">(</span><span class="s2">&quot;Result&quot;</span><span class="p">,</span> <span class="s2">&quot;opset1&quot;</span><span class="p">)</span>
@@ -595,7 +592,7 @@ document.write(`
             <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="o">**</span><span class="n">edge</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">outputs</span></div>
 
-<div class="viewcode-block" id="OVModel.build_custom_inputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.build_custom_inputs">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OVModel.build_custom_inputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.build_custom_inputs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">build_custom_inputs</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]):</span>  <span class="c1"># noqa: C901</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function build_custom_inputs.&quot;&quot;&quot;</span>
         <span class="n">cls_param</span> <span class="o">=</span> <span class="n">OPS</span><span class="o">.</span><span class="n">get_by_type_version</span><span class="p">(</span><span class="s2">&quot;Parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;opset1&quot;</span><span class="p">)</span>
@@ -687,7 +684,7 @@ document.write(`
             <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="o">**</span><span class="n">edge</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">inputs</span></div>
 
-<div class="viewcode-block" id="OVModel.clean_up"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.clean_up">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OVModel.clean_up"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.clean_up">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">clean_up</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function clean_up.&quot;&quot;&quot;</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="k">if</span> <span class="n">inputs</span> <span class="k">else</span> <span class="p">[]</span>
@@ -713,7 +710,7 @@ document.write(`
 
         <span class="n">graph</span><span class="o">.</span><span class="n">clean_up</span><span class="p">(</span><span class="n">nodes_to_keep</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OVModel.build_torch_module"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.build_torch_module">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OVModel.build_torch_module"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.build_torch_module">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">build_torch_module</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function build_torch_module.&quot;&quot;&quot;</span>
         <span class="n">node_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">i</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">topological_sort</span><span class="p">())</span>
@@ -732,7 +729,7 @@ document.write(`
                 <span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
         <span class="k">return</span> <span class="n">inputs</span>
 
-<div class="viewcode-block" id="OVModel.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.ov_model.html#otx.core.ov.models.OVModel.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="OVModel.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.OVModel.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function forward.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_feature_dict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_forward_inputs</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -834,7 +831,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -321,13 +318,13 @@ document.write(`
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 
-<div class="viewcode-block" id="manual_cross_entropy"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.manual_cross_entropy">[docs]</a><span class="k">def</span> <span class="nf">manual_cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">manual_cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Manually calculate weighted cross entropy.&quot;&quot;&quot;</span>
     <span class="n">cross_entropy</span> <span class="o">=</span> <span class="o">-</span><span class="n">weight</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">labels</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cross_entropy</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DetConLoss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss">[docs]</a><span class="nd">@LOSSES</span><span class="o">.</span><span class="n">register_module</span>
+<div class="viewcode-block" id="DetConLoss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss">[docs]</a><span class="nd">@LOSSES</span><span class="o">.</span><span class="n">register_module</span>
 <span class="k">class</span> <span class="nc">DetConLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Modified from https://github.com/deepmind/detcon/blob/main/utils/losses.py.</span>
 
@@ -351,7 +348,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_replicator_loss</span> <span class="o">=</span> <span class="n">use_replicator_loss</span>
 
-<div class="viewcode-block" id="DetConLoss.get_distributed_tensors"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.get_distributed_tensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_distributed_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target1</span><span class="p">,</span> <span class="n">target2</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConLoss.get_distributed_tensors"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.get_distributed_tensors">[docs]</a>    <span class="k">def</span> <span class="nf">get_distributed_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target1</span><span class="p">,</span> <span class="n">target2</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Grab tensors across replicas during distributed training.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_replicator_loss</span><span class="p">:</span>
             <span class="c1"># Grab tensor across replicas and expand first dimension</span>
@@ -382,7 +379,7 @@ document.write(`
         <span class="k">return</span> <span class="n">target1_large</span><span class="p">,</span> <span class="n">target2_large</span><span class="p">,</span> <span class="n">labels</span></div>
 
     <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
-<div class="viewcode-block" id="DetConLoss.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="DetConLoss.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pred1</span><span class="p">,</span>
         <span class="n">pred2</span><span class="p">,</span>
@@ -542,7 +539,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

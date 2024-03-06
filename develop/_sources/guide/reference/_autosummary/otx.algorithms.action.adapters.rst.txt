@@ -13,6 +13,13 @@ otx.algorithms.action.adapters
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXOVActionCls
+      OTXOVActionDet
+   
    
 
    
@@ -20,13 +27,4 @@ otx.algorithms.action.adapters
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.action.adapters.mmaction
-   otx.algorithms.action.adapters.openvino
 

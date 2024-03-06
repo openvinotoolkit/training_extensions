@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -316,14 +313,14 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.api.configuration</span> <span class="kn">import</span> <span class="n">ConfigurableEnum</span>
 
 
-<div class="viewcode-block" id="POTQuantizationPreset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.POTQuantizationPreset">[docs]</a><span class="k">class</span> <span class="nc">POTQuantizationPreset</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
+<div class="viewcode-block" id="POTQuantizationPreset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.html#otx.algorithms.common.configs.POTQuantizationPreset">[docs]</a><span class="k">class</span> <span class="nc">POTQuantizationPreset</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This Enum represents the quantization preset for post training optimization.&quot;&quot;&quot;</span>
 
     <span class="n">PERFORMANCE</span> <span class="o">=</span> <span class="s2">&quot;Performance&quot;</span>
     <span class="n">MIXED</span> <span class="o">=</span> <span class="s2">&quot;Mixed&quot;</span></div>
 
 
-<div class="viewcode-block" id="StorageCacheScheme"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.StorageCacheScheme">[docs]</a><span class="k">class</span> <span class="nc">StorageCacheScheme</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">StorageCacheScheme</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This Enum represents the storage scheme for Datumaro arrow format.&quot;&quot;&quot;</span>
 
     <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;NONE&quot;</span>
@@ -331,10 +328,10 @@ document.write(`
     <span class="n">JPEG_75</span> <span class="o">=</span> <span class="s2">&quot;JPEG/75&quot;</span>
     <span class="n">JPEG_95</span> <span class="o">=</span> <span class="s2">&quot;JPEG/95&quot;</span>
     <span class="n">PNG</span> <span class="o">=</span> <span class="s2">&quot;PNG&quot;</span>
-    <span class="n">TIFF</span> <span class="o">=</span> <span class="s2">&quot;TIFF&quot;</span></div>
+    <span class="n">TIFF</span> <span class="o">=</span> <span class="s2">&quot;TIFF&quot;</span>
 
 
-<div class="viewcode-block" id="BatchSizeAdaptType"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.BatchSizeAdaptType">[docs]</a><span class="k">class</span> <span class="nc">BatchSizeAdaptType</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">BatchSizeAdaptType</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This Enum represents the type of adapting batch size.</span>
 
 <span class="sd">    None : Not adapt batch size.</span>
@@ -344,10 +341,10 @@ document.write(`
 
     <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
     <span class="n">SAFE</span> <span class="o">=</span> <span class="s2">&quot;Safe&quot;</span>
-    <span class="n">FULL</span> <span class="o">=</span> <span class="s2">&quot;Full&quot;</span></div>
+    <span class="n">FULL</span> <span class="o">=</span> <span class="s2">&quot;Full&quot;</span>
 
 
-<div class="viewcode-block" id="InputSizePreset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.InputSizePreset">[docs]</a><span class="k">class</span> <span class="nc">InputSizePreset</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">InputSizePreset</span><span class="p">(</span><span class="n">ConfigurableEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configurable input size preset.&quot;&quot;&quot;</span>
 
     <span class="n">DEFAULT</span> <span class="o">=</span> <span class="s2">&quot;Default&quot;</span>
@@ -361,7 +358,7 @@ document.write(`
     <span class="n">_768x768</span> <span class="o">=</span> <span class="s2">&quot;768x768&quot;</span>
     <span class="n">_1024x1024</span> <span class="o">=</span> <span class="s2">&quot;1024x1024&quot;</span>
 
-<div class="viewcode-block" id="InputSizePreset.parse"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.InputSizePreset.parse">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse string value to tuple.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;Default&quot;</span><span class="p">:</span>
@@ -371,17 +368,17 @@ document.write(`
         <span class="n">parsed_tocken</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;(</span><span class="se">\\</span><span class="s2">d+)x(</span><span class="se">\\</span><span class="s2">d+)&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">parsed_tocken</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">parsed_tocken</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">parsed_tocken</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">parsed_tocken</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">parsed_tocken</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns parsed tuple.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">InputSizePreset</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
-<div class="viewcode-block" id="InputSizePreset.input_sizes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.configs.configuration_enums.html#otx.algorithms.common.configs.InputSizePreset.input_sizes">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">input_sizes</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns list of actual size tuples.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">tuple</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">cls</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()]</span></div></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">tuple</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">cls</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()]</span>
 </pre></div>
 
                 </article>
@@ -434,7 +431,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

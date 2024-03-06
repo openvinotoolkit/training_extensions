@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -319,14 +316,14 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.ops.op</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Operation</span>
 
 
-<div class="viewcode-block" id="ReduceMeanV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMeanV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ReduceMeanV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ReduceMeanV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMeanV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ReduceMeanV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceMeanV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ReduceMeanV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ReduceMeanV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1 class.&quot;&quot;&quot;</span>
 
@@ -334,7 +331,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ReduceMeanV1Attribute</span>
 
-<div class="viewcode-block" id="ReduceMeanV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMeanV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="ReduceMeanV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceMeanV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -347,14 +344,14 @@ document.write(`
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">keep_dims</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="ReduceProdV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceProdV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ReduceProdV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ReduceProdV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceProdV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ReduceProdV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceProdV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ReduceProdV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ReduceProdV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1Attribute class.&quot;&quot;&quot;</span>
 
@@ -362,7 +359,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ReduceProdV1Attribute</span>
 
-<div class="viewcode-block" id="ReduceProdV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceProdV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="ReduceProdV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceProdV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ReduceMeanV1Attribute&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -381,14 +378,14 @@ document.write(`
         <span class="k">return</span> <span class="n">output</span></div></div>
 
 
-<div class="viewcode-block" id="ReduceMinV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMinV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ReduceMinV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMinV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ReduceMinV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMinV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ReduceMinV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceMinV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ReduceMinV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ReduceMinV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceMinV1 class.&quot;&quot;&quot;</span>
 
@@ -396,7 +393,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ReduceMinV1Attribute</span>
 
-<div class="viewcode-block" id="ReduceMinV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceMinV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="ReduceMinV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceMinV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ReduceMinV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -415,14 +412,14 @@ document.write(`
         <span class="k">return</span> <span class="n">output</span></div></div>
 
 
-<div class="viewcode-block" id="ReduceSumV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceSumV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ReduceSumV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceSumV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+    <span class="n">keep_dims</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ReduceSumV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceSumV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ReduceSumV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceSumV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ReduceSumV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ReduceSumV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReduceSumV1 class.&quot;&quot;&quot;</span>
 
@@ -430,7 +427,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ReduceSumV1Attribute</span>
 
-<div class="viewcode-block" id="ReduceSumV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.reductions.html#otx.core.ov.ops.ReduceSumV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<div class="viewcode-block" id="ReduceSumV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReduceSumV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ReduceSumV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -490,7 +487,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

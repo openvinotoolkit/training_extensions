@@ -13,6 +13,14 @@ otx.api.usecases.exportable\_code.visualizers
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AnomalyVisualizer
+      IVisualizer
+      Visualizer
+   
    
 
    
@@ -20,13 +28,4 @@ otx.api.usecases.exportable\_code.visualizers
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.api.usecases.exportable_code.visualizers.anomaly_visualizer
-   otx.api.usecases.exportable_code.visualizers.visualizer
 

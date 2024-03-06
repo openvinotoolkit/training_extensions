@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -325,10 +322,10 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="ParserMixin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.parser_mixin.html#otx.core.ov.models.ParserMixin">[docs]</a><span class="k">class</span> <span class="nc">ParserMixin</span><span class="p">:</span>
+<div class="viewcode-block" id="ParserMixin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.ParserMixin">[docs]</a><span class="k">class</span> <span class="nc">ParserMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ParserMixin class.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ParserMixin.parse"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.parser_mixin.html#otx.core.ov.models.ParserMixin.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span>
+<div class="viewcode-block" id="ParserMixin.parse"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.ParserMixin.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_path_or_model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ov</span><span class="o">.</span><span class="n">Model</span><span class="p">],</span>
         <span class="n">weight_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -364,7 +361,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span></div>
 
-<div class="viewcode-block" id="ParserMixin.parser"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.parser_mixin.html#otx.core.ov.models.ParserMixin.parser">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ParserMixin.parser"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.models.html#otx.core.ov.models.ParserMixin.parser">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]]:</span>  <span class="c1"># pylint: disable=unused-argument</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function parser.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[])</span></div></div>
@@ -420,7 +417,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

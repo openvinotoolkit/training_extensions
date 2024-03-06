@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -343,7 +340,7 @@ document.write(`
 <span class="c1"># pylint: disable=invalid-name</span>
 
 
-<div class="viewcode-block" id="ColorPalette"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.ColorPalette">[docs]</a><span class="k">class</span> <span class="nc">ColorPalette</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">ColorPalette</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ColorPalette class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -386,10 +383,10 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return length of ColorPalette.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">palette</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="generate_label_schema"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.generate_label_schema">[docs]</a><span class="k">def</span> <span class="nf">generate_label_schema</span><span class="p">(</span><span class="n">label_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">label_domain</span><span class="p">:</span> <span class="n">Domain</span> <span class="o">=</span> <span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_label_schema"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.generate_label_schema">[docs]</a><span class="k">def</span> <span class="nf">generate_label_schema</span><span class="p">(</span><span class="n">label_names</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">label_domain</span><span class="p">:</span> <span class="n">Domain</span> <span class="o">=</span> <span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generating label_schema function.&quot;&quot;&quot;</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="n">ColorPalette</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">label_names</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">not_empty_labels</span> <span class="o">=</span> <span class="p">[</span>
@@ -412,7 +409,7 @@ document.write(`
     <span class="k">return</span> <span class="n">label_schema</span></div>
 
 
-<div class="viewcode-block" id="get_det_model_api_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.get_det_model_api_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_det_model_api_configuration</span><span class="p">(</span>
+<div class="viewcode-block" id="get_det_model_api_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.get_det_model_api_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_det_model_api_configuration</span><span class="p">(</span>
     <span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span> <span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span><span class="p">,</span> <span class="n">confidence_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tiling_parameters</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get ModelAPI config.&quot;&quot;&quot;</span>
@@ -459,7 +456,7 @@ document.write(`
     <span class="k">return</span> <span class="n">omz_config</span></div>
 
 
-<div class="viewcode-block" id="expand_box"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.expand_box">[docs]</a><span class="k">def</span> <span class="nf">expand_box</span><span class="p">(</span><span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scale_h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">expand_box</span><span class="p">(</span><span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">scale_h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scale_w</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand the box.</span>
 
 <span class="sd">    Args:</span>
@@ -481,10 +478,10 @@ document.write(`
     <span class="n">expanded_box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_c</span> <span class="o">+</span> <span class="n">w_half</span>
     <span class="n">expanded_box</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_c</span> <span class="o">-</span> <span class="n">h_half</span>
     <span class="n">expanded_box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_c</span> <span class="o">+</span> <span class="n">h_half</span>
-    <span class="k">return</span> <span class="n">expanded_box</span></div>
+    <span class="k">return</span> <span class="n">expanded_box</span>
 
 
-<div class="viewcode-block" id="mask_resize"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.mask_resize">[docs]</a><span class="k">def</span> <span class="nf">mask_resize</span><span class="p">(</span><span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">img_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">mask_resize</span><span class="p">(</span><span class="n">box</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">img_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resize mask to the size of the bounding box.</span>
 
 <span class="sd">    Args:</span>
@@ -511,10 +508,10 @@ document.write(`
         <span class="p">(</span><span class="n">y0</span> <span class="o">-</span> <span class="n">extended_box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">:</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">extended_box</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
         <span class="p">(</span><span class="n">x0</span> <span class="o">-</span> <span class="n">extended_box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="p">:</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">extended_box</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
     <span class="p">]</span>
-    <span class="k">return</span> <span class="n">bit_mask</span></div>
+    <span class="k">return</span> <span class="n">bit_mask</span>
 
 
-<div class="viewcode-block" id="create_detection_shapes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.create_detection_shapes">[docs]</a><span class="k">def</span> <span class="nf">create_detection_shapes</span><span class="p">(</span>
+<div class="viewcode-block" id="create_detection_shapes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.create_detection_shapes">[docs]</a><span class="k">def</span> <span class="nf">create_detection_shapes</span><span class="p">(</span>
     <span class="n">pred_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -565,7 +562,7 @@ document.write(`
     <span class="k">return</span> <span class="n">shapes</span></div>
 
 
-<div class="viewcode-block" id="create_mask_shapes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.utils.html#otx.algorithms.detection.utils.create_mask_shapes">[docs]</a><span class="k">def</span> <span class="nf">create_mask_shapes</span><span class="p">(</span>
+<div class="viewcode-block" id="create_mask_shapes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.create_mask_shapes">[docs]</a><span class="k">def</span> <span class="nf">create_mask_shapes</span><span class="p">(</span>
     <span class="n">pred_results</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -681,7 +678,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

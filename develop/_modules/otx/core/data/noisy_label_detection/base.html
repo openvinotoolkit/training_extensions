@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -321,7 +318,7 @@ document.write(`
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LossDynamicsTracker&quot;</span><span class="p">,</span> <span class="s2">&quot;LossDynamicsTrackingMixin&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="LossDynamicsTracker"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.base.html#otx.core.data.noisy_label_detection.LossDynamicsTracker">[docs]</a><span class="k">class</span> <span class="nc">LossDynamicsTracker</span><span class="p">:</span>
+<div class="viewcode-block" id="LossDynamicsTracker"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.html#otx.core.data.noisy_label_detection.LossDynamicsTracker">[docs]</a><span class="k">class</span> <span class="nc">LossDynamicsTracker</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to track loss dynamics and export it to Datumaro format.&quot;&quot;&quot;</span>
 
     <span class="n">TASK_NAME</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -329,7 +326,7 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="LossDynamicsTracker.init_with_otx_dataset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.base.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.init_with_otx_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">init_with_otx_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LossDynamicsTracker.init_with_otx_dataset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.init_with_otx_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">init_with_otx_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;DatasetEntity should be injected to the tracker for the initialization.&quot;&quot;&quot;</span>
         <span class="n">otx_labels</span> <span class="o">=</span> <span class="n">otx_dataset</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
         <span class="n">label_categories</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">LabelCategories</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">([</span><span class="n">label_entity</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label_entity</span> <span class="ow">in</span> <span class="n">otx_labels</span><span class="p">])</span>
@@ -358,16 +355,16 @@ document.write(`
     <span class="k">def</span> <span class="nf">_convert_anns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">DatasetItemEntityWithID</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">dm</span><span class="o">.</span><span class="n">Annotation</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="LossDynamicsTracker.accumulate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.base.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.accumulate">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="nb">iter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LossDynamicsTracker.accumulate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.accumulate">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="nb">iter</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Accumulate training loss dynamics for each training step.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LossDynamicsTracker.export"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.base.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LossDynamicsTracker.export"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.html#otx.core.data.noisy_label_detection.LossDynamicsTracker.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export loss dynamics statistics to Datumaro format.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="LossDynamicsTrackingMixin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.base.html#otx.core.data.noisy_label_detection.LossDynamicsTrackingMixin">[docs]</a><span class="k">class</span> <span class="nc">LossDynamicsTrackingMixin</span><span class="p">:</span>
+<div class="viewcode-block" id="LossDynamicsTrackingMixin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.noisy_label_detection.html#otx.core.data.noisy_label_detection.LossDynamicsTrackingMixin">[docs]</a><span class="k">class</span> <span class="nc">LossDynamicsTrackingMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix-in to track loss dynamics during training.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -430,7 +427,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

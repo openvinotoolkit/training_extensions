@@ -33,7 +33,6 @@ otx.algorithms.detection.adapters.mmdet.models
    otx.algorithms.detection.adapters.mmdet.models.detectors
    otx.algorithms.detection.adapters.mmdet.models.heads
    otx.algorithms.detection.adapters.mmdet.models.layers
-   otx.algorithms.detection.adapters.mmdet.models.loss_dyns
    otx.algorithms.detection.adapters.mmdet.models.losses
    otx.algorithms.detection.adapters.mmdet.models.necks
    otx.algorithms.detection.adapters.mmdet.models.roi_heads

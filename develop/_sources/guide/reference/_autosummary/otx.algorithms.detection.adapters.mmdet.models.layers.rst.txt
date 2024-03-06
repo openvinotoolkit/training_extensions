@@ -13,6 +13,17 @@ otx.algorithms.detection.adapters.mmdet.models.layers
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomDINOTransformer
+      DINOTransformerDecoder
+      CdnQueryGenerator
+      EfficientTransformerEncoder
+      EfficientTransformerLayer
+      SmallExpandFFN
+   
    
 
    
@@ -20,14 +31,4 @@ otx.algorithms.detection.adapters.mmdet.models.layers
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.layers.dino
-   otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers
-   otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers
 

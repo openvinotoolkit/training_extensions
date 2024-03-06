@@ -13,6 +13,12 @@ otx.algorithms.detection.adapters.mmdet
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXDetDataset
+   
    
 
    
@@ -27,12 +33,5 @@ otx.algorithms.detection.adapters.mmdet
    :toctree:
    :recursive:
 
-   otx.algorithms.detection.adapters.mmdet.configurer
-   otx.algorithms.detection.adapters.mmdet.datasets
-   otx.algorithms.detection.adapters.mmdet.evaluation
-   otx.algorithms.detection.adapters.mmdet.hooks
    otx.algorithms.detection.adapters.mmdet.models
-   otx.algorithms.detection.adapters.mmdet.nncf
-   otx.algorithms.detection.adapters.mmdet.task
-   otx.algorithms.detection.adapters.mmdet.utils
 

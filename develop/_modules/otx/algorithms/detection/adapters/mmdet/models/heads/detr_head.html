@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -320,7 +317,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
 
-<div class="viewcode-block" id="DETRHeadExtension"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension">[docs]</a><span class="k">class</span> <span class="nc">DETRHeadExtension</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<div class="viewcode-block" id="DETRHeadExtension"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension">[docs]</a><span class="k">class</span> <span class="nc">DETRHeadExtension</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Head of DETR. DETR:End-to-End Object Detection with Transformers.</span>
 
 <span class="sd">    Origin implementation: DETRHead of detr_head.py in mmdet3.x</span>
@@ -328,7 +325,7 @@ document.write(`
 <span class="sd">        Since InstanceList is a new data type from mmdet3.x, List[Config] will replace it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DETRHeadExtension.loss_by_feat"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat</span><span class="p">(</span>
+<div class="viewcode-block" id="DETRHeadExtension.loss_by_feat"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">all_layers_cls_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">all_layers_bbox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -387,7 +384,7 @@ document.write(`
             <span class="n">num_dec_layer</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">loss_dict</span></div>
 
-<div class="viewcode-block" id="DETRHeadExtension.loss_by_feat_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat_single</span><span class="p">(</span>
+<div class="viewcode-block" id="DETRHeadExtension.loss_by_feat_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_gt_instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Config</span><span class="p">],</span> <span class="n">batch_img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loss function for outputs from a single decoder layer of a single feature level.</span>
@@ -624,7 +621,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

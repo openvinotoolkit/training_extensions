@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -314,7 +311,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">mmcv.runner.hooks.hook</span> <span class="kn">import</span> <span class="n">HOOKS</span><span class="p">,</span> <span class="n">Hook</span>
 
 
-<div class="viewcode-block" id="CompressionHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.nncf.hooks.html#otx.algorithms.common.adapters.mmcv.CompressionHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CompressionHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CompressionHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CompressionHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CompressionHook.&quot;&quot;&quot;</span>
 
@@ -323,17 +320,17 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compression_ctrl</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compression_ctrl</span> <span class="o">=</span> <span class="n">compression_ctrl</span>
 
-<div class="viewcode-block" id="CompressionHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.nncf.hooks.html#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CompressionHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called after train iter.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compression_ctrl</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="CompressionHook.after_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.nncf.hooks.html#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CompressionHook.after_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CompressionHook.after_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called after train epoch.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compression_ctrl</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">epoch_step</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">runner</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">runner</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compression_ctrl</span><span class="o">.</span><span class="n">statistics</span><span class="p">()</span><span class="o">.</span><span class="n">to_str</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="CompressionHook.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.nncf.hooks.html#otx.algorithms.common.adapters.mmcv.CompressionHook.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CompressionHook.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CompressionHook.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called before run.&quot;&quot;&quot;</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">compression_ctrl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compression_ctrl</span>
         <span class="k">if</span> <span class="n">runner</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -390,7 +387,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

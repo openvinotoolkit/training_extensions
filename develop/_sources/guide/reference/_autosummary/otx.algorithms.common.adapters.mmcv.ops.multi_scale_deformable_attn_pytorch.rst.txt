@@ -1,6 +1,0 @@
-otx.algorithms.common.adapters.mmcv.ops.multi\_scale\_deformable\_attn\_pytorch
-===============================================================================
-
-.. currentmodule:: otx.algorithms.common.adapters.mmcv.ops
-
-.. autofunction:: multi_scale_deformable_attn_pytorch

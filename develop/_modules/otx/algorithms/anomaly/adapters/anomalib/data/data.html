@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -348,7 +345,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="OTXAnomalyDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataset">[docs]</a><span class="k">class</span> <span class="nc">OTXAnomalyDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXAnomalyDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Anomaly Dataset Adaptor.</span>
 
 <span class="sd">    This class converts OTX Dataset into Anomalib dataset that</span>
@@ -440,10 +437,10 @@ document.write(`
             <span class="n">item</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">item</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="n">item</span></div>
+        <span class="k">return</span> <span class="n">item</span>
 
 
-<div class="viewcode-block" id="OTXAnomalyDataModule"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule">[docs]</a><span class="k">class</span> <span class="nc">OTXAnomalyDataModule</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule">[docs]</a><span class="k">class</span> <span class="nc">OTXAnomalyDataModule</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Anomaly DataModule.</span>
 
 <span class="sd">    This class converts OTX Dataset into Anomalib dataset and stores</span>
@@ -476,7 +473,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">test_otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">predict_otx_dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.setup"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.setup"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Anomaly Data Module.</span>
 
 <span class="sd">        Args:</span>
@@ -499,7 +496,7 @@ document.write(`
         <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">predict_otx_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span></div>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.summary"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.summary">[docs]</a>    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.summary"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.summary">[docs]</a>    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print size of the dataset, number of anomalous images and number of normal images.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">VALIDATION</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">TESTING</span><span class="p">]:</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
@@ -514,7 +511,7 @@ document.write(`
                 <span class="n">num_anomalous</span><span class="p">,</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.train_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.train_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.train_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.train_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataLoader</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Train Dataloader.</span>
@@ -531,7 +528,7 @@ document.write(`
             <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.val_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.val_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.val_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.val_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validation Dataloader.</span>
 
 <span class="sd">        Returns:</span>
@@ -554,7 +551,7 @@ document.write(`
             <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.test_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.test_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.test_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.test_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Test Dataloader.</span>
 
 <span class="sd">        Returns:</span>
@@ -569,7 +566,7 @@ document.write(`
             <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXAnomalyDataModule.predict_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.predict_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">predict_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
+<div class="viewcode-block" id="OTXAnomalyDataModule.predict_dataloader"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib.data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.predict_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">predict_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict Dataloader.</span>
 
 <span class="sd">        Returns:</span>
@@ -635,7 +632,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -327,18 +324,18 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.api.usecases.reporting.time_monitor_callback</span> <span class="kn">import</span> <span class="n">TimeMonitorCallback</span>
 
 
-<div class="viewcode-block" id="TrainingProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.TrainingProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">TrainingProgressCallback</span><span class="p">(</span><span class="n">TimeMonitorCallback</span><span class="p">):</span>
+<div class="viewcode-block" id="TrainingProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.TrainingProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">TrainingProgressCallback</span><span class="p">(</span><span class="n">TimeMonitorCallback</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TrainingProgressCallback class for time monitoring.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_progress_callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">update_progress_callback</span><span class="o">=</span><span class="n">update_progress_callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TrainingProgressCallback.on_train_batch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.TrainingProgressCallback.on_train_batch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TrainingProgressCallback.on_train_batch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.TrainingProgressCallback.on_train_batch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function on training batch ended.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_batch_end</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_progress</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="TrainingProgressCallback.on_epoch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.TrainingProgressCallback.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TrainingProgressCallback.on_epoch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.TrainingProgressCallback.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function on epoch ended.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">past_epoch_duration</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch_time</span><span class="p">)</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="p">((</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_epochs</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
@@ -349,7 +346,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="n">score</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="InferenceProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.InferenceProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">InferenceProgressCallback</span><span class="p">(</span><span class="n">TimeMonitorCallback</span><span class="p">):</span>
+<div class="viewcode-block" id="InferenceProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.InferenceProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">InferenceProgressCallback</span><span class="p">(</span><span class="n">TimeMonitorCallback</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;InferenceProgressCallback class for time monitoring.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_test_steps</span><span class="p">,</span> <span class="n">update_progress_callback</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -362,13 +359,13 @@ document.write(`
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="InferenceProgressCallback.on_test_batch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.InferenceProgressCallback.on_test_batch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="InferenceProgressCallback.on_test_batch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.InferenceProgressCallback.on_test_batch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function on testing batch ended.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_batch_end</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_progress</span><span class="p">()))</span></div></div>
 
 
-<div class="viewcode-block" id="OptimizationProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.OptimizationProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">OptimizationProgressCallback</span><span class="p">(</span><span class="n">TrainingProgressCallback</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimizationProgressCallback"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.OptimizationProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">OptimizationProgressCallback</span><span class="p">(</span><span class="n">TrainingProgressCallback</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Progress callback used for optimization using NNCF.</span>
 
 <span class="sd">    There are three stages to the progress bar:</span>
@@ -395,7 +392,7 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="n">loading_stage_progress_percentage</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OptimizationProgressCallback.on_train_begin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimizationProgressCallback.on_train_begin"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function when training beginning.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
         <span class="c1"># Callback initialization takes place here after OTXProgressHook.before_run() is called</span>
@@ -407,12 +404,12 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">=</span> <span class="n">loading_stage_steps</span> <span class="o">+</span> <span class="n">initialization_stage_steps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_progress</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="OptimizationProgressCallback.on_train_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_train_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimizationProgressCallback.on_train_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_train_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function on training ended.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_progress</span><span class="p">(),</span> <span class="n">score</span><span class="o">=</span><span class="n">logs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OptimizationProgressCallback.on_initialization_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_initialization_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_initialization_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimizationProgressCallback.on_initialization_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.OptimizationProgressCallback.on_initialization_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_initialization_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;on_initialization_end callback for optimization using NNCF.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_callback</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">loading_stage_progress_percentage</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialization_stage_progress_percentage</span>
@@ -469,7 +466,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

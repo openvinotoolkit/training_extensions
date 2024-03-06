@@ -13,6 +13,12 @@ otx.algorithms.anomaly.configs.segmentation.draem
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DraemAnomalySegmentationConfig
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.anomaly.configs.segmentation.draem
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.anomaly.configs.segmentation.draem.configuration
 

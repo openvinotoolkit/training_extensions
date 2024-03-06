@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -328,7 +325,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="CustomDeformableDETR"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomDeformableDETR"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomDeformableDETR</span><span class="p">(</span><span class="n">DeformableDETR</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom Deformable DETR with task adapt.</span>
 
@@ -347,7 +344,7 @@ document.write(`
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cls_layers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cls_branches&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="CustomDeformableDETR.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR.load_state_dict_pre_hook">[docs]</a>    <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">,</span> <span class="n">ckpt_classes</span><span class="p">,</span> <span class="n">ckpt_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomDeformableDETR.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR.load_state_dict_pre_hook">[docs]</a>    <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">,</span> <span class="n">ckpt_classes</span><span class="p">,</span> <span class="n">ckpt_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify input state_dict according to class name matching before weight loading.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;----------------- CustomDeformableDETR.load_state_dict_pre_hook() called&quot;</span><span class="p">)</span>
 
@@ -382,7 +379,7 @@ document.write(`
 <span class="k">if</span> <span class="n">is_mmdeploy_enabled</span><span class="p">():</span>
     <span class="kn">from</span> <span class="nn">mmdeploy.core</span> <span class="kn">import</span> <span class="n">FUNCTION_REWRITER</span>
 
-<div class="viewcode-block" id="custom_deformable_detr__simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr__simple_test">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.CustomDeformableDETR.simple_test&quot;</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_deformable_detr__simple_test</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -401,7 +398,7 @@ document.write(`
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">ActivationMapHook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">bbox_results</span><span class="p">,</span> <span class="n">feature_vector</span><span class="p">,</span> <span class="n">saliency_map</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">bbox_results</span></div>
+        <span class="k">return</span> <span class="n">bbox_results</span>
 </pre></div>
 
                 </article>
@@ -454,7 +451,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

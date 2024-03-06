@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -331,11 +328,11 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-locals, too-many-arguments, abstract-method</span>
 
 
-<div class="viewcode-block" id="CrossDatasetDetectorHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CrossDatasetDetectorHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CrossDatasetDetectorHead</span><span class="p">(</span><span class="n">BaseDenseHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Head class for Ignore labels.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CrossDatasetDetectorHead.get_atss_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_atss_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_atss_targets</span><span class="p">(</span>
+<div class="viewcode-block" id="CrossDatasetDetectorHead.get_atss_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_atss_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_atss_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchor_list</span><span class="p">,</span>
         <span class="n">valid_flag_list</span><span class="p">,</span>
@@ -420,7 +417,7 @@ document.write(`
             <span class="n">num_total_neg</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CrossDatasetDetectorHead.get_fcos_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_fcos_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_fcos_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">gt_bboxes_list</span><span class="p">,</span> <span class="n">gt_labels_list</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">):</span>
+<div class="viewcode-block" id="CrossDatasetDetectorHead.get_fcos_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_fcos_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_fcos_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">gt_bboxes_list</span><span class="p">,</span> <span class="n">gt_labels_list</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute regression, classification and centerss targets for points in multiple images.</span>
 
 <span class="sd">        Args:</span>
@@ -480,7 +477,7 @@ document.write(`
         <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">concat_lvl_labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">concat_lvl_bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">valid_label_mask</span></div>
 
-<div class="viewcode-block" id="CrossDatasetDetectorHead.vfnet_to_atss_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.vfnet_to_atss_targets">[docs]</a>    <span class="k">def</span> <span class="nf">vfnet_to_atss_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">mlvl_points</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="CrossDatasetDetectorHead.vfnet_to_atss_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.vfnet_to_atss_targets">[docs]</a>    <span class="k">def</span> <span class="nf">vfnet_to_atss_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">mlvl_points</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A wrapper for computing ATSS targets for points in multiple images.</span>
 
 <span class="sd">        Args:</span>
@@ -549,7 +546,7 @@ document.write(`
         <span class="n">bbox_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">bbox_weights_list</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">labels_list</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets_list</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">valid_label_mask</span></div>
 
-<div class="viewcode-block" id="CrossDatasetDetectorHead.get_valid_label_mask"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_valid_label_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_label_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">all_labels</span><span class="p">,</span> <span class="n">use_bg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="CrossDatasetDetectorHead.get_valid_label_mask"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead.get_valid_label_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_valid_label_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">all_labels</span><span class="p">,</span> <span class="n">use_bg</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Getter function valid_label_mask.&quot;&quot;&quot;</span>
         <span class="n">num_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">use_bg</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span>
         <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="p">[]</span>
@@ -564,7 +561,7 @@ document.write(`
         <span class="k">return</span> <span class="n">valid_label_mask</span></div></div>
 
 
-<div class="viewcode-block" id="TrackingLossDynamicsMixIn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.TrackingLossDynamicsMixIn">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">TrackingLossDynamicsMixIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix-In class for tracking loss dynamics.&quot;&quot;&quot;</span>
 
@@ -654,7 +651,7 @@ document.write(`
 
             <span class="k">return</span> <span class="n">wrapper</span>
 
-        <span class="k">return</span> <span class="n">wrapper_with_option</span></div>
+        <span class="k">return</span> <span class="n">wrapper_with_option</span>
 </pre></div>
 
                 </article>
@@ -707,7 +704,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

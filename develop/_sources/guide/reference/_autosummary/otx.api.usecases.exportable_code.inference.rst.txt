@@ -13,6 +13,12 @@ otx.api.usecases.exportable\_code.inference
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      IInferencer
+   
    
 
    
@@ -20,12 +26,4 @@ otx.api.usecases.exportable\_code.inference
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.api.usecases.exportable_code.inference.inference
 

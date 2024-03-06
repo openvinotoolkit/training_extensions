@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -382,7 +379,7 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=too-many-instance-attributes</span>
-<div class="viewcode-block" id="InferenceTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask">[docs]</a><span class="k">class</span> <span class="nc">InferenceTask</span><span class="p">(</span><span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IExportTask</span><span class="p">,</span> <span class="n">IUnload</span><span class="p">):</span>
+<div class="viewcode-block" id="InferenceTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask">[docs]</a><span class="k">class</span> <span class="nc">InferenceTask</span><span class="p">(</span><span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IExportTask</span><span class="p">,</span> <span class="n">IUnload</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Anomaly Task.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -419,7 +416,7 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span>
 
-<div class="viewcode-block" id="InferenceTask.get_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">]:</span>
+<div class="viewcode-block" id="InferenceTask.get_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">DictConfig</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Anomalib Config from task environment.</span>
 
 <span class="sd">        Returns:</span>
@@ -433,7 +430,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">config</span></div>
 
-<div class="viewcode-block" id="InferenceTask.load_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AnomalyModule</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.load_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.load_model">[docs]</a>    <span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">otx_model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AnomalyModule</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and Load Anomalib Module from OTX Model.</span>
 
 <span class="sd">        This method checks if the task environment has a saved OTX Model,</span>
@@ -473,7 +470,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="InferenceTask.cancel_training"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.cancel_training">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_training</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.cancel_training"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.cancel_training">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_training</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Cancel the training `after_batch_end`.</span>
 
 <span class="sd">        This terminates the training; however validation is still performed.</span>
@@ -486,7 +483,7 @@ document.write(`
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">cancel_training_file_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">):</span>
             <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="InferenceTask.infer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">InferenceParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.infer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">InferenceParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform inference on a dataset.</span>
 
 <span class="sd">        Args:</span>
@@ -523,7 +520,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dataset</span></div>
 
-<div class="viewcode-block" id="InferenceTask.evaluate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.evaluate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the performance on a result set.</span>
 
 <span class="sd">        Args:</span>
@@ -560,7 +557,7 @@ document.write(`
             <span class="n">opset_version</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="InferenceTask.export"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+<div class="viewcode-block" id="InferenceTask.export"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">export_type</span><span class="p">:</span> <span class="n">ExportType</span><span class="p">,</span>
         <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">,</span>
@@ -692,7 +689,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a list to space separated string.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">arr</span><span class="p">))</span>
 
-<div class="viewcode-block" id="InferenceTask.model_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.model_info">[docs]</a>    <span class="k">def</span> <span class="nf">model_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.model_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.model_info">[docs]</a>    <span class="k">def</span> <span class="nf">model_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return model info to save the model weights.</span>
 
 <span class="sd">        Returns:</span>
@@ -704,7 +701,7 @@ document.write(`
             <span class="s2">&quot;VERSION&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="InferenceTask.save_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.save_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the model after training is completed.</span>
 
 <span class="sd">        Args:</span>
@@ -787,7 +784,7 @@ document.write(`
         <span class="n">is_in_docker</span> <span class="o">=</span> <span class="n">is_in_docker</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/.dockerenv&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">is_in_docker</span>
 
-<div class="viewcode-block" id="InferenceTask.unload"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.unload">[docs]</a>    <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.unload"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.unload">[docs]</a>    <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unload the task.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
 
@@ -803,7 +800,7 @@ document.write(`
                 <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory_allocated</span><span class="p">(),</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="InferenceTask.cleanup"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.inference.html#otx.algorithms.anomaly.tasks.InferenceTask.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="InferenceTask.cleanup"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up work directory.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work_dir_is_temp</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div></div>
@@ -859,7 +856,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -332,7 +329,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-locals, protected-access, unused-argument</span>
 
 
-<div class="viewcode-block" id="CustomMaskRCNN"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomMaskRCNN"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomMaskRCNN</span><span class="p">(</span><span class="n">SAMDetectorMixin</span><span class="p">,</span> <span class="n">L2SPDetectorMixin</span><span class="p">,</span> <span class="n">MaskRCNN</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomMaskRCNN Class for mmdetection detectors.&quot;&quot;&quot;</span>
 
@@ -350,7 +347,7 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="CustomMaskRCNN.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CustomMaskRCNN.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">,</span> <span class="n">chkpt_classes</span><span class="p">,</span> <span class="n">chkpt_dict</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify input state_dict according to class name matching before weight loading.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;----------------- CustomMaskRCNN.load_state_dict_pre_hook() called w/ prefix: </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -400,7 +397,7 @@ document.write(`
     <span class="kn">from</span> <span class="nn">mmdeploy.core</span> <span class="kn">import</span> <span class="n">FUNCTION_REWRITER</span><span class="p">,</span> <span class="n">mark</span>
     <span class="kn">from</span> <span class="nn">mmdeploy.utils</span> <span class="kn">import</span> <span class="n">is_dynamic_shape</span>
 
-<div class="viewcode-block" id="custom_mask_rcnn__simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_mask_rcnn__simple_test">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.CustomMaskRCNN.simple_test&quot;</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_mask_rcnn__simple_test</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">proposals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -419,7 +416,7 @@ document.write(`
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">,</span> <span class="n">feature_vector</span><span class="p">,</span> <span class="n">saliency_map</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="k">return</span> <span class="n">out</span>
 
     <span class="nd">@mark</span><span class="p">(</span><span class="s2">&quot;custom_maskrcnn_forward&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dets&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="s2">&quot;feats&quot;</span><span class="p">,</span> <span class="s2">&quot;saliencies&quot;</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -435,7 +432,7 @@ document.write(`
         <span class="n">img_metas</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;img_shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_shape</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_test</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="custom_maskrcnn__forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn__forward">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.CustomMaskRCNN.forward&quot;</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_maskrcnn__forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -449,7 +446,7 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -502,7 +499,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

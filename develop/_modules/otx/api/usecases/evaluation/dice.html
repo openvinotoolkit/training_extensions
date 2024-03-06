@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -338,7 +335,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.api.entities.image</span> <span class="kn">import</span> <span class="n">Image</span>
 
 
-<div class="viewcode-block" id="DiceAverage"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage">[docs]</a><span class="k">class</span> <span class="nc">DiceAverage</span><span class="p">(</span><span class="n">IPerformanceProvider</span><span class="p">):</span>
+<div class="viewcode-block" id="DiceAverage"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.html#otx.api.usecases.evaluation.DiceAverage">[docs]</a><span class="k">class</span> <span class="nc">DiceAverage</span><span class="p">(</span><span class="n">IPerformanceProvider</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the average Dice coefficient overall and for individual labels.</span>
 
 <span class="sd">    See https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient for background information.</span>
@@ -377,7 +374,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dice_per_label</span>
 
-<div class="viewcode-block" id="DiceAverage.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Performance</span><span class="p">:</span>
+<div class="viewcode-block" id="DiceAverage.get_performance"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.html#otx.api.usecases.evaluation.DiceAverage.get_performance">[docs]</a>    <span class="k">def</span> <span class="nf">get_performance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Performance</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the performance of the resultset.&quot;&quot;&quot;</span>
         <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overall_dice</span>
         <span class="n">dashboard_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">MetricsGroup</span><span class="p">]]</span>
@@ -457,7 +454,7 @@ document.write(`
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">compute_dice_using_intersection_and_cardinality</span><span class="p">(</span><span class="n">all_intersection</span><span class="p">,</span> <span class="n">all_cardinality</span><span class="p">,</span> <span class="n">average</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DiceAverage.compute_dice_using_intersection_and_cardinality"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.dice.html#otx.api.usecases.evaluation.DiceAverage.compute_dice_using_intersection_and_cardinality">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="DiceAverage.compute_dice_using_intersection_and_cardinality"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.usecases.evaluation.html#otx.api.usecases.evaluation.DiceAverage.compute_dice_using_intersection_and_cardinality">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">compute_dice_using_intersection_and_cardinality</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">all_intersection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="nb">int</span><span class="p">],</span>
@@ -584,7 +581,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

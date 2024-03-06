@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,8 +46,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head" href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html" />
-    <link rel="prev" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html" />
+    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.layers" href="otx.algorithms.detection.adapters.mmdet.models.layers.html" />
+    <link rel="prev" title="otx.algorithms.detection.adapters.mmdet.models.detectors" href="otx.algorithms.detection.adapters.mmdet.models.detectors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,6 +461,47 @@ document.write(`
   <section id="module-otx.algorithms.detection.adapters.mmdet.models.heads">
 <span id="otx-algorithms-detection-adapters-mmdet-models-heads"></span><h1>otx.algorithms.detection.adapters.mmdet.models.heads<a class="headerlink" href="#module-otx.algorithms.detection.adapters.mmdet.models.heads" title="Permalink to this heading">#</a></h1>
 <p>Initial file for mmdetection heads.</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>([init_cfg])</p></td>
+<td><p>Head class for Ignore labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.SSDAnchorGeneratorClustered" title="otx.algorithms.detection.adapters.mmdet.models.heads.SSDAnchorGeneratorClustered"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SSDAnchorGeneratorClustered</span></code></a>(strides, widths, ...)</p></td>
+<td><p>Custom Anchor Generator for SSD.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomATSSHead</span></code></a>(*args[, bg_loss_weight, ...])</p></td>
+<td><p>CustomATSSHead for OTX template.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomDINOHead</span></code></a>(*args[, dn_cfg])</p></td>
+<td><p>Head of DINO.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomFCNMaskHead</span></code></a>([num_convs, ...])</p></td>
+<td><p>Custom FCN Mask Head for fast mask evaluation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomRetinaHead</span></code></a>(*args[, bg_loss_weight])</p></td>
+<td><p>CustomRetinaHead class for OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomSSDHead</span></code></a>(*args[, bg_loss_weight, ...])</p></td>
+<td><p>CustomSSDHead class for OTX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRoIHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRoIHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomRoIHead</span></code></a>([bbox_roi_extractor, ...])</p></td>
+<td><p>CustomROIHead class for OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomVFNetHead</span></code></a>(*args[, bg_loss_weight])</p></td>
+<td><p>CustomVFNetHead class for OTX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomYOLOXHead</span></code></a>(*args, **kwargs)</p></td>
+<td><p>CustomYOLOXHead class for OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension" title="otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DETRHeadExtension</span></code></a>([init_cfg])</p></td>
+<td><p>Head of DETR.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics</span></code></a>(*args[, ...])</p></td>
+<td><p>CustomATSSHead which supports tracking loss dynamics.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CrossDatasetDetectorHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/cross_dataset_detector_head.html#CrossDatasetDetectorHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead" title="Permalink to this definition">#</a></dt>
@@ -562,7 +592,7 @@ bbox_targets_list (list[Tensor]): Regression targets of each</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomATSSHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_qfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qfl_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ATSSHead</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ATSSHead</span></code></p>
 <p>CustomATSSHead for OTX template.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
@@ -574,6 +604,37 @@ returning the targets as the parent method does, it also returns the
 anchors as the first element of the returned tuple.
 However, if the detector’s head loss uses CrossSigmoidFocalLoss,
 the labels_weights_list consists of (binarized label schema * weights) of batch images</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centernesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute losses of the head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box scores for each scale level
+Has shape (N, num_anchors * num_classes, H, W)</p></li>
+<li><p><strong>bbox_preds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box energies / deltas for each scale
+level with shape (N, num_anchors * 4, H, W)</p></li>
+<li><p><strong>centernesses</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Centerness for each scale
+level with shape (N, num_anchors * 1, H, W)</p></li>
+<li><p><strong>gt_bboxes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Ground truth bboxes for each image with
+shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.</p></li>
+<li><p><strong>gt_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – class indices corresponding to each box</p></li>
+<li><p><strong>img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em>) – Meta information of each image, e.g.,
+image size, scaling factor, etc.</p></li>
+<li><p><strong>gt_bboxes_ignore</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>] </em><em>| </em><em>None</em>) – specify which bounding
+boxes can be ignored when computing the loss.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of loss components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -617,13 +678,44 @@ reduced over all GPUs.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomATSSHeadTrackingLossDynamics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_qfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qfl_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHeadTrackingLossDynamics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.TrackingLossDynamicsMixIn" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.TrackingLossDynamicsMixIn"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackingLossDynamicsMixIn</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.CustomATSSHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.CustomATSSHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomATSSHead</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TrackingLossDynamicsMixIn</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.CustomATSSHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomATSSHead</span></code></a></p>
 <p>CustomATSSHead which supports tracking loss dynamics.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.get_targets">
 <span class="sig-name descname"><span class="pre">get_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">anchor_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_flag_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unmap_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHeadTrackingLossDynamics.get_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.get_targets" title="Permalink to this definition">#</a></dt>
 <dd><p>Get targets for Detection head.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centernesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHeadTrackingLossDynamics.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute losses of the head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box scores for each scale level
+Has shape (N, num_anchors * num_classes, H, W)</p></li>
+<li><p><strong>bbox_preds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box energies / deltas for each scale
+level with shape (N, num_anchors * 4, H, W)</p></li>
+<li><p><strong>centernesses</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Centerness for each scale
+level with shape (N, num_anchors * 1, H, W)</p></li>
+<li><p><strong>gt_bboxes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Ground truth bboxes for each image with
+shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.</p></li>
+<li><p><strong>gt_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – class indices corresponding to each box</p></li>
+<li><p><strong>img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em>) – Meta information of each image, e.g.,
+image size, scaling factor, etc.</p></li>
+<li><p><strong>gt_bboxes_ignore</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>] </em><em>| </em><em>None</em>) – specify which bounding
+boxes can be ignored when computing the loss.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of loss components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -666,8 +758,8 @@ reduced over all GPUs.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomDINOHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dn_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DeformableDETRHead</span></code>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.DETRHeadExtension" title="otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.DETRHeadExtension"><code class="xref py py-class docutils literal notranslate"><span class="pre">DETRHeadExtension</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomDINOHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dn_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DeformableDETRHead</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension" title="otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.DETRHeadExtension"><code class="xref py py-class docutils literal notranslate"><span class="pre">DETRHeadExtension</span></code></a></p>
 <p>Head of DINO.</p>
 <p>Based on detr_head.py and deformable_detr.py in mmdet2.x, some functions from dino_head.py in mmdet3.x are added.
 Forward structure:</p>
@@ -680,21 +772,49 @@ Forward structure:</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward function.</p>
+<p>Original implementation: forward function of deformable_detr_head.py in mmdet3.x
+What’s changed: None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hidden_states</strong> (<em>Tensor</em>) – Hidden states output from each decoder
+layer, has shape (num_decoder_layers, bs, num_queries, dim).</p></li>
+<li><p><strong>references</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – List of the reference from the decoder.
+The first reference is the <cite>init_reference</cite> (initial) and the
+other num_decoder_layers(6) references are <cite>inter_references</cite>
+(intermediate). The <cite>init_reference</cite> has shape (bs,
+num_queries, 4) when <cite>as_two_stage</cite> of the detector is <cite>True</cite>,
+otherwise (bs, num_queries, 2). Each <cite>inter_reference</cite> has
+shape (bs, num_queries, 4) when <cite>with_box_refine</cite> of the
+detector is <cite>True</cite>, otherwise (bs, num_queries, 2). The
+coordinates are arranged as (cx, cy) when the last dimension is
+2, and (cx, cy, w, h) when it is 4.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>results of head containing the following tensor.</p>
+<ul class="simple">
+<li><p>all_layers_outputs_classes (Tensor): Outputs from the
+classification head, has shape (num_decoder_layers, bs,
+num_queries, cls_out_channels).</p></li>
+<li><p>all_layers_outputs_coords (Tensor): Sigmoid outputs from the
+regression head with normalized coordinate format (cx, cy, w,
+h), has shape (num_decoder_layers, bs, num_queries, 4) with the
+last dimension arranged as (cx, cy, w, h).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a>[Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train">
-<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposal_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.forward_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposal_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.forward_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function for training mode.</p>
 <p>Origin impelmentation: forward_train function of detr_head.py in mmdet2.x
 What’s changed: Divided self.forward into self.forward_transformer + self.forward.
@@ -726,7 +846,7 @@ if None, test_cfg would be used.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer">
-<span class="sig-name descname"><span class="pre">forward_transformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlvl_feats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.forward_transformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward_transformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlvl_feats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.forward_transformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer" title="Permalink to this definition">#</a></dt>
 <dd><p>Transformers’s forward function.</p>
 <p>Origin implementation: forward function of deformable_detr_head.py in mmdet2.x
 What’s changed: Original implementation has post-processing process after getting outputs from</p>
@@ -798,6 +918,52 @@ denoising and matching parts and loss calculation.</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_outputs_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_outputs_coord</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dn_meta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_data_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html#CustomDINOHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform forward propagation and loss calculation.</p>
+<p>Original implementation: loss function of dino_head.py in mmdet3.x
+What’s changed: Change the name of function of loss_by_feat to loss_by_feat_two_stage since</p>
+<blockquote>
+<div><p>there are changes in function input from parent’s implementation.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hidden_states</strong> (<em>Tensor</em>) – Hidden states output from each decoder
+layer, has shape (num_decoder_layers, bs, num_queries_total,
+dim), where <cite>num_queries_total</cite> is the sum of
+<cite>num_denoising_queries</cite> and <cite>num_matching_queries</cite> when
+<cite>self.training</cite> is <cite>True</cite>, else <cite>num_matching_queries</cite>.</p></li>
+<li><p><strong>references</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – List of the reference from the decoder.
+The first reference is the <cite>init_reference</cite> (initial) and the
+other num_decoder_layers(6) references are <cite>inter_references</cite>
+(intermediate). The <cite>init_reference</cite> has shape (bs,
+num_queries_total, 4) and each <cite>inter_reference</cite> has shape
+(bs, num_queries, 4) with the last dimension arranged as
+(cx, cy, w, h).</p></li>
+<li><p><strong>enc_outputs_class</strong> (<em>Tensor</em>) – The score of each point on encode
+feature map, has shape (bs, num_feat_points, cls_out_channels).</p></li>
+<li><p><strong>enc_outputs_coord</strong> (<em>Tensor</em>) – The proposal generate from the
+encode feature map, has shape (bs, num_feat_points, 4) with the
+last dimension arranged as (cx, cy, w, h).</p></li>
+<li><p><strong>dn_meta</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>]</em>) – The dictionary saves information about
+group collation, including ‘num_denoising_queries’ and
+‘num_denoising_groups’. It will be used for split outputs of
+denoising and matching parts and loss calculation.</p></li>
+<li><p><strong>batch_data_samples</strong> (<em>List</em><em>[</em><em>Config</em><em>]</em>) – This is same with batch_data_samples in mmdet3.x
+It contains meta_info(==img_metas) and gt_instances(==(gt_bboxes, gt_labels))</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of loss components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -986,6 +1152,47 @@ normalized coordinate format (cx, cy, w, h) and has shape
 <dd><p>Original method “get_seg_mask” from FCNMaskHead. Used in Semi-SL algorithm.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_seg_masks">
+<span class="sig-name descname"><span class="pre">get_seg_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">det_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">det_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rcnn_test_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ori_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rescale</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_fcn_mask_head.html#CustomFCNMaskHead.get_seg_masks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_seg_masks" title="Permalink to this definition">#</a></dt>
+<dd><p>Get segmentation masks from mask_pred and bboxes.</p>
+<p>The original <cite>FCNMaskHead.get_seg_masks</cite> grid sampled 28 x 28 masks to the original image resolution.
+As a result, the resized masks occupy a large amount of memory and slow down the inference.
+This method directly returns 28 x 28 masks and resize to bounding boxes size in post-processing step.
+Doing so can save memory and speed up the inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_pred</strong> (<em>Tensor</em><em> or </em><em>ndarray</em>) – shape (n, #class, h, w).
+For single-scale testing, mask_pred is the direct output of
+model, whose type is Tensor, while for multi-scale testing,
+it will be converted to numpy array outside of this method.</p></li>
+<li><p><strong>det_bboxes</strong> (<em>Tensor</em>) – shape (n, 4/5)</p></li>
+<li><p><strong>det_labels</strong> (<em>Tensor</em>) – shape (n, )</p></li>
+<li><p><strong>rcnn_test_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – rcnn testing config</p></li>
+<li><p><strong>ori_shape</strong> (<em>Tuple</em>) – original image height and width, shape (2,)</p></li>
+<li><p><strong>scale_factor</strong> (<em>ndarray</em><em> | </em><em>Tensor</em>) – If <code class="docutils literal notranslate"><span class="pre">rescale</span> <span class="pre">is</span> <span class="pre">True</span></code>, box
+coordinates are divided by this scale factor to fit
+<code class="docutils literal notranslate"><span class="pre">ori_shape</span></code>.</p></li>
+<li><p><strong>rescale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – If True, the resulting masks will be rescaled to
+<code class="docutils literal notranslate"><span class="pre">ori_shape</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>encoded masks. The c-th item in the outer list</dt><dd><p>corresponds to the c-th class. Given the c-th outer list, the
+i-th item in that inner list is the mask for the i-th box with
+class label c.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)">list</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1052,6 +1259,12 @@ positive anchors.</p></li>
 <p>CustomSSDHead class for OTX.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head.html#CustomSSDHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Loss function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single">
 <span class="sig-name descname"><span class="pre">loss_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_score</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_total_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head.html#CustomSSDHead.loss_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute loss of a single image.</p>
@@ -1091,7 +1304,7 @@ positive anchors.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomVFNetHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_vfnet_head.html#CustomVFNetHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">VFNetHead</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">VFNetHead</span></code></p>
 <p>CustomVFNetHead class for OTX.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
@@ -1131,6 +1344,41 @@ bbox_targets_list (list[Tensor]): Regression targets of each</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds_refine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_vfnet_head.html#CustomVFNetHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute loss of the head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box iou-aware scores for each scale
+level, each is a 4D-tensor, the channel number is
+num_points * num_classes.</p></li>
+<li><p><strong>bbox_preds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box offsets for each
+scale level, each is a 4D-tensor, the channel number is
+num_points * 4.</p></li>
+<li><p><strong>bbox_preds_refine</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Refined Box offsets for
+each scale level, each is a 4D-tensor, the channel
+number is num_points * 4.</p></li>
+<li><p><strong>gt_bboxes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Ground truth bboxes for each image with
+shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.</p></li>
+<li><p><strong>gt_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – class indices corresponding to each box</p></li>
+<li><p><strong>img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em>) – Meta information of each image, e.g.,
+image size, scaling factor, etc.</p></li>
+<li><p><strong>gt_bboxes_ignore</strong> (<em>None</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – specify which bounding
+boxes can be ignored when computing the loss.
+Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of loss components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a>, Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1143,7 +1391,7 @@ bbox_targets_list (list[Tensor]): Regression targets of each</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">DETRHeadExtension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/detr_head.html#DETRHeadExtension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">DETRHeadExtension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/detr_head.html#DETRHeadExtension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModule</span></code></p>
 <p>Head of DETR. DETR:End-to-End Object Detection with Transformers.</p>
 <p>Origin implementation: DETRHead of detr_head.py in mmdet3.x
@@ -1235,44 +1483,6 @@ image size, scaling factor, etc.</p></li>
 
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head</span></code></a></p></td>
-<td><p>Cross Dataset Detector head for Ignore labels.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator</span></code></a></p></td>
-<td><p>Custom Anchor Generator for SSD.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head</span></code></a></p></td>
-<td><p>Custom ATSS head for OTX template.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head</span></code></a></p></td>
-<td><p>Custom DINO head for OTX template.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head</span></code></a></p></td>
-<td><p>CustomFCNMaskHead for OTX template.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_retina_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_retina_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_retina_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_retina_head</span></code></a></p></td>
-<td><p>Custom Retina Head for OTX.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head</span></code></a></p></td>
-<td><p>Custom ROI head for OTX template.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head</span></code></a></p></td>
-<td><p>Custom SSD head for OTX template.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head</span></code></a></p></td>
-<td><p>Custom VFNet head for OTX template.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head</span></code></a></p></td>
-<td><p>Custom YOLOX head for OTX template.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.heads.detr_head.html#module-otx.algorithms.detection.adapters.mmdet.models.heads.detr_head" title="otx.algorithms.detection.adapters.mmdet.models.heads.detr_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.detr_head</span></code></a></p></td>
-<td><p>DETR Head extension for OTX DINO.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -1286,20 +1496,20 @@ image size, scaling factor, etc.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html"
+       href="otx.algorithms.detection.adapters.mmdet.models.detectors.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin</p>
+        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.detectors</p>
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.html"
+       href="otx.algorithms.detection.adapters.mmdet.models.layers.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head</p>
+        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.layers</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1330,11 +1540,13 @@ image size, scaling factor, etc.</p></li>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.get_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.loss_single()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics"><code class="docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.get_targets"><code class="docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics.get_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss"><code class="docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics.loss_single()</span></code></a></li>
 </ul>
 </li>
@@ -1343,6 +1555,7 @@ image size, scaling factor, etc.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.forward_train()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.forward_transformer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.get_dn_targets"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.get_dn_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_by_feat_two_stage"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.loss_by_feat_two_stage()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_dn"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.loss_dn()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.simple_test_bboxes"><code class="docutils literal notranslate"><span class="pre">CustomDINOHead.simple_test_bboxes()</span></code></a></li>
@@ -1351,6 +1564,7 @@ image size, scaling factor, etc.</p></li>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead"><code class="docutils literal notranslate"><span class="pre">CustomFCNMaskHead</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_scaled_seg_masks"><code class="docutils literal notranslate"><span class="pre">CustomFCNMaskHead.get_scaled_seg_masks()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_seg_masks"><code class="docutils literal notranslate"><span class="pre">CustomFCNMaskHead.get_seg_masks()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead"><code class="docutils literal notranslate"><span class="pre">CustomRetinaHead</span></code></a><ul class="nav section-nav flex-column">
@@ -1362,11 +1576,13 @@ image size, scaling factor, etc.</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead.loss_single()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead"><code class="docutils literal notranslate"><span class="pre">CustomVFNetHead</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.get_targets"><code class="docutils literal notranslate"><span class="pre">CustomVFNetHead.get_targets()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomVFNetHead.loss()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead"><code class="docutils literal notranslate"><span class="pre">CustomYOLOXHead</span></code></a></li>
@@ -1426,7 +1642,7 @@ image size, scaling factor, etc.</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

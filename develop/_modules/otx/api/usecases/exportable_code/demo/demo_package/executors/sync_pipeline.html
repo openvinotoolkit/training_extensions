@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -334,7 +331,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.api.utils.vis_utils</span> <span class="kn">import</span> <span class="n">dump_frames</span>
 
 
-<div class="viewcode-block" id="ChainExecutor"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor">[docs]</a><span class="k">class</span> <span class="nc">ChainExecutor</span><span class="p">:</span>
+<div class="viewcode-block" id="ChainExecutor"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor">[docs]</a><span class="k">class</span> <span class="nc">ChainExecutor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sync executor for task-chain inference.</span>
 
 <span class="sd">    Args:</span>
@@ -354,7 +351,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">create_output_converter</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">))</span>
 
     <span class="c1"># pylint: disable=too-many-locals</span>
-<div class="viewcode-block" id="ChainExecutor.single_run"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.single_run">[docs]</a>    <span class="k">def</span> <span class="nf">single_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnotationSceneEntity</span><span class="p">:</span>
+<div class="viewcode-block" id="ChainExecutor.single_run"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.single_run">[docs]</a>    <span class="k">def</span> <span class="nf">single_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnotationSceneEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Inference for single image.&quot;&quot;&quot;</span>
         <span class="n">current_objects</span> <span class="o">=</span> <span class="p">[(</span><span class="n">input_image</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">(</span><span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="o">=</span><span class="p">[]))]</span>
         <span class="n">result_scene</span> <span class="o">=</span> <span class="n">AnnotationSceneEntity</span><span class="p">([],</span> <span class="n">AnnotationSceneKind</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">)</span>
@@ -374,7 +371,7 @@ document.write(`
             <span class="n">current_objects</span> <span class="o">=</span> <span class="n">new_objects</span>
         <span class="k">return</span> <span class="n">result_scene</span></div>
 
-<div class="viewcode-block" id="ChainExecutor.crop"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.crop">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ChainExecutor.crop"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.crop">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">crop</span><span class="p">(</span>
         <span class="n">item</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">parent_annotation</span><span class="p">:</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">item_annotation</span><span class="p">:</span> <span class="n">Annotation</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">]:</span>
@@ -385,7 +382,7 @@ document.write(`
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">new_item</span><span class="p">,</span> <span class="n">item_annotation</span></div>
 
-<div class="viewcode-block" id="ChainExecutor.run"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_stream</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ChainExecutor.run"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.demo.demo_package.html#otx.api.usecases.exportable_code.demo.demo_package.ChainExecutor.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_stream</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run demo using input stream (image, video stream, camera).&quot;&quot;&quot;</span>
         <span class="n">streamer</span> <span class="o">=</span> <span class="n">get_streamer</span><span class="p">(</span><span class="n">input_stream</span><span class="p">,</span> <span class="n">loop</span><span class="p">)</span>
         <span class="n">saved_frames</span> <span class="o">=</span> <span class="p">[]</span>
@@ -455,7 +452,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

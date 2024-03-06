@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -334,7 +331,7 @@ document.write(`
         <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="MemCacheHandlerBase"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerBase">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerBase</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">MemCacheHandlerBase</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for memory cache handler.</span>
 
 <span class="sd">    It will be combined with LoadImageFromOTXDataset to store/retrieve the samples in memory.</span>
@@ -359,7 +356,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the reserved memory pool size (bytes).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arr</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MemCacheHandlerBase.get"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerBase.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to look up the cached item with the given key.</span>
 
 <span class="sd">        Args:</span>
@@ -376,9 +373,9 @@ document.write(`
         <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">addr</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">as_strided</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">),</span> <span class="n">meta</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">as_strided</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">),</span> <span class="n">meta</span>
 
-<div class="viewcode-block" id="MemCacheHandlerBase.put"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerBase.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to store np.ndarray and metadata with a key to the reserved memory pool.</span>
 
 <span class="sd">        Args:</span>
@@ -412,7 +409,7 @@ document.write(`
                 <span class="n">meta</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_page</span>
-            <span class="k">return</span> <span class="n">new_page</span></div>
+            <span class="k">return</span> <span class="n">new_page</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Representation for the current handler status.&quot;&quot;&quot;</span>
@@ -423,23 +420,23 @@ document.write(`
             <span class="sa">f</span><span class="s2">&quot;store </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> items.&quot;</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="MemCacheHandlerBase.freeze"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerBase.freeze">[docs]</a>    <span class="k">def</span> <span class="nf">freeze</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">freeze</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If frozen, it is impossible to store a new item anymore.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="MemCacheHandlerBase.unfreeze"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerBase.unfreeze">[docs]</a>    <span class="k">def</span> <span class="nf">unfreeze</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">unfreeze</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;If unfrozen, it is possible to store a new item.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="MemCacheHandlerForSP"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerForSP">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerForSP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MemCacheHandlerForSP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory caching handler for single processing.</span>
 
 <span class="sd">    Use if PyTorch&#39;s DataLoader.num_workers == 0.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    &quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="MemCacheHandlerForMP"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerForMP">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerForMP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MemCacheHandlerForMP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory caching handler for multi processing.</span>
 
 <span class="sd">    Use if PyTorch&#39;s DataLoader.num_workers &gt; 0.</span>
@@ -456,20 +453,20 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;When deleting, manager should also be shutdowned.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="MemCacheHandlerError"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerError">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="MemCacheHandlerError"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.html#otx.core.data.caching.MemCacheHandlerError">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception class for MemCacheHandler.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="MemCacheHandlerSingleton"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerSingleton">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerSingleton</span><span class="p">:</span>
+<div class="viewcode-block" id="MemCacheHandlerSingleton"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.html#otx.core.data.caching.MemCacheHandlerSingleton">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerSingleton</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A singleton class to create, delete and get MemCacheHandlerBase.&quot;&quot;&quot;</span>
 
     <span class="n">instance</span><span class="p">:</span> <span class="n">MemCacheHandlerBase</span>
     <span class="n">CPU_MEM_LIMITS_GIB</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
 
-<div class="viewcode-block" id="MemCacheHandlerSingleton.get"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerSingleton.get">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="MemCacheHandlerSingleton.get"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.html#otx.core.data.caching.MemCacheHandlerSingleton.get">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemCacheHandlerBase</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the created MemCacheHandlerBase.</span>
 
@@ -481,7 +478,7 @@ document.write(`
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">instance</span></div>
 
-<div class="viewcode-block" id="MemCacheHandlerSingleton.create"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerSingleton.create">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="MemCacheHandlerSingleton.create"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.html#otx.core.data.caching.MemCacheHandlerSingleton.create">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemCacheHandlerBase</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new MemCacheHandlerBase instance.</span>
 
@@ -524,7 +521,7 @@ document.write(`
 
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">instance</span></div>
 
-<div class="viewcode-block" id="MemCacheHandlerSingleton.delete"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.MemCacheHandlerSingleton.delete">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="MemCacheHandlerSingleton.delete"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.caching.html#otx.core.data.caching.MemCacheHandlerSingleton.delete">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the existing MemCacheHandlerBase instance.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;instance&quot;</span><span class="p">):</span>
@@ -581,7 +578,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

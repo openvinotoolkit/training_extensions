@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -340,15 +337,15 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=too-many-instance-attributes, too-many-arguments</span>
-<div class="viewcode-block" id="get_classes_from_annotation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.get_classes_from_annotation">[docs]</a><span class="k">def</span> <span class="nf">get_classes_from_annotation</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_classes_from_annotation</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return classes from annotation.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">read_file</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">read_file</span><span class="p">)</span>
         <span class="n">categories</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])]</span>
-    <span class="k">return</span> <span class="n">categories</span></div>
+    <span class="k">return</span> <span class="n">categories</span>
 
 
-<div class="viewcode-block" id="LoadAnnotations"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.LoadAnnotations">[docs]</a><span class="k">class</span> <span class="nc">LoadAnnotations</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">LoadAnnotations</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load Annotations class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_bbox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">with_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">with_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
@@ -380,7 +377,7 @@ document.write(`
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;mask_fields&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">results</span>
 
-<div class="viewcode-block" id="LoadAnnotations.__call__"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.LoadAnnotations.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback function of LoadAnnotations.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_bbox</span><span class="p">:</span>
             <span class="n">results</span> <span class="o">=</span> <span class="n">LoadAnnotations</span><span class="o">.</span><span class="n">_load_bboxes</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
@@ -391,17 +388,17 @@ document.write(`
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_mask</span><span class="p">:</span>
             <span class="n">results</span> <span class="o">=</span> <span class="n">LoadAnnotations</span><span class="o">.</span><span class="n">_load_masks</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">results</span></div>
+        <span class="k">return</span> <span class="n">results</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;String function of LoadAnnotations.&quot;&quot;&quot;</span>
         <span class="n">repr_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;(with_bbox=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">with_bbox</span><span class="si">}</span><span class="s2">, &quot;</span>
         <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;with_label=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">with_label</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="k">return</span> <span class="n">repr_str</span></div>
+        <span class="k">return</span> <span class="n">repr_str</span>
 
 
-<div class="viewcode-block" id="CocoDataset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset">[docs]</a><span class="k">class</span> <span class="nc">CocoDataset</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">CocoDataset</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CocoDataset.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -440,12 +437,12 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Length of CocoDataset.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CocoDataset.pre_pipeline"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.pre_pipeline">[docs]</a>    <span class="k">def</span> <span class="nf">pre_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="nf">pre_pipeline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize pipeline.&quot;&quot;&quot;</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;img_prefix&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_prefix</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;bbox_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;mask_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;seg_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;seg_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_rand_another</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Random indices.&quot;&quot;&quot;</span>
@@ -461,15 +458,15 @@ document.write(`
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-<div class="viewcode-block" id="CocoDataset.prepare_img"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.prepare_img">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">prepare_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load Annotations function with images.&quot;&quot;&quot;</span>
         <span class="n">img_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="n">ann_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ann_info</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
         <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">img_info</span><span class="o">=</span><span class="n">img_info</span><span class="p">,</span> <span class="n">ann_info</span><span class="o">=</span><span class="n">ann_info</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_pipeline</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">LoadAnnotations</span><span class="p">(</span><span class="n">with_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">with_mask</span><span class="p">)(</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">LoadAnnotations</span><span class="p">(</span><span class="n">with_mask</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">with_mask</span><span class="p">)(</span><span class="n">results</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CocoDataset.get_classes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.get_classes">[docs]</a>    <span class="k">def</span> <span class="nf">get_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">classes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">classes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return classes function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">classes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">get_classes_from_annotation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ann_file</span><span class="p">)</span>
@@ -477,9 +474,9 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">classes</span>
 
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span><span class="si">}</span><span class="s2"> of classes.&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span><span class="si">}</span><span class="s2"> of classes.&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CocoDataset.load_annotations"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.load_annotations">[docs]</a>    <span class="k">def</span> <span class="nf">load_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ann_file</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">load_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ann_file</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load annotations function from coco.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coco</span> <span class="o">=</span> <span class="n">COCO</span><span class="p">(</span><span class="n">ann_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cat_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">get_cat_ids</span><span class="p">(</span><span class="n">cat_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
@@ -490,21 +487,21 @@ document.write(`
             <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">load_imgs</span><span class="p">([</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">info</span><span class="p">[</span><span class="s2">&quot;filename&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">]</span>
             <span class="n">data_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data_infos</span></div>
+        <span class="k">return</span> <span class="n">data_infos</span>
 
-<div class="viewcode-block" id="CocoDataset.get_ann_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.get_ann_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Getting Annotation info.&quot;&quot;&quot;</span>
         <span class="n">img_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
         <span class="n">ann_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">get_ann_ids</span><span class="p">(</span><span class="n">img_ids</span><span class="o">=</span><span class="p">[</span><span class="n">img_id</span><span class="p">])</span>
         <span class="n">ann_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">load_anns</span><span class="p">(</span><span class="n">ann_ids</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">ann_info</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">ann_info</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CocoDataset.get_cat_ids"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.CocoDataset.get_cat_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_cat_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_cat_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Getting cat_ids.&quot;&quot;&quot;</span>
         <span class="n">img_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_infos</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
         <span class="n">ann_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">get_ann_ids</span><span class="p">(</span><span class="n">img_ids</span><span class="o">=</span><span class="p">[</span><span class="n">img_id</span><span class="p">])</span>
         <span class="n">ann_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coco</span><span class="o">.</span><span class="n">load_anns</span><span class="p">(</span><span class="n">ann_ids</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ann</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">ann_info</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">ann</span><span class="p">[</span><span class="s2">&quot;category_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ann</span> <span class="ow">in</span> <span class="n">ann_info</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_filter_imgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter images too small or without ground truths.&quot;&quot;&quot;</span>
@@ -581,10 +578,10 @@ document.write(`
             <span class="n">seg_map</span><span class="o">=</span><span class="n">seg_map</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ann</span></div>
+        <span class="k">return</span> <span class="n">ann</span>
 
 
-<div class="viewcode-block" id="find_label_by_name"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.find_label_by_name">[docs]</a><span class="k">def</span> <span class="nf">find_label_by_name</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">Domain</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_label_by_name</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="n">Domain</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return label from name.&quot;&quot;&quot;</span>
     <span class="n">matching_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span> <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -593,10 +590,10 @@ document.write(`
         <span class="n">label</span> <span class="o">=</span> <span class="n">LabelEntity</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">ID</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)))</span>
         <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">label</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Found multiple matching labels&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Found multiple matching labels&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="load_dataset_items_coco_format"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.load_dataset_items_coco_format">[docs]</a><span class="k">def</span> <span class="nf">load_dataset_items_coco_format</span><span class="p">(</span>
+<div class="viewcode-block" id="load_dataset_items_coco_format"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.load_dataset_items_coco_format">[docs]</a><span class="k">def</span> <span class="nf">load_dataset_items_coco_format</span><span class="p">(</span>
     <span class="n">ann_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">data_root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">domain</span><span class="p">:</span> <span class="n">Domain</span><span class="p">,</span>
@@ -687,7 +684,7 @@ document.write(`
     <span class="k">return</span> <span class="n">dataset_items</span></div>
 
 
-<div class="viewcode-block" id="get_sizes_from_dataset_entity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.get_sizes_from_dataset_entity">[docs]</a><span class="k">def</span> <span class="nf">get_sizes_from_dataset_entity</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">target_wh</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<div class="viewcode-block" id="get_sizes_from_dataset_entity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.get_sizes_from_dataset_entity">[docs]</a><span class="k">def</span> <span class="nf">get_sizes_from_dataset_entity</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">target_wh</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to get sizes of instances in DatasetEntity and to resize it to the target size.</span>
 
 <span class="sd">    :param dataset: DatasetEntity in which to get statistics</span>
@@ -708,7 +705,7 @@ document.write(`
     <span class="k">return</span> <span class="n">wh_stats</span></div>
 
 
-<div class="viewcode-block" id="get_anchor_boxes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.get_anchor_boxes">[docs]</a><span class="k">def</span> <span class="nf">get_anchor_boxes</span><span class="p">(</span><span class="n">wh_stats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">],</span> <span class="n">group_as</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+<div class="viewcode-block" id="get_anchor_boxes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.get_anchor_boxes">[docs]</a><span class="k">def</span> <span class="nf">get_anchor_boxes</span><span class="p">(</span><span class="n">wh_stats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">tuple</span><span class="p">],</span> <span class="n">group_as</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get anchor box widths &amp; heights.&quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
 
@@ -728,7 +725,7 @@ document.write(`
     <span class="k">return</span> <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span></div>
 
 
-<div class="viewcode-block" id="format_list_to_str"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.format_list_to_str">[docs]</a><span class="k">def</span> <span class="nf">format_list_to_str</span><span class="p">(</span><span class="n">value_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+<div class="viewcode-block" id="format_list_to_str"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.html#otx.algorithms.detection.utils.format_list_to_str">[docs]</a><span class="k">def</span> <span class="nf">format_list_to_str</span><span class="p">(</span><span class="n">value_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decrease floating point digits in logs.&quot;&quot;&quot;</span>
     <span class="n">str_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">for</span> <span class="n">value_list</span> <span class="ow">in</span> <span class="n">value_lists</span><span class="p">:</span>
@@ -736,7 +733,7 @@ document.write(`
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">str_value</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">]&quot;</span></div>
 
 
-<div class="viewcode-block" id="adaptive_tile_params"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.detection.utils.data.html#otx.algorithms.detection.utils.adaptive_tile_params">[docs]</a><span class="k">def</span> <span class="nf">adaptive_tile_params</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">adaptive_tile_params</span><span class="p">(</span>
     <span class="n">tiling_parameters</span><span class="p">:</span> <span class="n">DetectionConfig</span><span class="o">.</span><span class="n">BaseTilingParameters</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">object_tile_ratio</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="s2">&quot;avg&quot;</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Config tile parameters.</span>
@@ -799,7 +796,7 @@ document.write(`
 
     <span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="n">tile_size</span>
     <span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_max_number</span> <span class="o">=</span> <span class="n">max_num_objects</span>
-    <span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span> <span class="o">=</span> <span class="n">tile_overlap</span></div>
+    <span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span> <span class="o">=</span> <span class="n">tile_overlap</span>
 </pre></div>
 
                 </article>
@@ -852,7 +849,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

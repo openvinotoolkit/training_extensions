@@ -9,31 +9,41 @@ otx.algorithms.common.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      embed_ir_model_data
+      get_cls_img_indices
+      get_old_new_img_indices
+      load_template
+      get_task_class
+      get_arg_spec
+      get_image
+      set_random_seed
+      append_dist_rank_suffix
+      read_py_config
+      get_default_async_reqs_num
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TrainingProgressCallback
+      InferenceProgressCallback
+      OptimizationProgressCallback
+      UncopiableDefaultDict
+      OTXOpenVinoDataLoader
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.utils.callback
-   otx.algorithms.common.utils.data
-   otx.algorithms.common.utils.dist_utils
-   otx.algorithms.common.utils.ext_loader
-   otx.algorithms.common.utils.ir
-   otx.algorithms.common.utils.mask_to_bbox
-   otx.algorithms.common.utils.mo_wrapper
-   otx.algorithms.common.utils.task_adapt
-   otx.algorithms.common.utils.utils
 

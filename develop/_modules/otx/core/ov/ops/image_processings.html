@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -324,7 +321,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-instance-attributes, too-many-branches</span>
 
 
-<div class="viewcode-block" id="InterpolateV4Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.image_processings.html#otx.core.ov.ops.InterpolateV4Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">InterpolateV4Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;InterpolateV4Attribute class.&quot;&quot;&quot;</span>
 
@@ -369,10 +366,10 @@ document.write(`
             <span class="s2">&quot;simple&quot;</span><span class="p">,</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nearest_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_nearest_mode</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid nearest_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nearest_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_nearest_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid nearest_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nearest_mode</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_nearest_mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="InterpolateV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.image_processings.html#otx.core.ov.ops.InterpolateV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="InterpolateV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.InterpolateV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">InterpolateV4</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">InterpolateV4Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;InterpolateV4 class.&quot;&quot;&quot;</span>
 
@@ -384,7 +381,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">PadV1</span><span class="p">(</span><span class="s2">&quot;tmp&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">pad_mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="InterpolateV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.image_processings.html#otx.core.ov.ops.InterpolateV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">sizes</span><span class="p">,</span> <span class="n">scales</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="InterpolateV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.InterpolateV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">sizes</span><span class="p">,</span> <span class="n">scales</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;InterpolateV4&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="c1"># TODO list</span>
         <span class="c1"># - handle &#39;linear_onnx&#39; mode</span>
@@ -500,7 +497,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -9,23 +9,39 @@ otx.api.usecases.exportable\_code.streamer
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_streamer
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CameraStreamer
+      DirStreamer
+      ImageStreamer
+      ThreadedStreamer
+      VideoStreamer
+      BaseStreamer
+   
    
 
    
    
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      InvalidInput
+      OpenError
+   
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.api.usecases.exportable_code.streamer.streamer
 

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -320,7 +317,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-instance-attributes</span>
 
 
-<div class="viewcode-block" id="ProposalV4Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ProposalV4Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ProposalV4Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ProposalV4Attribute class.&quot;&quot;&quot;</span>
 
@@ -344,10 +341,10 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="n">valid_framework</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;tensorflow&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">framework</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_framework</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid framework </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_framework</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid framework </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">framework</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_framework</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ProposalV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ProposalV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ProposalV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ProposalV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ProposalV4</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ProposalV4Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ProposalV4 class.&quot;&quot;&quot;</span>
 
@@ -355,12 +352,12 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ProposalV4Attribute</span>
 
-<div class="viewcode-block" id="ProposalV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ProposalV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_probs</span><span class="p">,</span> <span class="n">bbox_deltas</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">):</span>
+<div class="viewcode-block" id="ProposalV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ProposalV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_probs</span><span class="p">,</span> <span class="n">bbox_deltas</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ProposalV4&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="ROIPoolingV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ROIPoolingV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ROIPoolingV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ROIPoolingV0Attribute class.&quot;&quot;&quot;</span>
 
@@ -375,10 +372,10 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="n">valid_method</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;bilinear&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_method</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid method </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_method</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid method </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_method</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ROIPoolingV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ROIPoolingV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ROIPoolingV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ROIPoolingV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ROIPoolingV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ROIPoolingV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ROIPoolingV0 class.&quot;&quot;&quot;</span>
 
@@ -386,12 +383,12 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ROIPoolingV0Attribute</span>
 
-<div class="viewcode-block" id="ROIPoolingV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.ROIPoolingV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+<div class="viewcode-block" id="ROIPoolingV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ROIPoolingV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ROIPoolingV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="DetectionOutputV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.DetectionOutputV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">DetectionOutputV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DetectionOutputV0Attribute class.&quot;&quot;&quot;</span>
 
@@ -419,10 +416,10 @@ document.write(`
             <span class="s2">&quot;caffe.PriorBoxParameter.CENTER_SIZE&quot;</span><span class="p">,</span>
         <span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_type</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid code_type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">code_type</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_code_type</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid code_type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">code_type</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_code_type</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DetectionOutputV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.DetectionOutputV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="DetectionOutputV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.DetectionOutputV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">DetectionOutputV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">DetectionOutputV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DetectionOutputV0 class.&quot;&quot;&quot;</span>
 
@@ -430,12 +427,12 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">DetectionOutputV0Attribute</span>
 
-<div class="viewcode-block" id="DetectionOutputV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.DetectionOutputV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc_data</span><span class="p">,</span> <span class="n">conf_data</span><span class="p">,</span> <span class="n">prior_data</span><span class="p">,</span> <span class="n">arm_conf_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">arm_loc_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DetectionOutputV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.DetectionOutputV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc_data</span><span class="p">,</span> <span class="n">conf_data</span><span class="p">,</span> <span class="n">prior_data</span><span class="p">,</span> <span class="n">arm_conf_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">arm_loc_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;DetectionOutputV0&#39;s forward.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="RegionYoloV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.RegionYoloV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">RegionYoloV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RegionYoloV0Attribute class.&quot;&quot;&quot;</span>
 
@@ -446,10 +443,10 @@ document.write(`
     <span class="n">num</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">anchors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">do_softmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span></div>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
 
 
-<div class="viewcode-block" id="RegionYoloV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.RegionYoloV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="RegionYoloV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.RegionYoloV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">RegionYoloV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">RegionYoloV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RegionYoloV0 class.&quot;&quot;&quot;</span>
 
@@ -457,12 +454,12 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">RegionYoloV0Attribute</span>
 
-<div class="viewcode-block" id="RegionYoloV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.RegionYoloV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionYoloV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.RegionYoloV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;RegionYoloV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="PriorBoxV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PriorBoxV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PriorBoxV0Attribute class.&quot;&quot;&quot;</span>
 
@@ -477,10 +474,10 @@ document.write(`
     <span class="n">scale_all_sizes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">fixed_ratio</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
     <span class="n">fixed_size</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
-    <span class="n">density</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span></div>
+    <span class="n">density</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
 
 
-<div class="viewcode-block" id="PriorBoxV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="PriorBoxV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PriorBoxV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">PriorBoxV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">PriorBoxV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PriorBoxV0 class.&quot;&quot;&quot;</span>
 
@@ -488,12 +485,12 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">PriorBoxV0Attribute</span>
 
-<div class="viewcode-block" id="PriorBoxV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
+<div class="viewcode-block" id="PriorBoxV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PriorBoxV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;PriorBoxV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="PriorBoxClusteredV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxClusteredV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PriorBoxClusteredV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PriorBoxClusteredV0Attribute class.&quot;&quot;&quot;</span>
 
@@ -504,10 +501,10 @@ document.write(`
     <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">step_w</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">step_h</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">variance</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span></div>
+    <span class="n">variance</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
 
 
-<div class="viewcode-block" id="PriorBoxClusteredV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxClusteredV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="PriorBoxClusteredV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PriorBoxClusteredV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">PriorBoxClusteredV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">PriorBoxClusteredV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PriorBoxClusteredV0 class.&quot;&quot;&quot;</span>
 
@@ -515,7 +512,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">PriorBoxClusteredV0Attribute</span>
 
-<div class="viewcode-block" id="PriorBoxClusteredV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.object_detections.html#otx.core.ov.ops.PriorBoxClusteredV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
+<div class="viewcode-block" id="PriorBoxClusteredV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PriorBoxClusteredV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;PriorBoxClusteredV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 </pre></div>
@@ -570,7 +567,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

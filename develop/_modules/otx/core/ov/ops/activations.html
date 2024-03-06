@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -321,14 +318,14 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.ops.op</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Operation</span>
 
 
-<div class="viewcode-block" id="SoftMaxV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SoftMaxV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SoftMaxV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SoftMaxV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="SoftMaxV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SoftMaxV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SoftMaxV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SoftMaxV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SoftMaxV0 class.&quot;&quot;&quot;</span>
 
@@ -336,19 +333,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SoftMaxV0Attribute</span>
 
-<div class="viewcode-block" id="SoftMaxV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="SoftMaxV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SoftMaxV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;SoftMaxV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SoftMaxV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SoftMaxV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SoftMaxV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SoftMaxV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="SoftMaxV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SoftMaxV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SoftMaxV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SoftMaxV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SoftMaxV1 class.&quot;&quot;&quot;</span>
 
@@ -356,19 +353,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset8&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SoftMaxV1Attribute</span>
 
-<div class="viewcode-block" id="SoftMaxV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SoftMaxV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="SoftMaxV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SoftMaxV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;SoftMaxV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="ReluV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ReluV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ReluV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReluV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="ReluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ReluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ReluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ReluV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ReluV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ReluV0 class.&quot;&quot;&quot;</span>
 
@@ -376,19 +373,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ReluV0Attribute</span>
 
-<div class="viewcode-block" id="ReluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ReluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ReluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ReluV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SwishV4Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SwishV4Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SwishV4Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SwishV4Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="SwishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SwishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="SwishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SwishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SwishV4</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SwishV4Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SwishV4 class.&quot;&quot;&quot;</span>
 
@@ -396,19 +393,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SwishV4Attribute</span>
 
-<div class="viewcode-block" id="SwishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SwishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<div class="viewcode-block" id="SwishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SwishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;SwishV4&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">inputs</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SigmoidV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SigmoidV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SigmoidV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SigmoidV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="SigmoidV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SigmoidV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="SigmoidV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SigmoidV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SigmoidV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SigmoidV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SigmoidV0 class.&quot;&quot;&quot;</span>
 
@@ -416,20 +413,20 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SigmoidV0Attribute</span>
 
-<div class="viewcode-block" id="SigmoidV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SigmoidV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="SigmoidV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SigmoidV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;SigmoidV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="ClampV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ClampV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ClampV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ClampV0Attribute class.&quot;&quot;&quot;</span>
 
     <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span></div>
+    <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span>
 
 
-<div class="viewcode-block" id="ClampV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ClampV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ClampV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ClampV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ClampV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ClampV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ClampV0 class.&quot;&quot;&quot;</span>
 
@@ -437,19 +434,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ClampV0Attribute</span>
 
-<div class="viewcode-block" id="ClampV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ClampV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="ClampV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ClampV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ClampV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">max</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="PReluV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.PReluV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">PReluV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PReluV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="PReluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.PReluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="PReluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PReluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">PReluV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">PReluV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;PReluV0 class.&quot;&quot;&quot;</span>
 
@@ -457,19 +454,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">PReluV0Attribute</span>
 
-<div class="viewcode-block" id="PReluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.PReluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">slope</span><span class="p">):</span>
+<div class="viewcode-block" id="PReluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.PReluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">slope</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;PReluV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">prelu</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">slope</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="TanhV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.TanhV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">TanhV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TanhV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="TanhV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.TanhV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="TanhV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.TanhV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">TanhV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">TanhV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TanhV0 class.&quot;&quot;&quot;</span>
 
@@ -477,19 +474,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">TanhV0Attribute</span>
 
-<div class="viewcode-block" id="TanhV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.TanhV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="TanhV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.TanhV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TanhV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="EluV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.EluV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">EluV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EluV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span></div>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span>
 
 
-<div class="viewcode-block" id="EluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.EluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="EluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.EluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EluV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">EluV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EluV0 class.&quot;&quot;&quot;</span>
 
@@ -497,19 +494,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">EluV0Attribute</span>
 
-<div class="viewcode-block" id="EluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.EluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="EluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.EluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;EluV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SeluV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SeluV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">SeluV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SeluV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="SeluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SeluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="SeluV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SeluV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SeluV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">SeluV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SeluV0 class.&quot;&quot;&quot;</span>
 
@@ -517,19 +514,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">SeluV0Attribute</span>
 
-<div class="viewcode-block" id="SeluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.SeluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">):</span>
+<div class="viewcode-block" id="SeluV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.SeluV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">lambda_</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;SeluV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">lambda_</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MishV4Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.MishV4Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">MishV4Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MishV4Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="MishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.MishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="MishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.MishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">MishV4</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">MishV4Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MishV4 class.&quot;&quot;&quot;</span>
 
@@ -537,21 +534,21 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">MishV4Attribute</span>
 
-<div class="viewcode-block" id="MishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.MishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="MishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.MishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;MishV4&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="c1"># NOTE: pytorch 1.8.2 does not have mish function</span>
         <span class="c1">#  return F.mish(input=input)</span>
         <span class="k">return</span> <span class="n">inputs</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">softplus</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="HSwishV4Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSwishV4Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">HSwishV4Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HSwishV4Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="HSwishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSwishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="HSwishV4"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HSwishV4">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">HSwishV4</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">HSwishV4Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HSwishV4 class.&quot;&quot;&quot;</span>
 
@@ -559,19 +556,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">HSwishV4Attribute</span>
 
-<div class="viewcode-block" id="HSwishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSwishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="HSwishV4.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HSwishV4.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;HSwishV4&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hardswish</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="HSigmoidV5Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSigmoidV5Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">HSigmoidV5Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HSigmoidV5Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="HSigmoidV5"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSigmoidV5">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="HSigmoidV5"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HSigmoidV5">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">HSigmoidV5</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">HSigmoidV5Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HSigmoidV5 class.&quot;&quot;&quot;</span>
 
@@ -579,19 +576,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">HSigmoidV5Attribute</span>
 
-<div class="viewcode-block" id="HSigmoidV5.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HSigmoidV5.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="HSigmoidV5.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HSigmoidV5.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;HSigmoidV5&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hardsigmoid</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="ExpV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ExpV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ExpV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ExpV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="ExpV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ExpV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ExpV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ExpV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ExpV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ExpV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ExpV0 class.&quot;&quot;&quot;</span>
 
@@ -599,19 +596,19 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ExpV0Attribute</span>
 
-<div class="viewcode-block" id="ExpV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.ExpV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="ExpV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ExpV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ExpV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="HardSigmoidV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HardSigmoidV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">HardSigmoidV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HardSigmoidV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="HardSigmoidV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HardSigmoidV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="HardSigmoidV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HardSigmoidV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">HardSigmoidV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">HardSigmoidV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HardSigmoidV0 class.&quot;&quot;&quot;</span>
 
@@ -619,7 +616,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">HardSigmoidV0Attribute</span>
 
-<div class="viewcode-block" id="HardSigmoidV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.HardSigmoidV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
+<div class="viewcode-block" id="HardSigmoidV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.HardSigmoidV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;HardSigmoidV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
@@ -627,7 +624,7 @@ document.write(`
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="GeluV7Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.GeluV7Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">GeluV7Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;GeluV7Attribute class.&quot;&quot;&quot;</span>
 
@@ -641,10 +638,10 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Invalid approximation_mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">approximation_mode</span><span class="si">}</span><span class="s2">. &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_approximation_mode</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
 
-<div class="viewcode-block" id="GeluV7"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.GeluV7">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="GeluV7"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.GeluV7">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">GeluV7</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">GeluV7Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;GeluV7 class.&quot;&quot;&quot;</span>
 
@@ -652,7 +649,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">GeluV7Attribute</span>
 
-<div class="viewcode-block" id="GeluV7.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.activations.html#otx.core.ov.ops.GeluV7.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="GeluV7.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.GeluV7.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;GeluV7&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">approximation_mode</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;ERF&quot;</span><span class="p">:</span>
@@ -714,7 +711,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

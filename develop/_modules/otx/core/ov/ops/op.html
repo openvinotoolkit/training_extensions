@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -321,7 +318,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_dynamic_shape</span>
 
 
-<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.op.html#otx.core.ov.ops.Attribute">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.Attribute">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">Attribute</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Attribute class.&quot;&quot;&quot;</span>
 
@@ -336,7 +333,7 @@ document.write(`
 <span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Attribute</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Operation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.op.html#otx.core.ov.ops.Operation">[docs]</a><span class="k">class</span> <span class="nc">Operation</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">]):</span>  <span class="c1"># pylint: disable=abstract-method, invalid-overridden-method</span>
+<div class="viewcode-block" id="Operation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.Operation">[docs]</a><span class="k">class</span> <span class="nc">Operation</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">]):</span>  <span class="c1"># pylint: disable=abstract-method, invalid-overridden-method</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Operation class.&quot;&quot;&quot;</span>
 
     <span class="n">TYPE</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -348,7 +345,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ATTRIBUTE_FACTORY</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Operation.from_ov"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.op.html#otx.core.ov.ops.Operation.from_ov">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Operation.from_ov"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.Operation.from_ov">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_ov</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ov_op</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Operation&#39;s from_ov function.&quot;&quot;&quot;</span>
         <span class="n">op_type</span> <span class="o">=</span> <span class="n">ov_op</span><span class="o">.</span><span class="n">get_type_name</span><span class="p">()</span>
@@ -458,7 +455,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

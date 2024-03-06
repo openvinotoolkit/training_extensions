@@ -38,9 +38,6 @@
   <script src="../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../_static/clipboard.min.js"></script>
@@ -322,7 +319,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.visualizer</span> <span class="kn">import</span> <span class="n">Visualizer</span>
 
 
-<div class="viewcode-block" id="AnomalyVisualizer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.anomaly_visualizer.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer">[docs]</a><span class="k">class</span> <span class="nc">AnomalyVisualizer</span><span class="p">(</span><span class="n">Visualizer</span><span class="p">):</span>
+<div class="viewcode-block" id="AnomalyVisualizer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer">[docs]</a><span class="k">class</span> <span class="nc">AnomalyVisualizer</span><span class="p">(</span><span class="n">Visualizer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualize the predicted output by drawing the annotations on the input image.</span>
 
 <span class="sd">    Example:</span>
@@ -349,7 +346,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">trackbar_name</span> <span class="o">=</span> <span class="s2">&quot;Opacity&quot;</span>
             <span class="n">cv2</span><span class="o">.</span><span class="n">createTrackbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trackbar_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AnomalyVisualizer.to_heat_mask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.anomaly_visualizer.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer.to_heat_mask">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AnomalyVisualizer.to_heat_mask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer.to_heat_mask">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">to_heat_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create heat mask from saliency map.</span>
 
@@ -360,7 +357,7 @@ document.write(`
         <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">applyColorMap</span><span class="p">(</span><span class="n">heat_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLORMAP_JET</span><span class="p">)</span></div>
 
     <span class="c1"># pylint:disable=signature-differs</span>
-<div class="viewcode-block" id="AnomalyVisualizer.draw"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.anomaly_visualizer.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
+<div class="viewcode-block" id="AnomalyVisualizer.draw"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.visualizers.html#otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">AnnotationSceneEntity</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Draw annotations on the image.</span>
@@ -432,7 +429,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

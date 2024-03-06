@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -332,7 +329,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">LabelSchemaMapper</span>
 
 
-<div class="viewcode-block" id="get_multihead_class_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.cls_utils.html#otx.algorithms.classification.utils.get_multihead_class_info">[docs]</a><span class="k">def</span> <span class="nf">get_multihead_class_info</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-locals</span>
+<div class="viewcode-block" id="get_multihead_class_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.html#otx.algorithms.classification.utils.get_multihead_class_info">[docs]</a><span class="k">def</span> <span class="nf">get_multihead_class_info</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-locals</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get multihead info by label schema.&quot;&quot;&quot;</span>
     <span class="n">all_groups</span> <span class="o">=</span> <span class="n">label_schema</span><span class="o">.</span><span class="n">get_groups</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">all_groups_str</span> <span class="o">=</span> <span class="p">[]</span>
@@ -375,7 +372,7 @@ document.write(`
     <span class="k">return</span> <span class="n">mixed_cls_heads_info</span></div>
 
 
-<div class="viewcode-block" id="get_cls_inferencer_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.cls_utils.html#otx.algorithms.classification.utils.get_cls_inferencer_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_cls_inferencer_configuration</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">):</span>
+<div class="viewcode-block" id="get_cls_inferencer_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.html#otx.algorithms.classification.utils.get_cls_inferencer_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_cls_inferencer_configuration</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get classification inferencer config by label schema.&quot;&quot;&quot;</span>
     <span class="n">multilabel</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_schema</span><span class="o">.</span><span class="n">get_groups</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_schema</span><span class="o">.</span><span class="n">get_groups</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
         <span class="n">label_schema</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -392,7 +389,7 @@ document.write(`
     <span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="get_cls_deploy_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.cls_utils.html#otx.algorithms.classification.utils.get_cls_deploy_config">[docs]</a><span class="k">def</span> <span class="nf">get_cls_deploy_config</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span> <span class="n">inference_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<div class="viewcode-block" id="get_cls_deploy_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.html#otx.algorithms.classification.utils.get_cls_deploy_config">[docs]</a><span class="k">def</span> <span class="nf">get_cls_deploy_config</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span> <span class="n">inference_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get classification deploy config.&quot;&quot;&quot;</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[Any, Any]</span>
     <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;type_of_model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span>
@@ -402,7 +399,7 @@ document.write(`
     <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="get_cls_model_api_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.cls_utils.html#otx.algorithms.classification.utils.get_cls_model_api_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_cls_model_api_configuration</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span> <span class="n">inference_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<div class="viewcode-block" id="get_cls_model_api_configuration"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.html#otx.algorithms.classification.utils.get_cls_model_api_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_cls_model_api_configuration</span><span class="p">(</span><span class="n">label_schema</span><span class="p">:</span> <span class="n">LabelSchemaEntity</span><span class="p">,</span> <span class="n">inference_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get ModelAPI config.&quot;&quot;&quot;</span>
     <span class="n">mapi_config</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">mapi_config</span><span class="p">[(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span>
@@ -431,7 +428,7 @@ document.write(`
     <span class="k">return</span> <span class="n">mapi_config</span></div>
 
 
-<div class="viewcode-block" id="get_hierarchical_label_list"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.cls_utils.html#otx.algorithms.classification.utils.get_hierarchical_label_list">[docs]</a><span class="k">def</span> <span class="nf">get_hierarchical_label_list</span><span class="p">(</span><span class="n">hierarchical_info</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+<div class="viewcode-block" id="get_hierarchical_label_list"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.classification.utils.html#otx.algorithms.classification.utils.get_hierarchical_label_list">[docs]</a><span class="k">def</span> <span class="nf">get_hierarchical_label_list</span><span class="p">(</span><span class="n">hierarchical_info</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return hierarchical labels list which is adjusted to model outputs classes.&quot;&quot;&quot;</span>
     <span class="n">hierarchical_labels</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">head_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hierarchical_info</span><span class="p">[</span><span class="s2">&quot;num_multiclass_heads&quot;</span><span class="p">]):</span>
@@ -502,7 +499,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

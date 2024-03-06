@@ -13,6 +13,12 @@ otx.algorithms.anomaly.configs.detection.padim
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PadimAnomalyDetectionConfig
+   
    
 
    
@@ -20,13 +26,4 @@ otx.algorithms.anomaly.configs.detection.padim
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.anomaly.configs.detection.padim.configuration
-   otx.algorithms.anomaly.configs.detection.padim.ptq_optimization_config
 

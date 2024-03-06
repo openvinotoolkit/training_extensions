@@ -9,6 +9,13 @@ otx.algorithms.anomaly.adapters.anomalib.config
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_anomalib_config
+      update_anomalib_config
+   
    
 
    
@@ -20,12 +27,4 @@ otx.algorithms.anomaly.adapters.anomalib.config
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config
 

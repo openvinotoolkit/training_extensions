@@ -13,6 +13,14 @@ otx.algorithms.anomaly.adapters.anomalib.callbacks
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AnomalyInferenceCallback
+      IterationTimer
+      ProgressCallback
+   
    
 
    
@@ -20,14 +28,4 @@ otx.algorithms.anomaly.adapters.anomalib.callbacks
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.anomaly.adapters.anomalib.callbacks.inference
-   otx.algorithms.anomaly.adapters.anomalib.callbacks.iteration_timer
-   otx.algorithms.anomaly.adapters.anomalib.callbacks.progress
 

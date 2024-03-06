@@ -38,9 +38,6 @@
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
@@ -348,7 +345,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-locals, too-many-statements, too-many-branches</span>
 
 
-<div class="viewcode-block" id="get_backbone_out_channels"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.get_backbone_out_channels">[docs]</a><span class="k">def</span> <span class="nf">get_backbone_out_channels</span><span class="p">(</span><span class="n">backbone</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_backbone_out_channels</span><span class="p">(</span><span class="n">backbone</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get output channels of backbone using fake data.&quot;&quot;&quot;</span>
     <span class="n">out_channels</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">input_size</span> <span class="o">=</span> <span class="n">backbone</span><span class="o">.</span><span class="n">input_size</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">backbone</span><span class="p">,</span> <span class="s2">&quot;input_size&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">64</span>
@@ -356,10 +353,10 @@ document.write(`
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">backbone</span><span class="p">(</span><span class="n">fake_data</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
         <span class="n">out_channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">out_channels</span></div>
+    <span class="k">return</span> <span class="n">out_channels</span>
 
 
-<div class="viewcode-block" id="update_backbone_args"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.update_backbone_args">[docs]</a><span class="k">def</span> <span class="nf">update_backbone_args</span><span class="p">(</span><span class="n">backbone_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">registry</span><span class="p">:</span> <span class="n">Registry</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">update_backbone_args</span><span class="p">(</span><span class="n">backbone_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">registry</span><span class="p">:</span> <span class="n">Registry</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update Backbone required arguments.</span>
 
 <span class="sd">    This function checks the init parameters of the corresponding backbone function (or class)</span>
@@ -405,10 +402,10 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="n">backbone_config</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!&quot;</span>
             <span class="n">updated_missing_args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">updated_missing_args</span></div>
+    <span class="k">return</span> <span class="n">updated_missing_args</span>
 
 
-<div class="viewcode-block" id="update_channels"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.update_channels">[docs]</a><span class="k">def</span> <span class="nf">update_channels</span><span class="p">(</span><span class="n">model_config</span><span class="p">:</span> <span class="n">OTXConfig</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">update_channels</span><span class="p">(</span><span class="n">model_config</span><span class="p">:</span> <span class="n">OTXConfig</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update in_channel of head or neck.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;neck&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">model_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">neck</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">model_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">neck</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;GlobalAveragePooling&quot;</span><span class="p">:</span>
@@ -430,13 +427,13 @@ document.write(`
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Update model.head.in_channels: </span><span class="si">{</span><span class="n">out_channels</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">model_config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This architecture currently does not support public backbone.&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This architecture currently does not support public backbone.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Builder"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.Builder">[docs]</a><span class="k">class</span> <span class="nc">Builder</span><span class="p">:</span>
+<div class="viewcode-block" id="Builder"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.html#otx.cli.builder.Builder">[docs]</a><span class="k">class</span> <span class="nc">Builder</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class that implements a model templates registry.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Builder.build_backbone_config"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.Builder.build_backbone_config">[docs]</a>    <span class="k">def</span> <span class="nf">build_backbone_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backbone_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+<div class="viewcode-block" id="Builder.build_backbone_config"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.html#otx.cli.builder.Builder.build_backbone_config">[docs]</a>    <span class="k">def</span> <span class="nf">build_backbone_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backbone_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build Backbone configs from backbone type.</span>
 
 <span class="sd">        This is a function that makes the configuration</span>
@@ -461,7 +458,7 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The backbone config support file format is as follows: (.yml, .yaml, .json)&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">missing_args</span></div>
 
-<div class="viewcode-block" id="Builder.merge_backbone"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.builder.html#otx.cli.builder.Builder.merge_backbone">[docs]</a>    <span class="k">def</span> <span class="nf">merge_backbone</span><span class="p">(</span>
+<div class="viewcode-block" id="Builder.merge_backbone"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.builder.html#otx.cli.builder.Builder.merge_backbone">[docs]</a>    <span class="k">def</span> <span class="nf">merge_backbone</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model_config_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">backbone_config_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
@@ -599,7 +596,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

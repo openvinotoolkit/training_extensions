@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -317,7 +314,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.ops.op</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Operation</span>
 
 
-<div class="viewcode-block" id="TopKV3Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.TopKV3Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">TopKV3Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TopKV3Attribute class.&quot;&quot;&quot;</span>
 
@@ -342,10 +339,10 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Invalid index_element_type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">index_element_type</span><span class="si">}</span><span class="s2">. &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_index_element_type</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
 
-<div class="viewcode-block" id="TopKV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.TopKV3">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="TopKV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.TopKV3">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">TopKV3</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">TopKV3Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TopKV3 class.&quot;&quot;&quot;</span>
 
@@ -353,21 +350,21 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">TopKV3Attribute</span>
 
-<div class="viewcode-block" id="TopKV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.TopKV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<div class="viewcode-block" id="TopKV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.TopKV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TopKV3&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="NonMaxSuppressionV5Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV5Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NonMaxSuppressionV5Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NonMaxSuppressionV5Attribute class.&quot;&quot;&quot;</span>
 
     <span class="n">box_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;corner&quot;</span><span class="p">)</span>
     <span class="n">sort_result_descending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">output_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;i64&quot;</span><span class="p">)</span></div>
+    <span class="n">output_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;i64&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="NonMaxSuppressionV5"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV5">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="NonMaxSuppressionV5"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NonMaxSuppressionV5">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">NonMaxSuppressionV5</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">NonMaxSuppressionV5Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NonMaxSuppressionV5 class.&quot;&quot;&quot;</span>
 
@@ -375,7 +372,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset5&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">NonMaxSuppressionV5Attribute</span>
 
-<div class="viewcode-block" id="NonMaxSuppressionV5.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV5.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="NonMaxSuppressionV5.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NonMaxSuppressionV5.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">boxes</span><span class="p">,</span>
         <span class="n">scores</span><span class="p">,</span>
@@ -388,16 +385,16 @@ document.write(`
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
 
-<div class="viewcode-block" id="NonMaxSuppressionV9Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV9Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">NonMaxSuppressionV9Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NonMaxSuppressionV9Attribute class.&quot;&quot;&quot;</span>
 
     <span class="n">box_encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;corner&quot;</span><span class="p">)</span>
     <span class="n">sort_result_descending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">output_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;i64&quot;</span><span class="p">)</span></div>
+    <span class="n">output_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;i64&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="NonMaxSuppressionV9"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV9">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="NonMaxSuppressionV9"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NonMaxSuppressionV9">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">NonMaxSuppressionV9</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">NonMaxSuppressionV9Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NonMaxSuppressionV9 class.&quot;&quot;&quot;</span>
 
@@ -405,7 +402,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">NonMaxSuppressionV9Attribute</span>
 
-<div class="viewcode-block" id="NonMaxSuppressionV9.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.sorting_maximization.html#otx.core.ov.ops.NonMaxSuppressionV9.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="NonMaxSuppressionV9.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.NonMaxSuppressionV9.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">boxes</span><span class="p">,</span>
         <span class="n">scores</span><span class="p">,</span>
@@ -468,7 +465,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

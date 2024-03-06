@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -321,7 +318,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.ops.op</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Operation</span>
 
 
-<div class="viewcode-block" id="ConvolutionV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.ConvolutionV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ConvolutionV1Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvolutionV1Attribute class.&quot;&quot;&quot;</span>
 
@@ -336,10 +333,10 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="n">valid_auto_pad</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;explicit&quot;</span><span class="p">,</span> <span class="s2">&quot;same_upper&quot;</span><span class="p">,</span> <span class="s2">&quot;same_Lower&quot;</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_pad</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_auto_pad</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid auto_pad </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_pad</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_auto_pad</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid auto_pad </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_pad</span><span class="si">}</span><span class="s2">. &quot;</span> <span class="sa">f</span><span class="s2">&quot;It must be one of </span><span class="si">{</span><span class="n">valid_auto_pad</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ConvolutionV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.ConvolutionV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ConvolutionV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvolutionV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ConvolutionV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ConvolutionV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvolutionV1 class.&quot;&quot;&quot;</span>
 
@@ -347,7 +344,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ConvolutionV1Attribute</span>
 
-<div class="viewcode-block" id="ConvolutionV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.ConvolutionV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvolutionV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvolutionV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ConvolutionV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">func</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv1d</span>
@@ -381,14 +378,14 @@ document.write(`
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="GroupConvolutionV1Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.GroupConvolutionV1Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">GroupConvolutionV1Attribute</span><span class="p">(</span><span class="n">ConvolutionV1Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;GroupConvolutionV1Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="GroupConvolutionV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.GroupConvolutionV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="GroupConvolutionV1"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.GroupConvolutionV1">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">GroupConvolutionV1</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">GroupConvolutionV1Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;GroupConvolutionV1 class.&quot;&quot;&quot;</span>
 
@@ -396,7 +393,7 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">GroupConvolutionV1Attribute</span>
 
-<div class="viewcode-block" id="GroupConvolutionV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.convolutions.html#otx.core.ov.ops.GroupConvolutionV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupConvolutionV1.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.GroupConvolutionV1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;GroupConvolutionV1&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">weight</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="n">func</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv1d</span>
@@ -487,7 +484,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

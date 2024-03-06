@@ -13,6 +13,12 @@ otx.algorithms.detection.adapters.mmdet.models.roi\_heads.bbox\_heads
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVBBoxHead
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.detection.adapters.mmdet.models.roi\_heads.bbox\_heads
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.roi_heads.bbox_heads.mmov_bbox_head
 

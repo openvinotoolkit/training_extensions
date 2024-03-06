@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -331,7 +328,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="get_unlabeled_filename"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.get_unlabeled_filename">[docs]</a><span class="k">def</span> <span class="nf">get_unlabeled_filename</span><span class="p">(</span><span class="n">base_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_list_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_unlabeled_filename</span><span class="p">(</span><span class="n">base_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_list_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This method checks and gets image file paths, which are listed in file_list_path.</span>
 
 <span class="sd">    The content of file_list_path is expected to specify relative paths of each image file to base_root line by line.</span>
@@ -355,10 +352,10 @@ document.write(`
         <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_root</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">is_valid</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
             <span class="n">unlabeled_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">unlabeled_files</span></div>
+    <span class="k">return</span> <span class="n">unlabeled_files</span>
 
 
-<div class="viewcode-block" id="load_unlabeled_dataset_items"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.load_unlabeled_dataset_items">[docs]</a><span class="k">def</span> <span class="nf">load_unlabeled_dataset_items</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">load_unlabeled_dataset_items</span><span class="p">(</span>
     <span class="n">data_root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">file_list_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
@@ -389,16 +386,16 @@ document.write(`
             <span class="n">subset</span><span class="o">=</span><span class="n">Subset</span><span class="o">.</span><span class="n">UNLABELED</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">dataset_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset_item</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">dataset_items</span></div>
+    <span class="k">return</span> <span class="n">dataset_items</span>
 
 
-<div class="viewcode-block" id="get_dataset"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.get_dataset">[docs]</a><span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">Subset</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">subset</span><span class="p">:</span> <span class="n">Subset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get dataset from datasetentity.&quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span></div>
+    <span class="k">return</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="get_cls_img_indices"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.get_cls_img_indices">[docs]</a><span class="k">def</span> <span class="nf">get_cls_img_indices</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<div class="viewcode-block" id="get_cls_img_indices"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_cls_img_indices">[docs]</a><span class="k">def</span> <span class="nf">get_cls_img_indices</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function for getting image indices per class.</span>
 
 <span class="sd">    Args:</span>
@@ -415,7 +412,7 @@ document.write(`
     <span class="k">return</span> <span class="n">img_indices</span></div>
 
 
-<div class="viewcode-block" id="get_old_new_img_indices"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.get_old_new_img_indices">[docs]</a><span class="k">def</span> <span class="nf">get_old_new_img_indices</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">new_classes</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<div class="viewcode-block" id="get_old_new_img_indices"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_old_new_img_indices">[docs]</a><span class="k">def</span> <span class="nf">get_old_new_img_indices</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">new_classes</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function for getting old &amp; new indices of dataset.</span>
 
 <span class="sd">    Args:</span>
@@ -434,7 +431,7 @@ document.write(`
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;old&quot;</span><span class="p">:</span> <span class="n">ids_old</span><span class="p">,</span> <span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="n">ids_new</span><span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="get_image"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.get_image">[docs]</a><span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_float32</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="get_image"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_image">[docs]</a><span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_float32</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load an image and cache it if it&#39;s a training video frame.</span>
 
 <span class="sd">    Args:</span>
@@ -496,7 +493,7 @@ document.write(`
     <span class="k">return</span> <span class="n">img</span></div>
 
 
-<div class="viewcode-block" id="OTXOpenVinoDataLoader"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.OTXOpenVinoDataLoader">[docs]</a><span class="k">class</span> <span class="nc">OTXOpenVinoDataLoader</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXOpenVinoDataLoader"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.OTXOpenVinoDataLoader">[docs]</a><span class="k">class</span> <span class="nc">OTXOpenVinoDataLoader</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DataLoader implementation for ClassificationOpenVINOTask.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inferencer</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
@@ -528,7 +525,7 @@ document.write(`
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="compute_robust_statistics"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.compute_robust_statistics">[docs]</a><span class="k">def</span> <span class="nf">compute_robust_statistics</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">compute_robust_statistics</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes robust statistics of given samples.</span>
 
 <span class="sd">    Args:</span>
@@ -558,10 +555,10 @@ document.write(`
     <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_value</span><span class="p">)</span>
     <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;robust_min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">robust_min_value</span><span class="p">)</span>
     <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;robust_max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">robust_max_value</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">stat</span></div>
+    <span class="k">return</span> <span class="n">stat</span>
 
 
-<div class="viewcode-block" id="compute_robust_scale_statistics"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.compute_robust_scale_statistics">[docs]</a><span class="k">def</span> <span class="nf">compute_robust_scale_statistics</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">compute_robust_scale_statistics</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes robust statistics of scale values.</span>
 
 <span class="sd">    Average of 0.5x scale and 2x scale should be 1x</span>
@@ -579,10 +576,10 @@ document.write(`
     <span class="n">stat</span> <span class="o">=</span> <span class="n">compute_robust_statistics</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
     <span class="n">stat</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stat</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>  <span class="c1"># Normal scale std is better for understanding</span>
-    <span class="k">return</span> <span class="n">stat</span></div>
+    <span class="k">return</span> <span class="n">stat</span>
 
 
-<div class="viewcode-block" id="compute_robust_dataset_statistics"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.data.html#otx.algorithms.common.utils.compute_robust_dataset_statistics">[docs]</a><span class="k">def</span> <span class="nf">compute_robust_dataset_statistics</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">ann_stat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">compute_robust_dataset_statistics</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">ann_stat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes robust statistics of image &amp; annotation sizes.</span>
 
 <span class="sd">    Args:</span>
@@ -637,7 +634,7 @@ document.write(`
         <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;annotation&quot;</span><span class="p">][</span><span class="s2">&quot;num_per_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_robust_statistics</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">num_per_images</span><span class="p">))</span>
         <span class="n">stat</span><span class="p">[</span><span class="s2">&quot;annotation&quot;</span><span class="p">][</span><span class="s2">&quot;size_of_shape&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_robust_scale_statistics</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">size_of_shapes</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">stat</span></div>
+    <span class="k">return</span> <span class="n">stat</span>
 </pre></div>
 
                 </article>
@@ -690,7 +687,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

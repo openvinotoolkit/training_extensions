@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -320,7 +317,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">mmcv.runner.hooks.hook</span> <span class="kn">import</span> <span class="n">HOOKS</span><span class="p">,</span> <span class="n">Hook</span>
 
 
-<div class="viewcode-block" id="CheckpointHookWithValResults"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CheckpointHookWithValResults"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CheckpointHookWithValResults</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-instance-attributes</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save checkpoints periodically.</span>
 
@@ -362,12 +359,12 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">sync_buffer</span> <span class="o">=</span> <span class="n">sync_buffer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_best_model_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="CheckpointHookWithValResults.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CheckpointHookWithValResults.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set output directopy if not set.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">work_dir</span></div>
 
-<div class="viewcode-block" id="CheckpointHookWithValResults.after_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CheckpointHookWithValResults.after_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checkpoint stuffs after train epoch.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">by_epoch</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">every_n_epochs</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">):</span>
             <span class="k">return</span>
@@ -437,7 +434,7 @@ document.write(`
             <span class="n">runner</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;hook_msgs&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
             <span class="n">runner</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;hook_msgs&quot;</span><span class="p">][</span><span class="s2">&quot;last_ckpt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_dir</span> <span class="o">/</span> <span class="n">cur_ckpt_filename</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CheckpointHookWithValResults.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="CheckpointHookWithValResults.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CheckpointHookWithValResults.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Checkpoint stuffs after train iteration.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">by_epoch</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">every_n_iters</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">):</span>
             <span class="k">return</span>
@@ -451,7 +448,7 @@ document.write(`
             <span class="n">runner</span><span class="o">.</span><span class="n">save_ckpt</span> <span class="o">=</span> <span class="kc">False</span></div></div>
 
 
-<div class="viewcode-block" id="EnsureCorrectBestCheckpointHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="EnsureCorrectBestCheckpointHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EnsureCorrectBestCheckpointHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EnsureCorrectBestCheckpointHook.</span>
 
@@ -459,12 +456,12 @@ document.write(`
 <span class="sd">    created in the last epoch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="EnsureCorrectBestCheckpointHook.after_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook.after_run">[docs]</a>    <span class="k">def</span> <span class="nf">after_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
+<div class="viewcode-block" id="EnsureCorrectBestCheckpointHook.after_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.EnsureCorrectBestCheckpointHook.after_run">[docs]</a>    <span class="k">def</span> <span class="nf">after_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called after train epoch hooks.&quot;&quot;&quot;</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">call_hook</span><span class="p">(</span><span class="s2">&quot;after_train_epoch&quot;</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SaveInitialWeightHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.SaveInitialWeightHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SaveInitialWeightHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the initial weights before training.&quot;&quot;&quot;</span>
 
@@ -473,12 +470,12 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_name</span> <span class="o">=</span> <span class="n">file_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">kwargs</span>
 
-<div class="viewcode-block" id="SaveInitialWeightHook.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.html#otx.algorithms.common.adapters.mmcv.SaveInitialWeightHook.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save initial the weights before training.&quot;&quot;&quot;</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving weight before training&quot;</span><span class="p">)</span>
         <span class="n">runner</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_path</span><span class="p">,</span> <span class="n">filename_tmpl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_name</span><span class="p">,</span> <span class="n">save_optimizer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">create_symlink</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_args</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -531,7 +528,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

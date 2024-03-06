@@ -13,6 +13,15 @@ otx.algorithms.common.configs
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseConfig
+      TrainType
+      LearningRateSchedule
+      POTQuantizationPreset
+   
    
 
    
@@ -20,13 +29,4 @@ otx.algorithms.common.configs
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.configs.configuration_enums
-   otx.algorithms.common.configs.training_base
 

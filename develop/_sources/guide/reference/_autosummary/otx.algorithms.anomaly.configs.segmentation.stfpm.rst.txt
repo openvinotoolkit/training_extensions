@@ -13,6 +13,12 @@ otx.algorithms.anomaly.configs.segmentation.stfpm
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      STFPMAnomalySegmentationConfig
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.anomaly.configs.segmentation.stfpm
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.anomaly.configs.segmentation.stfpm.configuration
 

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -322,7 +319,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.ov.models.parser_mixin</span> <span class="kn">import</span> <span class="n">ParserMixin</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
 
-<div class="viewcode-block" id="MMOVYOLOV3Neck"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_yolov3_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVYOLOV3Neck">[docs]</a><span class="nd">@NECKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="MMOVYOLOV3Neck"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVYOLOV3Neck">[docs]</a><span class="nd">@NECKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">MMOVYOLOV3Neck</span><span class="p">(</span><span class="n">YOLOV3Neck</span><span class="p">,</span> <span class="n">ParserMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MMOVYOLOV3Neck class for OMZ models.&quot;&quot;&quot;</span>
 
@@ -373,7 +370,7 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">num_scales</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;detect&quot;</span><span class="p">)])</span>
 
-<div class="viewcode-block" id="MMOVYOLOV3Neck.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.mmov_yolov3_neck.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVYOLOV3Neck.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+<div class="viewcode-block" id="MMOVYOLOV3Neck.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.necks.html#otx.algorithms.detection.adapters.mmdet.models.necks.MMOVYOLOV3Neck.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initial weights of MMOVYOLOV3Neck.&quot;&quot;&quot;</span>
         <span class="c1"># TODO</span>
         <span class="k">return</span></div></div>
@@ -429,7 +426,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -13,6 +13,12 @@ otx.algorithms.common.adapters.torch.dataloaders
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ComposedDL
+   
    
 
    
@@ -20,13 +26,4 @@ otx.algorithms.common.adapters.torch.dataloaders
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.adapters.torch.dataloaders.composed_dataloader
-   otx.algorithms.common.adapters.torch.dataloaders.samplers
 

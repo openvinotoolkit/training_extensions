@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -326,7 +323,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">.custom_maskrcnn_detector</span> <span class="kn">import</span> <span class="n">CustomMaskRCNN</span>
 
 
-<div class="viewcode-block" id="TileClassifier"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.TileClassifier">[docs]</a><span class="k">class</span> <span class="nc">TileClassifier</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TileClassifier</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tile classifier for the tile optimised MaskRCNN model.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -357,7 +354,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_func</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BCEWithLogitsLoss</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
 
-<div class="viewcode-block" id="TileClassifier.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.TileClassifier.forward">[docs]</a>    <span class="nd">@auto_fp16</span><span class="p">()</span>
+    <span class="nd">@auto_fp16</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass.</span>
 
@@ -370,9 +367,9 @@ document.write(`
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gap</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y</span></div>
+        <span class="k">return</span> <span class="n">y</span>
 
-<div class="viewcode-block" id="TileClassifier.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.TileClassifier.loss">[docs]</a>    <span class="nd">@auto_fp16</span><span class="p">()</span>
+    <span class="nd">@auto_fp16</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate BCE loss.</span>
 
@@ -384,9 +381,9 @@ document.write(`
 <span class="sd">            torch.Tensor: BCE loss</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_func</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">loss</span></div>
+        <span class="k">return</span> <span class="n">loss</span>
 
-<div class="viewcode-block" id="TileClassifier.simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.TileClassifier.simple_test">[docs]</a>    <span class="nd">@auto_fp16</span><span class="p">()</span>
+    <span class="nd">@auto_fp16</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">simple_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Simple test.</span>
 
@@ -399,11 +396,11 @@ document.write(`
 
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">no_nncf_trace</span><span class="p">():</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 
 
 <span class="c1"># pylint: disable=too-many-ancestors</span>
-<div class="viewcode-block" id="CustomMaskRCNNTileOptimized"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomMaskRCNNTileOptimized"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomMaskRCNNTileOptimized</span><span class="p">(</span><span class="n">CustomMaskRCNN</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom MaskRCNN detector with tile classifier.</span>
 
@@ -417,7 +414,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">tile_classifier</span> <span class="o">=</span> <span class="n">TileClassifier</span><span class="p">()</span>
 
     <span class="c1"># pylint: disable=too-many-arguments</span>
-<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt_masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proposals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass during training.</span>
@@ -459,7 +456,7 @@ document.write(`
         <span class="n">losses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rcnn_loss</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">losses</span></div>
 
-<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.make_fake_results"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.make_fake_results">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.make_fake_results"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.make_fake_results">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">make_fake_results</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make fake results.</span>
 
@@ -473,7 +470,7 @@ document.write(`
             <span class="n">mask_results</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
         <span class="k">return</span> <span class="n">bbox_results</span><span class="p">,</span> <span class="n">mask_results</span></div>
 
-<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.simple_test">[docs]</a>    <span class="k">def</span> <span class="nf">simple_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">proposals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_res_image</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomMaskRCNNTileOptimized.simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized.simple_test">[docs]</a>    <span class="k">def</span> <span class="nf">simple_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">proposals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_res_image</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Simple test.</span>
 
 <span class="sd">        Tile classifier is used to filter out images without any objects.</span>
@@ -541,7 +538,7 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">img</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># pylint: disable=line-too-long, unused-argument</span>
-<div class="viewcode-block" id="tile_classifier__simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.tile_classifier__simple_test">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.TileClassifier.simple_test&quot;</span>  <span class="c1"># noqa: E501</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">tile_classifier__simple_test</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
@@ -557,7 +554,7 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            torch.Tensor: objectness score</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">tile_classifier__simple_test_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">tile_classifier__simple_test_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span>
 
     <span class="c1"># pylint: disable=protected-access</span>
     <span class="nd">@mark</span><span class="p">(</span>
@@ -590,7 +587,7 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_test</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># pylint: disable=line-too-long</span>
-<div class="viewcode-block" id="custom_maskrcnn__forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn__forward">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimized.forward&quot;</span>  <span class="c1"># noqa: E501</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_maskrcnn__forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -615,10 +612,10 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># pylint: disable=line-too-long</span>
-<div class="viewcode-block" id="custom_mask_rcnn__simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_mask_rcnn__simple_test">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimized.simple_test&quot;</span>  <span class="c1"># noqa: E501</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_mask_rcnn__simple_test</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">proposals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -652,7 +649,7 @@ document.write(`
             <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">,</span> <span class="n">tile_prob</span><span class="p">,</span> <span class="n">feature_vector</span><span class="p">,</span> <span class="n">saliency_map</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">,</span> <span class="n">tile_prob</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">,</span> <span class="n">tile_prob</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -705,7 +702,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

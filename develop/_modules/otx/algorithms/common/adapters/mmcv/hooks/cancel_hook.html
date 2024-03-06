@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -324,7 +321,7 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument</span>
-<div class="viewcode-block" id="CancelTrainingHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelTrainingHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CancelTrainingHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CancelTrainingHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CancelTrainingHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CancelTrainingHook for Training Stopping.&quot;&quot;&quot;</span>
 
@@ -351,14 +348,14 @@ document.write(`
             <span class="n">runner</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set this flag to true to stop the current training epoch</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">stop_filepath</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CancelTrainingHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelTrainingHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
+<div class="viewcode-block" id="CancelTrainingHook.after_train_iter"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.CancelTrainingHook.after_train_iter">[docs]</a>    <span class="k">def</span> <span class="nf">after_train_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">:</span> <span class="n">BaseRunner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Log after_train_iter for CancelTrainingHook.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">every_n_iters</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_stop_signal</span><span class="p">(</span><span class="n">runner</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="CancelInterfaceHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelInterfaceHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CancelInterfaceHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cancel interface. If called, running job will be terminated.&quot;&quot;&quot;</span>
 
@@ -367,7 +364,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
 
-<div class="viewcode-block" id="CancelInterfaceHook.cancel"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelInterfaceHook.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Cancel.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;CancelInterfaceHook.cancel() is called.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -382,16 +379,16 @@ document.write(`
             <span class="n">epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">epoch</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">_max_epochs</span> <span class="o">=</span> <span class="n">epoch</span>  <span class="c1"># Force runner to stop by pretending it has reached it&#39;s max_epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Set this flag to true to stop the current training epoch</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;requested stopping to the runner&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;requested stopping to the runner&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CancelInterfaceHook.before_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelInterfaceHook.before_run">[docs]</a>    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">before_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Before run.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="n">runner</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">on_init_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">on_init_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CancelInterfaceHook.after_run"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.cancel_hook.html#otx.algorithms.common.adapters.mmcv.CancelInterfaceHook.after_run">[docs]</a>    <span class="k">def</span> <span class="nf">after_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">after_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;After run.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runner</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 
                 </article>
@@ -444,7 +441,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

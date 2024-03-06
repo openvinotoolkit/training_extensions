@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -322,7 +319,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 
-<div class="viewcode-block" id="SmallExpandFFN"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN">[docs]</a><span class="nd">@FEEDFORWARD_NETWORK</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="SmallExpandFFN"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN">[docs]</a><span class="nd">@FEEDFORWARD_NETWORK</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SmallExpandFFN</span><span class="p">(</span><span class="n">FFN</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements feed-forward networks (FFNs) with small expand.</span>
 
@@ -379,7 +376,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SmallExpandFFN.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">level_start_index</span><span class="p">,</span> <span class="n">enc_scale</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SmallExpandFFN.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">level_start_index</span><span class="p">,</span> <span class="n">enc_scale</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for FFN.&quot;&quot;&quot;</span>
         <span class="n">x_3s</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="n">enc_scale</span><span class="p">]</span> <span class="p">:]</span>
         <span class="n">x_4s</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span> <span class="n">level_start_index</span><span class="p">[</span><span class="mi">4</span> <span class="o">-</span> <span class="n">enc_scale</span><span class="p">]]</span>
@@ -389,7 +386,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">x</span></div>
 
-<div class="viewcode-block" id="SmallExpandFFN.forward_ffn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward_ffn">[docs]</a>    <span class="k">def</span> <span class="nf">forward_ffn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SmallExpandFFN.forward_ffn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.SmallExpandFFN.forward_ffn">[docs]</a>    <span class="k">def</span> <span class="nf">forward_ffn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">identity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward Feed Forward Network given layers.&quot;&quot;&quot;</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_identity</span><span class="p">:</span>
@@ -399,7 +396,7 @@ document.write(`
         <span class="k">return</span> <span class="n">norm</span><span class="p">(</span><span class="n">identity</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout_layer</span><span class="p">(</span><span class="n">out</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="EfficientTransformerLayer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer">[docs]</a><span class="nd">@TRANSFORMER_LAYER</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="EfficientTransformerLayer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer">[docs]</a><span class="nd">@TRANSFORMER_LAYER</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EfficientTransformerLayer</span><span class="p">(</span><span class="n">BaseTransformerLayer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Efficient TransformerLayer for Lite-DETR.</span>
 
@@ -455,7 +452,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">enc_scale</span> <span class="o">=</span> <span class="n">enc_scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">small_expand</span> <span class="o">=</span> <span class="n">small_expand</span>
 
-<div class="viewcode-block" id="EfficientTransformerLayer.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="EfficientTransformerLayer.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">query</span><span class="p">,</span>
         <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -567,7 +564,7 @@ document.write(`
         <span class="k">return</span> <span class="n">query</span></div></div>
 
 
-<div class="viewcode-block" id="EfficientTransformerEncoder"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder">[docs]</a><span class="nd">@TRANSFORMER_LAYER_SEQUENCE</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="EfficientTransformerEncoder"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder">[docs]</a><span class="nd">@TRANSFORMER_LAYER_SEQUENCE</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">EfficientTransformerEncoder</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;TransformerEncoder of Lite-DETR.</span>
 
@@ -617,7 +614,7 @@ document.write(`
             <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_norm</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Use prenorm in &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">,&quot;</span> <span class="sa">f</span><span class="s2">&quot;Please specify post_norm_cfg&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">post_norm</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="EfficientTransformerEncoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="EfficientTransformerEncoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.EfficientTransformerEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">query</span><span class="p">,</span>
         <span class="n">key</span><span class="p">,</span>
@@ -753,7 +750,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

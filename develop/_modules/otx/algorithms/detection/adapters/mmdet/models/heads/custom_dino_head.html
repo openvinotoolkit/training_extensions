@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -326,7 +323,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.algorithms.detection.adapters.mmdet.models.layers</span> <span class="kn">import</span> <span class="n">CdnQueryGenerator</span>
 
 
-<div class="viewcode-block" id="CustomDINOHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomDINOHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomDINOHead</span><span class="p">(</span><span class="n">DeformableDETRHead</span><span class="p">,</span> <span class="n">DETRHeadExtension</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Head of DINO.</span>
 
@@ -356,7 +353,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_init_layers</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_embedding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_query</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomDINOHead.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
@@ -397,7 +394,7 @@ document.write(`
         <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="o">*</span><span class="n">loss_inputs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">losses</span></div>
 
-<div class="viewcode-block" id="CustomDINOHead.forward_transformer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer">[docs]</a>    <span class="k">def</span> <span class="nf">forward_transformer</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.forward_transformer"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward_transformer">[docs]</a>    <span class="k">def</span> <span class="nf">forward_transformer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mlvl_feats</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">gt_bboxes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]],</span>
@@ -473,7 +470,7 @@ document.write(`
             <span class="n">cls_branches</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cls_branches</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss">[docs]</a>    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hidden_states</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">references</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
@@ -525,9 +522,9 @@ document.write(`
         <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">hidden_states</span><span class="p">,</span> <span class="n">references</span><span class="p">)</span>
         <span class="n">loss_inputs</span> <span class="o">=</span> <span class="n">outs</span> <span class="o">+</span> <span class="p">(</span><span class="n">enc_outputs_class</span><span class="p">,</span> <span class="n">enc_outputs_coord</span><span class="p">,</span> <span class="n">batch_gt_instances</span><span class="p">,</span> <span class="n">batch_img_metas</span><span class="p">,</span> <span class="n">dn_meta</span><span class="p">)</span>
         <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_by_feat_two_stage</span><span class="p">(</span><span class="o">*</span><span class="n">loss_inputs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">losses</span>
+        <span class="k">return</span> <span class="n">losses</span></div>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_states</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">references</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]):</span>
+<div class="viewcode-block" id="CustomDINOHead.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_states</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">references</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function.</span>
 
 <span class="sd">        Original implementation: forward function of deformable_detr_head.py in mmdet3.x</span>
@@ -586,9 +583,9 @@ document.write(`
         <span class="n">all_layers_outputs_classes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_layers_outputs_classes</span><span class="p">)</span>
         <span class="n">all_layers_outputs_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_layers_outputs_coords</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">all_layers_outputs_classes</span><span class="p">,</span> <span class="n">all_layers_outputs_coords</span>
+        <span class="k">return</span> <span class="n">all_layers_outputs_classes</span><span class="p">,</span> <span class="n">all_layers_outputs_coords</span></div>
 
-<div class="viewcode-block" id="CustomDINOHead.loss_by_feat_two_stage"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_by_feat_two_stage">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat_two_stage</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.loss_by_feat_two_stage"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_by_feat_two_stage">[docs]</a>    <span class="k">def</span> <span class="nf">loss_by_feat_two_stage</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">all_layers_cls_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">all_layers_bbox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -683,7 +680,7 @@ document.write(`
                 <span class="n">loss_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;d</span><span class="si">{</span><span class="n">num_dec_layer</span><span class="si">}</span><span class="s2">.dn_loss_iou&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss_iou_i</span>
         <span class="k">return</span> <span class="n">loss_dict</span></div>
 
-<div class="viewcode-block" id="CustomDINOHead.loss_dn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_dn">[docs]</a>    <span class="k">def</span> <span class="nf">loss_dn</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.loss_dn"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.loss_dn">[docs]</a>    <span class="k">def</span> <span class="nf">loss_dn</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">all_layers_denoising_cls_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">all_layers_denoising_bbox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -815,7 +812,7 @@ document.write(`
         <span class="n">loss_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_bbox</span><span class="p">(</span><span class="n">bbox_preds</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">avg_factor</span><span class="o">=</span><span class="n">num_total_pos</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="p">,</span> <span class="n">loss_iou</span>
 
-<div class="viewcode-block" id="CustomDINOHead.get_dn_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.get_dn_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_dn_targets</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomDINOHead.get_dn_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.get_dn_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_dn_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">batch_gt_instances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Config</span><span class="p">],</span> <span class="n">batch_img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">dn_meta</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get targets in denoising part for a batch of images.</span>
@@ -919,7 +916,7 @@ document.write(`
 
         <span class="k">return</span> <span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">neg_inds</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomDINOHead.split_outputs"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.split_outputs">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CustomDINOHead.split_outputs"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.split_outputs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">split_outputs</span><span class="p">(</span>
         <span class="n">all_layers_cls_scores</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">all_layers_bbox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">dn_meta</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -983,7 +980,7 @@ document.write(`
             <span class="n">all_layers_denoising_bbox_preds</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CustomDINOHead.simple_test_bboxes"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.simple_test_bboxes">[docs]</a>    <span class="k">def</span> <span class="nf">simple_test_bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomDINOHead.simple_test_bboxes"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomDINOHead.simple_test_bboxes">[docs]</a>    <span class="k">def</span> <span class="nf">simple_test_bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Test det bboxes without test-time augmentation.</span>
 
 <span class="sd">        Original implementation: simple_test_bboxes funciton of detr_head.py in mmdet2.x</span>
@@ -1067,7 +1064,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

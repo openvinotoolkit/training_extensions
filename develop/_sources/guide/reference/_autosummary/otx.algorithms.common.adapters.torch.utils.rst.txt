@@ -9,24 +9,28 @@ otx.algorithms.common.adapters.torch.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      model_from_timm
+      convert_sync_batchnorm
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BsSearchAlgo
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.adapters.torch.utils.bs_search_algo
-   otx.algorithms.common.adapters.torch.utils.utils
 

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../../" id="documentation_options" src="../../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../../_static/clipboard.min.js"></script>
@@ -321,11 +318,11 @@ document.write(`
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
 
 
-<div class="viewcode-block" id="SingleRoIExtractor"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor">[docs]</a><span class="nd">@ROI_EXTRACTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="SingleRoIExtractor"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor">[docs]</a><span class="nd">@ROI_EXTRACTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">SingleRoIExtractor</span><span class="p">(</span><span class="n">OriginSingleRoIExtractor</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SingleRoIExtractor class for mmdetection adapters.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SingleRoIExtractor.build_roi_layers"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.build_roi_layers">[docs]</a>    <span class="k">def</span> <span class="nf">build_roi_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_cfg</span><span class="p">,</span> <span class="n">featmap_strides</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleRoIExtractor.build_roi_layers"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.build_roi_layers">[docs]</a>    <span class="k">def</span> <span class="nf">build_roi_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_cfg</span><span class="p">,</span> <span class="n">featmap_strides</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build ROI layers.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">layer_cfg</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;RoIInterpolationPool&quot;</span><span class="p">:</span>
             <span class="n">cfg</span> <span class="o">=</span> <span class="n">layer_cfg</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -334,7 +331,7 @@ document.write(`
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_roi_layers</span><span class="p">(</span><span class="n">layer_cfg</span><span class="p">,</span> <span class="n">featmap_strides</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="RoIInterpolationPool"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.RoIInterpolationPool">[docs]</a><span class="k">class</span> <span class="nc">RoIInterpolationPool</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">RoIInterpolationPool</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RoIInterpolationPool class for mmdetection adapters.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">spatial_scale</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">):</span>
@@ -344,7 +341,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">spatial_scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">spatial_scale</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
 
-<div class="viewcode-block" id="RoIInterpolationPool.forward"><a class="viewcode-back" href="../../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor.html#otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.RoIInterpolationPool.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">rois</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">rois</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of RoIInterpolationPool.&quot;&quot;&quot;</span>
         <span class="n">outs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">rois</span><span class="p">:</span>
@@ -362,7 +359,7 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
         <span class="n">outs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">outs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">outs</span></div>
+        <span class="k">return</span> <span class="n">outs</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Repr function of RoIInterpolationPool.&quot;&quot;&quot;</span>
@@ -370,7 +367,7 @@ document.write(`
         <span class="n">name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;(output_size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_size</span><span class="si">}</span><span class="s2">, &quot;</span>
         <span class="n">name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;spatial_scale=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">spatial_scale</span><span class="si">}</span><span class="s2">, &quot;</span>
         <span class="n">name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;mode=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="k">return</span> <span class="n">name</span></div>
+        <span class="k">return</span> <span class="n">name</span>
 </pre></div>
 
                 </article>
@@ -423,7 +420,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

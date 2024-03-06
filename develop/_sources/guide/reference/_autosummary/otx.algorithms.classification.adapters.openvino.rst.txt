@@ -13,6 +13,12 @@ otx.algorithms.classification.adapters.openvino
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ClassificationOpenVINOTask
+   
    
 
    
@@ -20,12 +26,4 @@ otx.algorithms.classification.adapters.openvino
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.classification.adapters.openvino.task
 

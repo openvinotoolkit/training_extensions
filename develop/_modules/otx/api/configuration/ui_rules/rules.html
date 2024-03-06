@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -331,7 +328,7 @@ document.write(`
 <span class="n">ALLOWED_RULE_VALUE_TYPES</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span>  <span class="c1"># pylint: disable=invalid-name</span>
 
 
-<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.Rule">[docs]</a><span class="nd">@attrs</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Rule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.Rule">[docs]</a><span class="nd">@attrs</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Rule</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This class represents a `operator` applied to the `value` of the configurable parameter `parameter`.</span>
 
@@ -344,7 +341,7 @@ document.write(`
     <span class="n">operator</span><span class="p">:</span> <span class="n">Operator</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">Operator</span><span class="o">.</span><span class="n">EQUAL_TO</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="n">attr_convert_operator</span><span class="p">)</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">ConfigElementType</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">ConfigElementType</span><span class="o">.</span><span class="n">RULE</span><span class="p">,</span> <span class="n">on_setattr</span><span class="o">=</span><span class="n">setters</span><span class="o">.</span><span class="n">frozen</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Rule.to_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.Rule.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="Rule.to_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.Rule.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to serialize a Rule instance to its dictionary representation.</span>
 
 <span class="sd">        Args:</span>
@@ -360,7 +357,7 @@ document.write(`
         <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value_serializer</span><span class="o">=</span><span class="n">serializer</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="UIRules"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.UIRules">[docs]</a><span class="nd">@attrs</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="UIRules"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.UIRules">[docs]</a><span class="nd">@attrs</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">UIRules</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This class allows the combination of ExposureRules using boolean logic.</span>
 
@@ -375,11 +372,11 @@ document.write(`
     <span class="n">action</span><span class="p">:</span> <span class="n">Action</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">Action</span><span class="o">.</span><span class="n">DISABLE_EDITING</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="n">attr_convert_action</span><span class="p">)</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">ConfigElementType</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">ConfigElementType</span><span class="o">.</span><span class="n">UI_RULES</span><span class="p">,</span> <span class="n">on_setattr</span><span class="o">=</span><span class="n">setters</span><span class="o">.</span><span class="n">frozen</span><span class="p">)</span>
 
-<div class="viewcode-block" id="UIRules.add_rule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.UIRules.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rule</span><span class="p">,</span> <span class="n">UIRules</span><span class="p">]):</span>
+<div class="viewcode-block" id="UIRules.add_rule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.UIRules.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Rule</span><span class="p">,</span> <span class="n">UIRules</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds rule.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="UIRules.to_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.UIRules.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="UIRules.to_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.UIRules.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enum_to_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to serialize an UIRules instance to its dictionary representation.</span>
 
 <span class="sd">        Applies recursion to convert nested rules, if applicable.</span>
@@ -404,7 +401,7 @@ document.write(`
         <span class="k">return</span> <span class="n">dictionary_representation</span></div></div>
 
 
-<div class="viewcode-block" id="NullUIRules"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.ui_rules.rules.html#otx.api.configuration.NullUIRules">[docs]</a><span class="nd">@attrs</span>
+<div class="viewcode-block" id="NullUIRules"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.api.configuration.html#otx.api.configuration.NullUIRules">[docs]</a><span class="nd">@attrs</span>
 <span class="k">class</span> <span class="nc">NullUIRules</span><span class="p">(</span><span class="n">UIRules</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This class represents an empty, unset UIRules element.&quot;&quot;&quot;</span>
 
@@ -461,7 +458,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

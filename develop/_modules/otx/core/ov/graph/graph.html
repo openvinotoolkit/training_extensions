@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -334,7 +331,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="SortedDictKeysView"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDictKeysView">[docs]</a><span class="k">class</span> <span class="nc">SortedDictKeysView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">KeysView</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SortedDictKeysView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">KeysView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SortedDictKeysView class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -343,10 +340,10 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__reversed__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function reversed of SortedDictKeysView.&quot;&quot;&quot;</span>
-        <span class="k">yield from</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">)</span></div>
+        <span class="k">yield from</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SortedDictValuesView"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDictValuesView">[docs]</a><span class="k">class</span> <span class="nc">SortedDictValuesView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">ValuesView</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SortedDictValuesView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">ValuesView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SortedDictValuesView class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -356,10 +353,10 @@ document.write(`
     <span class="k">def</span> <span class="fm">__reversed__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddictvaluesview&#39;s reversed function.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="SortedDictItemsView"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDictItemsView">[docs]</a><span class="k">class</span> <span class="nc">SortedDictItemsView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">ItemsView</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SortedDictItemsView</span><span class="p">(</span><span class="n">_collections_abc</span><span class="o">.</span><span class="n">ItemsView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SortedDictItemsView class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -369,16 +366,16 @@ document.write(`
     <span class="k">def</span> <span class="fm">__reversed__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddictitemsview&#39;s reversed function.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
 
-<div class="viewcode-block" id="NOOP"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.NOOP">[docs]</a><span class="k">class</span> <span class="nc">NOOP</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">NOOP</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;NOOP class.&quot;&quot;&quot;</span>
 
-    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span></div>
+    <span class="k">pass</span>  <span class="c1"># pylint: disable=unnecessary-pass</span>
 
 
-<div class="viewcode-block" id="SortedDict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict">[docs]</a><span class="k">class</span> <span class="nc">SortedDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SortedDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SortedDict class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_key</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -437,12 +434,12 @@ document.write(`
             <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span>
 
-<div class="viewcode-block" id="SortedDict.clear"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s clear function.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_keys</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_keys</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="SortedDict.pop"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NOOP</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NOOP</span><span class="p">()):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s pop function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">NOOP</span><span class="p">):</span>
             <span class="n">value</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -454,31 +451,31 @@ document.write(`
                 <span class="k">break</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_keys</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># pylint: disable=undefined-loop-variable</span>
 
-        <span class="k">return</span> <span class="n">value</span></div>
+        <span class="k">return</span> <span class="n">value</span>
 
-<div class="viewcode-block" id="SortedDict.popitem"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.popitem">[docs]</a>    <span class="k">def</span> <span class="nf">popitem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">popitem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s popitem function.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="SortedDict.fromkeys"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.fromkeys">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">fromkeys</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s fromkeys function.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="SortedDict.keys"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s keys function.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">SortedDictKeysView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">SortedDictKeysView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SortedDict.values"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.values">[docs]</a>    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s values function.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">SortedDictValuesView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">SortedDictValuesView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SortedDict.items"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDict.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddict&#39;s items function.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">SortedDictItemsView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">SortedDictItemsView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SortedDictHelper"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.SortedDictHelper">[docs]</a><span class="k">class</span> <span class="nc">SortedDictHelper</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SortedDictHelper</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SortedDictHelper class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pylint: disable=keyword-arg-before-vararg</span>
@@ -489,10 +486,10 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sorteddicthelper&#39;s setitem function.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">SortedDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sort_key</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">v_key</span><span class="p">,</span> <span class="n">v_value</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">v_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_value</span></div>
+            <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">v_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_value</span>
 
 
-<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Graph class.&quot;&quot;&quot;</span>
 
     <span class="n">adjlist_outer_dict_factory</span> <span class="o">=</span> <span class="n">SortedDictHelper</span>
@@ -506,7 +503,7 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_nodes</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="Graph.from_ov"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.from_ov">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Graph.from_ov"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.from_ov">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_ov</span><span class="p">(</span><span class="n">ov_model</span><span class="p">:</span> <span class="n">Model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Graph&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s from_ov function.&quot;&quot;&quot;</span>
         <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">()</span>
@@ -566,14 +563,14 @@ document.write(`
 
         <span class="k">return</span> <span class="n">graph</span></div>
 
-<div class="viewcode-block" id="Graph.get_edge_data"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.get_edge_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_edge_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_from</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">node_to</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<div class="viewcode-block" id="Graph.get_edge_data"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.get_edge_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_edge_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_from</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">node_to</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s get_edge_data function.&quot;&quot;&quot;</span>
         <span class="n">edge_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">edge_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">edge_data</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="Graph.remove_node"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.remove_node">[docs]</a>    <span class="k">def</span> <span class="nf">remove_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">keep_connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.remove_node"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.remove_node">[docs]</a>    <span class="k">def</span> <span class="nf">remove_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">keep_connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s remove_node function.&quot;&quot;&quot;</span>
         <span class="n">edges_to_keep</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">keep_connect</span><span class="p">:</span>
@@ -599,7 +596,7 @@ document.write(`
             <span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">edge</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.replace_node"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.replace_node">[docs]</a>    <span class="k">def</span> <span class="nf">replace_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">new_node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.replace_node"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.replace_node">[docs]</a>    <span class="k">def</span> <span class="nf">replace_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">new_node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s replace_node function.&quot;&quot;&quot;</span>
         <span class="n">edges</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">successor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">old_node</span><span class="p">):</span>
@@ -615,7 +612,7 @@ document.write(`
             <span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">edge</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.add_edge"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span>
+<div class="viewcode-block" id="Graph.add_edge"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">node_from</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span>
         <span class="n">node_to</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span>
@@ -671,7 +668,7 @@ document.write(`
         <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">in_port</span><span class="si">}{</span><span class="n">out_port</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">out_port</span><span class="o">=</span><span class="n">out_port</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.predecessors"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.predecessors">[docs]</a>    <span class="k">def</span> <span class="nf">predecessors</span><span class="p">(</span>
+<div class="viewcode-block" id="Graph.predecessors"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.predecessors">[docs]</a>    <span class="k">def</span> <span class="nf">predecessors</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span>
         <span class="n">with_edge_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -683,7 +680,7 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">predecessor</span></div>
 
-<div class="viewcode-block" id="Graph.successors"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.successors">[docs]</a>    <span class="k">def</span> <span class="nf">successors</span><span class="p">(</span>
+<div class="viewcode-block" id="Graph.successors"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.successors">[docs]</a>    <span class="k">def</span> <span class="nf">successors</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span>
         <span class="n">with_edge_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -695,7 +692,7 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">successor</span></div>
 
-<div class="viewcode-block" id="Graph.get_nodes_by_types"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.get_nodes_by_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_nodes_by_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Operation</span><span class="p">]:</span>
+<div class="viewcode-block" id="Graph.get_nodes_by_types"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.get_nodes_by_types">[docs]</a>    <span class="k">def</span> <span class="nf">get_nodes_by_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Operation</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s get_nodes_by_types function.&quot;&quot;&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_sort</span><span class="p">():</span>
@@ -703,7 +700,7 @@ document.write(`
                 <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">found</span></div>
 
-<div class="viewcode-block" id="Graph.bfs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.bfs">[docs]</a>    <span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span>
+<div class="viewcode-block" id="Graph.bfs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.bfs">[docs]</a>    <span class="k">def</span> <span class="nf">bfs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">depth_limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Operation</span><span class="p">,</span> <span class="n">Operation</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Operation</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Operation</span><span class="p">]]],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s bfs function.&quot;&quot;&quot;</span>
@@ -729,7 +726,7 @@ document.write(`
     <span class="c1">#      else:</span>
     <span class="c1">#          return nx.dfs_predecessors(self, node, depth_limit)</span>
 
-<div class="viewcode-block" id="Graph.get_nodes_by_type_pattern"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.get_nodes_by_type_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">get_nodes_by_type_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">start_node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Operation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.get_nodes_by_type_pattern"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.get_nodes_by_type_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">get_nodes_by_type_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">start_node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Operation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s get_nodes_by_type_pattern function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pattern must be longer than 2 but </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span><span class="si">}</span><span class="s2"> is given&quot;</span><span class="p">)</span>
@@ -900,7 +897,7 @@ document.write(`
                     <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">replace_node</span><span class="p">(</span><span class="n">constant_node</span><span class="p">,</span> <span class="n">new_constant_node</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Graph.remove_normalize_nodes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.remove_normalize_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">remove_normalize_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.remove_normalize_nodes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.remove_normalize_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">remove_normalize_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s remove_normalize_nodes function.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">nodes</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_nodes</span><span class="p">:</span>
             <span class="n">first_node</span><span class="p">,</span> <span class="n">second_node</span> <span class="o">=</span> <span class="n">nodes</span>
@@ -918,15 +915,15 @@ document.write(`
                 <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_nodes</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="Graph.topological_sort"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.topological_sort">[docs]</a>    <span class="k">def</span> <span class="nf">topological_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.topological_sort"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.topological_sort">[docs]</a>    <span class="k">def</span> <span class="nf">topological_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s topological_sort function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">topological_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.has_path"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.has_path">[docs]</a>    <span class="k">def</span> <span class="nf">has_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_from</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">node_to</span><span class="p">:</span> <span class="n">Operation</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.has_path"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.has_path">[docs]</a>    <span class="k">def</span> <span class="nf">has_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_from</span><span class="p">:</span> <span class="n">Operation</span><span class="p">,</span> <span class="n">node_to</span><span class="p">:</span> <span class="n">Operation</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Graph&#39;s has_path function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">has_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_from</span><span class="p">,</span> <span class="n">node_to</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.clean_up"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.graph.html#otx.core.ov.graph.Graph.clean_up">[docs]</a>    <span class="k">def</span> <span class="nf">clean_up</span><span class="p">(</span>
+<div class="viewcode-block" id="Graph.clean_up"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.graph.html#otx.core.ov.graph.Graph.clean_up">[docs]</a>    <span class="k">def</span> <span class="nf">clean_up</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">nodes_to_keep</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Operation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">remove_sub_components</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1003,7 +1000,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

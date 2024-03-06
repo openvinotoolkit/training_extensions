@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -316,7 +313,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">onnx</span>
 
 
-<div class="viewcode-block" id="is_mmdeploy_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.utils.mmdeploy.html#otx.algorithms.common.adapters.mmdeploy.is_mmdeploy_enabled">[docs]</a><span class="k">def</span> <span class="nf">is_mmdeploy_enabled</span><span class="p">():</span>
+<div class="viewcode-block" id="is_mmdeploy_enabled"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.html#otx.algorithms.common.adapters.mmdeploy.is_mmdeploy_enabled">[docs]</a><span class="k">def</span> <span class="nf">is_mmdeploy_enabled</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the &#39;mmdeploy&#39; Python module is installed and available for use.</span>
 
 <span class="sd">    Returns:</span>
@@ -329,7 +326,7 @@ document.write(`
     <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;mmdeploy&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="mmdeploy_init_model_helper"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.utils.mmdeploy.html#otx.algorithms.common.adapters.mmdeploy.mmdeploy_init_model_helper">[docs]</a><span class="k">def</span> <span class="nf">mmdeploy_init_model_helper</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">model_checkpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">mmdeploy_init_model_helper</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">model_checkpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function for initializing a model for inference using the &#39;mmdeploy&#39; library.&quot;&quot;&quot;</span>
 
     <span class="n">model_builder</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model_builder&quot;</span><span class="p">)</span>
@@ -347,10 +344,10 @@ document.write(`
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
         <span class="n">i</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">return</span> <span class="n">model</span></div>
+    <span class="k">return</span> <span class="n">model</span>
 
 
-<div class="viewcode-block" id="update_deploy_cfg"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmdeploy.utils.mmdeploy.html#otx.algorithms.common.adapters.mmdeploy.update_deploy_cfg">[docs]</a><span class="k">def</span> <span class="nf">update_deploy_cfg</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">,</span> <span class="n">deploy_cfg</span><span class="p">,</span> <span class="n">mo_options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">update_deploy_cfg</span><span class="p">(</span><span class="n">onnx_path</span><span class="p">,</span> <span class="n">deploy_cfg</span><span class="p">,</span> <span class="n">mo_options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the &#39;deploy_cfg&#39; configuration file based on the ONNX model specified by &#39;onnx_path&#39;.&quot;&quot;&quot;</span>
 
     <span class="kn">from</span> <span class="nn">mmdeploy.utils</span> <span class="kn">import</span> <span class="n">get_backend_config</span><span class="p">,</span> <span class="n">get_ir_config</span>
@@ -369,7 +366,7 @@ document.write(`
 
     <span class="c1"># update mo options</span>
     <span class="n">mo_options</span> <span class="o">=</span> <span class="n">mo_options</span> <span class="k">if</span> <span class="n">mo_options</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">({</span><span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;mo_options&quot;</span><span class="p">:</span> <span class="n">mo_options</span><span class="p">}})</span></div>
+    <span class="n">deploy_cfg</span><span class="o">.</span><span class="n">merge_from_dict</span><span class="p">({</span><span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;mo_options&quot;</span><span class="p">:</span> <span class="n">mo_options</span><span class="p">}})</span>
 
 
 <span class="k">if</span> <span class="n">is_mmdeploy_enabled</span><span class="p">():</span>
@@ -431,7 +428,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

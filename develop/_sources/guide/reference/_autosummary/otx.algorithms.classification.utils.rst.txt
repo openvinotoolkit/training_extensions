@@ -9,6 +9,16 @@ otx.algorithms.classification.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_hierarchical_label_list
+      get_multihead_class_info
+      get_cls_inferencer_configuration
+      get_cls_deploy_config
+      get_cls_model_api_configuration
+   
    
 
    
@@ -20,13 +30,4 @@ otx.algorithms.classification.utils
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.classification.utils.cls_utils
-   otx.algorithms.classification.utils.convert_coco_to_multilabel
 

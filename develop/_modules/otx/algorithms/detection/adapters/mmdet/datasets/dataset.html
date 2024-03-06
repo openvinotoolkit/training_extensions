@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -346,7 +343,7 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called</span>
-<div class="viewcode-block" id="get_annotation_mmdet_format"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.get_annotation_mmdet_format">[docs]</a><span class="k">def</span> <span class="nf">get_annotation_mmdet_format</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">get_annotation_mmdet_format</span><span class="p">(</span>
     <span class="n">dataset_item</span><span class="p">:</span> <span class="n">DatasetItemEntity</span><span class="p">,</span>
     <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">],</span>
     <span class="n">domain</span><span class="p">:</span> <span class="n">Domain</span><span class="p">,</span>
@@ -405,10 +402,10 @@ document.write(`
             <span class="n">masks</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">ann_ids</span><span class="o">=</span><span class="p">[],</span>
         <span class="p">)</span>
-    <span class="k">return</span> <span class="n">ann_info</span></div>
+    <span class="k">return</span> <span class="n">ann_info</span>
 
 
-<div class="viewcode-block" id="OTXDetDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="OTXDetDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OTXDetDataset</span><span class="p">(</span><span class="n">CustomDataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper that allows using a OTX dataset to train mmdetection models.</span>
 
@@ -513,7 +510,7 @@ document.write(`
         <span class="n">_</span> <span class="o">=</span> <span class="n">idx</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
-<div class="viewcode-block" id="OTXDetDataset.prepare_train_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_train_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXDetDataset.prepare_train_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_train_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get training data and annotations after pipeline.</span>
 
 <span class="sd">        :param idx: int, Index of data.</span>
@@ -523,7 +520,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_pipeline</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXDetDataset.prepare_test_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_test_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXDetDataset.prepare_test_img"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_test_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get testing data after pipeline.</span>
 
 <span class="sd">        :param idx: int, Index of data.</span>
@@ -533,14 +530,14 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">pre_pipeline</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXDetDataset.pre_pipeline"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OTXDetDataset.pre_pipeline"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">pre_pipeline</span><span class="p">(</span><span class="n">results</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare results dict for pipeline. Add expected keys to the dict.&quot;&quot;&quot;</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;bbox_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;mask_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">results</span><span class="p">[</span><span class="s2">&quot;seg_fields&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="OTXDetDataset.get_ann_info"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXDetDataset.get_ann_info"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;This method is used for evaluation of predictions.</span>
 
 <span class="sd">        The CustomDataset class implements a method</span>
@@ -553,7 +550,7 @@ document.write(`
         <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span>
         <span class="k">return</span> <span class="n">get_annotation_mmdet_format</span><span class="p">(</span><span class="n">dataset_item</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXDetDataset.evaluate"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-branches</span>
+<div class="viewcode-block" id="OTXDetDataset.evaluate"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span>  <span class="c1"># pylint: disable=too-many-branches</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">results</span><span class="p">,</span>
         <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;mAP&quot;</span><span class="p">,</span>
@@ -593,7 +590,7 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=too-many-arguments</span>
-<div class="viewcode-block" id="ImageTilingDataset"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.ImageTilingDataset">[docs]</a><span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@DATASETS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ImageTilingDataset</span><span class="p">(</span><span class="n">OTXDetDataset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A wrapper of tiling dataset.</span>
 
@@ -676,7 +673,7 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
 
-<div class="viewcode-block" id="ImageTilingDataset.get_ann_info"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.ImageTilingDataset.get_ann_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_ann_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get annotation information of a tile.</span>
 
 <span class="sd">        Args:</span>
@@ -685,9 +682,9 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            dict: Annotation information of a tile.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">get_ann_info</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">get_ann_info</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ImageTilingDataset.merge"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.ImageTilingDataset.merge">[docs]</a>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">list</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge tile-level results to image-level results.</span>
 
 <span class="sd">        Args:</span>
@@ -696,9 +693,9 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            merged_results (list[list | tuple]): Merged results of the dataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ImageTilingDataset.merge_vectors"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.ImageTilingDataset.merge_vectors">[docs]</a>    <span class="k">def</span> <span class="nf">merge_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_vectors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">dump_vectors</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="kc">None</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">merge_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_vectors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">dump_vectors</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="kc">None</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge tile-level feature vectors to image-level feature-vector.</span>
 
 <span class="sd">        Args:</span>
@@ -712,9 +709,9 @@ document.write(`
         <span class="k">if</span> <span class="n">dump_vectors</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">merge_vectors</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span></div>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
 
-<div class="viewcode-block" id="ImageTilingDataset.merge_maps"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.datasets.dataset.html#otx.algorithms.detection.adapters.mmdet.ImageTilingDataset.merge_maps">[docs]</a>    <span class="k">def</span> <span class="nf">merge_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">saliency_maps</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">dump_maps</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">merge_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">saliency_maps</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">dump_maps</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge tile-level saliency maps to image-level saliency map.</span>
 
 <span class="sd">        Args:</span>
@@ -728,12 +725,12 @@ document.write(`
         <span class="k">if</span> <span class="n">dump_maps</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_dataset</span><span class="o">.</span><span class="n">merge_maps</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span></div>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the temporary directory when the object is deleted.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tmp_dir&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
 </pre></div>
 
                 </article>
@@ -786,7 +783,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -9,23 +9,27 @@ otx.cli.registry
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      find_and_parse_model_template
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Registry
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.cli.registry.registry
 

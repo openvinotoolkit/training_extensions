@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -337,7 +334,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-arguments, too-many-locals,</span>
 
 
-<div class="viewcode-block" id="CustomATSSHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomATSSHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomATSSHead</span><span class="p">(</span><span class="n">CrossDatasetDetectorHead</span><span class="p">,</span> <span class="n">ATSSHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomATSSHead for OTX template.&quot;&quot;&quot;</span>
 
@@ -357,7 +354,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span> <span class="o">=</span> <span class="n">bg_loss_weight</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_qfl</span> <span class="o">=</span> <span class="n">use_qfl</span>
 
-    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;centernesses&quot;</span><span class="p">))</span>
+<div class="viewcode-block" id="CustomATSSHead.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss">[docs]</a>    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;centernesses&quot;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">centernesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute losses of the head.</span>
 
@@ -430,9 +427,9 @@ document.write(`
         <span class="k">if</span> <span class="n">bbox_avg_factor</span> <span class="o">&lt;</span> <span class="n">EPS</span><span class="p">:</span>
             <span class="n">bbox_avg_factor</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">losses_bbox</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">/</span> <span class="n">bbox_avg_factor</span><span class="p">,</span> <span class="n">losses_bbox</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">losses_bbox</span><span class="p">,</span> <span class="n">loss_centerness</span><span class="o">=</span><span class="n">loss_centerness</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">losses_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">losses_bbox</span><span class="p">,</span> <span class="n">loss_centerness</span><span class="o">=</span><span class="n">loss_centerness</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CustomATSSHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomATSSHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchors</span><span class="p">,</span>
         <span class="n">cls_score</span><span class="p">,</span>
@@ -544,7 +541,7 @@ document.write(`
     <span class="k">def</span> <span class="nf">_get_loss_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_bbox_targets</span><span class="p">,</span> <span class="n">pos_bbox_pred</span><span class="p">,</span> <span class="n">centerness_targets</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_bbox</span><span class="p">(</span><span class="n">pos_bbox_pred</span><span class="p">,</span> <span class="n">pos_bbox_targets</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">centerness_targets</span><span class="p">,</span> <span class="n">avg_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomATSSHead.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span>
+<div class="viewcode-block" id="CustomATSSHead.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchor_list</span><span class="p">,</span>
         <span class="n">valid_flag_list</span><span class="p">,</span>
@@ -575,7 +572,7 @@ document.write(`
         <span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomATSSHeadTrackingLossDynamics</span><span class="p">(</span><span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span> <span class="n">CustomATSSHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomATSSHead which supports tracking loss dynamics.&quot;&quot;&quot;</span>
 
@@ -584,7 +581,7 @@ document.write(`
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bg_loss_weight</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_qfl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">qfl_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">bg_loss_weight</span><span class="o">=</span><span class="n">bg_loss_weight</span><span class="p">,</span> <span class="n">use_qfl</span><span class="o">=</span><span class="n">use_qfl</span><span class="p">,</span> <span class="n">qfl_cfg</span><span class="o">=</span><span class="n">qfl_cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss</span>
+<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">centernesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute losses of the head.</span>
 
@@ -606,9 +603,9 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, Tensor]: A dictionary of loss components.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">centernesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">centernesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss_single">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss_single</span>
+<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.loss_single">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_loss_single</span>
     <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchors</span><span class="p">,</span>
@@ -771,7 +768,7 @@ document.write(`
 
         <span class="k">return</span> <span class="p">(</span><span class="n">anchors</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">neg_inds</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.get_targets">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="CustomATSSHeadTrackingLossDynamics.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics.get_targets">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchor_list</span><span class="p">,</span>
@@ -846,7 +843,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

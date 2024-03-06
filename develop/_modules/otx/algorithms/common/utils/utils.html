@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -326,7 +323,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">addict</span> <span class="kn">import</span> <span class="n">Dict</span> <span class="k">as</span> <span class="n">adict</span>
 
 
-<div class="viewcode-block" id="UncopiableDefaultDict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.UncopiableDefaultDict">[docs]</a><span class="k">class</span> <span class="nc">UncopiableDefaultDict</span><span class="p">(</span><span class="n">defaultdict</span><span class="p">):</span>
+<div class="viewcode-block" id="UncopiableDefaultDict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.UncopiableDefaultDict">[docs]</a><span class="k">class</span> <span class="nc">UncopiableDefaultDict</span><span class="p">(</span><span class="n">defaultdict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Defauldict type object to avoid deepcopy.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
@@ -334,21 +331,21 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-<div class="viewcode-block" id="load_template"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.load_template">[docs]</a><span class="k">def</span> <span class="nf">load_template</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<div class="viewcode-block" id="load_template"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.load_template">[docs]</a><span class="k">def</span> <span class="nf">load_template</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Loading model template function.&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">template</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">template</span></div>
 
 
-<div class="viewcode-block" id="get_task_class"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.get_task_class">[docs]</a><span class="k">def</span> <span class="nf">get_task_class</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="get_task_class"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_task_class">[docs]</a><span class="k">def</span> <span class="nf">get_task_class</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return Task classes.&quot;&quot;&quot;</span>
     <span class="n">module_name</span><span class="p">,</span> <span class="n">class_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_arg_spec"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.get_arg_spec">[docs]</a><span class="k">def</span> <span class="nf">get_arg_spec</span><span class="p">(</span>  <span class="c1"># noqa: C901  # pylint: disable=too-many-branches</span>
+<div class="viewcode-block" id="get_arg_spec"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_arg_spec">[docs]</a><span class="k">def</span> <span class="nf">get_arg_spec</span><span class="p">(</span>  <span class="c1"># noqa: C901  # pylint: disable=too-many-branches</span>
     <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
     <span class="n">depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
@@ -395,7 +392,7 @@ document.write(`
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">args</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="set_random_seed"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.set_random_seed">[docs]</a><span class="k">def</span> <span class="nf">set_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="set_random_seed"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.set_random_seed">[docs]</a><span class="k">def</span> <span class="nf">set_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set random seed.</span>
 
 <span class="sd">    Args:</span>
@@ -420,7 +417,7 @@ document.write(`
         <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="get_default_async_reqs_num"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.get_default_async_reqs_num">[docs]</a><span class="k">def</span> <span class="nf">get_default_async_reqs_num</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="get_default_async_reqs_num"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_default_async_reqs_num">[docs]</a><span class="k">def</span> <span class="nf">get_default_async_reqs_num</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a default number of infer request for OV models.&quot;&quot;&quot;</span>
     <span class="n">reqs_num</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">reqs_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -430,7 +427,7 @@ document.write(`
         <span class="k">return</span> <span class="mi">1</span></div>
 
 
-<div class="viewcode-block" id="read_py_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.read_py_config">[docs]</a><span class="k">def</span> <span class="nf">read_py_config</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">adict</span><span class="p">:</span>
+<div class="viewcode-block" id="read_py_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.read_py_config">[docs]</a><span class="k">def</span> <span class="nf">read_py_config</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">adict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads py config to a dict.&quot;&quot;&quot;</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">:</span>
@@ -454,7 +451,7 @@ document.write(`
     <span class="k">return</span> <span class="n">cfg_dict</span></div>
 
 
-<div class="viewcode-block" id="embed_onnx_model_data"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.utils.html#otx.algorithms.common.utils.embed_onnx_model_data">[docs]</a><span class="k">def</span> <span class="nf">embed_onnx_model_data</span><span class="p">(</span><span class="n">onnx_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extra_model_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">embed_onnx_model_data</span><span class="p">(</span><span class="n">onnx_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extra_model_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Embeds model api config to onnx file.&quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">onnx_file</span><span class="p">)</span>
 
@@ -464,7 +461,7 @@ document.write(`
         <span class="n">meta</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">attr_path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="n">meta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">extra_model_data</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
 
-    <span class="n">onnx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">onnx_file</span><span class="p">)</span></div>
+    <span class="n">onnx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">onnx_file</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -517,7 +514,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

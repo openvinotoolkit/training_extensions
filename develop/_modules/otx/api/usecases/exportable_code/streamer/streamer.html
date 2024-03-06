@@ -38,9 +38,6 @@
   <script src="../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../_static/clipboard.min.js"></script>
@@ -324,7 +321,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="InvalidInput"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.InvalidInput">[docs]</a><span class="k">class</span> <span class="nc">InvalidInput</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="InvalidInput"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.InvalidInput">[docs]</a><span class="k">class</span> <span class="nc">InvalidInput</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for wrong input format.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -332,7 +329,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
-<div class="viewcode-block" id="OpenError"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.OpenError">[docs]</a><span class="k">class</span> <span class="nc">OpenError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<div class="viewcode-block" id="OpenError"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.OpenError">[docs]</a><span class="k">class</span> <span class="nc">OpenError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for error opening reader.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -340,16 +337,16 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
 
-<div class="viewcode-block" id="MediaType"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.MediaType">[docs]</a><span class="k">class</span> <span class="nc">MediaType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MediaType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;This Enum represents the types of input.&quot;&quot;&quot;</span>
 
     <span class="n">IMAGE</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">DIR</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="n">VIDEO</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">CAMERA</span> <span class="o">=</span> <span class="mi">4</span></div>
+    <span class="n">CAMERA</span> <span class="o">=</span> <span class="mi">4</span>
 
 
-<div class="viewcode-block" id="BaseStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer">[docs]</a><span class="k">class</span> <span class="nc">BaseStreamer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer">[docs]</a><span class="k">class</span> <span class="nc">BaseStreamer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Streamer interface to implement Image, Video and Camera streamers.&quot;&quot;&quot;</span>
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
@@ -361,7 +358,7 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="BaseStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="BaseStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get type of streamer.</span>
 
@@ -370,7 +367,7 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="BaseStreamer.fps"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.fps">[docs]</a>    <span class="k">def</span> <span class="nf">fps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseStreamer.fps"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.fps">[docs]</a>    <span class="k">def</span> <span class="nf">fps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a frequency of getting images from source.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 
@@ -388,7 +385,7 @@ document.write(`
         <span class="n">buffer</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ThreadedStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer">[docs]</a><span class="k">class</span> <span class="nc">ThreadedStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+<div class="viewcode-block" id="ThreadedStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer">[docs]</a><span class="k">class</span> <span class="nc">ThreadedStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs a BaseStreamer on a separate thread.</span>
 
 <span class="sd">    streamer (BaseStreamer): The streamer to run on a thread</span>
@@ -432,7 +429,7 @@ document.write(`
             <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="ow">and</span> <span class="n">process</span><span class="o">.</span><span class="n">exitcode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ThreadedStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+<div class="viewcode-block" id="ThreadedStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get type of internal streamer.</span>
 
 <span class="sd">        Returns:</span>
@@ -441,7 +438,7 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">streamer</span><span class="o">.</span><span class="n">get_type</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="VideoStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer">[docs]</a><span class="k">class</span> <span class="nc">VideoStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+<div class="viewcode-block" id="VideoStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer">[docs]</a><span class="k">class</span> <span class="nc">VideoStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Video Streamer.</span>
 
 <span class="sd">    Args:</span>
@@ -476,16 +473,16 @@ document.write(`
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
 
-<div class="viewcode-block" id="VideoStreamer.fps"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.fps">[docs]</a>    <span class="k">def</span> <span class="nf">fps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="VideoStreamer.fps"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.fps">[docs]</a>    <span class="k">def</span> <span class="nf">fps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a frequency of getting images from source.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FPS</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="VideoStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+<div class="viewcode-block" id="VideoStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the type of media.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">VIDEO</span></div></div>
 
 
-<div class="viewcode-block" id="CameraStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.CameraStreamer">[docs]</a><span class="k">class</span> <span class="nc">CameraStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+<div class="viewcode-block" id="CameraStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.CameraStreamer">[docs]</a><span class="k">class</span> <span class="nc">CameraStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream video frames from camera.</span>
 
 <span class="sd">    Args:</span>
@@ -524,12 +521,12 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
-<div class="viewcode-block" id="CameraStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+<div class="viewcode-block" id="CameraStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the type of media.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">CAMERA</span></div></div>
 
 
-<div class="viewcode-block" id="ImageStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.ImageStreamer">[docs]</a><span class="k">class</span> <span class="nc">ImageStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.ImageStreamer">[docs]</a><span class="k">class</span> <span class="nc">ImageStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream from image file.</span>
 
 <span class="sd">    Args:</span>
@@ -561,12 +558,12 @@ document.write(`
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
 
-<div class="viewcode-block" id="ImageStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+<div class="viewcode-block" id="ImageStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the type of the streamer.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">IMAGE</span></div></div>
 
 
-<div class="viewcode-block" id="DirStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.DirStreamer">[docs]</a><span class="k">class</span> <span class="nc">DirStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+<div class="viewcode-block" id="DirStreamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.DirStreamer">[docs]</a><span class="k">class</span> <span class="nc">DirStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream from directory of images.</span>
 
 <span class="sd">    Args:</span>
@@ -611,12 +608,12 @@ document.write(`
             <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DirStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.DirStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+<div class="viewcode-block" id="DirStreamer.get_type"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.DirStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the type of the streamer.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">DIR</span></div></div>
 
 
-<div class="viewcode-block" id="get_streamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.get_streamer">[docs]</a><span class="k">def</span> <span class="nf">get_streamer</span><span class="p">(</span>
+<div class="viewcode-block" id="get_streamer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer.html#otx.api.usecases.exportable_code.streamer.get_streamer">[docs]</a><span class="k">def</span> <span class="nf">get_streamer</span><span class="p">(</span>
     <span class="n">input_stream</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">threaded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -706,7 +703,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

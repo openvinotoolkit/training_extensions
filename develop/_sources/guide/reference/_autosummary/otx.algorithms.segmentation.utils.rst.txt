@@ -9,6 +9,13 @@ otx.algorithms.segmentation.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_activation_map
+      get_seg_model_api_configuration
+   
    
 
    
@@ -20,13 +27,4 @@ otx.algorithms.segmentation.utils
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.segmentation.utils.metadata
-   otx.algorithms.segmentation.utils.processing
 

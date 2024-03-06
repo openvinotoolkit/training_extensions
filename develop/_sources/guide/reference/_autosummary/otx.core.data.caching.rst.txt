@@ -9,24 +9,33 @@ otx.core.data.caching
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      init_arrow_cache
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MemCacheHandlerSingleton
+   
    
 
    
    
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      MemCacheHandlerError
+   
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.core.data.caching.mem_cache_handler
-   otx.core.data.caching.storage_cache
 

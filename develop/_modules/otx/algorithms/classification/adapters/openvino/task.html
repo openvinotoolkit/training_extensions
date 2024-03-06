@@ -38,9 +38,6 @@
   <script src="../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../_static/clipboard.min.js"></script>
@@ -392,7 +389,7 @@ document.write(`
 
 
 <span class="c1"># TODO: refactoring to Sphinx style.</span>
-<div class="viewcode-block" id="ClassificationOpenVINOInferencer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOInferencer">[docs]</a><span class="k">class</span> <span class="nc">ClassificationOpenVINOInferencer</span><span class="p">(</span><span class="n">IInferencer</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ClassificationOpenVINOInferencer</span><span class="p">(</span><span class="n">IInferencer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ClassificationOpenVINOInferencer class in OpenVINO task.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -456,25 +453,25 @@ document.write(`
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">callback_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClassificationOpenVINOInferencer.predict"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOInferencer.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ClassificationResult</span><span class="p">,</span> <span class="n">AnnotationSceneEntity</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">ClassificationResult</span><span class="p">,</span> <span class="n">AnnotationSceneEntity</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict function of OpenVINO Classification Inferencer.&quot;&quot;&quot;</span>
         <span class="n">cls_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cls_result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">convert_to_annotation</span><span class="p">(</span><span class="n">cls_result</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">cls_result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="o">.</span><span class="n">convert_to_annotation</span><span class="p">(</span><span class="n">cls_result</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClassificationOpenVINOInferencer.enqueue_prediction"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOInferencer.enqueue_prediction">[docs]</a>    <span class="k">def</span> <span class="nf">enqueue_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">result_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">enqueue_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">result_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs async inference.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">is_ready</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">await_any</span><span class="p">()</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="n">callback_data</span> <span class="o">=</span> <span class="nb">id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">result_handler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inference_adapter</span><span class="o">.</span><span class="n">infer_async</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">callback_data</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">inference_adapter</span><span class="o">.</span><span class="n">infer_async</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">callback_data</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClassificationOpenVINOInferencer.await_all"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOInferencer.await_all">[docs]</a>    <span class="k">def</span> <span class="nf">await_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">await_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Await all running infer requests if any.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">await_all</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">await_all</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask">[docs]</a><span class="k">class</span> <span class="nc">ClassificationOpenVINOTask</span><span class="p">(</span><span class="n">IDeploymentTask</span><span class="p">,</span> <span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IExplainTask</span><span class="p">,</span> <span class="n">IOptimizationTask</span><span class="p">):</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask">[docs]</a><span class="k">class</span> <span class="nc">ClassificationOpenVINOTask</span><span class="p">(</span><span class="n">IDeploymentTask</span><span class="p">,</span> <span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IExplainTask</span><span class="p">,</span> <span class="n">IOptimizationTask</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Task implementation for OTXClassification using OpenVINO backend.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_environment</span><span class="p">:</span> <span class="n">TaskEnvironment</span><span class="p">):</span>
@@ -491,7 +488,7 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Average inference time per image.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_avg_time_per_image</span>
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask.load_inferencer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.load_inferencer">[docs]</a>    <span class="k">def</span> <span class="nf">load_inferencer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassificationOpenVINOInferencer</span><span class="p">:</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.load_inferencer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.load_inferencer">[docs]</a>    <span class="k">def</span> <span class="nf">load_inferencer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassificationOpenVINOInferencer</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;load_inferencer function of ClassificationOpenVINOTask.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -506,7 +503,7 @@ document.write(`
         <span class="p">)</span></div>
 
     <span class="c1"># pylint: disable-msg=too-many-locals</span>
-<div class="viewcode-block" id="ClassificationOpenVINOTask.infer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.infer"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">InferenceParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer function of ClassificationOpenVINOTask.&quot;&quot;&quot;</span>
@@ -591,7 +588,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">dataset</span></div>
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask.explain"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.explain">[docs]</a>    <span class="k">def</span> <span class="nf">explain</span><span class="p">(</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.explain"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.explain">[docs]</a>    <span class="k">def</span> <span class="nf">explain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
         <span class="n">explain_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExplainParameters</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -641,7 +638,7 @@ document.write(`
             <span class="n">update_progress_callback</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">dataset_size</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">dataset</span></div>
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask.evaluate"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.evaluate"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate function of ClassificationOpenVINOTask.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">evaluation_metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -650,7 +647,7 @@ document.write(`
             <span class="p">)</span>
         <span class="n">output_resultset</span><span class="o">.</span><span class="n">performance</span> <span class="o">=</span> <span class="n">MetricsHelper</span><span class="o">.</span><span class="n">compute_accuracy</span><span class="p">(</span><span class="n">output_resultset</span><span class="p">)</span><span class="o">.</span><span class="n">get_performance</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask.deploy"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.deploy">[docs]</a>    <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.deploy"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.deploy">[docs]</a>    <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deploy function of ClassificationOpenVINOTask.&quot;&quot;&quot;</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying the model&quot;</span><span class="p">)</span>
@@ -675,7 +672,7 @@ document.write(`
         <span class="n">output_model</span><span class="o">.</span><span class="n">exportable_code</span> <span class="o">=</span> <span class="n">zip_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Deploying completed&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ClassificationOpenVINOTask.optimize"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.task.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
+<div class="viewcode-block" id="ClassificationOpenVINOTask.optimize"><a class="viewcode-back" href="../../../../../../guide/reference/_autosummary/otx.algorithms.classification.adapters.openvino.html#otx.algorithms.classification.adapters.openvino.ClassificationOpenVINOTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">optimization_type</span><span class="p">:</span> <span class="n">OptimizationType</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
@@ -805,7 +802,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

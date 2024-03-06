@@ -13,6 +13,14 @@ otx.algorithms.detection.adapters.mmdet.models.necks
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MMOVFPN
+      MMOVSSDNeck
+      MMOVYOLOV3Neck
+   
    
 
    
@@ -20,14 +28,4 @@ otx.algorithms.detection.adapters.mmdet.models.necks
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.necks.mmov_fpn
-   otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck
-   otx.algorithms.detection.adapters.mmdet.models.necks.mmov_yolov3_neck
 

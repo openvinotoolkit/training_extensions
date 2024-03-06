@@ -13,6 +13,14 @@ otx.algorithms.detection.adapters.mmdet.models.losses
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CrossSigmoidFocalLoss
+      L2SPLoss
+      OrdinaryFocalLoss
+   
    
 
    
@@ -20,13 +28,4 @@ otx.algorithms.detection.adapters.mmdet.models.losses
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.losses.cross_focal_loss
-   otx.algorithms.detection.adapters.mmdet.models.losses.l2sp_loss
 

@@ -1,6 +1,0 @@
-otx.algorithms.segmentation.adapters.mmseg.models.utils.normalize
-=================================================================
-
-.. currentmodule:: otx.algorithms.segmentation.adapters.mmseg.models.utils
-
-.. autofunction:: normalize

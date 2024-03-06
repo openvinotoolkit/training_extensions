@@ -13,6 +13,13 @@ otx.core.data.noisy\_label\_detection
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LossDynamicsTracker
+      LossDynamicsTrackingMixin
+   
    
 
    
@@ -20,12 +27,4 @@ otx.core.data.noisy\_label\_detection
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.core.data.noisy_label_detection.base
 

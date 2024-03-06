@@ -13,6 +13,24 @@ otx.algorithms.detection.adapters.mmdet.models.detectors
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomATSS
+      CustomDeformableDETR
+      CustomLiteDINO
+      CustomDINO
+      CustomMaskRCNN
+      CustomSingleStageDetector
+      CustomTwoStageDetector
+      CustomVFNet
+      CustomYOLOX
+      L2SPDetectorMixin
+      SAMDetectorMixin
+      CustomMaskRCNNTileOptimized
+      MeanTeacher
+   
    
 
    
@@ -20,25 +38,4 @@ otx.algorithms.detection.adapters.mmdet.models.detectors
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector
-   otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin
-   otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin
-   otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher
-   otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin
 

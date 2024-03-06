@@ -9,6 +9,19 @@ otx.algorithms.detection.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_det_model_api_configuration
+      load_dataset_items_coco_format
+      get_sizes_from_dataset_entity
+      get_anchor_boxes
+      format_list_to_str
+      generate_label_schema
+      create_detection_shapes
+      create_mask_shapes
+   
    
 
    
@@ -20,13 +33,4 @@ otx.algorithms.detection.utils
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.detection.utils.data
-   otx.algorithms.detection.utils.utils
 

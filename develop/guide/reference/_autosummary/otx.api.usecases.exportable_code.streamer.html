@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.api.usecases.exportable_code.streamer';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.api.usecases.exportable_code.streamer.streamer" href="otx.api.usecases.exportable_code.streamer.streamer.html" />
+    <link rel="next" title="otx.api.usecases.exportable_code.visualizers" href="otx.api.usecases.exportable_code.visualizers.html" />
     <link rel="prev" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter" href="otx.api.usecases.exportable_code.prediction_to_annotation_converter.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,6 +461,48 @@ document.write(`
   <section id="module-otx.api.usecases.exportable_code.streamer">
 <span id="otx-api-usecases-exportable-code-streamer"></span><h1>otx.api.usecases.exportable_code.streamer<a class="headerlink" href="#module-otx.api.usecases.exportable_code.streamer" title="Permalink to this heading">#</a></h1>
 <p>Initialization of streamer.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.get_streamer" title="otx.api.usecases.exportable_code.streamer.get_streamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_streamer</span></code></a>([input_stream, loop, threaded])</p></td>
+<td><p>Get streamer object based on the file path or camera device index provided.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.CameraStreamer" title="otx.api.usecases.exportable_code.streamer.CameraStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CameraStreamer</span></code></a>([camera_device])</p></td>
+<td><p>Stream video frames from camera.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.DirStreamer" title="otx.api.usecases.exportable_code.streamer.DirStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DirStreamer</span></code></a>(input_path[, loop])</p></td>
+<td><p>Stream from directory of images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.ImageStreamer" title="otx.api.usecases.exportable_code.streamer.ImageStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageStreamer</span></code></a>(input_path[, loop])</p></td>
+<td><p>Stream from image file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.ThreadedStreamer" title="otx.api.usecases.exportable_code.streamer.ThreadedStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThreadedStreamer</span></code></a>(streamer[, buffer_size])</p></td>
+<td><p>Runs a BaseStreamer on a separate thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.VideoStreamer" title="otx.api.usecases.exportable_code.streamer.VideoStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VideoStreamer</span></code></a>(input_path[, loop])</p></td>
+<td><p>Video Streamer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.BaseStreamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a>()</p></td>
+<td><p>Base Streamer interface to implement Image, Video and Camera streamers.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Exceptions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.InvalidInput" title="otx.api.usecases.exportable_code.streamer.InvalidInput"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InvalidInput</span></code></a>(message)</p></td>
+<td><p>Exception for wrong input format.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.OpenError" title="otx.api.usecases.exportable_code.streamer.OpenError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenError</span></code></a>(message)</p></td>
+<td><p>Exception for error opening reader.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py exception">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.InvalidInput">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">InvalidInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#InvalidInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.InvalidInput" title="Permalink to this definition">#</a></dt>
@@ -499,14 +530,14 @@ document.write(`
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#BaseStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#BaseStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Get type of streamer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>type of streamer.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType">MediaType</a></p>
+<dd class="field-even"><p>MediaType</p>
 </dd>
 </dl>
 </dd></dl>
@@ -516,7 +547,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.CameraStreamer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">CameraStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">camera_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#CameraStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.CameraStreamer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
 <p>Stream video frames from camera.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -533,7 +564,7 @@ document.write(`
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#CameraStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#CameraStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the type of media.</p>
 </dd></dl>
 
@@ -542,7 +573,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.DirStreamer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">DirStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#DirStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.DirStreamer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
 <p>Stream from directory of images.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -558,7 +589,7 @@ document.write(`
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.DirStreamer.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#DirStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.DirStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#DirStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.DirStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the type of the streamer.</p>
 </dd></dl>
 
@@ -567,7 +598,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.ImageStreamer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">ImageStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ImageStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ImageStreamer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
 <p>Stream from image file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -586,7 +617,7 @@ document.write(`
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ImageStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ImageStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the type of the streamer.</p>
 </dd></dl>
 
@@ -594,8 +625,8 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.ThreadedStreamer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">ThreadedStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><span class="pre">BaseStreamer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ThreadedStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ThreadedStreamer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">ThreadedStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><span class="pre">BaseStreamer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ThreadedStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ThreadedStreamer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
 <p>Runs a BaseStreamer on a separate thread.</p>
 <p>streamer (BaseStreamer): The streamer to run on a thread
 buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
@@ -608,14 +639,14 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ThreadedStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#ThreadedStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Get type of internal streamer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>type of internal streamer.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType">MediaType</a></p>
+<dd class="field-even"><p>MediaType</p>
 </dd>
 </dl>
 </dd></dl>
@@ -625,7 +656,7 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.VideoStreamer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">VideoStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#VideoStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.VideoStreamer" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseStreamer</span></code></a></p>
 <p>Video Streamer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -646,7 +677,7 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.MediaType" title="otx.api.usecases.exportable_code.streamer.streamer.MediaType"><span class="pre">MediaType</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#VideoStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MediaType</span></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#VideoStreamer.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the type of media.</p>
 </dd></dl>
 
@@ -654,7 +685,7 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.exportable_code.streamer.get_streamer">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">get_streamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><span class="pre">BaseStreamer</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#get_streamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.get_streamer" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.streamer.</span></span><span class="sig-name descname"><span class="pre">get_streamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.exportable_code.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><span class="pre">BaseStreamer</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/usecases/exportable_code/streamer/streamer.html#get_streamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.streamer.get_streamer" title="Permalink to this definition">#</a></dt>
 <dd><p>Get streamer object based on the file path or camera device index provided.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -673,14 +704,6 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
 </dl>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.api.usecases.exportable_code.streamer.streamer.html#module-otx.api.usecases.exportable_code.streamer.streamer" title="otx.api.usecases.exportable_code.streamer.streamer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.streamer.streamer</span></code></a></p></td>
-<td><p>Streamer for reading input.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -703,11 +726,11 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
       </div>
     </a>
     <a class="right-next"
-       href="otx.api.usecases.exportable_code.streamer.streamer.html"
+       href="otx.api.usecases.exportable_code.visualizers.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.api.usecases.exportable_code.streamer.streamer</p>
+        <p class="prev-next-title">otx.api.usecases.exportable_code.visualizers</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -804,7 +827,7 @@ buffer_size (int): Number of frame to buffer internally. Defaults to 2.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

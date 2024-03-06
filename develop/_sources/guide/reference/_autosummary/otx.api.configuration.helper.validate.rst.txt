@@ -1,6 +1,0 @@
-otx.api.configuration.helper.validate
-=====================================
-
-.. currentmodule:: otx.api.configuration.helper
-
-.. autofunction:: validate

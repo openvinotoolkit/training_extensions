@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -318,11 +315,11 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.algorithms.common.adapters.mmdeploy.utils</span> <span class="kn">import</span> <span class="n">is_mmdeploy_enabled</span>
 
 
-<div class="viewcode-block" id="CustomFCNMaskHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomFCNMaskHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomFCNMaskHead</span><span class="p">(</span><span class="n">FCNMaskHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom FCN Mask Head for fast mask evaluation.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">get_seg_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask_pred</span><span class="p">,</span> <span class="n">det_bboxes</span><span class="p">,</span> <span class="n">det_labels</span><span class="p">,</span> <span class="n">rcnn_test_cfg</span><span class="p">,</span> <span class="n">ori_shape</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">rescale</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomFCNMaskHead.get_seg_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_seg_masks">[docs]</a>    <span class="k">def</span> <span class="nf">get_seg_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask_pred</span><span class="p">,</span> <span class="n">det_bboxes</span><span class="p">,</span> <span class="n">det_labels</span><span class="p">,</span> <span class="n">rcnn_test_cfg</span><span class="p">,</span> <span class="n">ori_shape</span><span class="p">,</span> <span class="n">scale_factor</span><span class="p">,</span> <span class="n">rescale</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get segmentation masks from mask_pred and bboxes.</span>
 
 <span class="sd">        The original `FCNMaskHead.get_seg_masks` grid sampled 28 x 28 masks to the original image resolution.</span>
@@ -379,9 +376,9 @@ document.write(`
                 <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
             <span class="n">cls_segms</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">cls_segms</span>
+        <span class="k">return</span> <span class="n">cls_segms</span></div>
 
-<div class="viewcode-block" id="CustomFCNMaskHead.get_scaled_seg_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_scaled_seg_masks">[docs]</a>    <span class="k">def</span> <span class="nf">get_scaled_seg_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomFCNMaskHead.get_scaled_seg_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_scaled_seg_masks">[docs]</a>    <span class="k">def</span> <span class="nf">get_scaled_seg_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Original method &quot;get_seg_mask&quot; from FCNMaskHead. Used in Semi-SL algorithm.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_seg_masks</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
@@ -389,7 +386,7 @@ document.write(`
 <span class="k">if</span> <span class="n">is_mmdeploy_enabled</span><span class="p">():</span>
     <span class="kn">from</span> <span class="nn">mmdeploy.core</span> <span class="kn">import</span> <span class="n">FUNCTION_REWRITER</span>
 
-<div class="viewcode-block" id="custom_fcn_mask_head__get_seg_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head__get_seg_masks">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span>
         <span class="s2">&quot;otx.algorithms.detection.adapters.mmdet.models.&quot;</span> <span class="s2">&quot;heads.custom_fcn_mask_head.CustomFCNMaskHead.get_seg_masks&quot;</span>
     <span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_fcn_mask_head__get_seg_masks</span><span class="p">(</span>
@@ -418,7 +415,7 @@ document.write(`
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_agnostic</span><span class="p">:</span>
             <span class="n">box_inds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">mask_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">bboxes</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="n">mask_pred</span> <span class="o">=</span> <span class="n">mask_pred</span><span class="p">[</span><span class="n">box_inds</span><span class="p">,</span> <span class="n">labels</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">mask_pred</span></div>
+        <span class="k">return</span> <span class="n">mask_pred</span>
 </pre></div>
 
                 </article>
@@ -471,7 +468,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

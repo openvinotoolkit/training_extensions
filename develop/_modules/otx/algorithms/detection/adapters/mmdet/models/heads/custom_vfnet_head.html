@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -331,7 +328,7 @@ document.write(`
 <span class="c1"># pylint: disable=too-many-ancestors, too-many-arguments, too-many-statements, too-many-locals</span>
 
 
-<div class="viewcode-block" id="CustomVFNetHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomVFNetHead"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomVFNetHead</span><span class="p">(</span><span class="n">CrossDatasetDetectorHead</span><span class="p">,</span> <span class="n">VFNetHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomVFNetHead class for OTX.&quot;&quot;&quot;</span>
 
@@ -339,7 +336,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span> <span class="o">=</span> <span class="n">bg_loss_weight</span>
 
-    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds_refine&quot;</span><span class="p">))</span>
+<div class="viewcode-block" id="CustomVFNetHead.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.loss">[docs]</a>    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds_refine&quot;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">bbox_preds_refine</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of the head.</span>
 
@@ -460,7 +457,7 @@ document.write(`
             <span class="n">cls_iou_targets</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">loss_bbox_rf</span><span class="o">=</span><span class="n">loss_bbox_refine</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss_cls</span><span class="o">=</span><span class="n">loss_cls</span><span class="p">,</span> <span class="n">loss_bbox</span><span class="o">=</span><span class="n">loss_bbox</span><span class="p">,</span> <span class="n">loss_bbox_rf</span><span class="o">=</span><span class="n">loss_bbox_refine</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_get_loss_cls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -516,7 +513,7 @@ document.write(`
         <span class="n">pos_inds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(((</span><span class="n">flatten_labels</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">flatten_labels</span> <span class="o">&lt;</span> <span class="n">bg_class_ind</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">pos_inds</span>
 
-<div class="viewcode-block" id="CustomVFNetHead.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.get_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">mlvl_points</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomVFNetHead.get_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.get_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">mlvl_points</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A wrapper for computing ATSS and FCOS targets for points in multiple images.</span>
 
 <span class="sd">        Args:</span>
@@ -549,7 +546,7 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fcos_targets</span><span class="p">(</span><span class="n">mlvl_points</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="CustomVFNetHeadTrackingLossDynamics"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHeadTrackingLossDynamics">[docs]</a><span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomVFNetHeadTrackingLossDynamics</span><span class="p">(</span><span class="n">TrackingLossDynamicsMixIn</span><span class="p">,</span> <span class="n">CustomVFNetHead</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomVFNetHead which supports tracking loss dynamics.&quot;&quot;&quot;</span>
 
@@ -563,7 +560,7 @@ document.write(`
                 <span class="s2">&quot;Loss dynamics tracking for VFNetHead with use_atss=False is currently not supported.&quot;</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="CustomVFNetHeadTrackingLossDynamics.get_atss_targets"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHeadTrackingLossDynamics.get_atss_targets">[docs]</a>    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="n">concatenate_last</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@TrackingLossDynamicsMixIn</span><span class="o">.</span><span class="n">_wrap_get_targets</span><span class="p">(</span><span class="n">concatenate_last</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_atss_targets</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">anchor_list</span><span class="p">,</span>
@@ -585,7 +582,7 @@ document.write(`
             <span class="n">gt_labels_list</span><span class="p">,</span>
             <span class="n">label_channels</span><span class="p">,</span>
             <span class="n">unmap_outputs</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_target_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">CustomATSSHeadTrackingLossDynamics</span><span class="o">.</span><span class="n">_get_target_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -677,7 +674,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">bbox_inds</span> <span class="o">=</span> <span class="n">gt_inds</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_gt_bboxes_len</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_inds</span> <span class="o">=</span> <span class="n">pos_inds</span>
-        <span class="k">return</span> <span class="n">pos_inds</span></div>
+        <span class="k">return</span> <span class="n">pos_inds</span>
 </pre></div>
 
                 </article>
@@ -730,7 +727,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

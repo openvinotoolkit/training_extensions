@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -315,7 +312,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">mmcv.runner</span> <span class="kn">import</span> <span class="n">HOOKS</span><span class="p">,</span> <span class="n">Hook</span>
 
 
-<div class="viewcode-block" id="IBLossHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.ib_loss_hook.html#otx.algorithms.common.adapters.mmcv.IBLossHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="IBLossHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.IBLossHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">IBLossHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Hook for IB loss.</span>
 
@@ -331,7 +328,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">cls_num_list</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dst_classes</span> <span class="o">=</span> <span class="n">dst_classes</span>
 
-<div class="viewcode-block" id="IBLossHook.before_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.ib_loss_hook.html#otx.algorithms.common.adapters.mmcv.IBLossHook.before_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="IBLossHook.before_train_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.IBLossHook.before_train_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get loss from model and pass the number of data per class and current epoch to IB loss.&quot;&quot;&quot;</span>
         <span class="n">model_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_model_loss</span><span class="p">(</span><span class="n">runner</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">runner</span><span class="o">.</span><span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -400,7 +397,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

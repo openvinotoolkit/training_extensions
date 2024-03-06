@@ -9,26 +9,38 @@ otx.algorithms.common.adapters.nncf
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_nncf_is_enabled
+      get_nncf_metadata
+      get_nncf_version
+      is_accuracy_aware_training_set
+      is_checkpoint_nncf
+      is_in_nncf_tracing
+      is_state_nncf
+      no_nncf_trace
+      nncf_trace_context
+      no_nncf_trace_wrapper
+      nncf_trace_wrapper
+      is_nncf_enabled
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AccuracyAwareLrUpdater
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.common.adapters.nncf.compression
-   otx.algorithms.common.adapters.nncf.config
-   otx.algorithms.common.adapters.nncf.patches
-   otx.algorithms.common.adapters.nncf.utils
 

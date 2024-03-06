@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.data.caching';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.data.caching.mem_cache_handler" href="otx.core.data.caching.mem_cache_handler.html" />
+    <link rel="next" title="otx.core.data.manager" href="otx.core.data.manager.html" />
     <link rel="prev" title="otx.core.data.adapter.visual_prompting_dataset_adapter" href="otx.core.data.adapter.visual_prompting_dataset_adapter.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,6 +461,30 @@ document.write(`
   <section id="module-otx.core.data.caching">
 <span id="otx-core-data-caching"></span><h1>otx.core.data.caching<a class="headerlink" href="#module-otx.core.data.caching" title="Permalink to this heading">#</a></h1>
 <p>Module for data caching.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.data.caching.init_arrow_cache" title="otx.core.data.caching.init_arrow_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_arrow_cache</span></code></a>(dataset[, scheme])</p></td>
+<td><p>Init arrow format cache from Datumaro.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.data.caching.MemCacheHandlerSingleton" title="otx.core.data.caching.MemCacheHandlerSingleton"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemCacheHandlerSingleton</span></code></a>()</p></td>
+<td><p>A singleton class to create, delete and get MemCacheHandlerBase.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Exceptions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.data.caching.MemCacheHandlerError" title="otx.core.data.caching.MemCacheHandlerError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemCacheHandlerError</span></code></a></p></td>
+<td><p>Exception class for MemCacheHandler.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py exception">
 <dt class="sig sig-object py" id="otx.core.data.caching.MemCacheHandlerError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.data.caching.</span></span><span class="sig-name descname"><span class="pre">MemCacheHandlerError</span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/mem_cache_handler.html#MemCacheHandlerError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.MemCacheHandlerError" title="Permalink to this definition">#</a></dt>
@@ -486,7 +499,7 @@ document.write(`
 <p>A singleton class to create, delete and get MemCacheHandlerBase.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.data.caching.MemCacheHandlerSingleton.create">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.mem_cache_handler.MemCacheHandlerBase" title="otx.core.data.caching.mem_cache_handler.MemCacheHandlerBase"><span class="pre">MemCacheHandlerBase</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/mem_cache_handler.html#MemCacheHandlerSingleton.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.MemCacheHandlerSingleton.create" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MemCacheHandlerBase</span></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/mem_cache_handler.html#MemCacheHandlerSingleton.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.MemCacheHandlerSingleton.create" title="Permalink to this definition">#</a></dt>
 <dd><p>Create a new MemCacheHandlerBase instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -506,7 +519,7 @@ document.write(`
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.data.caching.MemCacheHandlerSingleton.get">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.core.data.caching.mem_cache_handler.html#otx.core.data.caching.mem_cache_handler.MemCacheHandlerBase" title="otx.core.data.caching.mem_cache_handler.MemCacheHandlerBase"><span class="pre">MemCacheHandlerBase</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/mem_cache_handler.html#MemCacheHandlerSingleton.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.MemCacheHandlerSingleton.get" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MemCacheHandlerBase</span></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/mem_cache_handler.html#MemCacheHandlerSingleton.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.MemCacheHandlerSingleton.get" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the created MemCacheHandlerBase.</p>
 <p>If no one is created before, raise RuntimeError.</p>
 </dd></dl>
@@ -515,7 +528,7 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.core.data.caching.init_arrow_cache">
-<span class="sig-prename descclassname"><span class="pre">otx.core.data.caching.</span></span><span class="sig-name descname"><span class="pre">init_arrow_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/storage_cache.html#init_arrow_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.init_arrow_cache" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.core.data.caching.</span></span><span class="sig-name descname"><span class="pre">init_arrow_cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dataset</span></span></span><a class="reference internal" href="../../../_modules/otx/core/data/caching/storage_cache.html#init_arrow_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.data.caching.init_arrow_cache" title="Permalink to this definition">#</a></dt>
 <dd><p>Init arrow format cache from Datumaro.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -528,17 +541,6 @@ document.write(`
 </dl>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.data.caching.mem_cache_handler.html#module-otx.core.data.caching.mem_cache_handler" title="otx.core.data.caching.mem_cache_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.data.caching.mem_cache_handler</span></code></a></p></td>
-<td><p>Memory cache handler implementations and singleton class to call them.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.core.data.caching.storage_cache.html#module-otx.core.data.caching.storage_cache" title="otx.core.data.caching.storage_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.data.caching.storage_cache</span></code></a></p></td>
-<td><p>A thin wrapper for storage cache using datumaro arrow format exporter.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -561,11 +563,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="otx.core.data.caching.mem_cache_handler.html"
+       href="otx.core.data.manager.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.core.data.caching.mem_cache_handler</p>
+        <p class="prev-next-title">otx.core.data.manager</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -641,7 +643,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

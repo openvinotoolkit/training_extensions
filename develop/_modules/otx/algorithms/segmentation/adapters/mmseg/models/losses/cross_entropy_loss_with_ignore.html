@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -320,7 +317,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">mmseg.models.losses.utils</span> <span class="kn">import</span> <span class="n">weight_reduce_loss</span>
 
 
-<div class="viewcode-block" id="CrossEntropyLossWithIgnore"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.cross_entropy_loss_with_ignore.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore">[docs]</a><span class="nd">@LOSSES</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CrossEntropyLossWithIgnore"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore">[docs]</a><span class="nd">@LOSSES</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CrossEntropyLossWithIgnore</span><span class="p">(</span><span class="n">CrossEntropyLoss</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.</span>
 
@@ -334,7 +331,7 @@ document.write(`
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loss_name</span> <span class="o">=</span> <span class="s2">&quot;loss_ce_ignore&quot;</span>
 
-<div class="viewcode-block" id="CrossEntropyLossWithIgnore.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.losses.cross_entropy_loss_with_ignore.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="CrossEntropyLossWithIgnore.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cls_score</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
@@ -457,7 +454,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

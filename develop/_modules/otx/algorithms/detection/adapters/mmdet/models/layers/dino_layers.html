@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -325,7 +322,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
 
-<div class="viewcode-block" id="DINOTransformerDecoder"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.DINOTransformerDecoder">[docs]</a><span class="nd">@TRANSFORMER_LAYER_SEQUENCE</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="DINOTransformerDecoder"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.DINOTransformerDecoder">[docs]</a><span class="nd">@TRANSFORMER_LAYER_SEQUENCE</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">DINOTransformerDecoder</span><span class="p">(</span><span class="n">DeformableDetrTransformerDecoder</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transformer encoder of DINO.&quot;&quot;&quot;</span>
 
@@ -334,7 +331,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">ref_point_head</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DINOTransformerDecoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.DINOTransformerDecoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+<div class="viewcode-block" id="DINOTransformerDecoder.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.DINOTransformerDecoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">query</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
@@ -429,7 +426,7 @@ document.write(`
         <span class="k">return</span> <span class="n">query</span><span class="p">,</span> <span class="n">reference_points</span></div></div>
 
 
-<div class="viewcode-block" id="CdnQueryGenerator"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator">[docs]</a><span class="k">class</span> <span class="nc">CdnQueryGenerator</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<div class="viewcode-block" id="CdnQueryGenerator"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator">[docs]</a><span class="k">class</span> <span class="nc">CdnQueryGenerator</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implement query generator of the Contrastive denoising (CDN).</span>
 
 <span class="sd">    Proposed in`DINO: DETR with Improved DeNoising Anchor Boxes for End-to-End Object</span>
@@ -501,7 +498,7 @@ document.write(`
         <span class="c1"># TODO: num_classes + 1 or num_classes ?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dims</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CdnQueryGenerator.__call__"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_info</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<div class="viewcode-block" id="CdnQueryGenerator.__call__"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_info</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate contrastive denoising (cdn) queries with ground truth.</span>
 
 <span class="sd">        Descriptions of the Number Values in code and comments:</span>
@@ -575,7 +572,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">dn_label_query</span><span class="p">,</span> <span class="n">dn_bbox_query</span><span class="p">,</span> <span class="n">attn_mask</span><span class="p">,</span> <span class="n">dn_meta</span></div>
 
-<div class="viewcode-block" id="CdnQueryGenerator.get_num_groups"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.get_num_groups">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_num_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="CdnQueryGenerator.get_num_groups"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.get_num_groups">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_num_target</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate denoising query groups number.</span>
 
 <span class="sd">        Two grouping strategies, &#39;static dn groups&#39; and &#39;dynamic dn groups&#39;,</span>
@@ -609,7 +606,7 @@ document.write(`
             <span class="n">num_groups</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_groups</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_label_query"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_label_query">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_label_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_label_query"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_label_query">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_label_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate noisy labels and their query embeddings.</span>
 
 <span class="sd">        The strategy for generating noisy labels is: Randomly choose labels of</span>
@@ -643,7 +640,7 @@ document.write(`
         <span class="n">dn_label_query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_embedding</span><span class="p">(</span><span class="n">noisy_labels_expand</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dn_label_query</span></div>
 
-<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_bbox_query"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_bbox_query">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_bbox_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_bbox_query"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_bbox_query">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_bbox_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate noisy bboxes and their query embeddings.</span>
 
 <span class="sd">        The strategy for generating noisy bboxes is as follow:</span>
@@ -731,7 +728,7 @@ document.write(`
         <span class="n">dn_bbox_query</span> <span class="o">=</span> <span class="n">inverse_sigmoid</span><span class="p">(</span><span class="n">noisy_bboxes_expand</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dn_bbox_query</span></div>
 
-<div class="viewcode-block" id="CdnQueryGenerator.collate_dn_queries"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.collate_dn_queries">[docs]</a>    <span class="k">def</span> <span class="nf">collate_dn_queries</span><span class="p">(</span>
+<div class="viewcode-block" id="CdnQueryGenerator.collate_dn_queries"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.collate_dn_queries">[docs]</a>    <span class="k">def</span> <span class="nf">collate_dn_queries</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">input_label_query</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">input_bbox_query</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate generated queries to obtain batched dn queries.</span>
@@ -791,7 +788,7 @@ document.write(`
         <span class="n">batched_bbox_query</span><span class="p">[</span><span class="n">mapper</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_bbox_query</span>
         <span class="k">return</span> <span class="n">batched_label_query</span><span class="p">,</span> <span class="n">batched_bbox_query</span></div>
 
-<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_mask"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_mask">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_num_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="CdnQueryGenerator.generate_dn_mask"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.CdnQueryGenerator.generate_dn_mask">[docs]</a>    <span class="k">def</span> <span class="nf">generate_dn_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_num_target</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_groups</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate attention mask to prevent information leakage from different denoising groups and matching parts.</span>
 
 <span class="sd">        .. code:: text</span>
@@ -844,7 +841,7 @@ document.write(`
         <span class="k">return</span> <span class="n">attn_mask</span></div></div>
 
 
-<div class="viewcode-block" id="MLP"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.MLP">[docs]</a><span class="k">class</span> <span class="nc">MLP</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MLP</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Very simple multi-layer perceptron (also called FFN) with relu. Mostly used in DETR series detectors.</span>
 
 <span class="sd">    Args:</span>
@@ -861,7 +858,7 @@ document.write(`
         <span class="n">h</span> <span class="o">=</span> <span class="p">[</span><span class="n">hidden_dim</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">input_dim</span><span class="p">]</span> <span class="o">+</span> <span class="n">h</span><span class="p">,</span> <span class="n">h</span> <span class="o">+</span> <span class="p">[</span><span class="n">output_dim</span><span class="p">]))</span>
 
-<div class="viewcode-block" id="MLP.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.MLP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of MLP.</span>
 
 <span class="sd">        Args:</span>
@@ -875,10 +872,10 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="coordinate_to_encoding"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers.html#otx.algorithms.detection.adapters.mmdet.models.layers.coordinate_to_encoding">[docs]</a><span class="k">def</span> <span class="nf">coordinate_to_encoding</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">coordinate_to_encoding</span><span class="p">(</span>
     <span class="n">coord_tensor</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">num_feats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert coordinate tensor to positional encoding.</span>
@@ -921,7 +918,7 @@ document.write(`
         <span class="n">pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">pos_y</span><span class="p">,</span> <span class="n">pos_x</span><span class="p">,</span> <span class="n">pos_w</span><span class="p">,</span> <span class="n">pos_h</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown pos_tensor shape(-1):</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">coord_tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">pos</span></div>
+    <span class="k">return</span> <span class="n">pos</span>
 </pre></div>
 
                 </article>
@@ -974,7 +971,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

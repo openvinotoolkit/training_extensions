@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -330,7 +327,7 @@ document.write(`
 <span class="c1"># pylint: disable=abstract-method, too-many-locals, unused-argument</span>
 
 
-<div class="viewcode-block" id="CustomVFNet"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomVFNet"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomVFNet</span><span class="p">(</span><span class="n">SAMDetectorMixin</span><span class="p">,</span> <span class="n">DetLossDynamicsTrackingMixin</span><span class="p">,</span> <span class="n">L2SPDetectorMixin</span><span class="p">,</span> <span class="n">VFNet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SAM optimizer &amp; L2SP regularizer enabled custom VFNet.&quot;&quot;&quot;</span>
 
@@ -350,11 +347,11 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="CustomVFNet.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomVFNet.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for CustomVFNet.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward_train</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="n">gt_bboxes_ignore</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CustomVFNet.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CustomVFNet.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">,</span> <span class="n">chkpt_classes</span><span class="p">,</span> <span class="n">chkpt_dict</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify input state_dict according to class name matching before weight loading.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;----------------- CustomVFNet.load_state_dict_pre_hook() called w/ prefix: </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -437,7 +434,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

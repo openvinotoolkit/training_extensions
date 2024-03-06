@@ -9,23 +9,21 @@ otx.algorithms.visual\_prompting.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_visual_prompting_inferencer_configuration
+   
+   
+
+   
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.visual_prompting.utils.visual_prompting_utils
 

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -347,14 +344,14 @@ document.write(`
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="ConvertV0Attribute"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.type_conversions.html#otx.core.ov.ops.ConvertV0Attribute">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">ConvertV0Attribute</span><span class="p">(</span><span class="n">Attribute</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvertV0Attribute class.&quot;&quot;&quot;</span>
 
-    <span class="n">destination_type</span><span class="p">:</span> <span class="nb">str</span></div>
+    <span class="n">destination_type</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<div class="viewcode-block" id="ConvertV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.type_conversions.html#otx.core.ov.ops.ConvertV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+<div class="viewcode-block" id="ConvertV0"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvertV0">[docs]</a><span class="nd">@OPS</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">ConvertV0</span><span class="p">(</span><span class="n">Operation</span><span class="p">[</span><span class="n">ConvertV0Attribute</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ConvertV0 class.&quot;&quot;&quot;</span>
 
@@ -362,21 +359,21 @@ document.write(`
     <span class="n">VERSION</span> <span class="o">=</span> <span class="s2">&quot;opset1&quot;</span>
     <span class="n">ATTRIBUTE_FACTORY</span> <span class="o">=</span> <span class="n">ConvertV0Attribute</span>
 
-<div class="viewcode-block" id="ConvertV0.convert_ov_type"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.type_conversions.html#otx.core.ov.ops.ConvertV0.convert_ov_type">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ConvertV0.convert_ov_type"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvertV0.convert_ov_type">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">convert_ov_type</span><span class="p">(</span><span class="n">ov_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ConvertV0&#39;s convert_ov_type function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">ov_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_ov_to_torch</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="k">return</span> <span class="n">_ov_to_torch</span><span class="p">[</span><span class="n">ov_type</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ConvertV0.convert_torch_type"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.type_conversions.html#otx.core.ov.ops.ConvertV0.convert_torch_type">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ConvertV0.convert_torch_type"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvertV0.convert_torch_type">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">convert_torch_type</span><span class="p">(</span><span class="n">torch_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ConvertV0&#39;s convert_torch_type function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">torch_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_torch_to_ov</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="k">return</span> <span class="n">_torch_to_ov</span><span class="p">[</span><span class="n">torch_type</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ConvertV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.type_conversions.html#otx.core.ov.ops.ConvertV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="ConvertV0.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.ov.ops.html#otx.core.ov.ops.ConvertV0.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ConvertV0&#39;s forward function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">inputs</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_ov_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">destination_type</span><span class="p">))</span></div></div>
 </pre></div>
@@ -431,7 +428,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

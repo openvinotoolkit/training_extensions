@@ -13,6 +13,13 @@ otx.api.usecases.reporting
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Callback
+      TimeMonitorCallback
+   
    
 
    
@@ -20,13 +27,4 @@ otx.api.usecases.reporting
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.api.usecases.reporting.callback
-   otx.api.usecases.reporting.time_monitor_callback
 

@@ -13,6 +13,13 @@ otx.algorithms.segmentation.adapters.openvino
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OpenVINOSegmentationTask
+      OpenVINOSegmentationInferencer
+   
    
 
    
@@ -20,13 +27,4 @@ otx.algorithms.segmentation.adapters.openvino
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.segmentation.adapters.openvino.model_wrappers
-   otx.algorithms.segmentation.adapters.openvino.task
 

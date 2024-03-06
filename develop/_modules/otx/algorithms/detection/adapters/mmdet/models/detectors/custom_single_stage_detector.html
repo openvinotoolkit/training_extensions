@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -338,7 +335,7 @@ document.write(`
 <span class="c1"># pylint: disable=abstract-method, too-many-locals, unused-argument, protected-access</span>
 
 
-<div class="viewcode-block" id="CustomSingleStageDetector"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomSingleStageDetector"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector">[docs]</a><span class="nd">@DETECTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomSingleStageDetector</span><span class="p">(</span><span class="n">SAMDetectorMixin</span><span class="p">,</span> <span class="n">DetLossDynamicsTrackingMixin</span><span class="p">,</span> <span class="n">L2SPDetectorMixin</span><span class="p">,</span> <span class="n">SingleStageDetector</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SAM optimizer &amp; L2SP regularizer enabled custom SSD.&quot;&quot;&quot;</span>
 
@@ -358,7 +355,7 @@ document.write(`
                 <span class="p">)</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="CustomSingleStageDetector.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomSingleStageDetector.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for CustomSSD.</span>
 
 <span class="sd">        Args:</span>
@@ -386,7 +383,7 @@ document.write(`
         <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">forward_train</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">losses</span></div>
 
-<div class="viewcode-block" id="CustomSingleStageDetector.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CustomSingleStageDetector.load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.html#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector.load_state_dict_pre_hook">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">,</span> <span class="n">chkpt_classes</span><span class="p">,</span> <span class="n">chkpt_dict</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify input state_dict according to class name matching before weight loading.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;----------------- CustomSSD.load_state_dict_pre_hook() called w/ prefix: </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -459,7 +456,7 @@ document.write(`
         <span class="s2">&quot;custom_single_stage_detector.CustomSingleStageDetector.simple_test&quot;</span>
     <span class="p">)</span>
 
-<div class="viewcode-block" id="custom_single_stage_detector__simple_test"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector__simple_test">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span><span class="n">SIMPLE_TEST_IMPORT</span><span class="p">)</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span><span class="n">SIMPLE_TEST_IMPORT</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_single_stage_detector__simple_test</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function for custom_single_stage_detector__simple_test.&quot;&quot;&quot;</span>
         <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
@@ -478,7 +475,7 @@ document.write(`
             <span class="p">)</span>
             <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">bbox_results</span><span class="p">,</span> <span class="n">feature_vector</span><span class="p">,</span> <span class="n">saliency_map</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">bbox_results</span></div>
+        <span class="k">return</span> <span class="n">bbox_results</span>
 
     <span class="nd">@mark</span><span class="p">(</span><span class="s2">&quot;custom_ssd_forward&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dets&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="s2">&quot;feats&quot;</span><span class="p">,</span> <span class="s2">&quot;saliencies&quot;</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -499,7 +496,7 @@ document.write(`
         <span class="s2">&quot;custom_single_stage_detector.CustomSingleStageDetector.forward&quot;</span>
     <span class="p">)</span>
 
-<div class="viewcode-block" id="custom_ssd__forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_ssd__forward">[docs]</a>    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span><span class="n">FORWARD_IMPORT</span><span class="p">)</span>
+    <span class="nd">@FUNCTION_REWRITER</span><span class="o">.</span><span class="n">register_rewriter</span><span class="p">(</span><span class="n">FORWARD_IMPORT</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">custom_ssd__forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Internal Function for __forward for CustomSSD.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">img_metas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -511,7 +508,7 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">__forward_impl</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="o">=</span><span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -564,7 +561,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
@@ -383,7 +380,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="OTXNNCFAnomalyDataloader"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OTXNNCFAnomalyDataloader">[docs]</a><span class="k">class</span> <span class="nc">OTXNNCFAnomalyDataloader</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">OTXNNCFAnomalyDataloader</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dataloader for loading OTX dataset for NNCF optimization.</span>
 
 <span class="sd">    Args:</span>
@@ -432,10 +429,10 @@ document.write(`
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Size of the dataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="OpenVINOTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask">[docs]</a><span class="k">class</span> <span class="nc">OpenVINOTask</span><span class="p">(</span><span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IOptimizationTask</span><span class="p">,</span> <span class="n">IDeploymentTask</span><span class="p">):</span>
+<div class="viewcode-block" id="OpenVINOTask"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask">[docs]</a><span class="k">class</span> <span class="nc">OpenVINOTask</span><span class="p">(</span><span class="n">IInferenceTask</span><span class="p">,</span> <span class="n">IEvaluationTask</span><span class="p">,</span> <span class="n">IOptimizationTask</span><span class="p">,</span> <span class="n">IDeploymentTask</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OpenVINO inference task.</span>
 
 <span class="sd">    Args:</span>
@@ -456,7 +453,7 @@ document.write(`
         <span class="n">template_file_path</span> <span class="o">=</span> <span class="n">task_environment</span><span class="o">.</span><span class="n">model_template</span><span class="o">.</span><span class="n">model_template_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">template_file_path</span><span class="p">))</span>
 
-<div class="viewcode-block" id="OpenVINOTask.get_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADDict</span><span class="p">:</span>
+<div class="viewcode-block" id="OpenVINOTask.get_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADDict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Anomalib Config from task environment.</span>
 
 <span class="sd">        Returns:</span>
@@ -467,7 +464,7 @@ document.write(`
         <span class="n">config</span> <span class="o">=</span> <span class="n">get_anomalib_config</span><span class="p">(</span><span class="n">task_name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span> <span class="n">otx_config</span><span class="o">=</span><span class="n">otx_config</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ADDict</span><span class="p">(</span><span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_container</span><span class="p">(</span><span class="n">config</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="OpenVINOTask.infer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">InferenceParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
+<div class="viewcode-block" id="OpenVINOTask.infer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span> <span class="n">inference_parameters</span><span class="p">:</span> <span class="n">InferenceParameters</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform Inference.</span>
 
 <span class="sd">        Args:</span>
@@ -526,7 +523,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">dataset</span></div>
 
-<div class="viewcode-block" id="OpenVINOTask.get_metadata"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="OpenVINOTask.get_metadata"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Meta Data.&quot;&quot;&quot;</span>
         <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_environment</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -572,7 +569,7 @@ document.write(`
         <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-<div class="viewcode-block" id="OpenVINOTask.evaluate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="OpenVINOTask.evaluate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_resultset</span><span class="p">:</span> <span class="n">ResultSetEntity</span><span class="p">,</span> <span class="n">evaluation_metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the performance of the model.</span>
 
 <span class="sd">        Args:</span>
@@ -605,7 +602,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">ptq_config</span>
 
-<div class="viewcode-block" id="OpenVINOTask.optimize"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
+<div class="viewcode-block" id="OpenVINOTask.optimize"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.optimize">[docs]</a>    <span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">optimization_type</span><span class="p">:</span> <span class="n">OptimizationType</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">:</span> <span class="n">DatasetEntity</span><span class="p">,</span>
@@ -682,7 +679,7 @@ document.write(`
             <span class="n">optimization_parameters</span><span class="o">.</span><span class="n">update_progress</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PTQ optimization completed&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OpenVINOTask.get_openvino_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_openvino_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_openvino_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnomalyDetection</span><span class="p">:</span>
+<div class="viewcode-block" id="OpenVINOTask.get_openvino_model"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.get_openvino_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_openvino_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnomalyDetection</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the OpenVINO inferencer object.</span>
 
 <span class="sd">        Returns:</span>
@@ -815,7 +812,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">configuration</span>
 
-<div class="viewcode-block" id="OpenVINOTask.deploy"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.openvino.html#otx.algorithms.anomaly.tasks.OpenVINOTask.deploy">[docs]</a>    <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OpenVINOTask.deploy"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.anomaly.tasks.html#otx.algorithms.anomaly.tasks.OpenVINOTask.deploy">[docs]</a>    <span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">ModelEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Exports the weights from ``output_model`` along with exportable code.</span>
 
 <span class="sd">        Args:</span>
@@ -902,7 +899,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

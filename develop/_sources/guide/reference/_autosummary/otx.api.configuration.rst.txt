@@ -13,6 +13,20 @@ otx.api.configuration
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigurableEnum
+      ModelLifecycle
+      Action
+      NullUIRules
+      Operator
+      Rule
+      UIRules
+      DefaultModelParameters
+      ConfigurableParameters
+   
    
 
    
@@ -27,11 +41,7 @@ otx.api.configuration
    :toctree:
    :recursive:
 
-   otx.api.configuration.configurable_parameters
-   otx.api.configuration.default_model_parameters
-   otx.api.configuration.elements
-   otx.api.configuration.enums
-   otx.api.configuration.helper
-   otx.api.configuration.model_lifecycle
-   otx.api.configuration.ui_rules
+   otx.api.configuration.metadata_keys
+   otx.api.configuration.cfg_helper
+   otx.api.configuration.otx_config_helper
 

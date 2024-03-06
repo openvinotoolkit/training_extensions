@@ -13,6 +13,24 @@ otx.algorithms.segmentation.adapters.mmseg
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXSegDataset
+      LiteHRNet
+      MMOVBackbone
+      MMOVDecodeHead
+      DetConLoss
+      SelfSLMLP
+      ConstantScalarScheduler
+      PolyScalarScheduler
+      StepScalarScheduler
+      DetConB
+      CrossEntropyLossWithIgnore
+      SupConDetConB
+      MeanTeacherSegmentor
+   
    
 
    
@@ -20,17 +38,4 @@ otx.algorithms.segmentation.adapters.mmseg
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algorithms.segmentation.adapters.mmseg.configurer
-   otx.algorithms.segmentation.adapters.mmseg.datasets
-   otx.algorithms.segmentation.adapters.mmseg.models
-   otx.algorithms.segmentation.adapters.mmseg.nncf
-   otx.algorithms.segmentation.adapters.mmseg.task
-   otx.algorithms.segmentation.adapters.mmseg.utils
 

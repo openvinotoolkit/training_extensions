@@ -38,9 +38,6 @@
   <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
@@ -334,7 +331,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.cli.utils.importing</span> <span class="kn">import</span> <span class="n">get_backbone_list</span><span class="p">,</span> <span class="n">get_otx_root_path</span>
 
 
-<div class="viewcode-block" id="Registry"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.Registry">[docs]</a><span class="k">class</span> <span class="nc">Registry</span><span class="p">:</span>
+<div class="viewcode-block" id="Registry"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.html#otx.cli.registry.Registry">[docs]</a><span class="k">class</span> <span class="nc">Registry</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class that implements a model templates registry.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">templates_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">experimental</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -368,7 +365,7 @@ document.write(`
     <span class="k">def</span> <span class="nf">__collect_task_types</span><span class="p">(</span><span class="n">templates</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">template</span><span class="o">.</span><span class="n">task_type</span> <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">}</span>
 
-<div class="viewcode-block" id="Registry.filter"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.Registry.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">framework</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Registry.filter"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.html#otx.cli.registry.Registry.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">framework</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">task_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Filters registry by framework and/or task type and returns filtered registry.&quot;&quot;&quot;</span>
 
         <span class="n">templates</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">templates</span><span class="p">)</span>
@@ -378,7 +375,7 @@ document.write(`
             <span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="n">template</span> <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">task_type</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">task_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
         <span class="k">return</span> <span class="n">Registry</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Registry.get"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.Registry.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_id</span><span class="p">,</span> <span class="n">skip_error</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Registry.get"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.html#otx.cli.registry.Registry.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_id</span><span class="p">,</span> <span class="n">skip_error</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a model template with specified template_id or template.name.&quot;&quot;&quot;</span>
 
         <span class="n">templates</span> <span class="o">=</span> <span class="p">[</span>
@@ -392,7 +389,7 @@ document.write(`
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find a template with </span><span class="si">{</span><span class="n">template_id</span><span class="si">}</span><span class="s2"> in registry.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Registry.get_backbones"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.Registry.get_backbones">[docs]</a>    <span class="k">def</span> <span class="nf">get_backbones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_list</span><span class="p">):</span>
+<div class="viewcode-block" id="Registry.get_backbones"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.html#otx.cli.registry.Registry.get_backbones">[docs]</a>    <span class="k">def</span> <span class="nf">get_backbones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_list</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns list of backbones for a given template.&quot;&quot;&quot;</span>
         <span class="n">backbone_list</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">backend_list</span><span class="p">:</span>
@@ -413,7 +410,7 @@ document.write(`
         <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">templates_infos</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="find_and_parse_model_template"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.find_and_parse_model_template">[docs]</a><span class="k">def</span> <span class="nf">find_and_parse_model_template</span><span class="p">(</span><span class="n">path_or_id</span><span class="p">):</span>
+<div class="viewcode-block" id="find_and_parse_model_template"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.html#otx.cli.registry.find_and_parse_model_template">[docs]</a><span class="k">def</span> <span class="nf">find_and_parse_model_template</span><span class="p">(</span><span class="n">path_or_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;In first function attempts to read a model template from disk under assumption that a path is passed.</span>
 
 <span class="sd">    If the attempt is failed, it tries to find template in registry under assumption that an ID or name is passed.</span>
@@ -429,7 +426,7 @@ document.write(`
     <span class="k">return</span> <span class="n">Registry</span><span class="p">(</span><span class="n">get_otx_root_path</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path_or_id</span><span class="p">,</span> <span class="n">skip_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="is_template"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.registry.registry.html#otx.cli.registry.is_template">[docs]</a><span class="k">def</span> <span class="nf">is_template</span><span class="p">(</span><span class="n">template_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">is_template</span><span class="p">(</span><span class="n">template_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A function that determines whether the corresponding template path is a template.</span>
 
 <span class="sd">    Args:</span>
@@ -440,7 +437,7 @@ document.write(`
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">template_path</span> <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">&quot;template&quot;</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="kc">False</span></div>
+    <span class="k">return</span> <span class="kc">False</span>
 </pre></div>
 
                 </article>
@@ -493,7 +490,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

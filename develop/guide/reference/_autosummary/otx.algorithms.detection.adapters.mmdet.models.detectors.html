@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,8 +46,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.detectors';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector.html" />
-    <link rel="prev" title="otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head" href="otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head.html" />
+    <link rel="next" title="otx.algorithms.detection.adapters.mmdet.models.heads" href="otx.algorithms.detection.adapters.mmdet.models.heads.html" />
+    <link rel="prev" title="otx.algorithms.detection.adapters.mmdet.models.dense_heads" href="otx.algorithms.detection.adapters.mmdet.models.dense_heads.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,10 +461,54 @@ document.write(`
   <section id="module-otx.algorithms.detection.adapters.mmdet.models.detectors">
 <span id="otx-algorithms-detection-adapters-mmdet-models-detectors"></span><h1>otx.algorithms.detection.adapters.mmdet.models.detectors<a class="headerlink" href="#module-otx.algorithms.detection.adapters.mmdet.models.detectors" title="Permalink to this heading">#</a></h1>
 <p>Initial file for mmdetection detectors.</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomATSS" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomATSS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomATSS</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>SAM optimizer &amp; L2SP regularizer enabled custom ATSS.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomDeformableDETR</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>Custom Deformable DETR with task adapt.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomLiteDINO" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomLiteDINO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomLiteDINO</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>Custom Lite-DINO &lt;<a class="reference external" href="https://arxiv.org/pdf/2303.07335.pdf">https://arxiv.org/pdf/2303.07335.pdf</a>&gt; for object detection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDINO" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDINO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomDINO</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>Custom DINO detector.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomMaskRCNN</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>CustomMaskRCNN Class for mmdetection detectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomSingleStageDetector</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>SAM optimizer &amp; L2SP regularizer enabled custom SSD.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomTwoStageDetector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomTwoStageDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomTwoStageDetector</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>SAM optimizer &amp; L2SP regularizer enabled custom 2-stage detector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomVFNet</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>SAM optimizer &amp; L2SP regularizer enabled custom VFNet.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomYOLOX</span></code></a>(*args[, task_adapt])</p></td>
+<td><p>SAM optimizer &amp; L2SP regularizer enabled custom YOLOX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>([l2sp_ckpt, l2sp_weight])</p></td>
+<td><p>L2SP-enabled detector mix-in.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>()</p></td>
+<td><p>SAM-enabled BaseDetector mix-in.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized" title="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomMaskRCNNTileOptimized</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Custom MaskRCNN detector with tile classifier.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.MeanTeacher" title="otx.algorithms.detection.adapters.mmdet.models.detectors.MeanTeacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MeanTeacher</span></code></a>(arch_type[, ...])</p></td>
+<td><p>Mean teacher framework for detection and instance segmentation.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomATSS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomATSS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_atss_detector.html#CustomATSS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomATSS" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ATSS</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ATSS</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom ATSS.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomATSS.load_state_dict_pre_hook">
@@ -488,7 +521,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDINO">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomDINO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_dino_detector.html#CustomDINO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDINO" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.CustomDeformableDETR" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.CustomDeformableDETR"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomDeformableDETR</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDeformableDETR" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.CustomDeformableDETR"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomDeformableDETR</span></code></a></p>
 <p>Custom DINO detector.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
@@ -517,7 +550,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomLiteDINO">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomLiteDINO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_lite_dino.html#CustomLiteDINO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomLiteDINO" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector.CustomDINO" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector.CustomDINO"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomDINO</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomDINO" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector.CustomDINO"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomDINO</span></code></a></p>
 <p>Custom Lite-DINO &lt;<a class="reference external" href="https://arxiv.org/pdf/2303.07335.pdf">https://arxiv.org/pdf/2303.07335.pdf</a>&gt; for object detection.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
 <dl class="py method">
@@ -531,7 +564,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomMaskRCNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_maskrcnn_detector.html#CustomMaskRCNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskRCNN</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">MaskRCNN</span></code></p>
 <p>CustomMaskRCNN Class for mmdetection detectors.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN.load_state_dict_pre_hook">
@@ -544,7 +577,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomMaskRCNNTileOptimized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_maskrcnn_tile_optimized.html#CustomMaskRCNNTileOptimized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNNTileOptimized" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.CustomMaskRCNN" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.CustomMaskRCNN"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomMaskRCNN</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomMaskRCNN" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.CustomMaskRCNN"><code class="xref py py-class docutils literal notranslate"><span class="pre">CustomMaskRCNN</span></code></a></p>
 <p>Custom MaskRCNN detector with tile classifier.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -619,7 +652,7 @@ If no objects are present, empty results are returned. Otherwise, MaskRCNN is us
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomSingleStageDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_single_stage_detector.html#CustomSingleStageDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SingleStageDetector</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SingleStageDetector</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom SSD.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomSingleStageDetector.forward_train">
@@ -663,7 +696,7 @@ boxes can be ignored when computing the loss.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomTwoStageDetector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomTwoStageDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_two_stage_detector.html#CustomTwoStageDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomTwoStageDetector" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">TwoStageDetector</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">TwoStageDetector</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom 2-stage detector.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomTwoStageDetector.forward_train">
@@ -682,7 +715,7 @@ boxes can be ignored when computing the loss.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomVFNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_vfnet_detector.html#CustomVFNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">VFNet</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">VFNet</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom VFNet.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomVFNet.forward_train">
@@ -701,7 +734,7 @@ boxes can be ignored when computing the loss.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">CustomYOLOX</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_yolox_detector.html#CustomYOLOX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.DetLossDynamicsTrackingMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code></a>, <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">YOLOX</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">YOLOX</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom YOLOX.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.forward_train">
@@ -757,7 +790,7 @@ boxes can be ignored when computing the loss.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.MeanTeacher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.</span></span><span class="sig-name descname"><span class="pre">MeanTeacher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arch_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unlabeled_loss_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'bbox':</span> <span class="pre">1.0,</span> <span class="pre">'cls':</span> <span class="pre">1.0,</span> <span class="pre">'mask':</span> <span class="pre">1.0}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudo_conf_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_pseudo_label_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_empty_annotations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/mean_teacher.html#MeanTeacher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.MeanTeacher" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDetector</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDetector</span></code></p>
 <p>Mean teacher framework for detection and instance segmentation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.MeanTeacher.aug_test">
@@ -834,53 +867,6 @@ boxes can be ignored when computing the loss.</p></li>
 
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector</span></code></a></p></td>
-<td><p>OTX ATSS Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector</span></code></a></p></td>
-<td><p>OTX Deformable DETR Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector</span></code></a></p></td>
-<td><p>OTX DINO Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino</span></code></a></p></td>
-<td><p>OTX Lite-DINO Class for object detection.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector</span></code></a></p></td>
-<td><p>OTX MaskRCNN Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized</span></code></a></p></td>
-<td><p>Custom MaskRCNN detector with tile classifier.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector</span></code></a></p></td>
-<td><p>OTX SSD Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector</span></code></a></p></td>
-<td><p>OTX Two Stage Detector Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector</span></code></a></p></td>
-<td><p>OTX CustomVFNet Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector" title="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector</span></code></a></p></td>
-<td><p>OTX YOLOX Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin</span></code></a></p></td>
-<td><p>L2SPDetectorMixin Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin</span></code></a></p></td>
-<td><p>LossDynamics Mix-in for detection tasks.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher" title="otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher</span></code></a></p></td>
-<td><p>UnbiasedTeacher Class for mmdetection detectors.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.html#module-otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin</span></code></a></p></td>
-<td><p>Detector Class for SAM optimizer.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -894,20 +880,20 @@ boxes can be ignored when computing the loss.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head.html"
+       href="otx.algorithms.detection.adapters.mmdet.models.dense_heads.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head</p>
+        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.dense_heads</p>
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector.html"
+       href="otx.algorithms.detection.adapters.mmdet.models.heads.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector</p>
+        <p class="prev-next-title">otx.algorithms.detection.adapters.mmdet.models.heads</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1043,7 +1029,7 @@ boxes can be ignored when computing the loss.</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

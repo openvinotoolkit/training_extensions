@@ -13,6 +13,82 @@ otx.core.ov.ops
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SoftMaxV0
+      SoftMaxV1
+      ReluV0
+      SwishV4
+      SigmoidV0
+      ClampV0
+      PReluV0
+      TanhV0
+      EluV0
+      SeluV0
+      MishV4
+      HSwishV4
+      HSigmoidV5
+      ExpV0
+      HardSigmoidV0
+      GeluV7
+      MultiplyV1
+      DivideV1
+      AddV1
+      SubtractV1
+      TanV0
+      OperationRegistry
+      ConvolutionV1
+      GroupConvolutionV1
+      RangeV4
+      InterpolateV4
+      ParameterV0
+      ResultV0
+      ConstantV0
+      MatMulV0
+      EinsumV7
+      PadV1
+      ConcatV0
+      TransposeV1
+      GatherV0
+      GatherV1
+      StridedSliceV1
+      SplitV1
+      VariadicSplitV1
+      ShuffleChannelsV0
+      BroadcastV3
+      ScatterNDUpdateV3
+      ScatterUpdateV3
+      TileV0
+      BatchNormalizationV0
+      LocalResponseNormalizationV0
+      NormalizeL2V0
+      MVNV6
+      ProposalV4
+      ROIPoolingV0
+      DetectionOutputV0
+      RegionYoloV0
+      PriorBoxV0
+      PriorBoxClusteredV0
+      Operation
+      Attribute
+      MaxPoolV0
+      AvgPoolV1
+      ReduceMeanV1
+      ReduceProdV1
+      ReduceMinV1
+      ReduceSumV1
+      SqueezeV0
+      UnsqueezeV0
+      ReshapeV1
+      ShapeOfV0
+      ShapeOfV3
+      TopKV3
+      NonMaxSuppressionV5
+      NonMaxSuppressionV9
+      ConvertV0
+   
    
 
    
@@ -20,30 +96,4 @@ otx.core.ov.ops
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.core.ov.ops.activations
-   otx.core.ov.ops.arithmetics
-   otx.core.ov.ops.builder
-   otx.core.ov.ops.convolutions
-   otx.core.ov.ops.generation
-   otx.core.ov.ops.image_processings
-   otx.core.ov.ops.infrastructures
-   otx.core.ov.ops.matmuls
-   otx.core.ov.ops.modules
-   otx.core.ov.ops.movements
-   otx.core.ov.ops.normalizations
-   otx.core.ov.ops.object_detections
-   otx.core.ov.ops.op
-   otx.core.ov.ops.poolings
-   otx.core.ov.ops.reductions
-   otx.core.ov.ops.shape_manipulations
-   otx.core.ov.ops.sorting_maximization
-   otx.core.ov.ops.type_conversions
-   otx.core.ov.ops.utils
 

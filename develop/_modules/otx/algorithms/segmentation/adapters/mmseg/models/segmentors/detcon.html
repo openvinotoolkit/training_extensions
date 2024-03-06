@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -339,7 +336,7 @@ document.write(`
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="MaskPooling"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.MaskPooling">[docs]</a><span class="k">class</span> <span class="nc">MaskPooling</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MaskPooling</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mask pooling module to filter each class with the same class.</span>
 
 <span class="sd">    Args:</span>
@@ -367,7 +364,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">mask_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">downsample</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">downsample</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MaskPooling.pool_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.MaskPooling.pool_masks">[docs]</a>    <span class="k">def</span> <span class="nf">pool_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">pool_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform mask pooling and create binary masks.</span>
 
 <span class="sd">        Args:</span>
@@ -388,9 +385,9 @@ document.write(`
         <span class="n">masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">masks</span><span class="o">.</span><span class="n">device</span><span class="p">)[</span><span class="n">masks</span><span class="p">]</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">masks</span></div>
+        <span class="k">return</span> <span class="n">masks</span>
 
-<div class="viewcode-block" id="MaskPooling.sample_masks"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.MaskPooling.sample_masks">[docs]</a>    <span class="k">def</span> <span class="nf">sample_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sample_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Samples of which binary masks to use in the loss.</span>
 
 <span class="sd">        Args:</span>
@@ -409,9 +406,9 @@ document.write(`
         <span class="n">mask_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">sel_masks</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">replacement</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">replacement</span><span class="p">)</span>
         <span class="n">sampled_masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">masks</span><span class="p">[</span><span class="n">b</span><span class="p">][</span><span class="n">mask_ids</span><span class="p">[</span><span class="n">b</span><span class="p">]]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)])</span>
 
-        <span class="k">return</span> <span class="n">sampled_masks</span><span class="p">,</span> <span class="n">mask_ids</span></div>
+        <span class="k">return</span> <span class="n">sampled_masks</span><span class="p">,</span> <span class="n">mask_ids</span>
 
-<div class="viewcode-block" id="MaskPooling.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.MaskPooling.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function for mask pooling.</span>
 
 <span class="sd">        Args:</span>
@@ -426,11 +423,11 @@ document.write(`
         <span class="n">areas</span> <span class="o">=</span> <span class="n">sampled_masks</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">sampled_masks</span> <span class="o">=</span> <span class="n">sampled_masks</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">areas</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">areas</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">sampled_masks</span><span class="p">,</span> <span class="n">sampled_mask_ids</span></div></div>
+        <span class="k">return</span> <span class="n">sampled_masks</span><span class="p">,</span> <span class="n">sampled_mask_ids</span>
 
 
 <span class="c1"># pylint: disable=too-many-arguments, dangerous-default-value, too-many-instance-attributes</span>
-<div class="viewcode-block" id="DetConB"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB">[docs]</a><span class="nd">@SEGMENTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="DetConB"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB">[docs]</a><span class="nd">@SEGMENTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">DetConB</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DetCon Implementation.</span>
 
@@ -499,7 +496,7 @@ document.write(`
         <span class="c1"># Hooks for super_type transparent weight save</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_register_state_dict_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_dict_hook</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DetConB.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConB.init_weights"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the weights of model.</span>
 
 <span class="sd">        Args:</span>
@@ -542,7 +539,7 @@ document.write(`
         <span class="k">for</span> <span class="n">param_ol</span><span class="p">,</span> <span class="n">param_tgt</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">online_projector</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_projector</span><span class="o">.</span><span class="n">parameters</span><span class="p">()):</span>
             <span class="n">param_tgt</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">param_tgt</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">+</span> <span class="n">param_ol</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DetConB.transform_inputs"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.transform_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">transform_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]):</span>
+<div class="viewcode-block" id="DetConB.transform_inputs"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.transform_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">transform_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform inputs for decoder.</span>
 
 <span class="sd">        Args:</span>
@@ -573,7 +570,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">inputs</span></div>
 
-<div class="viewcode-block" id="DetConB.extract_feat"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.extract_feat">[docs]</a>    <span class="k">def</span> <span class="nf">extract_feat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConB.extract_feat"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.extract_feat">[docs]</a>    <span class="k">def</span> <span class="nf">extract_feat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract features from images.</span>
 
 <span class="sd">        Args:</span>
@@ -585,7 +582,7 @@ document.write(`
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">online_backbone</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span></div>
 
-<div class="viewcode-block" id="DetConB.sample_masked_feats"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.sample_masked_feats">[docs]</a>    <span class="k">def</span> <span class="nf">sample_masked_feats</span><span class="p">(</span>
+<div class="viewcode-block" id="DetConB.sample_masked_feats"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.sample_masked_feats">[docs]</a>    <span class="k">def</span> <span class="nf">sample_masked_feats</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">feats</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">],</span>
         <span class="n">masks</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -617,7 +614,7 @@ document.write(`
         <span class="k">return</span> <span class="n">proj</span><span class="p">,</span> <span class="n">sampled_mask_ids</span></div>
 
     <span class="c1"># pylint: disable=too-many-locals</span>
-<div class="viewcode-block" id="DetConB.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
+<div class="viewcode-block" id="DetConB.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">img_metas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span>
@@ -656,7 +653,7 @@ document.write(`
             <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">embds</span><span class="p">,</span> <span class="n">masks</span>
         <span class="k">return</span> <span class="n">loss</span></div>
 
-<div class="viewcode-block" id="DetConB.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">return_loss</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConB.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">return_loss</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls either :func:`forward_train` or :func:`forward_test` depending on whether ``return_loss`` is ``True``.</span>
 
 <span class="sd">        Note this setting will change the expected inputs. When</span>
@@ -669,7 +666,7 @@ document.write(`
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_train</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Self-SL doesn&#39;t support `forward_test` for evaluation.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DetConB.train_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.train_step">[docs]</a>    <span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span>
+<div class="viewcode-block" id="DetConB.train_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.train_step">[docs]</a>    <span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data_batch</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
@@ -708,7 +705,7 @@ document.write(`
 
         <span class="k">return</span> <span class="n">outputs</span></div>
 
-<div class="viewcode-block" id="DetConB.val_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.val_step">[docs]</a>    <span class="k">def</span> <span class="nf">val_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConB.val_step"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.val_step">[docs]</a>    <span class="k">def</span> <span class="nf">val_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Disenable validation step during self-supervised learning.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -751,11 +748,11 @@ document.write(`
 
         <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">log_vars</span>
 
-<div class="viewcode-block" id="DetConB.set_step_params"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.set_step_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_step_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_iter</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">):</span>
+<div class="viewcode-block" id="DetConB.set_step_params"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.set_step_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_step_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_iter</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;`set_step_params` to be skipped.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="DetConB.state_dict_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.state_dict_hook">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DetConB.state_dict_hook"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.state_dict_hook">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">state_dict_hook</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save only online backbone as output state_dict.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;----------------- BYOL.state_dict_hook() called&quot;</span><span class="p">)</span>
@@ -768,7 +765,7 @@ document.write(`
 
 
 <span class="c1"># pylint: disable=too-many-locals</span>
-<div class="viewcode-block" id="SupConDetConB"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB">[docs]</a><span class="nd">@SEGMENTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="SupConDetConB"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB">[docs]</a><span class="nd">@SEGMENTORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SupConDetConB</span><span class="p">(</span><span class="n">OTXEncoderDecoder</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-ancestors</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362).</span>
 
@@ -825,7 +822,7 @@ document.write(`
         <span class="c1"># 2. save all : we can use additional training with the whole weights (backbone + decode_head + detcon).</span>
 
     <span class="c1"># pylint: disable=arguments-renamed</span>
-<div class="viewcode-block" id="SupConDetConB.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
+<div class="viewcode-block" id="SupConDetConB.forward_train"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.segmentation.adapters.mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train">[docs]</a>    <span class="k">def</span> <span class="nf">forward_train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">img</span><span class="p">,</span>
         <span class="n">img_metas</span><span class="p">,</span>
@@ -917,7 +914,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

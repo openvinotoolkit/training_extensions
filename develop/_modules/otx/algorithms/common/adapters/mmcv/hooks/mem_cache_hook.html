@@ -38,9 +38,6 @@
   <script src="../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../_static/clipboard.min.js"></script>
@@ -316,7 +313,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">otx.core.data.caching.mem_cache_handler</span> <span class="kn">import</span> <span class="n">MemCacheHandlerSingleton</span>
 
 
-<div class="viewcode-block" id="MemCacheHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.mem_cache_hook.html#otx.algorithms.common.adapters.mmcv.MemCacheHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="MemCacheHook"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.MemCacheHook">[docs]</a><span class="nd">@HOOKS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">MemCacheHook</span><span class="p">(</span><span class="n">Hook</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory cache hook for logging and freezing MemCacheHandler.&quot;&quot;&quot;</span>
 
@@ -326,12 +323,12 @@ document.write(`
         <span class="c1"># We don&#39;t want to cache validation samples first.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
 
-<div class="viewcode-block" id="MemCacheHook.before_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.mem_cache_hook.html#otx.algorithms.common.adapters.mmcv.MemCacheHook.before_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="MemCacheHook.before_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.MemCacheHook.before_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">before_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Before training, unfreeze the handler.&quot;&quot;&quot;</span>
         <span class="c1"># We want to cache training samples first.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">unfreeze</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="MemCacheHook.after_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.hooks.mem_cache_hook.html#otx.algorithms.common.adapters.mmcv.MemCacheHook.after_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
+<div class="viewcode-block" id="MemCacheHook.after_epoch"><a class="viewcode-back" href="../../../../../../../guide/reference/_autosummary/otx.algorithms.common.adapters.mmcv.html#otx.algorithms.common.adapters.mmcv.MemCacheHook.after_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">after_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runner</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;After epoch. Log the handler statistics.</span>
 
 <span class="sd">        To prevent it from skipping the validation samples,</span>
@@ -391,7 +388,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -39,9 +39,6 @@
   <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
@@ -49,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.common.utils';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.common.utils.callback" href="otx.algorithms.common.utils.callback.html" />
+    <link rel="next" title="otx.algorithms.detection" href="otx.algorithms.detection.html" />
     <link rel="prev" title="otx.algorithms.common.tools" href="otx.algorithms.common.tools.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -377,20 +374,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="otx.core.patcher.html">otx.core.patcher</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.recipes.stages.html">otx.recipes.stages</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
 </ul>
 </li>
@@ -401,7 +390,7 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -472,10 +461,68 @@ document.write(`
   <section id="module-otx.algorithms.common.utils">
 <span id="otx-algorithms-common-utils"></span><h1>otx.algorithms.common.utils<a class="headerlink" href="#module-otx.algorithms.common.utils" title="Permalink to this heading">#</a></h1>
 <p>Collection of utils to run common OTX algorithms.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.embed_ir_model_data" title="otx.algorithms.common.utils.embed_ir_model_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">embed_ir_model_data</span></code></a>(xml_file, data_items)</p></td>
+<td><p>Embeds serialized data to IR xml file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_cls_img_indices" title="otx.algorithms.common.utils.get_cls_img_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cls_img_indices</span></code></a>(labels, dataset)</p></td>
+<td><p>Function for getting image indices per class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_old_new_img_indices" title="otx.algorithms.common.utils.get_old_new_img_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_old_new_img_indices</span></code></a>(labels, new_classes, ...)</p></td>
+<td><p>Function for getting old &amp; new indices of dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.load_template" title="otx.algorithms.common.utils.load_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_template</span></code></a>(path)</p></td>
+<td><p>Loading model template function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_task_class" title="otx.algorithms.common.utils.get_task_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_task_class</span></code></a>(path)</p></td>
+<td><p>Return Task classes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_arg_spec" title="otx.algorithms.common.utils.get_arg_spec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_arg_spec</span></code></a>(fn[, depth])</p></td>
+<td><p>Get argument spec of function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_image" title="otx.algorithms.common.utils.get_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_image</span></code></a>(results, cache_dir[, to_float32])</p></td>
+<td><p>Load an image and cache it if it's a training video frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.set_random_seed" title="otx.algorithms.common.utils.set_random_seed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_random_seed</span></code></a>(seed[, logger, deterministic])</p></td>
+<td><p>Set random seed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.append_dist_rank_suffix" title="otx.algorithms.common.utils.append_dist_rank_suffix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_dist_rank_suffix</span></code></a>(file_name)</p></td>
+<td><p>Append distributed training rank suffix to the file name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.read_py_config" title="otx.algorithms.common.utils.read_py_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_py_config</span></code></a>(filename)</p></td>
+<td><p>Reads py config to a dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_default_async_reqs_num" title="otx.algorithms.common.utils.get_default_async_reqs_num"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_async_reqs_num</span></code></a>()</p></td>
+<td><p>Returns a default number of infer request for OV models.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.TrainingProgressCallback" title="otx.algorithms.common.utils.TrainingProgressCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainingProgressCallback</span></code></a>(...)</p></td>
+<td><p>TrainingProgressCallback class for time monitoring.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.InferenceProgressCallback" title="otx.algorithms.common.utils.InferenceProgressCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InferenceProgressCallback</span></code></a>(num_test_steps, ...)</p></td>
+<td><p>InferenceProgressCallback class for time monitoring.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.OptimizationProgressCallback" title="otx.algorithms.common.utils.OptimizationProgressCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OptimizationProgressCallback</span></code></a>(...[, ...])</p></td>
+<td><p>Progress callback used for optimization using NNCF.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.UncopiableDefaultDict" title="otx.algorithms.common.utils.UncopiableDefaultDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UncopiableDefaultDict</span></code></a></p></td>
+<td><p>Defauldict type object to avoid deepcopy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.OTXOpenVinoDataLoader" title="otx.algorithms.common.utils.OTXOpenVinoDataLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXOpenVinoDataLoader</span></code></a>(dataset, inferencer[, ...])</p></td>
+<td><p>DataLoader implementation for ClassificationOpenVINOTask.</p></td>
+</tr>
+</tbody>
+</table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.InferenceProgressCallback">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">InferenceProgressCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/callback.html#InferenceProgressCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.InferenceProgressCallback" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.reporting.time_monitor_callback.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.reporting.html#otx.api.usecases.reporting.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a></p>
 <p>InferenceProgressCallback class for time monitoring.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.InferenceProgressCallback.on_test_batch_end">
@@ -495,7 +542,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.OptimizationProgressCallback">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">OptimizationProgressCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_stage_progress_percentage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_stage_progress_percentage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/callback.html#OptimizationProgressCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.OptimizationProgressCallback" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.algorithms.common.utils.callback.html#otx.algorithms.common.utils.callback.TrainingProgressCallback" title="otx.algorithms.common.utils.callback.TrainingProgressCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingProgressCallback</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#otx.algorithms.common.utils.TrainingProgressCallback" title="otx.algorithms.common.utils.callback.TrainingProgressCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrainingProgressCallback</span></code></a></p>
 <p>Progress callback used for optimization using NNCF.</p>
 <dl class="simple">
 <dt>There are three stages to the progress bar:</dt><dd><ul class="simple">
@@ -528,7 +575,7 @@ document.write(`
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.TrainingProgressCallback">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">TrainingProgressCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/callback.html#TrainingProgressCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.TrainingProgressCallback" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.reporting.time_monitor_callback.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="otx.api.usecases.reporting.html#otx.api.usecases.reporting.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a></p>
 <p>TrainingProgressCallback class for time monitoring.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.TrainingProgressCallback.on_epoch_end">
@@ -553,7 +600,7 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.append_dist_rank_suffix">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">append_dist_rank_suffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/dist_utils.html#append_dist_rank_suffix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.append_dist_rank_suffix" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">append_dist_rank_suffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/dist_utils.html#append_dist_rank_suffix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.append_dist_rank_suffix" title="Permalink to this definition">#</a></dt>
 <dd><p>Append distributed training rank suffix to the file name.</p>
 </dd></dl>
 
@@ -573,7 +620,7 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.get_arg_spec">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">get_arg_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#get_arg_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.get_arg_spec" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">get_arg_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#get_arg_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.get_arg_spec" title="Permalink to this definition">#</a></dt>
 <dd><p>Get argument spec of function.</p>
 </dd></dl>
 
@@ -669,38 +716,6 @@ Default: False.</p></li>
 </dl>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.utils.callback.html#module-otx.algorithms.common.utils.callback" title="otx.algorithms.common.utils.callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.callback</span></code></a></p></td>
-<td><p>Collection of callback utils to run common OTX algorithms.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.utils.data.html#module-otx.algorithms.common.utils.data" title="otx.algorithms.common.utils.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.data</span></code></a></p></td>
-<td><p>Collections of Dataset utils for common OTX algorithms.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.utils.dist_utils.html#module-otx.algorithms.common.utils.dist_utils" title="otx.algorithms.common.utils.dist_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.dist_utils</span></code></a></p></td>
-<td><p>Module for defining distance utils.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.utils.ext_loader.html#module-otx.algorithms.common.utils.ext_loader" title="otx.algorithms.common.utils.ext_loader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.ext_loader</span></code></a></p></td>
-<td><p>Module for defining ext loader.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.utils.ir.html#module-otx.algorithms.common.utils.ir" title="otx.algorithms.common.utils.ir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.ir</span></code></a></p></td>
-<td><p>Collections of IR-related utils for common OTX algorithms.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.utils.mask_to_bbox.html#module-otx.algorithms.common.utils.mask_to_bbox" title="otx.algorithms.common.utils.mask_to_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.mask_to_bbox</span></code></a></p></td>
-<td><p>Convert a mask to a border image.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.utils.mo_wrapper.html#module-otx.algorithms.common.utils.mo_wrapper" title="otx.algorithms.common.utils.mo_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.mo_wrapper</span></code></a></p></td>
-<td><p>Module for defining Model Optimizer (mo) wrapper.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.common.utils.task_adapt.html#module-otx.algorithms.common.utils.task_adapt" title="otx.algorithms.common.utils.task_adapt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.task_adapt</span></code></a></p></td>
-<td><p>Module for defining task adapt related utils.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.common.utils.utils.html#module-otx.algorithms.common.utils.utils" title="otx.algorithms.common.utils.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.common.utils.utils</span></code></a></p></td>
-<td><p>Collections of Utils for common OTX algorithms.</p></td>
-</tr>
-</tbody>
-</table>
 </section>
 
 
@@ -723,11 +738,11 @@ Default: False.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.common.utils.callback.html"
+       href="otx.algorithms.detection.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.common.utils.callback</p>
+        <p class="prev-next-title">otx.algorithms.detection</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -823,7 +838,7 @@ Default: False.</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

@@ -38,9 +38,6 @@
   <script src="../../../../../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script data-url_root="../../../../../../../../" id="documentation_options" src="../../../../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../../../../_static/jquery.js"></script>
-    <script src="../../../../../../../../_static/underscore.js"></script>
-    <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../../../_static/doctools.js"></script>
     <script src="../../../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../../../_static/clipboard.min.js"></script>
@@ -316,7 +313,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">mmdet.core.bbox.builder</span> <span class="kn">import</span> <span class="n">BBOX_ASSIGNERS</span>
 
 
-<div class="viewcode-block" id="CustomMaxIoUAssigner"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner.html#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner">[docs]</a><span class="nd">@BBOX_ASSIGNERS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="CustomMaxIoUAssigner"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.assigners.html#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner">[docs]</a><span class="nd">@BBOX_ASSIGNERS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">CustomMaxIoUAssigner</span><span class="p">(</span><span class="n">MaxIoUAssigner</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assign a corresponding gt bbox or background to each bbox.</span>
 
@@ -332,7 +329,7 @@ document.write(`
 
     <span class="n">cpu_assign_thr</span> <span class="o">=</span> <span class="mi">1000</span>
 
-    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="CustomMaxIoUAssigner.assign"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.assigners.html#otx.algorithms.detection.adapters.mmdet.models.assigners.CustomMaxIoUAssigner.assign">[docs]</a>    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign gt to bboxes.</span>
 
 <span class="sd">        This method assign a gt bbox to every bbox (proposal/anchor), each bbox</span>
@@ -409,7 +406,7 @@ document.write(`
             <span class="n">assign_result</span><span class="o">.</span><span class="n">max_overlaps</span> <span class="o">=</span> <span class="n">assign_result</span><span class="o">.</span><span class="n">max_overlaps</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">assign_result</span><span class="o">.</span><span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">assign_result</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">assign_result</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">assign_result</span></div>
+        <span class="k">return</span> <span class="n">assign_result</span></div></div>
 </pre></div>
 
                 </article>
@@ -462,7 +459,7 @@ document.write(`
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
     <br/>
   </p>
 </div>

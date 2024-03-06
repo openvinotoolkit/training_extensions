@@ -9,6 +9,20 @@ otx.cli.tools.cli
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      otx_demo
+      otx_deploy
+      otx_eval
+      otx_explain
+      otx_export
+      otx_find
+      otx_train
+      otx_optimize
+      otx_build
+   
    
 
    
