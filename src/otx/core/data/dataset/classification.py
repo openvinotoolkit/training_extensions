@@ -128,13 +128,51 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
     
-    def _find_parent_recursively(self, label_anns: Label):
-        def _label_idx_to_name(self, idx: int) -> str:
+    def _add_ancestors(self, label_anns: list[Label]):
+        def _label_idx_to_name(idx: int) -> str:
             return self.label_info.label_names[idx]
         
+        def _label_name_to_idx(name: str) -> int:
+            return [idx for idx, val in enumerate(self.label_info.label_names) if val == name]
+        
+        def _get_label_group_idx(label_name: str) -> str:
+            return self.label_info.hlabel_data.class_to_group_idx[label_name][0]
+        
+        def _find_ancestor_recursively(label_name: str, ancestors: list) -> None:
+            _, dm_label_category = self.dm_categories.find(label_name)
+            parent_name = dm_label_category.parent
+            
+            if parent_name != '':
+                ancestors.append(parent_name)
+                _find_ancestor_recursively(parent_name, ancestors)
+            return ancestors
+
+        def _get_all_label_names_in_anns(anns: list[Label]):
+            return [_label_idx_to_name(ann.label) for ann in anns]
+        
+        all_label_names = _get_all_label_names_in_anns(label_anns)
+        ancestor_dm_labels = []
+        print()
+        print("label info: ", self.label_info)
         for ann in label_anns:
             label_idx = ann.label
             label_name = _label_idx_to_name(label_idx)
+            ancestors = _find_ancestor_recursively(label_name, [])
+            
+            for i, ancestor in enumerate(ancestors):
+                if ancestor not in all_label_names:
+                    ancestor_dm_labels.extend(
+                        Label(
+                            label=_label_name_to_idx(ancestor),
+                            id=len(label_anns)+i,
+                            group=_get_label_group_idx(ancestor)
+                        )
+                    )
+        print()
+        print("label_anns: ", label_anns)
+        print("ancestors: ", ancestor_dm_labels)
+        breakpoint()
+        label_anns.extend(ancestor_dm_labels) 
 
     def _get_item_impl(self, index: int) -> HlabelClsDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -143,7 +181,7 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         img_data, img_shape = self._get_img_data_and_shape(img)
 
         label_anns = [ann for ann in item.annotations if isinstance(ann, Label)]
-        breakpoint()
+        self._add_ancestors(label_anns)
         hlabel_labels = self._convert_label_to_hlabel_format(label_anns, ignored_labels)
 
         entity = HlabelClsDataEntity(
