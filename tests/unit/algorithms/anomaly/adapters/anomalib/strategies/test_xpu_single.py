@@ -9,7 +9,7 @@ from otx.algorithms.common.utils.utils import is_xpu_available
 class TestSingleXPUStrategy:
     def test_init(self):
         strategy = SingleXPUStrategy(device="xpu:0")
-        assert strategy.device == "xpu:0"
+        assert strategy._root_device == "xpu:0"
         assert strategy.accelerator is None
 
     def test_is_distributed(self):
@@ -20,8 +20,9 @@ class TestSingleXPUStrategy:
         strategy = SingleXPUStrategy(device="xpu:0")
         trainer = pl.Trainer()
         # Create mock optimizers and models for testing
-        optimizer = torch.optim.Adam(strategy.model.parameters(), lr=0.001)
         model = torch.nn.Linear(10, 2)
+        strategy._optimizers = [torch.optim.Adam(model.parameters(), lr=0.001)]
+        strategy._model = model
         trainer.model = model
         strategy.setup_optimizers(trainer)
         assert len(strategy.optimizers) == 1
