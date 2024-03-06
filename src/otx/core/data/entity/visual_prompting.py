@@ -38,7 +38,7 @@ class VisualPromptingDataEntity(OTXDataEntity):
         return OTXTaskType.VISUAL_PROMPTING
 
     masks: tv_tensors.Mask
-    labels: list[LongTensor]
+    labels: dict[str, LongTensor]
     polygons: list[Polygon]
     bboxes: tv_tensors.BoundingBoxes
     points: Points
@@ -62,7 +62,7 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
     """
 
     masks: list[tv_tensors.Mask]
-    labels: list[LongTensor]
+    labels: list[dict[str, LongTensor]]
     polygons: list[list[Polygon]]
     bboxes: list[tv_tensors.BoundingBoxes]
     points: list[Points]
@@ -108,7 +108,9 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
             tv_tensors.wrap(bbox.pin_memory(), like=bbox) if bbox is not None else bbox for bbox in self.bboxes
         ]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
-        self.labels = [label.pin_memory() for label in self.labels]
+        self.labels = [
+            {prompt_type: values.pin_memory() for prompt_type, values in labels.items()} for labels in self.labels
+        ]
         return self
 
 
