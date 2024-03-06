@@ -32,6 +32,8 @@ class AdaptiveTrainScheduling(Callback):
     def __init__(self, max_interval: int = 5, decay: float = -0.025):
         self.max_interval = max_interval
         self.decay = decay
+        self.min_earlystop_interval = 3
+        self.min_lrschedule_patience = 2
         self._saved_check_val_every_n_epoch: int | None = None
         self._saved_log_every_n_steps: int | None = None
         self._revert_lr_frequency: list = []
@@ -114,22 +116,24 @@ class AdaptiveTrainScheduling(Callback):
                 config.frequency = adaptive_interval
                 msg = (
                     "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
-                    f"Frequency: {saved_frequency} --> {adaptive_interval}, "
+                    f"{saved_frequency} --> {adaptive_interval}."
                 )
                 log.warning(msg)
                 self._revert_lr_frequency += [partial(_revert_frequency, config, saved_frequency)]
 
-            if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
-                saved_patience = config.scheduler.patience
-                adjusted_patience = int(config.scheduler.patience / adaptive_interval)
-                config.scheduler.patience = adjusted_patience
+                if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
+                    saved_patience = config.scheduler.patience
+                    adjusted_patience = (
+                        max(int(config.scheduler.patience / adaptive_interval), self.min_lrschedule_patience) - 1
+                    )
+                    config.scheduler.patience = adjusted_patience
 
-                msg = (
-                    "The frequency of LRscheduler will be changed due to the effect of adaptive interval: "
-                    f"Patience: {saved_patience} --> {adjusted_patience}."
-                )
-                log.warning(msg)
-                self._revert_lr_patience += [partial(_revert_patience, config, saved_patience)]
+                    msg = (
+                        "The patience of LRscheduler will be changed due to the effect of adaptive interval: "
+                        f"{saved_patience} --> {adjusted_patience}."
+                    )
+                    log.warning(msg)
+                    self._revert_lr_patience += [partial(_revert_patience, config, saved_patience)]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
@@ -145,7 +149,7 @@ class AdaptiveTrainScheduling(Callback):
 
         for callback in callbacks:
             if isinstance(callback, EarlyStopping):
-                adjusted_patience = int(callback.patience / adaptive_interval)
+                adjusted_patience = max(int(callback.patience / adaptive_interval), self.min_earlystop_interval)
                 msg = (
                     "The patience of early stopping will be changed due to the effect of adaptive interval: "
                     f"{callback.patience} --> {adjusted_patience}."
