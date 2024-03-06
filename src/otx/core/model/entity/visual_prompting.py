@@ -10,14 +10,14 @@ import os
 import pickle
 from collections import defaultdict
 from copy import deepcopy
+from functools import partial
 from itertools import product
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import cv2
 import numpy as np
 import torch
-from openvino.model_api.models import Model
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity, Points, T_OTXBatchPredEntityWithXAI
@@ -75,7 +75,23 @@ class OTXVisualPromptingModel(
     @property
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for visual prompting models."""
-        return {"model_type": "transformer"}
+        return {
+            "model_type": "transformer",
+            "advanced_parameters": {
+                "activations_range_estimator_params": {
+                    "min": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MIN",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                    "max": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MAX",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                },
+            },
+        }
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
@@ -111,8 +127,9 @@ class OVVisualPromptingModel(
             async_inference = False
 
         basename: str = Path(model_name).name
+        model_type_name: str = "_".join(basename.split("_")[:2])
         self.model_names: dict[str, str] = {
-            module: model_name.replace(basename, f"exported_model_{module}.xml")
+            module: model_name.replace(basename, f"{model_type_name}_{module}.xml")
             for module in ["image_encoder", "decoder"]
         }
         super().__init__(
@@ -128,6 +145,7 @@ class OVVisualPromptingModel(
     def _create_model(self) -> dict[str, Model]:
         """Create a OV model with help of Model API."""
         from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from openvino.model_api.models import Model
 
         ov_models: dict[str, Model] = {}
 
@@ -237,6 +255,90 @@ class OVVisualPromptingModel(
             bboxes=[],
             labels=[torch.cat(list(labels.values())) for labels in inputs.labels],
         )
+
+    def optimize(  # type: ignore[override]
+        self,
+        output_dir: Path,
+        data_module: OTXDataModule,
+        ptq_config: dict[str, Any] | None = None,
+    ) -> dict[str, Path]:
+        """Runs NNCF quantization."""
+        import nncf
+        import openvino
+
+        def check_if_quantized(model: openvino.Model) -> bool:
+            """Checks if OpenVINO model is already quantized."""
+            nodes = model.get_ops()
+            return any(op.get_type_name() == "FakeQuantize" for op in nodes)
+
+        def transform_fn(
+            data_batch: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+            module: Literal["image_encoder", "decoder"],
+        ) -> np.ndarray | dict[str, Any]:
+            images, _, prompts = self._customize_inputs(data_batch)  # type: ignore[arg-type]
+
+            image = images[0]["images"]  # use only the first image
+            if module == "image_encoder":
+                # resize
+                resized_image = self.model["image_encoder"].resize(
+                    image[0],
+                    (self.model["image_encoder"].w, self.model["image_encoder"].h),
+                )
+
+                # pad image if necessary because `fit_to_window` resize for python in modelapi doesn't support pad
+                pad_w = max(0, self.model["image_encoder"].w - resized_image.shape[1])
+                pad_h = max(0, self.model["image_encoder"].h - resized_image.shape[0])
+                resized_image = np.pad(
+                    resized_image,
+                    ((0, pad_h), (0, pad_w), (0, 0)),
+                    mode="constant",
+                    constant_values=0,
+                )
+
+                # normalization
+                resized_image = self.model["image_encoder"].input_transform(resized_image)
+
+                # change layout from HWC to NCHW
+                return self.model["image_encoder"]._change_layout(resized_image)  # noqa: SLF001
+
+            # obtain image embeddings from image encoder
+            image_embeddings = self.model["image_encoder"].infer_sync(image)
+            # use only the first prompt
+            prompt_for_optim = next(iter(prompts[0].values()))[0] if isinstance(prompts[0], dict) else prompts[0][0]  # type: ignore[attr-defined]
+            prompt_for_optim.pop("label")
+            prompt_for_optim.update(**image_embeddings)
+            return prompt_for_optim
+
+        output_model_paths: dict[str, Path] = {}
+        for module in ["image_encoder", "decoder"]:
+            output_model_path = output_dir / (self._OPTIMIZED_MODEL_BASE_NAME + f"_{module}.xml")
+
+            ov_model = openvino.Core().read_model(self.model_names[module])
+            if check_if_quantized(ov_model):
+                msg = "Model is already optimized by PTQ"
+                raise RuntimeError(msg)
+
+            train_dataset = data_module.train_dataloader()
+
+            ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
+            if ptq_config is not None:
+                ptq_config_from_ir.update(ptq_config)
+                ptq_config = ptq_config_from_ir
+            else:
+                ptq_config = ptq_config_from_ir
+
+            quantization_dataset = nncf.Dataset(train_dataset, partial(transform_fn, module=module))  # type: ignore[attr-defined]
+
+            compressed_model = nncf.quantize(  # type: ignore[attr-defined]
+                ov_model,
+                quantization_dataset,
+                **ptq_config,
+            )
+
+            openvino.save_model(compressed_model, output_model_path)
+            output_model_paths[module] = output_model_path
+
+        return output_model_paths
 
 
 class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):

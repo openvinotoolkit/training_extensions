@@ -209,10 +209,6 @@ def test_otx_export_infer(
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
-    if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        log.info(f"{task} will support optimize in the future. Skip the test.")
-        return
-
     command_cfg = [
         "otx",
         "optimize",

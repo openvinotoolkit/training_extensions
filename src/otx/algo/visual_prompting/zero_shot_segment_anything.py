@@ -426,9 +426,9 @@ class ZeroShotSegmentAnything(SegmentAnything):
                     # refine the slightly overlapping region
                     overlapped_coords = torch.where(torch.logical_and(mask, other_mask))
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
-                        other_mask[overlapped_coords] = 0.
+                        other_mask[overlapped_coords] = 0.0
                     else:
-                        mask[overlapped_coords] = 0. 
+                        mask[overlapped_coords] = 0.0
 
             for im in sorted(list(set(overlapped_label)), reverse=True):  # noqa: C414
                 masks.pop(im)
