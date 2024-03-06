@@ -301,6 +301,8 @@ def test_otx_explain_e2e(
         "0",
         "--deterministic",
         "True",
+        "--dump",
+        "True",
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -311,21 +313,28 @@ def test_otx_explain_e2e(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert latest_dir.exists()
-    assert (latest_dir / "saliency_map.tiff").exists()
-    sal_map = cv2.imread(str(latest_dir / "saliency_map.tiff"))
+    assert (latest_dir / "saliency_maps").exists()
+    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
+    sal_map = cv2.imread(str(saliency_maps[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
+    sal_diff_thresh = 3
     reference_sal_vals = {
-        "multi_label_cls_efficientnet_v2_light": np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
-        "h_label_cls_efficientnet_v2_light": np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+        "multi_label_cls_efficientnet_v2_light": (
+            np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
+            "Slide6_class_0_saliency_map.png",
+        ),
+        "h_label_cls_efficientnet_v2_light": (
+            np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
+            "5_class_0_saliency_map.png",
+        ),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = sal_map[:, 0, 0]
-        ref_sal_vals = reference_sal_vals[test_case_name]
-        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= 3)
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))[:, 0, 0]
+        ref_sal_vals = reference_sal_vals[test_case_name][0]
+        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
 
 # @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
