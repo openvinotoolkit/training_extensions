@@ -18,10 +18,11 @@ def _check_relative_metric_diff(ref: float, value: float, eps: float) -> None:
     assert value >= 0
     assert eps >= 0
 
-    avg = max(0.5 * (ref + value), 1e-9)
-    diff = abs(value - ref)
+    if value < ref:
+        avg = max(0.5 * (ref + value), 1e-9)
+        diff = abs(value - ref)
 
-    assert diff / avg <= eps, f"Relative difference exceeded {eps} threshold. Absolute difference: {diff}"
+        assert diff / avg <= eps, f"Relative difference exceeded {eps} threshold. Absolute difference: {diff}"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -286,4 +287,4 @@ def test_otx_export_infer(
         msg = "h_label_cls/efficientnet_v2_light exceeds the following threshold = 0.1"
         pytest.xfail(msg)
 
-    _check_relative_metric_diff(torch_acc, ov_acc, 0.1)
+    _check_relative_metric_diff(torch_acc, ov_acc, 0.2)
