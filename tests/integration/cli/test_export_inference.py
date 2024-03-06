@@ -43,6 +43,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "h_label_cls": "test/accuracy",
     "detection": "test/map_50",
     "instance_segmentation": "test/map_50",
+    "visual_prompting": "test/Dice",
+    "zero_shot_visual_prompting": "test/F1",
 }
 
 
@@ -103,7 +105,7 @@ def test_otx_export_infer(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "2",
+        "1" if task in ("zero_shot_visual_prompting") else "2",
         "--seed",
         f"{fxt_local_seed}",
         "--deterministic",
@@ -184,7 +186,11 @@ def test_otx_export_infer(
             key=lambda p: p.stat().st_mtime,
         )
         assert latest_dir.exists()
-        assert (latest_dir / f"exported_model.{format_to_ext[fmt]}").exists()
+        if task in ("visual_prompting", "zero_shot_visual_prompting"):
+            assert (latest_dir / f"exported_model_image_encoder.{format_to_ext[fmt]}").exists()
+            assert (latest_dir / f"exported_model_decoder.{format_to_ext[fmt]}").exists()
+        else:
+            assert (latest_dir / f"exported_model.{format_to_ext[fmt]}").exists()
 
     # 4) infer of the exported models
     task = recipe.split("/")[-2]
@@ -193,12 +199,20 @@ def test_otx_export_infer(
         export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
     else:
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
-    exported_model_path = str(latest_dir / "exported_model.xml")
+
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        exported_model_path = str(latest_dir / "exported_model_decoder.xml")
+    else:
+        exported_model_path = str(latest_dir / "exported_model.xml")
 
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "openvino", "cpu")
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        log.info(f"{task} will support optimize in the future. Skip the test.")
+        return
+
     command_cfg = [
         "otx",
         "optimize",
