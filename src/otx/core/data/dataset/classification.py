@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Callable, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from datumaro import Image, Label
@@ -26,7 +26,8 @@ from otx.core.data.entity.classification import (
 )
 
 if TYPE_CHECKING:
-    from datumaro import Label, LabelCategories
+    from datumaro import LabelCategories
+
 
 @dataclass
 class HLabelInfo(LabelInfo):
@@ -275,57 +276,62 @@ class OTXHlabelClsDataset(OTXDataset[HlabelClsDataEntity]):
         if self.label_info.num_multiclass_heads == 0:
             msg = "The number of multiclass heads should be larger than 0."
             raise ValueError(msg)
-        
+
         for dm_item in self.dm_subset:
             self._add_ancestors(dm_item.annotations)
-    
-    def _add_ancestors(self, label_anns: list[Label]):
+
+    def _add_ancestors(self, label_anns: list[Label]) -> None:
         """Add ancestors recursively if some label miss the ancestor information.
-        
-        If the label tree likes below, 
+
+        If the label tree likes below,
         object - vehicle -- car
                          |- bus
-                         |- truck        
+                         |- truck
         And annotation = ['car'], it should be ['car', 'vehicle', 'object'], to include the ancestor.
-        
+
         This function add the ancestors to the annotation if missing.
         """
+
         def _label_idx_to_name(idx: int) -> str:
             return self.label_info.label_names[idx]
-        
+
         def _label_name_to_idx(name: str) -> int:
-            return [idx for idx, val in enumerate(self.label_info.label_names) if val == name][0]
-        
-        def _get_label_group_idx(label_name: str) -> str:
-            return self.label_info.class_to_group_idx[label_name][0]
-        
-        def _find_ancestor_recursively(label_name: str, ancestors: list) -> None:
+            indices = [idx for idx, val in enumerate(self.label_info.label_names) if val == name]
+            return indices[0]
+
+        def _get_label_group_idx(label_name: str) -> int:
+            if isinstance(self.label_info, HLabelInfo):
+                return self.label_info.class_to_group_idx[label_name][0]
+            msg = f"self.label_info should have HLabelInfo type, got {type(self.label_info)}"
+            raise ValueError(msg)
+
+        def _find_ancestor_recursively(label_name: str, ancestors: list) -> list[str]:
             _, dm_label_category = self.dm_categories.find(label_name)
             parent_name = dm_label_category.parent
-            
-            if parent_name != '':
+
+            if parent_name != "":
                 ancestors.append(parent_name)
                 _find_ancestor_recursively(parent_name, ancestors)
             return ancestors
 
-        def _get_all_label_names_in_anns(anns: list[Label]):
+        def _get_all_label_names_in_anns(anns: list[Label]) -> list[str]:
             return [_label_idx_to_name(ann.label) for ann in anns]
-        
+
         all_label_names = _get_all_label_names_in_anns(label_anns)
         ancestor_dm_labels = []
         for ann in label_anns:
             label_idx = ann.label
             label_name = _label_idx_to_name(label_idx)
             ancestors = _find_ancestor_recursively(label_name, [])
-            
+
             for i, ancestor in enumerate(ancestors):
                 if ancestor not in all_label_names:
                     ancestor_dm_labels.append(
                         Label(
                             label=_label_name_to_idx(ancestor),
-                            id=len(label_anns)+i,
-                            group=_get_label_group_idx(ancestor)
-                        )
+                            id=len(label_anns) + i,
+                            group=_get_label_group_idx(ancestor),
+                        ),
                     )
         label_anns.extend(ancestor_dm_labels)
 

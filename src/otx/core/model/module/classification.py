@@ -18,7 +18,6 @@ from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
     HlabelClsBatchPredEntityWithXAI,
-    HLabelData,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MulticlassClsBatchPredEntityWithXAI,
@@ -238,6 +237,11 @@ class OTXHlabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
+
+        self.num_labels: int
+        self.num_multiclass_heads: int
+        self.num_multilabel_classes: int
+        self.num_singlelabel_classes: int
 
     def configure_metric(self) -> None:
         """Configure the metric."""

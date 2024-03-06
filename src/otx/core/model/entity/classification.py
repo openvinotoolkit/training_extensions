@@ -45,8 +45,6 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
 
-    from otx.core.data.entity.classification import HLabelData
-
 
 class ExplainableOTXClsModel(
     OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
@@ -521,13 +519,13 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.classification_layers = classification_layers
         return model
 
-    def set(self, hierarchical_info: HLabelData) -> None:
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
 
         Args:
             hierarchical_info: the label information represents the hierarchy.
         """
-        self.model.head.set(hierarchical_info)
+        self.model.head.set_hlabel_info(hierarchical_info)
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -728,7 +726,7 @@ class OVHlabelClassificationModel(
             model_api_configuration,
         )
 
-    def set(self, hierarchical_info: HLabelData) -> None:
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
 
         Since OV IR model consist of all required hierarchy information,
