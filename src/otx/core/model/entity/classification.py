@@ -59,6 +59,13 @@ class ExplainableOTXClsModel(
         """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
         return True
 
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        export_params = super()._export_parameters
+        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
+        return export_params
+
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward. Can be redefined at the model's level."""
@@ -306,7 +313,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
@@ -470,7 +476,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
@@ -654,7 +659,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         export_params["via_onnx"] = False
         export_params["input_size"] = self.image_size
         export_params["onnx_export_configuration"] = None
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
 
         return export_params
 
