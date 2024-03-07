@@ -24,13 +24,6 @@ from .benchmark import OTXBenchmark
 def pytest_addoption(parser):
     """Add custom options for perf tests."""
     parser.addoption(
-        "--benchmark-type",
-        action="store",
-        default="accuracy",
-        choices=("accuracy", "efficiency", "all"),
-        help="Choose accuracy|efficiency|all. Defaults to accuracy.",
-    )
-    parser.addoption(
         "--model-category",
         action="store",
         default="all",
@@ -135,11 +128,6 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 @pytest.fixture
 def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXBenchmark:
     """Configure benchmark."""
-    # Skip by benchmark type
-    benchmark_type: str = request.config.getoption("--benchmark-type")
-    if benchmark_type != "all" and benchmark_type not in request.node.name:
-        pytest.skip(f"non-{benchmark_type} benchmark")
-
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
     data_size: str = request.param[0]
@@ -158,9 +146,6 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
     if num_epoch_override > 0:  # 0: use default
         cfg["num_epoch"] = num_epoch_override
-    if "test_speed" in request.node.name:
-        if cfg.get("num_epoch", 0) == 0:  # No user options
-            cfg["num_epoch"] = 2
 
     num_repeat_override: int = int(request.config.getoption("--num-repeat"))
     if num_repeat_override > 0:  # 0: use default
@@ -212,17 +197,15 @@ def logging_perf_results_to_mlflow(
         data = row.pop("data")
         data = os.path.dirname(data)
         data_sz = row.pop("data_size")
-        benchmark = row.pop("benchmark")
         runs = client.search_runs(
             exp_id,
             filter_string=f"tags.task LIKE '%{task}%' AND "
             f"tags.model LIKE '%{model}%' AND "
-            f"tags.data LIKE '%{data}%' AND "
-            f"tags.benchmark LIKE '%{benchmark}%'",
+            f"tags.data LIKE '%{data}%'"
         )
         run = None
         is_new_run = True
-        run_name = f"[{benchmark}] {task} | {model}"
+        run_name = f"{task} | {model}"
         if len(runs) == 0:
             run = client.create_run(exp_id, run_name=run_name)
         else:
@@ -234,7 +217,6 @@ def logging_perf_results_to_mlflow(
                 mlflow.set_tag("task", task)
                 mlflow.set_tag("model", model)
                 mlflow.set_tag("data", data)
-                mlflow.set_tag("benchmark", benchmark)
                 dat_src = DummyDatasetSource()
                 dataset = DummyDataset(dat_src, data, data_sz)
                 mlflow.log_input(dataset)
@@ -289,7 +271,7 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref.set_index(["benchmark", "task", "data_size", "model"], inplace=True)
+        ref.set_index(["task", "data_size", "model"], inplace=True)
     return ref
 
 

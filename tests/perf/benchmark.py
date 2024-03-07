@@ -140,7 +140,7 @@ class OTXBenchmark:
             data = pd.concat(results, ignore_index=True)
             data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
             # Average by unique group
-            grouped = data.groupby(["benchmark", "task", "data_size", "model"])
+            grouped = data.groupby(["task", "data_size", "model"])
             aggregated = grouped.mean(numeric_only=True)
             # ["data/1", "data/2", "data/3"] -> "data/"
             aggregated["data"] = grouped["data"].agg(lambda x: os.path.commonprefix(x.tolist()))
