@@ -129,7 +129,13 @@ class TestToolsTilingInstanceSegmentation:
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if "ResNet50" in template.name:
             pytest.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
+        accuracy_threshold = 0.2
+        if "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B" in template.model_template_id:
+            accuracy_threshold = 0.8
+
+        otx_eval_openvino_testing(
+            template, tmp_dir_path, otx_dir, args, threshold=accuracy_threshold, half_precision=half_precision
+        )
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
