@@ -656,3 +656,191 @@ class TestZeroShotVisualPrompting(BaseTest):
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
+
+
+class TestTileObjectDetection(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="detection", name="atss_mobilenetv2_tile"),
+        ModelTestCase(task="detection", name="ssd_mobilenetv2_tile"),
+        ModelTestCase(task="detection", name="yolox_tiny_tile"),
+        ModelTestCase(task="detection", name="yolox_s_tile"),
+        ModelTestCase(task="detection", name="yolox_l_tile"),
+        ModelTestCase(task="detection", name="yolox_x_tile"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [
+        DatasetTestCase(
+            name="vitens_coliform",
+            data_root=Path("instance_seg/Vitens-Coliform-coco"),
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        ),
+        DatasetTestCase(
+            name="vitens_aeromonas",
+            data_root=Path("instance_seg/Vitens-Aeromonas-coco"),
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
+
+
+class TestTileInstanceSegmentation(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile"),
+        ModelTestCase(task="instance_segmentation", name="maskrcnn_r50_tile"),
+        ModelTestCase(task="instance_segmentation", name="maskrcnn_swint_tile"),
+    ]
+    # Test case parametrization for dataset
+    DATASET_TEST_CASES = [
+        DatasetTestCase(
+            name="vitens_coliform",
+            data_root=Path("instance_seg/Vitens-Coliform-coco"),
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        ),
+        DatasetTestCase(
+            name="vitens_aeromonas",
+            data_root=Path("instance_seg/Vitens-Aeromonas-coco"),
+            data_format="coco",
+            num_classes=1,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        )
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )
+
+
+class TestActionClassification(BaseTest):
+    # Test case parametrization for model
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        ModelTestCase(task="action/action_classification", name="x3d"),
+    ]
+    DATASET_TEST_CASES = [
+        DatasetTestCase(
+            name="ucf-5percent",
+            data_root=Path("action_classification/ucf-kinetics-5percent"),
+            data_format="kinetics",
+            num_classes=101,
+            extra_overrides={"max_epochs": "10", "deterministic": "True"}
+        ),
+        DatasetTestCase(
+            name="ucf-30percent",
+            data_root=Path("action_classification/ucf-kinetics-30percent"),
+            data_format="kinetics",
+            num_classes=101,
+            extra_overrides={"max_epochs": "10", "deterministic": "True"}
+        ),
+    ]
+
+    @pytest.mark.parametrize(
+        "model_test_case",
+        MODEL_TEST_CASES,
+        ids=[tc.name for tc in MODEL_TEST_CASES],
+    )
+    @pytest.mark.parametrize(
+        "dataset_test_case",
+        DATASET_TEST_CASES,
+        ids=[tc.name for tc in DATASET_TEST_CASES],
+    )
+    def test_regression(
+        self,
+        model_test_case: ModelTestCase,
+        dataset_test_case: DatasetTestCase,
+        fxt_dataset_root_dir: Path,
+        fxt_tags: dict,
+        fxt_num_repeat: int,
+        fxt_accelerator: str,
+        tmpdir: pytest.TempdirFactory,
+    ) -> None:
+        self._test_regression(
+            model_test_case=model_test_case,
+            dataset_test_case=dataset_test_case,
+            fxt_dataset_root_dir=fxt_dataset_root_dir,
+            fxt_tags=fxt_tags,
+            fxt_num_repeat=fxt_num_repeat,
+            fxt_accelerator=fxt_accelerator,
+            tmpdir=tmpdir,
+        )

@@ -133,7 +133,7 @@ def fxt_target_dataset_per_task() -> dict:
         "action_classification": "tests/assets/action_classification_dataset/",
         "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
-        "zero_shot_visual_prompting": "tests/assets/car_tree_bug",
+        "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
     }
 
 
@@ -158,9 +158,5 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [
-            "--max_epochs",
-            "1",
-            "--disable-infer-num-classes",
-        ],
+        "zero_shot_visual_prompting": [],
     }

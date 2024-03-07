@@ -1,6 +1,8 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -35,6 +37,8 @@ def test_engine_from_config(
         pytest.skip(
             reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
         )
+    if "anomaly" in task.lower():
+        pytest.skip(reason="There's no dataset for anomaly tasks.")
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
@@ -63,19 +67,57 @@ def test_engine_from_config(
         OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
-        OTXTaskType.VISUAL_PROMPTING,
-        OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING,
     ]:
         return
 
     # Export IR Model
-    exported_model_path = engine.export()
-    assert exported_model_path.exists()
+    exported_model_path: Path | dict[str, Path] = engine.export()
+    if isinstance(exported_model_path, Path):
+        assert exported_model_path.exists()
+    elif isinstance(exported_model_path, dict):
+        for key, value in exported_model_path.items():
+            assert value.exists(), f"{value} for {key} doesn't exist."
+    else:
+        AssertionError(f"Exported model path is not a Path or a dictionary of Paths: {exported_model_path}")
 
     # Test with IR Model
     if task in OVMODEL_PER_TASK:
-        test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
+        if task.lower() in ["visual_prompting", "zero_shot_visual_prompting"]:
+            test_metric_from_ov_model = engine.test(checkpoint=exported_model_path["decoder"], accelerator="cpu")
+        else:
+            test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
         assert len(test_metric_from_ov_model) > 0
+
+    # List of models with explain supported.
+    if task not in [
+        OTXTaskType.MULTI_CLASS_CLS,
+        OTXTaskType.MULTI_LABEL_CLS,
+        # Will be supported after merging PR#2997
+        # OTXTaskType.DETECTION,
+        # OTXTaskType.ROTATED_DETECTION,
+        # OTXTaskType.INSTANCE_SEGMENTATION,
+    ]:
+        return
+
+    # Predict Torch model with explain
+    predictions = engine.predict(explain=True)
+    assert len(predictions[0].saliency_maps) > 0
+
+    # Export IR model with explain
+    exported_model_with_explain = engine.export(explain=True)
+    assert exported_model_with_explain.exists()
+
+    # Infer IR Model with explain: predict
+    predictions = engine.predict(explain=True, checkpoint=exported_model_with_explain, accelerator="cpu")
+    assert len(predictions) > 0
+    sal_maps_from_prediction = predictions[0].saliency_maps
+    assert len(sal_maps_from_prediction) > 0
+
+    # Infer IR Model with explain: explain
+    explain_results = engine.explain(checkpoint=exported_model_with_explain, accelerator="cpu")
+    assert len(explain_results[0].saliency_maps) > 0
+    sal_maps_from_explain = explain_results[0].saliency_maps
+    assert (sal_maps_from_prediction[0][0] == sal_maps_from_explain[0][0]).all()
 
 
 @pytest.mark.parametrize("recipe", pytest.TILE_RECIPE_LIST)

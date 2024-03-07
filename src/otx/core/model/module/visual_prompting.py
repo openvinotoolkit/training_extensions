@@ -5,6 +5,9 @@
 from __future__ import annotations
 
 import logging as log
+import pickle
+import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
@@ -58,7 +61,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             },
         )
 
-    def configure_metric(self, cond: str = "") -> None:
+    def configure_metric(self) -> None:
         """Configure metrics."""
         self.val_metric = MetricCollection(
             {
@@ -206,7 +209,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             target_info.append(
                 {
                     "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
-                    "labels": labels,
+                    "labels": torch.cat(list(labels.values())) if isinstance(labels, dict) else labels,
                 },
             )
 
@@ -243,22 +246,77 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     """Base class for the lightning module used in OTX zero-shot visual prompting task."""
 
-    def set_metrics(self) -> None:
-        """Set metrics."""
+    def configure_metric(self) -> None:
+        """Configure metrics."""
         self.test_metric = MetricCollection(
             {
-                "IoU": BinaryJaccardIndex(),
-                "F1": BinaryF1Score(),
-                "Dice": Dice(),
-                "mAP": MeanAveragePrecision(iou_type="segm"),
+                "IoU": BinaryJaccardIndex().to(self.device),
+                "F1": BinaryF1Score().to(self.device),
+                "Dice": Dice().to(self.device),
+                "mAP": MeanAveragePrecision(iou_type="segm").to(self.device),
             },
         )
+
+    def on_train_start(self) -> None:
+        """Initialize reference infos before learn."""
+        self.model.initialize_reference_info()
+
+    def on_test_start(self) -> None:
+        """Load previously saved reference info."""
+        super().on_test_start()
+        if not self.model.load_latest_reference_info(self.device):
+            # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
+            self.trainer.fit_loop.run()
+            # to use infer logic
+            self.training = False
+            self.model.training = False
+            # to set _combined_loader
+            self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
+            self.trainer._evaluation_loop.reset()  # noqa: SLF001
+            self.model.load_latest_reference_info(self.device)
+
+    def on_predict_start(self) -> None:
+        """Load previously saved reference info."""
+        if not self.model.load_latest_reference_info(self.device):
+            # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
+            self.trainer.fit_loop.run()
+            # to use infer logic
+            self.training = False
+            self.model.training = False
+            # to set _combined_loader
+            self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
+            self.trainer._evaluation_loop.reset()  # noqa: SLF001
+            self.model.load_latest_reference_info(self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
 
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
+        if self.model.save_outputs:
+            reference_info = {
+                "reference_feats": self.model.reference_feats,
+                "used_indices": self.model.used_indices,
+            }
+            # save reference info
+            path_reference_info: Path = (
+                self.model.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
+            )
+            Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
+            if isinstance(self.model, OTXVisualPromptingModel):
+                torch.save(reference_info, path_reference_info)
+                pickle.dump(
+                    {k: v.numpy() for k, v in reference_info.items()},
+                    Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
+                )
+            else:
+                torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
+                pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
+            log.info(f"Saved reference info at {path_reference_info}.")
 
     def on_validation_epoch_start(self) -> None:
         """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
