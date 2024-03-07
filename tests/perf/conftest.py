@@ -201,7 +201,7 @@ def logging_perf_results_to_mlflow(
             exp_id,
             filter_string=f"tags.task LIKE '%{task}%' AND "
             f"tags.model LIKE '%{model}%' AND "
-            f"tags.data LIKE '%{data}%'"
+            f"tags.data LIKE '%{data}%'",
         )
         run = None
         is_new_run = True
