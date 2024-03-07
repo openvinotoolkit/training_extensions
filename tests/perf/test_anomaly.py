@@ -11,5 +11,5 @@ from .conftest import PerfTestBase
 class TestPerfAnomalyClassification(PerfTestBase):
     """Benchmark anomaly classification."""
 
-    def test_dummay():
+    def test_dummay(self):
         pass

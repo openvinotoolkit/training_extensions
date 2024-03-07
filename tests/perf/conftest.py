@@ -27,13 +27,6 @@ log = logging.getLogger(__name__)
 def pytest_addoption(parser):
     """Add custom options for perf tests."""
     parser.addoption(
-        "--benchmark-type",
-        action="store",
-        default="accuracy",
-        choices=("accuracy", "efficiency", "all"),
-        help="Choose accuracy|efficiency|all. Defaults to accuracy.",
-    )
-    parser.addoption(
         "--model-category",
         action="store",
         default="all",
@@ -108,15 +101,6 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
-
-
-@pytest.fixture(scope="session")
-def fxt_benchmark_type(request: pytest.FixtureRequest) -> str:
-    """Select benchmark type."""
-    benchmark_type: str = request.config.getoption("--benchmark-type")
-    msg = f"{benchmark_type = }"
-    log.info(msg)
-    return benchmark_type
 
 
 @pytest.fixture(scope="session")
@@ -311,7 +295,6 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, 
 @pytest.fixture()
 def fxt_benchmark(
     request: pytest.FixtureRequest,
-    fxt_benchmark_type: str,
     fxt_data_root: Path,
     fxt_output_root: Path,
     fxt_num_epoch: int,
@@ -323,15 +306,9 @@ def fxt_benchmark(
     fxt_accelerator: str,
 ) -> Benchmark:
     """Configure benchmark."""
-    benchmark_type: str = request.param["type"]
-    if fxt_benchmark_type not in {"all", benchmark_type}:
-        pytest.skip(f"{benchmark_type} benchmark")
-
     return Benchmark(
-        benchmark_type=benchmark_type,
         data_root=fxt_data_root,
         output_root=fxt_output_root,
-        criteria=request.param["criteria"],
         num_epoch=fxt_num_epoch,
         num_repeat=fxt_num_repeat,
         eval_upto=fxt_eval_upto,
@@ -365,7 +342,7 @@ def fxt_benchmark_summary(
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
     for index, data in results.iterrows():
-        benchmark_type, task, data_size, model = index
+        task, data_size, model = index
         exp_name = f"[Benchmark] {task} | {model} | {data_size}"
         exp_tags = {
             "task": task,
@@ -376,7 +353,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
         exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
         if exp.lifecycle_stage != "active":
             client.restore_experiment(exp_id)
-        run_name = f"[{benchmark_type}] {tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
         run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
@@ -393,9 +370,12 @@ class PerfTestBase:
         model: Benchmark.Model,
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
+        criteria: list[Benchmark.Criterion],
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
+            criteria=criteria,
         )
         print(result)
+        # Check results

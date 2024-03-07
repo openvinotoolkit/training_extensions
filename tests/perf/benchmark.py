@@ -21,10 +21,8 @@ class Benchmark:
     """Benchmark runner for OTX2.x.
 
     Args:
-        benchmark_type (str): 'accuracy' or 'efficiency'
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
         output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
-        criteria (list[Criterion]): Benchmark criteria settings
         num_epoch (int): Overrides the per-model default number of epoch settings.
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
@@ -70,10 +68,8 @@ class Benchmark:
 
     def __init__(
         self,
-        benchmark_type: str = "accuracy",
         data_root: Path = Path("data"),
         output_root: Path = Path("otx-benchmark"),
-        criteria: list[Criterion] | None = None,
         num_epoch: int = 0,
         num_repeat: int = 1,
         eval_upto: str = "train",
@@ -82,10 +78,8 @@ class Benchmark:
         deterministic: bool = False,
         accelerator: str = "gpu",
     ):
-        self.benchmark_type = benchmark_type
         self.data_root = data_root
         self.output_root = output_root
-        self.criteria = criteria
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
         self.eval_upto = eval_upto
@@ -94,31 +88,29 @@ class Benchmark:
         self.deterministic = deterministic
         self.accelerator = accelerator
 
-        if num_epoch == 0 and benchmark_type == "efficiency":
-            self.num_epoch = 2
-
     def run(
         self,
         model: Model,
         dataset: Dataset,
+        criteria: list[Criterion],
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
         Args:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
+            criteria (list[Criterion]): Target criteria settings
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
         """
 
-        run_name = f"{self.benchmark_type}/{model.task}/{model.name}/{dataset.name}"
+        run_name = f"{model.task}/{model.name}/{dataset.name}"
         log.info(f"{run_name = }")
         work_dir = self.output_root / run_name
         data_root = self.data_root / dataset.path
 
         tags = {
-            "benchmark": self.benchmark_type,
             "task": model.task,
             "data_size": dataset.size,
             "model": model.name,
@@ -223,7 +215,7 @@ class Benchmark:
                 self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
 
             # Parse raw data into raw metrics
-            self._log_metrics(work_dir=sub_work_dir, tags=tags)
+            self._log_metrics(work_dir=sub_work_dir, tags=tags, criteria=criteria)
 
             # Force memory clean up
             gc.collect()
@@ -236,7 +228,7 @@ class Benchmark:
         else:
             subprocess.run(command, check=True)  # noqa: S603
 
-    def _log_metrics(self, work_dir: Path, tags: dict[str, str]) -> None:
+    def _log_metrics(self, work_dir: Path, tags: dict[str, str], criteria: list[Benchmark.Criterion]) -> None:
         if not work_dir.exists():
             return
 
@@ -247,7 +239,7 @@ class Benchmark:
 
         # Summarize
         metrics = []
-        for criterion in self.criteria:
+        for criterion in criteria:
             if criterion.name not in raw_data:
                 continue
             column = raw_data[criterion.name].dropna()
@@ -299,7 +291,7 @@ class Benchmark:
         # Merge data
         data = pd.concat(results, ignore_index=True)
         # Average by unique group
-        grouped = data.groupby(["benchmark", "task", "data_size", "model"])
+        grouped = data.groupby(["task", "data_size", "model"])
         aggregated = grouped.mean(numeric_only=True)
         # Merge tag columns (non-numeric & non-index)
         tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
