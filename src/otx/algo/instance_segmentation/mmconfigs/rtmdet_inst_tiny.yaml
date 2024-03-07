@@ -10,6 +10,7 @@ data_preprocessor:
     - 58.395
     - 57.12
     - 57.375
+  pad_value: 114
   bgr_to_rgb: false
   pad_mask: true
   pad_size_divisor: 32
