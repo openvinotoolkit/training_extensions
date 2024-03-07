@@ -470,6 +470,50 @@ class TestOTXZeroShotSegmentAnything:
         assert isinstance(zero_shot_segment_anything, torch.nn.Module)
         assert zero_shot_segment_anything.__class__.__name__ == "ZeroShotSegmentAnything"
 
+    @pytest.mark.parametrize("training", [True, False])
+    def test_forward(self, mocker, model, training: bool) -> None:
+        """Test forward."""
+        mocker_learn = mocker.patch.object(model, "learn")
+        mocker_infer = mocker.patch.object(model, "infer")
+        model.training = training
+
+        model.forward(None)
+
+        if training:
+            mocker_learn.assert_called_once()
+        else:
+            mocker_infer.assert_called_once()
+
+    @pytest.mark.parametrize("reset_feat", [True, False])
+    def test_learn(self, mocker, model, reset_feat: bool) -> None:
+        """Test learn."""
+        mocker_initialize_reference_info = mocker.patch.object(model, "initialize_reference_info")
+        mocker_learn = mocker.patch.object(model.model, "learn")
+        mocker_customize_inputs = mocker.patch.object(model, "_customize_inputs")
+        mocker_customize_outputs = mocker.patch.object(model, "_customize_outputs")
+
+        model.learn(None, reset_feat=reset_feat)
+
+        if reset_feat:
+            mocker_initialize_reference_info.assert_called_once()
+        else:
+            mocker_initialize_reference_info.assert_not_called()
+        mocker_learn.assert_called_once()
+        mocker_customize_inputs.assert_called_once()
+        mocker_customize_outputs.assert_called_once()
+
+    def test_infer(self, mocker, model) -> None:
+        """Test infer."""
+        mocker_infer = mocker.patch.object(model.model, "infer")
+        mocker_customize_inputs = mocker.patch.object(model, "_customize_inputs")
+        mocker_customize_outputs = mocker.patch.object(model, "_customize_outputs")
+
+        model.infer(None)
+
+        mocker_infer.assert_called_once()
+        mocker_customize_inputs.assert_called_once()
+        mocker_customize_outputs.assert_called_once()
+
     @pytest.mark.parametrize("is_training", [True, False])
     def test_customize_inputs_learn(
         self,

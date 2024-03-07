@@ -6,108 +6,303 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
 import torch
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
+from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.model.entity.visual_prompting import (
     OTXVisualPromptingModel,
     OVVisualPromptingModel,
     OVZeroShotVisualPromptingModel,
 )
+from torchvision import tv_tensors
 
 
 class TestOTXVisualPromptingModel:
     @pytest.fixture()
-    def otx_visual_prompting_model(self) -> OTXVisualPromptingModel:
-        return OTXVisualPromptingModel(num_classes=0)
+    def otx_visual_prompting_model(self, mocker) -> OTXVisualPromptingModel:
+        mocker.patch.object(OTXVisualPromptingModel, "_create_model")
+        return OTXVisualPromptingModel(num_classes=1)
+
+    def test_exporter(self, otx_visual_prompting_model) -> None:
+        """Test _exporter."""
+        assert isinstance(otx_visual_prompting_model._exporter, OTXVisualPromptingModelExporter)
+
+    def test_export_parameters(self, otx_visual_prompting_model) -> None:
+        """Test _export_parameters."""
+        otx_visual_prompting_model.model.image_size = 1024
+
+        export_parameters = otx_visual_prompting_model._export_parameters
+
+        assert export_parameters["input_size"] == (1, 3, 1024, 1024)
+        assert export_parameters["resize_mode"] == "fit_to_window"
+        assert export_parameters["mean"] == (123.675, 116.28, 103.53)
+        assert export_parameters["std"] == (58.395, 57.12, 57.375)
 
     def test_optimization_config(self, otx_visual_prompting_model) -> None:
         """Test _optimization_config."""
         optimization_config = otx_visual_prompting_model._optimization_config
 
-        assert "model_type" in optimization_config
-        assert optimization_config["model_type"] == "transformer"
-        assert "advanced_parameters" in optimization_config
-        assert "activations_range_estimator_params" in optimization_config["advanced_parameters"]
-        assert "min" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]
-        assert (
-            "statistics_type" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"]
-        )
-        assert (
-            "aggregator_type" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"]
-        )
-        assert (
-            "quantile_outlier_prob"
-            in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"]
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"]["statistics_type"]
-            == "QUANTILE"
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"]["aggregator_type"]
-            == "MIN"
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["min"][
-                "quantile_outlier_prob"
-            ]
-            == "1e-4"
-        )
-        assert "max" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]
-        assert (
-            "statistics_type" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"]
-        )
-        assert (
-            "aggregator_type" in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"]
-        )
-        assert (
-            "quantile_outlier_prob"
-            in optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"]
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"]["statistics_type"]
-            == "QUANTILE"
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"]["aggregator_type"]
-            == "MAX"
-        )
-        assert (
-            optimization_config["advanced_parameters"]["activations_range_estimator_params"]["max"][
-                "quantile_outlier_prob"
-            ]
-            == "1e-4"
-        )
+        assert optimization_config == {
+            "model_type": "transformer",
+            "advanced_parameters": {
+                "activations_range_estimator_params": {
+                    "min": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MIN",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                    "max": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MAX",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                },
+            },
+        }
 
 
 class TestOVVisualPromptingModel:
     @pytest.fixture()
-    def ov_visual_prompting_model(self, mocker) -> OVVisualPromptingModel:
-        mocker.patch("openvino.model_api.adapters.create_core")
-        mocker.patch("openvino.model_api.adapters.get_user_config")
-        mocker.patch("openvino.model_api.adapters.OpenvinoAdapter")
-        mocker.patch("openvino.model_api.models.Model.create_model")
-        return OVVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
+    def set_ov_visual_prompting_model(self, mocker):
+        def ov_visual_prompting_model(for_create_model: bool = False) -> OVVisualPromptingModel:
+            if for_create_model:
+                mocker.patch("openvino.model_api.adapters.create_core")
+                mocker.patch("openvino.model_api.adapters.get_user_config")
+                mocker.patch("openvino.model_api.adapters.OpenvinoAdapter")
+                mocker.patch("openvino.model_api.models.Model.create_model")
+            else:
+                mocker.patch.object(
+                    OVVisualPromptingModel,
+                    "_create_model",
+                    return_value={"image_encoder": Mock(), "decoder": Mock()},
+                )
+            return OVVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
 
-    def test_create_model(self, ov_visual_prompting_model) -> None:
+        return ov_visual_prompting_model
+
+    def test_create_model(self, set_ov_visual_prompting_model) -> None:
         """Test _create_model."""
+        ov_visual_prompting_model = set_ov_visual_prompting_model(for_create_model=True)
         ov_models = ov_visual_prompting_model._create_model()
 
         assert isinstance(ov_models, dict)
         assert "image_encoder" in ov_models
         assert "decoder" in ov_models
 
+    def test_forward(self, mocker, set_ov_visual_prompting_model, fxt_vpm_data_entity) -> None:
+        """Test forward."""
+        ov_visual_prompting_model = set_ov_visual_prompting_model()
+        mocker.patch.object(
+            ov_visual_prompting_model.model["image_encoder"],
+            "preprocess",
+            return_value=(np.zeros((1, 3, 1024, 1024)), {}),
+        )
+        mocker.patch.object(
+            ov_visual_prompting_model.model["image_encoder"],
+            "infer_sync",
+            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
+        )
+        mocker.patch.object(
+            ov_visual_prompting_model.model["decoder"],
+            "preprocess",
+            return_value=[
+                {
+                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
+                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
+                    "label": 1,
+                },
+            ],
+        )
+        mocker.patch.object(
+            ov_visual_prompting_model.model["decoder"],
+            "infer_sync",
+            return_value={
+                "iou_predictions": 0.0,
+                "upscaled_masks": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_visual_prompting_model.model["decoder"],
+            "postprocess",
+            return_value={
+                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "scores": np.zeros((1, 1), dtype=np.float32),
+            },
+        )
+
+        results = ov_visual_prompting_model(fxt_vpm_data_entity[1])
+
+        assert isinstance(results, VisualPromptingBatchPredEntity)
+        assert isinstance(results.images, list)
+        assert isinstance(results.images[0], tv_tensors.Image)
+        assert isinstance(results.masks, list)
+        assert isinstance(results.masks[0], tv_tensors.Mask)
+
+    def test_optimize(self, tmpdir, mocker, set_ov_visual_prompting_model) -> None:
+        """Test optimize."""
+        mocker.patch("openvino.Core.read_model")
+        mocker.patch("openvino.save_model")
+        mocker.patch("nncf.quantize")
+
+        ov_visual_prompting_model = set_ov_visual_prompting_model()
+        fake_data_module = Mock()
+
+        results = ov_visual_prompting_model.optimize(tmpdir, fake_data_module)
+
+        assert "image_encoder" in results
+        assert "decoder" in results
+
 
 class TestOVZeroShotVisualPromptingModel:
     @pytest.fixture()
     def ov_zero_shot_visual_prompting_model(self, mocker) -> OVZeroShotVisualPromptingModel:
-        mocker.patch("openvino.model_api.adapters.create_core")
-        mocker.patch("openvino.model_api.adapters.get_user_config")
-        mocker.patch("openvino.model_api.adapters.OpenvinoAdapter")
-        mocker.patch("openvino.model_api.models.Model.create_model")
+        mocker.patch.object(
+            OVZeroShotVisualPromptingModel,
+            "_create_model",
+            return_value={"image_encoder": Mock(), "decoder": Mock()},
+        )
+        mocker.patch.object(OVZeroShotVisualPromptingModel, "initialize_reference_info")
         return OVZeroShotVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
+
+    def test_learn(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
+        """Test learn."""
+        ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
+        ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
+        ov_zero_shot_visual_prompting_model.model["decoder"].mask_threshold = 0.0
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "preprocess",
+            return_value=(np.zeros((1, 3, 1024, 1024)), {"original_shape": (1024, 1024)}),
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "infer_sync",
+            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "preprocess",
+            return_value=[
+                {
+                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
+                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
+                    "label": np.array([1], dtype=np.int64),
+                },
+            ],
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "infer_sync",
+            return_value={
+                "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
+                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),  # noqa: NPY002
+                "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "postprocess",
+            return_value={
+                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "scores": np.zeros((1, 1), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model,
+            "_generate_masked_features",
+            return_value=np.random.rand(1, 256),  # noqa: NPY002
+        )
+        reference_info, ref_masks = ov_zero_shot_visual_prompting_model.learn(
+            inputs=fxt_zero_shot_vpm_data_entity[1],
+            reset_feat=True,
+        )
+
+        assert reference_info["reference_feats"].shape == torch.Size((2, 1, 256))
+        assert 1 in reference_info["used_indices"]
+        assert ref_masks[0].shape == torch.Size((2, 1024, 1024))
+
+    def test_infer(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
+        """Test infer."""
+        ov_zero_shot_visual_prompting_model.model["decoder"].mask_threshold = 0.0
+        ov_zero_shot_visual_prompting_model.model["decoder"].output_blob_name = "upscaled_masks"
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "preprocess",
+            return_value=(np.zeros((1, 3, 1024, 1024)), {"original_shape": (1024, 1024)}),
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["image_encoder"],
+            "infer_sync",
+            return_value={"image_embeddings": np.random.random((1, 256, 64, 64))},
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "preprocess",
+            return_value=[
+                {
+                    "point_coords": np.array([1, 1]).reshape(-1, 1, 2),
+                    "point_labels": np.array([1], dtype=np.float32).reshape(-1, 1),
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array([1024, 1024], dtype=np.int64).reshape(-1, 2),
+                    "label": np.array([1], dtype=np.int64),
+                },
+            ],
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "infer_sync",
+            return_value={
+                "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
+                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),  # noqa: NPY002
+                "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "postprocess",
+            return_value={
+                "hard_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "soft_prediction": np.zeros((1, 1, 1024, 1024), dtype=np.float32),
+                "scores": np.zeros((1, 1), dtype=np.float32),
+            },
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model.model["decoder"],
+            "apply_coords",
+            return_value=np.array([[1, 1], [2, 2]]),
+        )
+        mocker.patch.object(
+            ov_zero_shot_visual_prompting_model,
+            "_get_prompt_candidates",
+            return_value=({1: np.array([[1, 1, 0.5]])}, {1: np.array([[2, 2]])}),
+        )
+
+        reference_feats = torch.rand(2, 1, 256)
+        used_indices = np.array([1])
+
+        results = ov_zero_shot_visual_prompting_model.infer(
+            inputs=fxt_zero_shot_vpm_data_entity[1],
+            reference_feats=reference_feats,
+            used_indices=used_indices,
+        )
+
+        for predicted_masks, used_points in results:
+            for label, predicted_mask in predicted_masks.items():
+                for pm, _ in zip(predicted_mask, used_points[label]):
+                    assert pm.shape == (1024, 1024)
 
     def test_gather_prompts_with_labels(self, ov_zero_shot_visual_prompting_model) -> None:
         """Test _gather_prompts_with_labels."""
