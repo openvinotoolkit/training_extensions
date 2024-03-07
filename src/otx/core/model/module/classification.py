@@ -252,7 +252,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
                 if name in ["num_multiclass_heads", "num_multilabel_classes"]:
                     param_dict[name] = getattr(self.model, name)
                 elif name == "head_logits_info":
-                    param_dict[name] = self.head_idx_to_logits_range
+                    param_dict[name] = self.label_info.head_idx_to_logits_range
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
@@ -278,8 +278,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.label_info.label_names)
-        self.num_multiclass_heads = self.num_multiclass_heads
-        self.num_multilabel_classes = self.num_multilabel_classes
+        self.num_multiclass_heads = self.label_info.num_multiclass_heads
+        self.num_multilabel_classes = self.label_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
     def _log_metrics(self, meter: Metric, key: str) -> None:
