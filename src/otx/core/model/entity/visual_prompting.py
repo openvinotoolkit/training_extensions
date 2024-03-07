@@ -542,7 +542,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         images: list[np.ndarray] = []
         metas: list[dict[str, Any]] = []
         processed_prompts: list[list[dict[str, Any]]] = []
-        for image, prompts, label, imgs_info in zip(
+        for image, prompts, labels, imgs_info in zip(
             entity.images,
             entity.prompts,
             entity.labels,
@@ -557,14 +557,14 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             if self.training:
                 points: list[np.ndarray] = []
                 bboxes: list[np.ndarray] = []
-                labels: dict[str, list[int]] = defaultdict(list)
-                for prompt in prompts:
+                _labels: dict[str, list[int]] = defaultdict(list)
+                for prompt, label in zip(prompts, labels):
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
                         bboxes.append(prompt.cpu().numpy())
-                        labels["bboxes"].append(label.cpu().numpy())
+                        _labels["bboxes"].append(label.cpu().numpy())
                     elif isinstance(prompt, Points):
                         points.append(prompt.cpu().numpy())
-                        labels["points"].append(label.cpu().numpy())
+                        _labels["points"].append(label.cpu().numpy())
 
                 # preprocess decoder inputs
                 processed_prompts.append(
@@ -572,7 +572,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                         {
                             "bboxes": bboxes,
                             "points": points,
-                            "labels": labels,
+                            "labels": _labels,
                             "orig_size": imgs_info.ori_shape,
                         },
                     ),
