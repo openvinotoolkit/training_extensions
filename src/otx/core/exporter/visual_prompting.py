@@ -5,15 +5,19 @@
 
 from __future__ import annotations
 
+import json
 import logging as log
+import os
 import tempfile
 from pathlib import Path
 from typing import Any, Literal
+from zipfile import ZipFile
 
 import onnx
 import openvino
 import torch
 
+from otx.core.exporter.exportable_code import demo
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
@@ -29,7 +33,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-    ) -> dict[str, Path]:
+    ) -> Path | dict[str, Path]:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
         Args:
@@ -40,7 +44,7 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
 
         Returns:
-            dict[str, Path]: paths to the exported models
+            (Path, dict[str, Path]): path(s) to the exported model(s)
         """
         models: dict[str, torch.nn.Module] = {
             "image_encoder": model.image_encoder,
@@ -48,20 +52,20 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         }
 
         if export_format == OTXExportFormatType.OPENVINO:
-            fn = self.to_openvino
-        elif export_format == OTXExportFormatType.ONNX:
-            fn = self.to_onnx
-        elif export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            msg = "exportable code will be supported soon."
-            raise NotImplementedError(msg)
-        else:
-            msg = f"Unsupported export format: {export_format}"
-            raise ValueError(msg)
+            return {
+                module: self.to_openvino(models[module], output_dir, f"{base_model_name}_{module}", precision)
+                for module in ["image_encoder", "decoder"]
+            }
+        if export_format == OTXExportFormatType.ONNX:
+            return {
+                module: self.to_onnx(models[module], output_dir, f"{base_model_name}_{module}", precision)
+                for module in ["image_encoder", "decoder"]
+            }
+        if export_format == OTXExportFormatType.EXPORTABLE_CODE:
+            return self.to_exportable_code(models, output_dir, base_model_name, precision)
 
-        return {  # type: ignore[return-value]
-            module: fn(models[module], output_dir, f"{base_model_name}_{module}", precision)
-            for module in ["image_encoder", "decoder"]
-        }
+        msg = f"Unsupported export format: {export_format}"
+        raise ValueError(msg)
 
     def to_openvino(
         self,
@@ -134,6 +138,72 @@ class OTXVisualPromptingModelExporter(OTXNativeModelExporter):
         log.info("Converting to ONNX is done.")
 
         return Path(save_path)
+
+    def to_exportable_code(
+        self,
+        model: dict[str, torch.nn.Module],
+        output_dir: Path,
+        base_model_name: str = "exported_model",
+        precision: OTXPrecisionType = OTXPrecisionType.FP32,
+    ) -> Path:
+        """Export to zip folder final OV IR model with runable demo.
+
+        Args:
+            model (dict[str, torch.nn.Module]): pytorch model top export
+            output_dir (Path): path to the directory to store export artifacts
+            base_model_name (str, optional): exported model name
+            precision (OTXExportPrecisionType, optional): precision of the exported model's weights
+
+        Returns:
+            Path: path to the exported model.
+        """
+        work_dir = Path(demo.__file__).parent
+        parameters: dict[str, Any] = {}
+        if self.metadata is not None:
+            parameters["type_of_model"] = self.metadata.get(("model_info", "task_type"), "")
+            parameters["converter_type"] = self.metadata.get(("model_info", "model_type"), "")
+            parameters["model_parameters"] = {
+                "labels": self.metadata.get(("model_info", "labels"), ""),
+                "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
+            }
+
+        output_zip_path = output_dir / "exportable_code.zip"
+        Path.mkdir(output_dir, exist_ok=True)
+        with tempfile.TemporaryDirectory() as temp_dir, ZipFile(output_zip_path, "x") as arch:
+            # model files
+            for module in ["image_encoder", "decoder"]:
+                path_to_model = self.to_openvino(
+                    model[module],
+                    Path(temp_dir),
+                    f"{base_model_name}_{module}",
+                    precision,
+                )
+                arch.write(str(path_to_model), Path("model") / f"{module}.xml")
+                arch.write(path_to_model.with_suffix(".bin"), Path("model") / f"{module}.bin")
+
+            arch.writestr(
+                str(Path("model") / "config.json"),
+                json.dumps(parameters, ensure_ascii=False, indent=4),
+            )
+            # python files
+            arch.write(
+                work_dir / "requirements.txt",
+                Path("python") / "requirements.txt",
+            )
+            arch.write(work_dir.parents[5] / "LICENSE", Path("python") / "LICENSE")
+            arch.write(work_dir / "demo.py", Path("python") / "demo.py")
+            arch.write(work_dir / "README.md", Path("./") / "README.md")
+            arch.write(work_dir / "setup.py", Path("python") / "setup.py")
+            # write demo_package
+            demo_package = work_dir / "demo_package"
+            for root, _, files in os.walk(demo_package):
+                if root.endswith("__pycache__"):
+                    continue
+                for file in files:
+                    file_path = Path(root) / file
+                    archive_path = file_path.relative_to(demo_package)
+                    arch.write(file_path, Path("python") / "demo_package" / archive_path)
+        return output_zip_path
 
     def get_onnx_dummy_inputs(
         self,
