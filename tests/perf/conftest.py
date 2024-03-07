@@ -294,7 +294,6 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, 
 
 @pytest.fixture()
 def fxt_benchmark(
-    request: pytest.FixtureRequest,
     fxt_data_root: Path,
     fxt_output_root: Path,
     fxt_num_epoch: int,
