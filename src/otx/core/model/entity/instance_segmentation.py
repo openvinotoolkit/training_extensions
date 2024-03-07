@@ -18,7 +18,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook, feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -139,6 +139,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -168,6 +169,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             param.requires_grad = False
 
         x = self.extract_feat(inputs)
+
+        feature_vector = self.feature_vector_fn(x)
+
         rpn_results_list = self.rpn_head.predict(x, data_samples, rescale=False)
         results_list = self.roi_head.predict(x, rpn_results_list, data_samples, rescale=True)
 
@@ -176,8 +180,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             predictions = results_list
             # For OV task saliency map are generated on MAPI side
             saliency_map = torch.empty(1, dtype=torch.uint8)
-            feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in x]
-            feature_vector = torch.cat(feature_vector, 1)
 
         elif isinstance(results_list, list) and isinstance(results_list[0], InstanceData):  # rewrite
             # Predict case, consists of InstanceData
@@ -185,7 +187,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
             features_for_sal_map = [data_sample.pred_instances for data_sample in data_samples]
             saliency_map = self.explain_fn(features_for_sal_map)
-            feature_vector = torch.empty(1, dtype=torch.uint8)
 
         return {
             "predictions": predictions,
@@ -372,7 +373,15 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             labels.append(output.pred_instances.labels)
 
         if self.explain_mode:
-            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
@@ -509,7 +518,9 @@ class OVInstanceSegmentationModel(
             for out in outputs:
                 image_map = np.array([s_map for s_map in out.saliency_map if s_map.ndim > 1])
                 predicted_s_maps.append(image_map)
-            predicted_f_vectors = [out.feature_vector for out in outputs]
+
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
+            predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return InstanceSegBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,

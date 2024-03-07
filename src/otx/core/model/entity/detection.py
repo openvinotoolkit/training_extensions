@@ -17,7 +17,7 @@ from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
 from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
-from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook, feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -116,6 +116,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -148,6 +149,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         bbox_head_feat = self.bbox_head.forward(backbone_feat)
 
         # Process the first output form bbox detection head: classification scores
+        feature_vector = self.feature_vector_fn(backbone_feat)
         saliency_map = self.explain_fn(bbox_head_feat[0])
 
         if mode == "predict":
@@ -165,12 +167,10 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
 
-        # Return dummy feature vector
-        feature_vector = torch.empty(1, dtype=torch.uint8)
         return {
             "predictions": predictions,
-            "saliency_map": saliency_map,
             "feature_vector": feature_vector,
+            "saliency_map": saliency_map,
         }
 
     def get_explain_fn(self) -> Callable:
@@ -352,7 +352,15 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             labels.append(output.pred_instances.labels)
 
         if self.explain_mode:
-            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
@@ -488,7 +496,8 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
             predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
-            predicted_f_vectors = [out.feature_vector for out in outputs]
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
+            predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return DetBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,
