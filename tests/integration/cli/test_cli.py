@@ -129,6 +129,9 @@ def test_otx_e2e(
             "dino_v2",
             "instance_segmentation",
             "action",
+            "anomaly_classification",
+            "anomaly_detection",
+            "anomaly_segmentation",
         ]
     ):
         return
@@ -273,6 +276,8 @@ def test_otx_explain_e2e(
     """
     if "tile" in recipe:
         pytest.skip("Explain is not supported for tiling yet.")
+    if "anomaly" in recipe:
+        pytest.skip("Explain is not supported for anomaly yet.")
 
     import cv2
 
@@ -372,6 +377,9 @@ def test_otx_ov_test(
         "h_label_cls",
         "visual_prompting",
         "zero_shot_visual_prompting",
+        "anomaly_classification",
+        "anomaly_detection",
+        "anomaly_segmentation",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
@@ -469,4 +477,8 @@ def test_otx_hpo_e2e(
     )
     hpo_work_dor = latest_dir / "hpo"
     assert hpo_work_dor.exists()
+    # Anomaly doesn't do validation. Check just there is no error.
+    if task.startswith("anomaly"):
+        return
+
     assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2

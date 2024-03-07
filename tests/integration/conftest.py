@@ -134,6 +134,9 @@ def fxt_target_dataset_per_task() -> dict:
         "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
+        "anomaly_classification": "tests/assets/anomaly_hazelnut",
+        "anomaly_detection": "tests/assets/anomaly_hazelnut",
+        "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
     }
 
 
@@ -159,4 +162,7 @@ def fxt_cli_override_command_per_task() -> dict:
         ],
         "visual_prompting": [],
         "zero_shot_visual_prompting": [],
+        "anomaly_classification": [],
+        "anomaly_detection": [],
+        "anomaly_segmentation": [],
     }

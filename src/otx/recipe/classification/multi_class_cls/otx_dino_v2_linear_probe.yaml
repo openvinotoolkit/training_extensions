@@ -33,6 +33,7 @@ metric:
   init_args:
     task: multiclass
     num_classes: 1000
+    top_k: 1
 
 engine:
   task: MULTI_CLASS_CLS

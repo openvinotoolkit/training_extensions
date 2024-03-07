@@ -37,8 +37,6 @@ def test_engine_from_config(
         pytest.skip(
             reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
         )
-    if "anomaly" in task.lower():
-        pytest.skip(reason="There's no dataset for anomaly tasks.")
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
@@ -67,6 +65,9 @@ def test_engine_from_config(
         OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
     ]:
         return
 
