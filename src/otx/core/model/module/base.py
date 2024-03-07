@@ -157,11 +157,11 @@ class OTXLitModule(LightningModule):
             optimizer(params=self.parameters()) if callable(optimizer) else optimizer
             for optimizer in ensure_list(self.hparams.optimizer)
         ]
-        
+
         # Capture initial_lr
         for optimizer in optimizers:
             for param_group in optimizer.param_groups:
-                param_group.setdefault('initial_lr', param_group["lr"])
+                param_group.setdefault("initial_lr", param_group["lr"])
 
         lr_schedulers = []
         for scheduler_config in ensure_list(self.hparams.scheduler):
@@ -183,11 +183,11 @@ class OTXLitModule(LightningModule):
         optimizer_closure: Callable[[], Tensor | None],
     ) -> None:
         """Override the optimizer_step to enable the warmup scheduling."""
-        
-        def _scale_lr(start_point: int, end_point: int, param_group) -> float:
+
+        def _scale_lr(start_point: int, end_point: int, param_group: dict[str, Any]) -> float:
             return min(1.0, float(start_point + 1) / end_point) * param_group["initial_lr"]
-        
-        lr_step = self.trainer.current_epoch if self.warmup_by_epoch else self.trainer.global_step 
+
+        lr_step = self.trainer.current_epoch if self.warmup_by_epoch else self.trainer.global_step
         if lr_step < self.warmup_steps:
             for pg in optimizer.param_groups:
                 pg["lr"] = _scale_lr(lr_step, self.warmup_steps, pg)
