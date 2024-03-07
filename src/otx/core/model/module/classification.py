@@ -238,6 +238,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
             metric=metric,
         )
 
+        self.label_info: HLabelInfo
         self.num_labels: int
         self.num_multiclass_heads: int
         self.num_multilabel_classes: int
@@ -251,7 +252,7 @@ class OTXHlabelClsLitModule(OTXLitModule):
             for name, param in sig.parameters.items():
                 if name in ["num_multiclass_heads", "num_multilabel_classes"]:
                     param_dict[name] = getattr(self.model, name)
-                elif name == "head_logits_info":
+                elif name == "head_logits_info" and isinstance(self.label_info, HLabelInfo):
                     param_dict[name] = self.label_info.head_idx_to_logits_range
                 else:
                     param_dict[name] = param.default
