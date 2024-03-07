@@ -176,14 +176,14 @@ class OTXLitModule(LightningModule):
         epoch: int,
         batch: int,
         optimizer: torch.optim.Optimizer,
-        closure: Callable[[], Tensor | None],
+        optimizer_closure: Callable[[], Tensor | None],
     ) -> None:
         """Override the optimizer_step to enable the warmup scheduling."""
 
         def _scale_lr(start_point: int, end_point: int, init_lr: float) -> float:
             return min(1.0, float(start_point + 1) / end_point) * init_lr
 
-        optimizer.step(closure=closure)
+        optimizer.step(closure=optimizer_closure)
 
         if self.warmup_by_epoch and self.trainer.current_epoch < self.warmup_steps:
             for pg in optimizer.param_groups:

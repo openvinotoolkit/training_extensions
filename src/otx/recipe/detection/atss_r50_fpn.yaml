@@ -33,6 +33,7 @@ data: ../_base_/data/mmdet_base.yaml
 
 overrides:
   gradient_clip_val: 35.0
+  warmup_steps: 3
   data:
     config:
       train_subset:
