@@ -46,7 +46,7 @@ neck:
     type: SiLU
     inplace: true
 bbox_head:
-  type: RTMDetInsSepBNHead
+  type: CustomRTMDetInsSepBNHead
   num_classes: 80
   in_channels: 96
   stacked_convs: 2
@@ -90,7 +90,7 @@ train_cfg:
   debug: false
 test_cfg:
   nms_pre: 300
-  min_bbox_size: 0
+  min_bbox_size: 10
   score_thr: 0.05
   nms:
     type: nms
