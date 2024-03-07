@@ -222,7 +222,7 @@ class OTXTVModel(OTXMulticlassClsModel):
         labels: torch.Tensor | None = None,  # noqa: ARG004
         mode: str = "tensor",
     ) -> dict:
-        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
+        """Forward func of the TVModelWithLossComputation instance."""
         x = self.backbone(images)
         backbone_feat = x
 
