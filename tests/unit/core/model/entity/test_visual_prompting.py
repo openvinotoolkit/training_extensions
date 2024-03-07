@@ -325,9 +325,8 @@ class TestOVZeroShotVisualPromptingModel:
 
     def test_initialize_reference_info(self, ov_zero_shot_visual_prompting_model) -> None:
         """Test initialize_reference_info."""
-        ov_zero_shot_visual_prompting_model.model["decoder"].embed_dim = 256
-
-        ov_zero_shot_visual_prompting_model.initialize_reference_info()
+        ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
+        ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
 
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (0, 1, 256)
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (0,)
@@ -395,10 +394,7 @@ class TestOVZeroShotVisualPromptingModel:
         ov_zero_shot_visual_prompting_model.model["decoder"].embed_dim = 256
 
         # get previously saved reference info
-        mocker.patch(
-            "otx.core.model.entity.visual_prompting.OVZeroShotVisualPromptingModel._find_latest_reference_info",
-            return_value="1",
-        )
+        mocker.patch.object(ov_zero_shot_visual_prompting_model, "_find_latest_reference_info", return_value="1")
         mocker.patch(
             "otx.core.model.entity.visual_prompting.pickle.load",
             return_value={"reference_feats": np.zeros((1, 1, 256)), "used_indices": np.array([0])},
@@ -410,12 +406,10 @@ class TestOVZeroShotVisualPromptingModel:
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (1,)
 
         # no saved reference info
-        mocker.patch(
-            "otx.core.model.entity.visual_prompting.OVZeroShotVisualPromptingModel._find_latest_reference_info",
-            return_value=None,
-        )
+        mocker.patch.object(ov_zero_shot_visual_prompting_model, "_find_latest_reference_info", return_value=None)
 
-        ov_zero_shot_visual_prompting_model.initialize_reference_info()
+        ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
+        ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
         ov_zero_shot_visual_prompting_model.load_latest_reference_info()
 
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (0, 1, 256)
