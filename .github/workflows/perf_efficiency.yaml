@@ -44,6 +44,9 @@ on:
         description: Root directory containing validation data in CI server.
         default: "/home/validation/data/v2/"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Perf-Efficiency-Benchmark:
     name: Perf-Efficiency-Benchmark-all
@@ -57,7 +60,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install tox
-        run: python -m pip install tox
+        run: python -m pip install --require-hashes --no-deps -r .ci/tox-deps.txt
       - name: Run Performance Test
         run: >
           tox -vv -e perf-benchmark -- tests/perf ${{ inputs.pytest-args }}

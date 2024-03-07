@@ -5,6 +5,9 @@ on:
   release:
     types: [published]
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   build_wheels:
     name: Build wheels
@@ -43,7 +46,8 @@ jobs:
     needs: [build_wheels, build_sdist]
     environment: pypi
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      packages: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
