@@ -21,9 +21,9 @@ def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> tor
     if isinstance(feature_map, (list, tuple)):
         # aggregate feature maps from Feature Pyramid Network
         feature_vectors = [
-             # Spatially pooling and flatten, B x C x H x W => B x C'
-             torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)).flatten(start_dim=1)
-             for f in feature_map
+            # Spatially pooling and flatten, B x C x H x W => B x C'
+            torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)).flatten(start_dim=1)
+            for f in feature_map
         ]
         if len(feature_vectors) > 1:
             return torch.cat(feature_vectors, 1)
