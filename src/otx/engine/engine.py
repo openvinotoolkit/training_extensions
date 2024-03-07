@@ -182,6 +182,8 @@ class Engine:
                                             It could be None at export, predict, etc.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
+            warmup_steps (int): The number of iteration or epoch steps to control the warmup.
+            warmup_by_epochs (bool): If True, warmup_steps means the epochs.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -808,6 +810,8 @@ class Engine:
             scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
             metric (Metric | MetricCallable | None): The metric for the validation and test.
                                             It could be None at export, predict, etc.
+            warmup_steps (int): The number of iteration or epoch steps to control the warmup.
+            warmup_by_epochs (bool): If True, warmup_steps means the epochs.
 
         Returns:
             OTXLitModule | OTXModel: The built LightningModule instance.
