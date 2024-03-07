@@ -26,7 +26,7 @@ class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
             target (list[dict]): list of RLE encoded masks
         """
         for item in preds:
-            bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
+            bbox_detection, mask_detection = self._get_safe_item_values(item)
             if bbox_detection is not None:
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:

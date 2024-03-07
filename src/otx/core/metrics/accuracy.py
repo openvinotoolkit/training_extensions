@@ -272,6 +272,7 @@ class MixedHLabelAccuracy(Metric):
             TorchmetricAcc(
                 task="multiclass",
                 num_classes=int(head_range[1] - head_range[0]),
+                top_k=1,
             )
             for head_range in head_logits_info.values()
         ]
