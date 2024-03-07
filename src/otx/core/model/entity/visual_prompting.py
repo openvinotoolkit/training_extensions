@@ -982,7 +982,9 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             indices = range(k)
         partitioned_ind = np.argpartition(x, k, axis=axis).take(indices=indices, axis=axis)
         partitioned_scores = np.take_along_axis(x, partitioned_ind, axis=axis)
-        sorted_trunc_ind = np.flip(np.argsort(partitioned_scores, axis=axis), axis=axis)
+        sorted_trunc_ind = np.argsort(partitioned_scores, axis=axis)
+        if largest:
+            sorted_trunc_ind = np.flip(sorted_trunc_ind, axis=axis)
         ind = np.take_along_axis(partitioned_ind, sorted_trunc_ind, axis=axis)
         scores = np.take_along_axis(partitioned_scores, sorted_trunc_ind, axis=axis)
         return scores, ind

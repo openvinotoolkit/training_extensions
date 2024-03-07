@@ -65,7 +65,7 @@ class TestPromptGetter:
         mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feats = torch.rand(1, 1, 4)
-        used_indices = torch.as_tensor([[0]])
+        used_indices = torch.as_tensor([0])
         ori_shape = torch.tensor([prompt_getter.image_size, prompt_getter.image_size], dtype=torch.int64)
 
         total_points_scores, total_bg_coords = prompt_getter.get_prompt_candidates(
