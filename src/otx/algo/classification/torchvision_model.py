@@ -202,7 +202,6 @@ class OTXTVModel(OTXMulticlassClsModel):
         """Defines parameters required to export a particular model implementation."""
         export_params: dict[str, Any] = {}
         export_params["input_size"] = (1, 3, 224, 224)
-        export_params["output_names"] = ["logits", "saliency_map"] if self.explain_mode else None
         export_params["resize_mode"] = "standard"
         export_params["pad_value"] = 0
         export_params["swap_rgb"] = False
@@ -230,12 +229,18 @@ class OTXTVModel(OTXMulticlassClsModel):
 
         if len(x.shape) == 4:
             x = x.view(x.size(0), -1)
+
+        feature_vector = x
+        if len(feature_vector.shape) == 1:
+            feature_vector = feature_vector.unsqueeze(0)
+
         logits = self.head(x)
         if mode == "predict":
             logits = self.softmax(logits)
 
         return {
             "logits": logits,
+            "feature_vector": feature_vector,
             "saliency_map": saliency_map,
         }
 
