@@ -121,8 +121,10 @@ def test_predict_with_explain(
     else:
         assert len(saliency_map_output.get_shape()) in [3, 4]
 
-    assert feature_vector_output is not None
-    assert len(feature_vector_output.get_shape()) == 2
+    if "cls" in task:
+        # Feature vector generation is supported only for classification tasks yet
+        assert feature_vector_output is not None
+        assert len(feature_vector_output.get_shape()) == 2
 
     # Predict OV model with xai & process maps
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
@@ -138,7 +140,7 @@ def test_predict_with_explain(
 
         # The OV saliency maps are different from Torch and incorrect, possible root cause can be on MAPI side
         # TODO(gzalessk): remove this if statement when the issue is resolved # noqa: TD003
-        return
+        pytest.skip("There is the temporal problem with Instance Segmentation and ATSS R50 models. Skip for now.")
 
     maps_torch = predict_result_explain_torch[0].saliency_maps
     maps_ov = predict_result_explain_ov[0].saliency_maps
