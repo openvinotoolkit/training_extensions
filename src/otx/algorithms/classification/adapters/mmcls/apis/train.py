@@ -63,7 +63,6 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     )
     # The specific dataloader settings
     train_loader_cfg = {**loader_cfg, **cfg.data.get("train_dataloader", {})}
-
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
     fp16_cfg = cfg.get("fp16_", None)

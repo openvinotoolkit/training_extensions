@@ -195,7 +195,6 @@ class TestSegmentationConfigurer:
         model_cfg.optimizer_config.type = "SAMOptimizerHook"
         self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
-
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "DummyOptimizerHook"
         self.configurer.configure_fp16(model_cfg)
