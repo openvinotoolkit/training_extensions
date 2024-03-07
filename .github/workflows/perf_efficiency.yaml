@@ -51,9 +51,9 @@ jobs:
     timeout-minutes: 8640
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: "3.10"
       - name: Install tox
@@ -72,7 +72,7 @@ jobs:
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           --user-name ${{ github.triggering_actor }}
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: perf-efficiency-benchmark-all
           path: .tox/perf-*.csv
