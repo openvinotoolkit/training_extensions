@@ -157,7 +157,11 @@ class OTXLitModule(LightningModule):
             optimizer(params=self.parameters()) if callable(optimizer) else optimizer
             for optimizer in ensure_list(self.hparams.optimizer)
         ]
-        self.init_lr = optimizers[0].param_groups[0]["lr"]
+        
+        # Capture initial_lr
+        for optimizer in optimizers:
+            for param_group in optimizer.param_groups:
+                param_group.setdefault('initial_lr', param_group["lr"])
 
         lr_schedulers = []
         for scheduler_config in ensure_list(self.hparams.scheduler):
@@ -180,18 +184,15 @@ class OTXLitModule(LightningModule):
     ) -> None:
         """Override the optimizer_step to enable the warmup scheduling."""
 
-        def _scale_lr(start_point: int, end_point: int, init_lr: float) -> float:
-            return min(1.0, float(start_point + 1) / end_point) * init_lr
+        def _scale_lr(start_point: int, end_point: int, param_group) -> float:
+            return min(1.0, float(start_point + 1) / end_point) * param_group["initial_lr"]
+        
+        if self.trainer.current_epoch < self.warmup_steps:
+            lr_step = self.trainer.current_epoch if self.warmup_by_epoch else self.trainer.global_step
+            for pg in optimizer.param_groups:
+                pg["lr"] = _scale_lr(lr_step, self.warmup_steps, pg)
 
         optimizer.step(closure=optimizer_closure)
-
-        if self.warmup_by_epoch and self.trainer.current_epoch < self.warmup_steps:
-            for pg in optimizer.param_groups:
-                pg["lr"] = _scale_lr(self.trainer.current_epoch, self.warmup_steps, self.init_lr)
-
-        if not self.warmup_by_epoch and (self.trainer.global_step < self.warmup_steps):
-            for pg in optimizer.param_groups:
-                pg["lr"] = _scale_lr(self.trainer.global_step, self.warmup_steps, self.init_lr)
 
     def configure_metric(self) -> None:
         """Configure the metric."""
