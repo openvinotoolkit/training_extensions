@@ -8,6 +8,7 @@ import pytest
 
 import torch
 
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.openvino.task import OpenVINODetectionTask
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -35,6 +36,9 @@ torch.manual_seed(0)
 
 assert_text_explain_all = "The number of saliency maps should be equal to the number of all classes."
 assert_text_explain_predicted = "The number of saliency maps should be equal to the number of predicted classes."
+
+if is_xpu_available():
+    pytest.skip("Instance segmentation task is not supported on XPU", allow_module_level=True)
 
 
 class TestISegmXAIAPI:

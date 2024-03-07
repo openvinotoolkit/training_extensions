@@ -9,6 +9,7 @@ import os
 
 import pytest
 
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -48,6 +49,9 @@ resume_params = [
     "--learning_parameters.dataset.train_batch_size",
     "4",
 ]
+
+if is_xpu_available():
+    pytest.skip("Visual prompting task is not supported on XPU", allow_module_level=True)
 
 otx_dir = os.getcwd()
 
