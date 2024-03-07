@@ -121,10 +121,8 @@ def test_predict_with_explain(
     else:
         assert len(saliency_map_output.get_shape()) in [3, 4]
 
-    if "cls" in task:
-        # Feature vector generation is supported only for classification tasks yet
-        assert feature_vector_output is not None
-        assert len(feature_vector_output.get_shape()) == 2
+    assert feature_vector_output is not None
+    assert len(feature_vector_output.get_shape()) == 2
 
     # Predict OV model with xai & process maps
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)

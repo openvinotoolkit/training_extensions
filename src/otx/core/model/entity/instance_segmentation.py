@@ -229,7 +229,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         parameters = super()._export_parameters
-        parameters["output_names"] = ["saliency_map", "feature_vector"] if self.explain_mode else None
+        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
         return parameters
 
 

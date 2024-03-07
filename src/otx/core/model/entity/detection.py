@@ -16,12 +16,8 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
-from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
-from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook, feature_vector_fn
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import (
-    OTXBatchLossEntity,
-)
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -116,6 +112,8 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
+        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
@@ -176,6 +174,9 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         # SSD-like heads also have background class
+        from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
+        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+
         background_class = isinstance(self.model.bbox_head, CustomSSDHead)
         explainer = DetClassProbabilityMapHook(
             num_classes=self.num_classes + background_class,
@@ -224,7 +225,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         parameters = super()._export_parameters
-        parameters["output_names"] = ["saliency_map", "feature_vector"] if self.explain_mode else None
+        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
         return parameters
 
 
