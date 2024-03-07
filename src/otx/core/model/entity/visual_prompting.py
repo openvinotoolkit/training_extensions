@@ -935,16 +935,14 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         used_points: dict[int, list[np.ndarray]],
         threshold_iou: float = 0.8,
     ) -> None:
-        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray) -> np.ndarray:
+        def _calculate_mask_iou(mask1: np.ndarray, mask2: np.ndarray) -> tuple[float, np.ndarray | None]:
             assert mask1.ndim == 2  # noqa: S101
             assert mask2.ndim == 2  # noqa: S101
-            intersection = np.logical_and(mask1, mask2).sum().item()
-            union = np.logical_or(mask1, mask2).sum().item()
-
             # Avoid division by zero
-            if union == 0:
-                return 0.0
-            return intersection / union
+            if (union := np.logical_or(mask1, mask2).sum().item()) == 0:
+                return 0.0, None
+            intersection = np.logical_and(mask1, mask2)
+            return intersection.sum().item() / union, intersection
 
         for (label, masks), (other_label, other_masks) in product(predicted_masks.items(), predicted_masks.items()):
             if other_label <= label:
@@ -953,7 +951,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                _mask_iou = _calculate_mask_iou(mask, other_mask)
+                _mask_iou, _intersection = _calculate_mask_iou(mask, other_mask)
                 if _mask_iou > threshold_iou:
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
@@ -961,7 +959,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                         overlapped_label.append(im)
                 elif _mask_iou > 0:
                     # refine the slightly overlapping region
-                    overlapped_coords = np.where(np.logical_and(mask, other_mask))
+                    overlapped_coords = np.where(_intersection)
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         other_mask[overlapped_coords] = 0.0
                     else:
