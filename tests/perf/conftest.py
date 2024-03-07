@@ -9,12 +9,17 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import pytest
 from cpuinfo import get_cpu_info
+from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -175,7 +180,11 @@ def fxt_current_date() -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory, fxt_current_date: str) -> Path:
+def fxt_output_root(
+    request: pytest.FixtureRequest,
+    tmp_path_factory: pytest.TempPathFactory,
+    fxt_current_date: str,
+) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
     if output_root is None:
@@ -250,14 +259,16 @@ def fxt_user_name(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_mlflow_tracking_uri(request: pytest.FixtureRequest) -> str:
-    """MLFLow tracking server URI."""
+def fxt_mlflow_client(request: pytest.FixtureRequest) -> MlflowClient:
+    """MLFLow tracking client."""
     mlflow_tracking_uri = urlparse(
         request.config.getoption("--mlflow-tracking-uri"),
     ).geturl()
     msg = f"{mlflow_tracking_uri = }"
     log.info(msg)
-    return mlflow_tracking_uri
+    if mlflow_tracking_uri:
+        return MlflowClient(mlflow_tracking_uri)
+    return None
 
 
 @pytest.fixture()
@@ -335,6 +346,8 @@ def fxt_benchmark(
 def fxt_benchmark_summary(
     fxt_output_root: Path,
     fxt_summary_csv: Path,
+    fxt_mlflow_client: MlflowClient,
+    fxt_tags: dict[str, str],
 ):
     """Summarize all results at the end of test session."""
     yield
@@ -342,8 +355,34 @@ def fxt_benchmark_summary(
     if all_results is not None:
         print("=" * 20, "[Benchmark summary]")
         print(all_results)
+        fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
         all_results.to_csv(fxt_summary_csv)
         print(f"  -> Saved to {fxt_summary_csv}.")
+
+        if fxt_mlflow_client:
+            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+
+
+def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
+    for index, data in results.iterrows():
+        benchmark_type, task, data_size, model = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+        exp_tags = {
+            "task": task,
+            "model": model,
+            "data_size": data_size,
+        }
+        exp = client.get_experiment_by_name(exp_name)
+        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
+        if exp.lifecycle_stage != "active":
+            client.restore_experiment(exp_id)
+        run_name = f"[{benchmark_type}] {tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        run_tags.update(**exp_tags, **tags)
+        run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
+        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        for k, v in run_metrics.items():
+            client.log_metric(run.info.run_id, k, v)
 
 
 class PerfTestBase:
