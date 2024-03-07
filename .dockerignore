@@ -1,0 +1,7 @@
+*
+!src/otx
+!pyproject.toml
+!README.md
+!LICENSE
+!MANIFEST.in
+!docker/download_pretrained_weights.py
