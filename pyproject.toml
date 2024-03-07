@@ -99,8 +99,6 @@ anomaly = [
     "opencv-python>=4.5.3.56",
     "pandas>=1.1.0",
     "open-clip-torch>=2.23.0",
-    # issue with latest version for torchmetrics with anomalib: https://github.com/Lightning-AI/torchmetrics/issues/1526
-    "torchmetrics==0.10.3",
 ]
 
 [project.scripts]
