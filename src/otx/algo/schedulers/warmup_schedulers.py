@@ -23,7 +23,7 @@ class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
         self.interval = interval
         super().__init__(optimizer, lambda step: min(step / num_warmup_steps, 1.0))
 
-    def step(self, epoch=None):
+    def step(self, epoch: int | None = None) -> None:
         """Overriding the step to disable the warmup scheduler after n_steps."""
         if self._step_count < self.num_warmup_steps:
             super().step(epoch)
