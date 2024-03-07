@@ -108,6 +108,8 @@ class ExplainableDeit(ExplainableOTXClsModel):
         if self.with_neck:
             x = self.neck(x)
 
+        feature_vector = x[-1]
+
         if mode == "tensor":
             logits = self.head(x) if self.with_head else x
         elif mode == "predict":
@@ -118,6 +120,7 @@ class ExplainableDeit(ExplainableOTXClsModel):
 
         return {
             "logits": logits,
+            "feature_vector": feature_vector,
             "saliency_map": saliency_map,
         }
 
