@@ -62,7 +62,7 @@ class OTXVisualPromptingModel(
         export_params = super()._export_parameters
         export_params["metadata"].update(
             {
-                ("model_info", "model_type"): "segment_anything",
+                ("model_info", "model_type"): "Visual_Prompting",
                 ("model_info", "task_type"): "visual_prompting",
             },
         )
