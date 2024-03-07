@@ -709,6 +709,7 @@ class OVMulticlassClassificationModel(
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
             predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
             predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return MulticlassClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -811,6 +812,7 @@ class OVHlabelClassificationModel(
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
             predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
             predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return HlabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
@@ -873,6 +875,7 @@ class OVMultilabelClassificationModel(
             # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
             predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
             predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return MultilabelClsBatchPredEntityWithXAI(
                 batch_size=len(outputs),
