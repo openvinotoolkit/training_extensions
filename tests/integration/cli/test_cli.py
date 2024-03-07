@@ -276,8 +276,6 @@ def test_otx_explain_e2e(
     """
     if "tile" in recipe:
         pytest.skip("Explain is not supported for tiling yet.")
-    if "anomaly" in recipe:
-        pytest.skip("Explain is not supported for anomaly yet.")
 
     import cv2
 
