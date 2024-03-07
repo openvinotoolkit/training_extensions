@@ -150,9 +150,9 @@ class OTXTVModel(OTXMulticlassClsModel):
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
         if isinstance(inputs.images, list):
-            images = tv_tensors.wrap(torch.stack(inputs.images, dim=0).to(dtype=torch.float32), like=inputs.images[0])
+            images = tv_tensors.wrap(torch.stack(inputs.images, dim=0), like=inputs.images[0])
         else:
-            images = inputs.images.to(dtype=torch.float32)
+            images = inputs.images
         return {
             "images": images,
             "labels": torch.cat(inputs.labels, dim=0),
