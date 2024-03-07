@@ -108,22 +108,29 @@ def test_predict_with_explain(
     exported_model_path = engine.export(checkpoint=ckpt_path, explain=True)
 
     model = ov.Core().read_model(exported_model_path)
+    feature_vector_output = None
     saliency_map_output = None
     for output in model.outputs:
+        if "feature_vector" in output.get_names():
+            feature_vector_output = output
         if "saliency_map" in output.get_names():
             saliency_map_output = output
-            break
     assert saliency_map_output is not None
     if "instance_segmentation" in recipe:
         assert len(saliency_map_output.get_shape()) == 1
     else:
         assert len(saliency_map_output.get_shape()) in [3, 4]
 
+    assert feature_vector_output is not None
+    assert len(feature_vector_output.get_shape()) == 2
+
     # Predict OV model with xai & process maps
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
     assert isinstance(predict_result_explain_ov[0], OTXBatchPredEntityWithXAI)
     assert predict_result_explain_ov[0].saliency_maps is not None
     assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
+    assert predict_result_explain_ov[0].feature_vectors is not None
+    assert isinstance(predict_result_explain_ov[0].feature_vectors[0], np.ndarray)
 
     if task == "instance_segmentation" or "atss_r50_fpn" in recipe:
         # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2.

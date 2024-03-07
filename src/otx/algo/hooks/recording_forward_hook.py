@@ -15,6 +15,22 @@ if TYPE_CHECKING:
     from torch.utils.hooks import RemovableHandle
 
 
+def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> torch.Tensor:
+    """Generate the feature vector by average pooling feature maps."""
+    if isinstance(feature_map, (list, tuple)):
+        # aggregate feature maps from Feature Pyramid Network
+        feature_vectors = [
+            # Spatially pooling and flatten, B x C x H x W => B x C'
+            torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)).flatten(start_dim=1)
+            for f in feature_map
+        ]
+        if len(feature_vectors) > 1:
+            return torch.cat(feature_vectors, 1)
+        return feature_vectors[0]
+
+    return torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1)).flatten(start_dim=1)
+
+
 class BaseRecordingForwardHook:
     """While registered with the designated PyTorch module, this class caches feature vector during forward pass.
 
