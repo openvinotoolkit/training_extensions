@@ -415,6 +415,25 @@ class TestZeroShotSegmentAnything:
         assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
         assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
+    def test_predict_masks(self, mocker, build_zero_shot_segment_anything) -> None:
+        """Test _predict_masks."""
+        mocker.patch(
+            "otx.algo.visual_prompting.segment_anything.SegmentAnything.forward",
+            return_value=(torch.ones(1, 4, 8, 8), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)),
+        )
+
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        zero_shot_segment_anything.image_size = 6
+
+        mask = zero_shot_segment_anything._predict_masks(
+            mode="infer",
+            image_embeddings=torch.rand(1),
+            point_coords=torch.rand(1, 2, 2),
+            point_labels=torch.randint(low=0, high=2, size=(1, 2)),
+            ori_shape=torch.tensor([8, 8], dtype=torch.int64),
+        )
+        assert mask.shape == (8, 8)
+
     @pytest.mark.parametrize(
         ("masks", "logits", "expected"),
         [
