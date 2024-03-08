@@ -178,7 +178,6 @@ class ConvBlock3D(nn.Module):
 
     """
 
-    # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
         in_planes: int,
@@ -655,7 +654,6 @@ class MoViNet(nn.Module):
 class OTXMoViNet(MoViNet):
     """MoViNet wrapper class for OTX."""
 
-    # pylint: disable=unused-argument
     def __init__(self, **kwargs):
         cfg = Config()
         cfg.name = "A0"
@@ -702,7 +700,6 @@ class OTXMoViNet(MoViNet):
         super().__init__(cfg)
 
     @staticmethod
-    # pylint: disable=too-many-arguments
     def fill_se_config(
         conf: Config,
         input_channels: int,

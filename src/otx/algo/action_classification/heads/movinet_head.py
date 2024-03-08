@@ -36,7 +36,7 @@ class MoViNetHead(BaseHead):
         loss_cls: dict,
         tf_like: bool = False,
         conv_type: str = "3d",
-        average_clips: dict | None = None,
+        average_clips: str | None = None,
     ):
         super().__init__(num_classes, in_channels, loss_cls, average_clips=average_clips)
         self.init_std = 0.1

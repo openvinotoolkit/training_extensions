@@ -24,8 +24,8 @@ class MoViNetRecognizer(Recognizer3D):
         """Redirect model as output state_dict for OTX MoviNet compatibility."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
-            key = key.replace("cls_head.", "") if "cls_head" in key else key.replace("backbone.", "")  # noqa: PLW2901
-            state_dict[key] = val
+            new_key = key.replace("cls_head.", "") if "cls_head" in key else key.replace("backbone.", "")
+            state_dict[new_key] = val
 
     @staticmethod
     def load_state_dict_pre_hook(
@@ -38,9 +38,9 @@ class MoViNetRecognizer(Recognizer3D):
         """Redirect input state_dict to model for OTX model compatibility."""
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
-            key = (  # noqa: PLW2901
+            new_key = (
                 key.replace("classifier", "cls_head.classifier")
                 if "classifier" in key
                 else prefix + "backbone." + key[len(prefix) :]
             )
-            state_dict[key] = val
+            state_dict[new_key] = val
