@@ -144,7 +144,7 @@ class TestOTXCLI:
           init_args:
               monitor: val/test_f1
               mode: max
-              factor: 0.5
+              factor: 0.1
               patience: 5
               threshold: 0.0001
               threshold_mode: rel
