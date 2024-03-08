@@ -165,6 +165,11 @@ class ExplainableOTXClsModel(
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
 
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
+
 
 class OTXMulticlassClsModel(
     ExplainableOTXClsModel[
@@ -315,11 +320,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         export_params["onnx_export_configuration"] = None
 
         return export_params
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -478,11 +478,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         export_params["onnx_export_configuration"] = None
 
         return export_params
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OTXHlabelClsModel(
@@ -661,11 +656,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         export_params["onnx_export_configuration"] = None
 
         return export_params
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OVMulticlassClassificationModel(
