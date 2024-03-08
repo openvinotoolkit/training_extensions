@@ -114,30 +114,12 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
-        sim_threshold = configurable_float(
-            default_value=0.65,
-            header="Similarity threshold",
-            description="The threshold to filter point candidates based on similarity scores.",
-            min_value=0.0,
-            max_value=1.0,
-            affects_outcome_of=ModelLifecycle.INFERENCE,
-        )
-
-        num_bg_points = configurable_integer(
-            default_value=1,
-            header="The number of background points",
-            description="The number of background points to be used as negative prompts.",
+        downsizing = configurable_integer(
+            default_value=64,
+            header="The downsizing ratio",
+            description="The downsizing ratio of image encoder.",
             min_value=1,
             max_value=1024,
-            affects_outcome_of=ModelLifecycle.INFERENCE,
-        )
-
-        default_threshold_reference = configurable_float(
-            default_value=0.3,
-            header="Default reference threshold",
-            description="The threshold to get target area in the mask for reference features.",
-            min_value=-1.0,
-            max_value=1.0,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 

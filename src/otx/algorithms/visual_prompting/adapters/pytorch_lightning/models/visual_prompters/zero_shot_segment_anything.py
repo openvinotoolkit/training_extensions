@@ -60,7 +60,7 @@ class PromptGetter(nn.Module):
 
         total_points_scores: Dict[int, Tensor] = {}
         total_bg_coords: Dict[int, Tensor] = {}
-        for label in map(int, used_indices[0]):
+        for label in map(int, used_indices):
             points_scores, bg_coords = self(
                 image_embeddings=image_embeddings,
                 reference_feat=reference_feats[label],
@@ -248,7 +248,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def set_empty_reference_info(self) -> None:
         """Set empty reference information."""
         reference_feats: Parameter = Parameter(torch.tensor([], dtype=torch.float32), requires_grad=False)
-        used_indices: Parameter = Parameter(torch.tensor([[]], dtype=torch.int64), requires_grad=False)
+        used_indices: Parameter = Parameter(torch.tensor([], dtype=torch.int64), requires_grad=False)
         self.reference_info = ParameterDict(
             {
                 "reference_feats": reference_feats,
@@ -260,7 +260,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""
         self.reference_info["reference_feats"] = Parameter(torch.zeros(0, 1, 256), requires_grad=False)
-        self.reference_info["used_indices"] = Parameter(torch.tensor([[]], dtype=torch.int64), requires_grad=False)
+        self.reference_info["used_indices"] = Parameter(torch.tensor([], dtype=torch.int64), requires_grad=False)
         self.is_reference_info_empty = False
 
     def expand_reference_info(self, new_largest_label: int) -> None:
@@ -364,7 +364,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                 self.reference_info["reference_feats"][label] = ref_feat.detach().cpu()
                 self.reference_info["used_indices"] = Parameter(
-                    torch.cat((self.reference_info["used_indices"], torch.tensor([[label]])), dim=1),
+                    torch.cat((self.reference_info["used_indices"], torch.tensor([[label]]))),
                     requires_grad=False,
                 )
                 ref_masks[label] = ref_mask.detach().cpu()
@@ -479,11 +479,20 @@ class ZeroShotSegmentAnything(SegmentAnything):
             overlapped_label = []
             overlapped_other_label = []
             for (im, mask), (jm, other_mask) in product(enumerate(masks), enumerate(other_masks)):
-                if _calculate_mask_iou(mask, other_mask) > threshold_iou:
+                _mask_iou = _calculate_mask_iou(mask, other_mask)
+                if _mask_iou > threshold_iou:
+                    # compare overlapped regions between different labels and filter out the lower score
                     if used_points[label][im][2] > used_points[other_label][jm][2]:
                         overlapped_other_label.append(jm)
                     else:
                         overlapped_label.append(im)
+                elif _mask_iou > 0:
+                    # refine the slightly overlapping region
+                    overlapped_coords = torch.where(torch.logical_and(mask, other_mask))
+                    if used_points[label][im][2] > used_points[other_label][jm][2]:
+                        other_mask[overlapped_coords] = 0.0
+                    else:
+                        mask[overlapped_coords] = 0.0
 
             for im in sorted(list(set(overlapped_label)), reverse=True):
                 masks.pop(im)
@@ -746,7 +755,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     def training_epoch_end(self, outputs) -> None:
         """Called in the training loop at the very end of the epoch."""
         self.reference_info["used_indices"] = Parameter(
-            self.reference_info["used_indices"].unique().unsqueeze(0), requires_grad=False
+            self.reference_info["used_indices"].unique(), requires_grad=False
         )
         if self.config.model.save_outputs:
             path_reference_info = self.path_reference_info.format(time.strftime("%Y%m%d-%H%M%S"))

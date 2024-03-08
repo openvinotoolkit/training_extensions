@@ -15,7 +15,6 @@ from openvino.model_api.models.types import NumericalValue
 from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
     Decoder,
     ImageEncoder,
-    PromptGetter,
 )
 from otx.api.entities.label import LabelEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -46,36 +45,6 @@ class TestImageEncoder:
         assert meta["resized_shape"] == (4, 4, 3)
         assert "resize_type" in meta
         assert meta["resize_type"] == "fit_to_window"
-
-
-class TestPromptGetter:
-    @e2e_pytest_unit
-    def test_parameters(self):
-        """Test parameters."""
-        params = PromptGetter.parameters()
-
-        assert params.get("sim_threshold").default_value == 0.5
-        assert params.get("num_bg_points").default_value == 1
-
-    @e2e_pytest_unit
-    def test_get_inputs(self, mocker):
-        """Test _get_inputs."""
-        mocker.patch.object(ImageModel, "__init__")
-        prompt_getter = PromptGetter("adapter")
-
-        prompt_getter.inputs = {
-            "image_embeddings": np.ones((1, 4, 4, 3)),
-            "reference_feats": np.ones((2, 1, 256)),
-            "used_indices": np.array([[0, 1]], dtype=np.int64),
-            "original_size": np.array([[4, 4]], dtype=np.int64),
-            "threshold": np.array([[0.1]]),
-            "num_bg_points": np.array([[1]], dtype=np.int64),
-        }
-
-        returned_value = prompt_getter._get_inputs()
-
-        assert returned_value[0] == ["image_embeddings"]
-        assert returned_value[1] == ["reference_feats", "used_indices", "original_size", "threshold", "num_bg_points"]
 
 
 class TestDecoder:

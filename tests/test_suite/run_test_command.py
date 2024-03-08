@@ -253,9 +253,6 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.bin"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.xml"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.bin"))
-            if "Zero_Shot" in template.model_template_id:
-                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.xml"))
-                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.bin"))
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
@@ -269,8 +266,6 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         if any(map(lambda x: x in template.model_template_id, ("Visual_Prompting", "Zero_Shot"))):
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
             assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.onnx"))
-            if "Zero_Shot" in template.model_template_id:
-                assert os.path.exists(os.path.join(save_path, "visual_prompting_prompt_getter.onnx"))
         else:
             path_to_onnx = os.path.join(save_path, "model.onnx")
             assert os.path.exists(path_to_onnx)
@@ -625,8 +620,6 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
             f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
         ]
-        if "zero_shot" in str(root):
-            xml_paths.append(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_prompt_getter.xml")
     else:
         xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
 
@@ -655,18 +648,6 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
                 "compressed_decoder.yml",
             ),
         ]
-        if "zero_shot" in str(root):
-            paths_to_ref_data.append(
-                os.path.join(
-                    otx_dir,
-                    "tests",
-                    "e2e/cli",
-                    task_type,
-                    "reference",
-                    template.model_template_id,
-                    "compressed_prompt_getter.yml",
-                )
-            )
     else:
         paths_to_ref_data = [
             os.path.join(
