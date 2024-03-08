@@ -52,15 +52,12 @@ class TestPerfSingleLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark accruacy metrics."""
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "accuracy"},
-        )
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_check_benchmark_result(
             result,
-            key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
                 {
                     "name": "Accuracy(train)",
@@ -82,22 +79,11 @@ class TestPerfSingleLabelClassification:
                     "op": "<",
                     "margin": 0.1,
                 },
-            ],
-        )
-
-    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark train time per iter / infer time per image."""
-        fxt_benchmark.track_resources = True
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "speed"},
-        )
-        fxt_check_benchmark_result(
-            result,
-            key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
-            checks=[
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
                 {
                     "name": "avg_data_time",
                     "op": "<",
@@ -159,15 +145,12 @@ class TestPerfMultiLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark accruacy metrics."""
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "accuracy"},
-        )
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_check_benchmark_result(
             result,
-            key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
                 {
                     "name": "Accuracy(train)",
@@ -189,22 +172,11 @@ class TestPerfMultiLabelClassification:
                     "op": "<",
                     "margin": 0.1,
                 },
-            ],
-        )
-
-    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark train time per iter / infer time per image."""
-        fxt_benchmark.track_resources = True
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "speed"},
-        )
-        fxt_check_benchmark_result(
-            result,
-            key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
-            checks=[
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
                 {
                     "name": "avg_data_time",
                     "op": "<",
@@ -266,15 +238,12 @@ class TestPerfHierarchicalLabelClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_accuracy(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark accruacy metrics."""
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "accuracy"},
-        )
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_check_benchmark_result(
             result,
-            key=("accuracy", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             checks=[
                 {
                     "name": "Accuracy(train)",
@@ -296,22 +265,11 @@ class TestPerfHierarchicalLabelClassification:
                     "op": "<",
                     "margin": 0.1,
                 },
-            ],
-        )
-
-    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_speed(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark train time per iter / infer time per image."""
-        fxt_benchmark.track_resources = True
-        result = fxt_benchmark.run(
-            model_id=fxt_model_id,
-            tags={"benchmark": "speed"},
-        )
-        fxt_check_benchmark_result(
-            result,
-            key=("speed", fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
-            checks=[
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
                 {
                     "name": "avg_data_time",
                     "op": "<",
