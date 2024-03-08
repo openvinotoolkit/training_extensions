@@ -27,7 +27,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -38,7 +38,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -47,7 +47,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
@@ -105,7 +105,7 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={"max_epochs": "1"},
         ),
     ]

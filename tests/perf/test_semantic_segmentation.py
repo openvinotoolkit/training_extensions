@@ -33,7 +33,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
             size="small",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -44,7 +44,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
             size="medium",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -53,7 +53,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
             size="large",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]

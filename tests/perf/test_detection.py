@@ -33,7 +33,7 @@ class TestPerfObjectDetection(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -49,7 +49,7 @@ class TestPerfObjectDetection(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -63,7 +63,7 @@ class TestPerfObjectDetection(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",

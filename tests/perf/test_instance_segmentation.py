@@ -29,7 +29,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -45,7 +45,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -59,7 +59,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -122,7 +122,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -138,7 +138,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",

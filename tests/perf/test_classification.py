@@ -30,7 +30,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="small",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -41,7 +41,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="medium",
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -50,7 +50,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="large",
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
@@ -110,7 +110,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="small",
             data_format="datumaro",
             num_classes=3,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -121,7 +121,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=68,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -130,7 +130,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="large",
             data_format="datumaro",
             num_classes=21,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
@@ -190,7 +190,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             size="small",
             data_format="datumaro",
             num_classes=6,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "3",
                 "model.num_multilabel_classes": "0",
@@ -204,7 +204,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=102,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "23",
                 "model.num_multilabel_classes": "0",
