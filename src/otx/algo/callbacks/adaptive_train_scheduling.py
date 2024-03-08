@@ -62,6 +62,16 @@ class AdaptiveTrainScheduling(Callback):
             trainer.check_val_every_n_epoch = adaptive_check_val_every_n_epoch
             self._change_early_stopping_patience(trainer.callbacks, adaptive_check_val_every_n_epoch)
             self._change_lr_scheduler_frequency(trainer.lr_scheduler_configs, adaptive_check_val_every_n_epoch)
+        else:
+            # To get the consistent result with the OTX1.x, the patience should be changed
+            # Since OTX1.x scheduler works with >= patience, however, OTX2.x scheduler works with > patience
+            for config in trainer.lr_scheduler_configs:
+                if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
+                    msg = (
+                        "The LR scheduler for OTX2 operates when the patience exceeds the set value, "
+                        "hence, the configured value is reduced by 1."
+                    )
+                    config.scheduler.patience -= 1
 
         if iter_per_epoch < trainer.log_every_n_steps:
             msg = (
