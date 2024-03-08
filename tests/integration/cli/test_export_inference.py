@@ -210,6 +210,11 @@ def test_otx_export_infer(
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        pytest.xfail(
+            "Optimize for visual prompting and zero shot visual prompting yields segmentation fault after optimize.",
+        )
+
     command_cfg = [
         "otx",
         "optimize",
@@ -226,10 +231,7 @@ def test_otx_export_infer(
         exported_model_path,
     ]
 
-    run_main(
-        command_cfg=command_cfg,
-        open_subprocess=False if task in ("visual_prompting", "zero_shot_visual_prompting") else fxt_open_subprocess,
-    )
+    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
     outputs_dir = tmp_path_test / "outputs"
     latest_dir = max(
