@@ -19,7 +19,6 @@ otx.algorithms.visual\_prompting.adapters.openvino.model\_wrappers.openvino\_mod
    
       Decoder
       ImageEncoder
-      PromptGetter
    
    
 

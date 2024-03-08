@@ -419,30 +419,12 @@ document.write(`
             <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">sim_threshold</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
-            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.65</span><span class="p">,</span>
-            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Similarity threshold&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The threshold to filter point candidates based on similarity scores.&quot;</span><span class="p">,</span>
-            <span class="n">min_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">max_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="n">num_bg_points</span> <span class="o">=</span> <span class="n">configurable_integer</span><span class="p">(</span>
-            <span class="n">default_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;The number of background points&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of background points to be used as negative prompts.&quot;</span><span class="p">,</span>
+        <span class="n">downsizing</span> <span class="o">=</span> <span class="n">configurable_integer</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;The downsizing ratio&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The downsizing ratio of image encoder.&quot;</span><span class="p">,</span>
             <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">max_value</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-            <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="n">default_threshold_reference</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
-            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
-            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Default reference threshold&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The threshold to get target area in the mask for reference features.&quot;</span><span class="p">,</span>
-            <span class="n">min_value</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span>
-            <span class="n">max_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">INFERENCE</span><span class="p">,</span>
         <span class="p">)</span>
 

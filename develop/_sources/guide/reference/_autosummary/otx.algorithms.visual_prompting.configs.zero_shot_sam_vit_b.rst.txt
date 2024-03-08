@@ -1,0 +1,32 @@
+otx.algorithms.visual\_prompting.configs.zero\_shot\_sam\_vit\_b
+================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.configs.zero_shot_sam_vit_b
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algorithms.visual_prompting.configs.zero_shot_sam_vit_b.configuration
+   otx.algorithms.visual_prompting.configs.zero_shot_sam_vit_b.ptq_optimization_config
+

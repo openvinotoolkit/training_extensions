@@ -31,4 +31,5 @@ otx.algorithms.visual\_prompting.configs
    otx.algorithms.visual_prompting.configs.sam_tiny_vit
    otx.algorithms.visual_prompting.configs.sam_vit_b
    otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit
+   otx.algorithms.visual_prompting.configs.zero_shot_sam_vit_b
 
