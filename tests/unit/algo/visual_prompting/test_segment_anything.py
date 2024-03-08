@@ -115,7 +115,6 @@ class TestSegmentAnything:
             ),
         ]
         points = [Points(torch.tensor([[5, 5]]), canvas_size=(1024, 1024), dtype=torch.float32)]
-        labels = [torch.as_tensor([1, 1])]
         gt_masks = [torch.zeros((2, *os)) for os in ori_shapes] if training else None
 
         results = segment_anything.forward_train(
@@ -123,7 +122,6 @@ class TestSegmentAnything:
             ori_shapes=ori_shapes,
             bboxes=bboxes,
             points=points,
-            labels=labels,
             gt_masks=gt_masks,
         )
 
@@ -143,9 +141,6 @@ class TestSegmentAnything:
 
             # check ious
             assert results[1][0].ndim == 2
-
-            # check labels
-            assert torch.all(results[2][0] == labels[0])
 
     @pytest.mark.parametrize(
         ("point_coords", "point_labels", "expected"),
@@ -321,7 +316,6 @@ class TestOTXSegmentAnything:
         assert isinstance(output_data["points"][0], tuple)
         assert isinstance(output_data["points"][0][0], Points)
         assert isinstance(output_data["points"][0][1], Tensor)
-        assert isinstance(output_data["labels"][0], Tensor)
 
     def test_customize_outputs(self, model, fxt_vpm_data_entity) -> None:
         """Test _customize_outputs."""
@@ -333,12 +327,11 @@ class TestOTXSegmentAnything:
 
         # inference
         model.training = False
-        outputs = (torch.tensor([1]), torch.tensor([1]), torch.tensor([1]))
+        outputs = (torch.tensor([1]), torch.tensor([1]))
         result = model._customize_outputs(outputs, fxt_vpm_data_entity[1])
         assert isinstance(result, VisualPromptingBatchPredEntity)
         assert result.masks[0].data == outputs[0]
         assert result.scores[0] == outputs[1]
-        assert result.labels[0] == outputs[2]
 
     def test_inspect_prompts(self, model) -> None:
         """Test _inspect_prompts."""

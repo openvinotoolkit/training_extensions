@@ -42,6 +42,7 @@ data_preprocessor:
     - 255
   bgr_to_rgb: false
   pad_size_divisor: 32
+  non_blocking: true
 bbox_head:
   type: CustomSSDHead
   num_classes: 80

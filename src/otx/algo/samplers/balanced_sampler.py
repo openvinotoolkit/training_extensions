@@ -6,25 +6,15 @@
 from __future__ import annotations
 
 import math
-from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import torch
 from torch.utils.data import Sampler
 
+from otx.core.utils.utils import get_idx_list_per_classes
+
 if TYPE_CHECKING:
-    from datumaro import Dataset as DmDataset
-
     from otx.core.data.dataset.base import OTXDataset
-
-
-def get_idx_list_per_classes(dm_dataset: DmDataset) -> dict[int, list[int]]:
-    """Compute class statistics."""
-    stats: dict[int, list[int]] = defaultdict(list)
-    for item_idx, item in enumerate(dm_dataset):
-        for ann in item.annotations:
-            stats[ann.label].append(item_idx)
-    return stats
 
 
 class BalancedSampler(Sampler):

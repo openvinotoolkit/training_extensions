@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable
 
 import torch
@@ -40,4 +41,4 @@ class OTXActionClsDataset(OTXDataset[ActionClsDataEntity]):
     @property
     def collate_fn(self) -> Callable:
         """Collection function to collect ActionClsDataEntity into ActionClsBatchDataEntity."""
-        return ActionClsBatchDataEntity.collate_fn
+        return partial(ActionClsBatchDataEntity.collate_fn, stack_images=self.stack_images)

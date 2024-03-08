@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
@@ -198,17 +199,17 @@ class ImageInfo(tv_tensors.TVTensor):
         return (h_img + top + bottom, w_img + left + right)
 
     @pad_shape.setter
-    def pad_shape(self, pad_shape: tuple[int, int]) -> None:
+    def pad_shape(self, pad_shape: tuple[int, int] | tuple[int, int, int]) -> None:
         """Set padding from the given pad shape.
 
         Args:
-            pad_shape: Padded image shape (height, width)
+            pad_shape: Padded image shape (height, width) or (height, width, channel)
                 which should be larger than this image shape.
                 In addition, the padded image should be padded
                 only for the right or bottom borders.
         """
         h_img, w_img = self.img_shape
-        h_pad, w_pad = pad_shape
+        h_pad, w_pad = pad_shape[0], pad_shape[1]
 
         if h_pad < h_img or w_pad < w_img:
             raise ValueError(pad_shape)
@@ -568,8 +569,21 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         return ImageType.get_image_type(self.images)
 
     @classmethod
-    def collate_fn(cls, entities: list[T_OTXDataEntity]) -> OTXBatchDataEntity:
-        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
+    def collate_fn(
+        cls,
+        entities: list[T_OTXDataEntity],
+        stack_images: bool = True,
+    ) -> OTXBatchDataEntity:
+        """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.
+
+        Args:
+            entities: List of OTX data entities.
+            stack_images: If True, return 4D B x C x H x W image tensor.
+                Otherwise return a list of 3D C x H x W image tensor.
+
+        Returns:
+            Collated OTX batch data entity
+        """
         if (batch_size := len(entities)) == 0:
             msg = "collate_fn() input should have > 0 entities"
             raise RuntimeError(msg)
@@ -580,9 +594,22 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
             msg = "collate_fn() input should include a single OTX task"
             raise RuntimeError(msg)
 
+        images = [entity.image for entity in entities]
+        like = next(iter(images))
+
+        if stack_images and not all(like.shape == entity.image.shape for entity in entities):  # type: ignore[union-attr]
+            msg = (
+                "You set stack_images as True, but not all images in the batch has same shape. "
+                "In this case, we cannot stack images. Some tasks, e.g., detection, "
+                "can have different image shapes among samples in the batch. However, if it is not your intention, "
+                "consider setting stack_images as False in the config."
+            )
+            warnings.warn(msg, stacklevel=1)
+            stack_images = False
+
         return OTXBatchDataEntity(
             batch_size=batch_size,
-            images=[entity.image for entity in entities],
+            images=tv_tensors.wrap(stack(images, dim=0), like=like) if stack_images else images,
             imgs_info=[entity.img_info for entity in entities],
         )
 

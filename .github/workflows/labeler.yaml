@@ -9,11 +9,11 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Uploads repository content to the runner
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1 # Uploads repository content to the runner
         name: Checkout repository
         with:
           sparse-checkout: |
             .github
-      - uses: actions/labeler@v4
+      - uses: actions/labeler@ac9175f8a1f3625fd0d4fb234536d26811351594 # v4.3.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"

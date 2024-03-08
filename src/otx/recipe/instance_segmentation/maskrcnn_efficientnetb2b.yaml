@@ -54,6 +54,8 @@ overrides:
             scale:
               - 1024
               - 1024
+          - type: Pad
+            size_divisor: 32
           - type: RandomFlip
             prob: 0.5
           - type: PackDetInputs
@@ -67,6 +69,8 @@ overrides:
             scale:
               - 1024
               - 1024
+          - type: Pad
+            size_divisor: 32
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
@@ -87,6 +91,8 @@ overrides:
             scale:
               - 1024
               - 1024
+          - type: Pad
+            size_divisor: 32
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
