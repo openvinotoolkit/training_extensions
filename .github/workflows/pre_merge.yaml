@@ -80,7 +80,7 @@ jobs:
 
   Integration-Test:
     runs-on: [self-hosted, linux, x64, dev]
-    needs: Unit-Test
+    # needs: Unit-Test
     strategy:
       fail-fast: false
       matrix:
