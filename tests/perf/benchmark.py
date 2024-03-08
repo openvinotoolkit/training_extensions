@@ -9,9 +9,9 @@ import gc
 import logging
 import os
 import subprocess
-from time import time
 from dataclasses import dataclass
 from pathlib import Path
+from time import time
 from typing import Any
 
 import pandas as pd
@@ -234,7 +234,13 @@ class Benchmark:
         else:
             subprocess.run(command, check=True)  # noqa: S603
 
-    def _log_metrics(self, work_dir: Path, tags: dict[str, str], criteria: list[Benchmark.Criterion], extra_metrics: dict[str, Any] = {}) -> None:
+    def _log_metrics(
+        self,
+        work_dir: Path,
+        tags: dict[str, str],
+        criteria: list[Benchmark.Criterion],
+        extra_metrics: dict[str, Any],
+    ) -> None:
         if not work_dir.exists():
             return
 
