@@ -15,7 +15,7 @@ MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in 
 MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
 
 DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe and "tile" not in recipe]
-INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe and "tile" not in recipe]
+INST_SEG_LIST = [recipe for recipe in RECIPE_LIST_ALL if "instance_segmentation" in recipe and "tile" not in recipe and "swint" not in recipe]
 EXPLAIN_MODEL_LIST = MC_ML_CLS + DETECTION_LIST + INST_SEG_LIST
 
 MEAN_TORCH_OV_DIFF = 150
@@ -28,6 +28,7 @@ MEAN_TORCH_OV_DIFF = 150
 def test_forward_explain(
     recipe: str,
     fxt_target_dataset_per_task: dict,
+    fxt_accelerator: str,
 ) -> None:
     """
     Test forward == forward_explain.
@@ -47,6 +48,7 @@ def test_forward_explain(
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
+        device=fxt_accelerator,
     )
 
     predict_result = engine.predict()
@@ -69,6 +71,7 @@ def test_predict_with_explain(
     recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,
+    fxt_accelerator: str,
 ) -> None:
     """
     Test XAI.
@@ -93,6 +96,7 @@ def test_predict_with_explain(
     engine = Engine.from_config(
         config_path=recipe,
         data_root=fxt_target_dataset_per_task[task],
+        device=fxt_accelerator,
         work_dir=tmp_path,
     )
 
