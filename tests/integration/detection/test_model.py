@@ -22,6 +22,8 @@ class TestOTXModel:
         fxt_model: MMDetCompatibleModel,
         fxt_datamodule: OTXDataModule,
     ) -> None:
+        # Double checking that explain mode is False since it's True on CI
+        fxt_model.explain_mode = False
         dataloader = fxt_datamodule.train_dataloader()
         for inputs in dataloader:
             outputs = fxt_model(inputs)

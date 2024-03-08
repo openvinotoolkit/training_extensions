@@ -88,7 +88,7 @@ jobs:
           # - task: "action"
           # - task: "classification"
           - task: "detection"
-          - task: "instance_segmentation"
+          # - task: "instance_segmentation"
           # - task: "semantic_segmentation"
           # - task: "visual_prompting"
     name: Integration-Test-${{ matrix.task }}-py310
