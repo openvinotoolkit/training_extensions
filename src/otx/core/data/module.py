@@ -139,7 +139,6 @@ class OTXDataModule(LightningDataModule):
     def train_dataloader(self) -> DataLoader:
         """Get train dataloader."""
         config = self.config.train_subset
-        config.num_workers = 0
         dataset = self._get_dataset(config.subset_name)
         sampler = instantiate_sampler(config.sampler, dataset=dataset, batch_size=config.batch_size)
 
