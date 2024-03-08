@@ -208,8 +208,7 @@ def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
 def fxt_summary_csv(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
     """Path to benchmark result summary csv file."""
     summary_csv = request.config.getoption("--summary-csv")
-    if summary_csv is None:
-        summary_csv = fxt_output_root / "benchmark-summary.csv"
+    summary_csv = fxt_output_root / "benchmark-summary.csv" if summary_csv is None else Path(summary_csv)
     msg = f"{summary_csv = }"
     log.info(msg)
     return summary_csv
