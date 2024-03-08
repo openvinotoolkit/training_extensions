@@ -3,13 +3,16 @@
 
 
 import os
+import platform
+import subprocess
 import re
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Tuple, Callable
+from typing import Dict, List, Tuple, Callable, TYPE_CHECKING
 
-import mlflow
+from cpuinfo import get_cpu_info
+from mlflow.client import MlflowClient
 import numpy as np
 import pandas as pd
 import pytest
@@ -95,23 +98,65 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> Path:
+def fxt_current_date() -> str:
+    tz = timezone(offset=timedelta(hours=9), name="Seoul")
+    return datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
+    """Version / branch / commit info."""
+    import otx
+
+    version_str = otx.__version__
+    try:
+        branch_str = (
+            subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()
+        )  # noqa: S603, S607
+    except Exception:
+        branch_str = os.environ.get("GH_CTX_REF_NAME", "unknown")
+    try:
+        commit_str = (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("ascii").strip()
+        )  # noqa: S603, S607
+    except Exception:
+        commit_str = os.environ.get("GH_CTX_SHA", "unknown")
+    version_tags = {
+        "version": version_str,
+        "branch": branch_str,
+        "commit": commit_str,
+        "date": fxt_current_date,
+    }
+    return version_tags
+
+
+@pytest.fixture(scope="session")
+def fxt_tags(request: pytest.FixtureRequest, fxt_version_tags: dict[str, str]) -> dict[str, str]:
+    """Tag fields to record the machine and user executing this perf test."""
+    tags = {
+        **fxt_version_tags,
+        "user_name": request.config.getoption("--user-name"),
+        "machine_name": platform.node(),
+        "cpu_info": get_cpu_info()["brand_raw"],
+        "accelerator_info": subprocess.check_output(
+            ["nvidia-smi", "-L"],  # noqa: S603, S607
+        )
+        .decode()
+        .strip(),
+    }
+    print(f"{tags = }")
+    return tags
+
+
+@pytest.fixture(scope="session")
+def fxt_output_root(
+    request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory, fxt_current_date: str
+) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    data_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-    commit_str = os.environ.get("GH_CTX_SHA", "unknown")
-    print(f"Git SHA configured with {commit_str}")
-    return Path(output_root) / (data_str + "-" + commit_str[:7])
-
-
-@pytest.fixture(scope="session")
-def fxt_working_branch() -> str:
-    """Git branch name for the current HEAD."""
-    branch = os.environ.get("GH_CTX_REF_NAME", "unknown")
-    print(f"working branch name fixture configured with {branch}")
-    return branch
+    return Path(output_root) / fxt_current_date
 
 
 @pytest.fixture
@@ -126,7 +171,7 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXBenchmark:
+def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str]) -> OTXBenchmark:
     """Configure benchmark."""
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
@@ -140,7 +185,7 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
 
     tags = cfg.get("tags", {})
     tags["data_size"] = data_size
-    tags["user_name"] = request.config.getoption("--user-name")
+    tags.update(fxt_tags)
     cfg["tags"] = tags
 
     num_epoch_override: int = int(request.config.getoption("--num-epoch"))
@@ -164,79 +209,35 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path) -> OTXB
     return benchmark
 
 
-def logging_perf_results_to_mlflow(
-    version: str, branch: str, git_hash: str, results: pd.DataFrame, client: "MlflowClient"
-):
-    class DummyDatasetSource(mlflow.data.DatasetSource):
-        @staticmethod
-        def _get_source_type():
-            return "dummy"
-
-    class DummyDataset(mlflow.data.Dataset):
-        def _to_dict(self, base_dict):
-            return {
-                "name": base_dict["name"],
-                "digest": base_dict["digest"],
-                "source": base_dict["source"],
-                "source_type": base_dict["source_type"],
-            }
-
-    exp_name = f"[{branch}] OTX Performance Benchmark"
-    exp = client.get_experiment_by_name(exp_name)
-    if exp is None:
-        exp_id = client.create_experiment(exp_name, tags={"Project": "OpenVINO Training Extensions", "Branch": branch})
-    else:
-        exp_id = exp.experiment_id
-
-    mlflow.set_experiment(experiment_id=exp_id)
-
-    rows = results.to_dict(orient="records")
-    for row in rows:
-        task = row.pop("task")
-        model = row.pop("model")
-        data = row.pop("data")
-        data = os.path.dirname(data)
-        data_sz = row.pop("data_size")
-        runs = client.search_runs(
-            exp_id,
-            filter_string=f"tags.task LIKE '%{task}%' AND "
-            f"tags.model LIKE '%{model}%' AND "
-            f"tags.data LIKE '%{data}%'",
-        )
-        run = None
-        is_new_run = True
-        run_name = f"{task} | {model}"
-        if len(runs) == 0:
-            run = client.create_run(exp_id, run_name=run_name)
-        else:
-            is_new_run = False
-            run = runs[0]
-
-        with mlflow.start_run(run_id=run.info.run_id):
-            if is_new_run:
-                mlflow.set_tag("task", task)
-                mlflow.set_tag("model", model)
-                mlflow.set_tag("data", data)
-                dat_src = DummyDatasetSource()
-                dataset = DummyDataset(dat_src, data, data_sz)
-                mlflow.log_input(dataset)
-            mlflow.set_tag("version", version)
-            mlflow.set_tag("git-hash", git_hash)
-            for k, v in row.items():
-                if isinstance(v, int) or isinstance(v, float):
-                    k = k.replace("(", "_")
-                    k = k.replace(")", "")
-                    k = k.replace("%", "percentage")
-                    history = client.get_metric_history(run.info.run_id, k)
-                    step = 0
-                    if len(history) > 0:
-                        step = history[-1].step + 1
-                    # set 'synchronous' to True to show the metric graph correctly
-                    mlflow.log_metric(k, v, step=step, synchronous=True)
+def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
+    for index, data in results.iterrows():
+        task, data_size, model = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+        exp_tags = {
+            "task": task,
+            "model": model,
+            "data_size": data_size,
+        }
+        exp = client.get_experiment_by_name(exp_name)
+        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
+        if exp.lifecycle_stage != "active":
+            client.restore_experiment(exp_id)
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        run_tags.update(**exp_tags, **tags)
+        run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
+        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        for k, v in run_metrics.items():
+            k = k.replace("(", "_")
+            k = k.replace(")", "")
+            k = k.replace("%", "percentage")
+            client.log_metric(run.info.run_id, k, v)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_working_branch, fxt_mlflow_client):
+def fxt_benchmark_summary(
+    request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str], fxt_mlflow_client: MlflowClient
+):
     """Summarize all results at the end of test session."""
     yield
     all_results = OTXBenchmark.load_result(fxt_output_root)
@@ -257,10 +258,12 @@ def fxt_benchmark_summary(request: pytest.FixtureRequest, fxt_output_root: Path,
             return
 
         # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-        if fxt_working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", fxt_working_branch)):
-            version = VERSION
-            git_hash = str(fxt_output_root).split("-")[-1]
-            logging_perf_results_to_mlflow(version, fxt_working_branch, git_hash, all_results, fxt_mlflow_client)
+        working_branch = fxt_tags["branch"]
+        if working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", working_branch)):
+            try:
+                log_perf_results_to_mlflow(all_results, fxt_tags, fxt_mlflow_client)
+            except Exception as e:
+                print("MLFlow loging failed: ", e)
 
     if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
         shutil.rmtree(fxt_output_root)

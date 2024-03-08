@@ -135,18 +135,26 @@ class OTXBenchmark:
                     for k, v in tags.items():
                         result[k] = v
             results.append(result)
-        if len(results) > 0:
-            # Merge experiments
-            data = pd.concat(results, ignore_index=True)
-            data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
-            # Average by unique group
-            grouped = data.groupby(["task", "data_size", "model"])
-            aggregated = grouped.mean(numeric_only=True)
-            # ["data/1", "data/2", "data/3"] -> "data/"
-            aggregated["data"] = grouped["data"].agg(lambda x: os.path.commonprefix(x.tolist()))
-            return aggregated
-        else:
+        if len(results) == 0:
             return None
+        # Merge experiments
+        data = pd.concat(results, ignore_index=True)
+        data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
+        # Average by unique group
+        grouped = data.groupby(["task", "data_size", "model"])
+        aggregated = grouped.mean(numeric_only=True)
+        # Merge tag columns (non-numeric & non-index)
+        tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
+        for col in tag_columns:
+            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+        # Average by task
+        task_grouped = data.groupby(["task"], as_index=False)
+        task_aggregated = task_grouped.mean(numeric_only=True)
+        task_aggregated["data_size"] = "all"
+        task_aggregated["model"] = "all"
+        task_aggregated.set_index(["task", "data_size", "model"], inplace=True)
+        return pd.concat([aggregated, task_aggregated])
 
     def _build_config(
         self,
@@ -162,7 +170,7 @@ class OTXBenchmark:
 
         cfg = {}
         cfg["tags"] = all_tags  # metadata
-        cfg["output_path"] = os.path.abspath(Path(self.output_root) / "-".join(list(all_tags.values()) + [model_id]))
+        cfg["output_path"] = os.path.abspath(self.output_root)
         cfg["constants"] = {
             "dataroot": os.path.abspath(self.data_root),
         }

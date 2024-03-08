@@ -27,7 +27,7 @@ class TestPerfAnomalyClassification:
                 "anomaly/mvtec/bottle_small/2",
                 "anomaly/mvtec/bottle_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -36,7 +36,7 @@ class TestPerfAnomalyClassification:
             "datasets": [
                 "anomaly/mvtec/wood_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -45,7 +45,7 @@ class TestPerfAnomalyClassification:
             "datasets": [
                 "anomaly/mvtec/hazelnut_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
@@ -98,7 +98,7 @@ class TestPerfAnomalyDetection:
                 "anomaly/mvtec/bottle_small/2",
                 "anomaly/mvtec/bottle_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -107,7 +107,7 @@ class TestPerfAnomalyDetection:
             "datasets": [
                 "anomaly/mvtec/wood_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -116,7 +116,7 @@ class TestPerfAnomalyDetection:
             "datasets": [
                 "anomaly/mvtec/hazelnut_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
@@ -169,7 +169,7 @@ class TestPerfAnomalySegmentation:
                 "anomaly/mvtec/bottle_small/2",
                 "anomaly/mvtec/bottle_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -178,7 +178,7 @@ class TestPerfAnomalySegmentation:
             "datasets": [
                 "anomaly/mvtec/wood_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -187,7 +187,7 @@ class TestPerfAnomalySegmentation:
             "datasets": [
                 "anomaly/mvtec/hazelnut_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 

@@ -28,7 +28,7 @@ class TestPerfInstanceSegmentation:
                 "instance_seg/wgisd_small/2",
                 "instance_seg/wgisd_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -37,7 +37,7 @@ class TestPerfInstanceSegmentation:
             "datasets": [
                 "instance_seg/coco_car_person_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         # TODO: Refine large dataset
         # "large": {
@@ -47,7 +47,7 @@ class TestPerfInstanceSegmentation:
         #     "datasets": [
         #         "instance_seg/bdd_large",
         #     ],
-        #     "num_repeat": 1,
+        #     "num_repeat": 5,
         # },
     }
 
@@ -125,7 +125,7 @@ class TestPerfTilingInstanceSegmentation:
                 "tiling_instance_seg/vitens_aeromonas_small/2",
                 "tiling_instance_seg/vitens_aeromonas_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
             "train_params": TILING_PARAMS,
         },
         "medium": {
@@ -135,7 +135,7 @@ class TestPerfTilingInstanceSegmentation:
             "datasets": [
                 "tiling_instance_seg/vitens_aeromonas_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
             "train_params": TILING_PARAMS,
         },
         # TODO: Refine large dataset
@@ -146,7 +146,7 @@ class TestPerfTilingInstanceSegmentation:
         #     "datasets": [
         #         "tiling_instance_seg/dota_large",
         #     ],
-        #     "num_repeat": 1,
+        #     "num_repeat": 5,
         #     "train_params": TILING_PARAMS,
         # },
     }

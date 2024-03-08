@@ -29,7 +29,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_small/3",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -39,7 +39,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_medium",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -49,7 +49,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_large",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
