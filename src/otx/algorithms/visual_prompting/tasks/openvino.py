@@ -118,7 +118,7 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         self.configuration = {
             "image_encoder": {
-                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
+                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size", "resize_type", "downsizing"])
             },
             "decoder": {
                 **attr.asdict(
@@ -130,8 +130,7 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
                         "type",
                         "visible_in_ui",
                         "class_name",
-                        "sim_threshold",
-                        "num_bg_points",
+                        "downsizing",
                     ],
                 )
             },
@@ -241,51 +240,11 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         device: str = "CPU",
         num_requests: int = 1,
     ):
-
-        assert all(module in model_files for module in ["image_encoder", "decoder"])
-
-        self.model = {}
-        model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
-        self.configuration = {
-            "image_encoder": {
-                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
-            },
-            "decoder": {
-                **attr.asdict(
-                    hparams.postprocessing,
-                    filter=lambda attr, value: attr.name
-                    not in [
-                        "header",
-                        "description",
-                        "type",
-                        "visible_in_ui",
-                        "class_name",
-                        "sim_threshold",
-                        "num_bg_points",
-                    ],
-                )
-            },
-        }
-
-        core = create_core()
-        for name in ["image_encoder", "decoder"]:
-            model_adapter = OpenvinoAdapter(
-                core=core,
-                model=model_files.get(name),
-                weights_path=weight_files.get(name, None),
-                model_parameters=model_parameters.get(name, {}),
-                device=device,
-                max_num_requests=num_requests,
-                plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
-            )
-            self.model[name] = Model.create_model(model_adapter, name, self.configuration.get(name, {}), preload=True)
-        self.converter = VisualPromptingToAnnotationConverter()
-        self.labels = label_schema.get_labels(include_empty=False)
-        self.transform = get_transform()  # TODO (sungchul): insert args
+        super().__init__(hparams, label_schema, model_files, weight_files, device, num_requests)
 
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
-
+        
         self.reference_feats: Optional[np.ndarray] = None
         self.used_indices: Optional[np.ndarray] = None
 
