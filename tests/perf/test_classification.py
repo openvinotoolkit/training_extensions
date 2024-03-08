@@ -28,7 +28,7 @@ class TestPerfSingleLabelClassification:
                 "classification/single_label/multiclass_CUB_small/2",
                 "classification/single_label/multiclass_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -37,7 +37,7 @@ class TestPerfSingleLabelClassification:
             "datasets": [
                 "classification/single_label/multiclass_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -46,7 +46,7 @@ class TestPerfSingleLabelClassification:
             "datasets": [
                 "classification/single_label/multiclass_food101_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
@@ -121,7 +121,7 @@ class TestPerfMultiLabelClassification:
                 "classification/multi_label/multilabel_CUB_small/2",
                 "classification/multi_label/multilabel_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -130,7 +130,7 @@ class TestPerfMultiLabelClassification:
             "datasets": [
                 "classification/multi_label/multilabel_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -139,7 +139,7 @@ class TestPerfMultiLabelClassification:
             "datasets": [
                 "classification/multi_label/multilabel_food101_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
@@ -214,7 +214,7 @@ class TestPerfHierarchicalLabelClassification:
                 "classification/h_label/h_label_CUB_small/2",
                 "classification/h_label/h_label_CUB_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -223,7 +223,7 @@ class TestPerfHierarchicalLabelClassification:
             "datasets": [
                 "classification/h_label/h_label_CUB_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         # TODO: Add large dataset
         # "large": {
@@ -232,7 +232,7 @@ class TestPerfHierarchicalLabelClassification:
         #     },
         #     "datasets": [
         #     ],
-        #     "num_repeat": 1,
+        #     "num_repeat": 5,
         # },
     }
 

@@ -28,7 +28,7 @@ class TestPerfDetection:
                 "detection/pothole_small/2",
                 "detection/pothole_small/3",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "medium": {
             "tags": {
@@ -37,7 +37,7 @@ class TestPerfDetection:
             "datasets": [
                 "detection/pothole_medium",
             ],
-            "num_repeat": 3,
+            "num_repeat": 5,
         },
         "large": {
             "tags": {
@@ -46,7 +46,7 @@ class TestPerfDetection:
             "datasets": [
                 "detection/vitens_large",
             ],
-            "num_repeat": 1,
+            "num_repeat": 5,
         },
     }
 
