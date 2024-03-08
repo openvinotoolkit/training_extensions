@@ -25,5 +25,5 @@ class LinearWarmupScheduler(torch.optim.lr_scheduler.LambdaLR):
 
     def step(self, epoch: int | None = None) -> None:
         """Overriding the step to disable the warmup scheduler after n_steps."""
-        if self._step_count < self.num_warmup_steps:
+        if self._step_count <= self.num_warmup_steps:
             super().step(epoch)
