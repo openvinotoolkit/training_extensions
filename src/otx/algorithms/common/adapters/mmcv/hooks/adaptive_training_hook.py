@@ -63,7 +63,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         self.min_es_patience = min_es_patience
         self.decay = decay
         self.enable_adaptive_interval_hook = enable_adaptive_interval_hook
-        self.enable_eval_before_run = enable_eval_before_run
+        self.enable_eval_before_run = False
 
         self._initialized = False
         self._original_interval = None

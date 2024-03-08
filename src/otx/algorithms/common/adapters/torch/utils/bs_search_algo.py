@@ -3,15 +3,56 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import multiprocessing as mp
 from typing import Callable, Dict, Tuple
+from pprint import pprint
+import os
 
 import torch
 import torch.distributed as dist
+import intel_extension_for_pytorch
 
 from otx.utils.logger import get_logger
 
 logger = get_logger()
 
+
+def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[bool, int]:
+    mp.set_start_method(None, True)
+    cuda_oom = False
+    # torch.cuda.reset_max_memory_cached(device=None)
+    # torch.cuda.empty_cache()
+
+    pprint(dict(os.environ))
+
+    # torch.xpu.reset_peak_memory_stats(device=None)
+    # torch.xpu.empty_cache()
+
+    try:
+        kwargs = train_func_kwargs
+        kwargs["batch_size"] = bs
+        train_func(**kwargs)
+        print("ha"*100)
+    except RuntimeError as e:
+        if (
+            str(e).startswith("CUDA out of memory.") or
+            str(e).startswith("Allocation is out of device memory on current platform.")
+        ):
+            print("ho"*100)
+            cuda_oom = True
+        else:
+            raise e
+
+    # max_memory_reserved = torch.cuda.max_memory_reserved(device=None)
+    max_memory_reserved = torch.xpu.max_memory_reserved(device=None)
+
+    trial_queue.put(
+        {
+            "cuda_oom" : cuda_oom,
+            "max_memory_reserved" :max_memory_reserved,
+        }
+    )
+    
 
 class BsSearchAlgo:
     """Algorithm class to find optimal batch size.
@@ -22,7 +63,7 @@ class BsSearchAlgo:
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
-    def __init__(self, train_func: Callable[[int], None], default_bs: int, max_bs: int):
+    def __init__(self, train_func: Callable[[int], None], train_func_kwargs: dict, default_bs: int, max_bs: int):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
         if max_bs <= 0:
@@ -32,27 +73,33 @@ class BsSearchAlgo:
             default_bs = max_bs
 
         self._train_func = train_func
+        self._train_func_kwargs = train_func_kwargs
         self._default_bs = default_bs
         self._max_bs = max_bs
         self._bs_try_history: Dict[int, int] = {}
-        _, self._total_mem = torch.cuda.mem_get_info()
+        # _, self._total_mem = torch.cuda.mem_get_info()
+        self._total_mem = torch.xpu.get_device_properties(0).total_memory
         self._mem_lower_bound = 0.8 * self._total_mem
         self._mem_upper_bound = 0.85 * self._total_mem
+        self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
-        torch.cuda.reset_max_memory_cached(device=None)
-        torch.cuda.empty_cache()
+        # torch.cuda.reset_max_memory_cached(device=None)
+        # torch.cuda.empty_cache()
 
-        try:
-            self._train_func(bs)
-        except RuntimeError as e:
-            if str(e).startswith("CUDA out of memory."):
-                cuda_oom = True
-            else:
-                raise e
+        torch.xpu.reset_peak_memory_stats(device=None)
+        torch.xpu.empty_cache()
 
-        max_memory_reserved = torch.cuda.max_memory_reserved(device=None)
+        trial_queue = self._mp_ctx.Queue()
+        proc = self._mp_ctx.Process(target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue))
+        proc.start()
+        output = trial_queue.get()
+        breakpoint()
+        proc.join()
+
+        cuda_oom = output["cuda_oom"]
+        max_memory_reserved = output["max_memory_reserved"]
 
         if dist.is_initialized():  # Aggregate all results and broadcast to all processes
             rank = dist.get_rank()
@@ -85,7 +132,8 @@ class BsSearchAlgo:
             f"Adapting Batch size => bs : {bs}, CUDA_OOM : {cuda_oom}, "
             f"GPU memory usage : {max_memory_reserved / self._total_mem}%"
         )
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
+        torch.xpu.empty_cache()
 
         return cuda_oom, max_memory_reserved
 
@@ -118,7 +166,8 @@ class BsSearchAlgo:
                 available_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, lowest_unavailable_bs)
 
-            if lowest_unavailable_bs - available_bs <= 2:
+            if lowest_unavailable_bs - available_bs <= 2 or True:
+                available_bs = 16
                 break
 
         if available_bs == 0:

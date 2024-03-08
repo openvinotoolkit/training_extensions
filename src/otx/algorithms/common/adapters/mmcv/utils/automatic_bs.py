@@ -11,6 +11,8 @@ import numpy as np
 from torch.cuda import is_available as cuda_available
 
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
+from otx.core.data import caching
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.utils.logger import get_logger
 
 logger = get_logger()
@@ -38,6 +40,39 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
 
+def train_func_single_iter(batch_size, train_func, cfg, validate, datasets):
+    caching.MemCacheHandlerSingleton.create("null", 0)
+    copied_cfg = deepcopy(cfg)
+    _set_batch_size(copied_cfg, batch_size)
+    _set_max_epoch(copied_cfg, 1)  # setup for training a single iter to reduce time
+
+    # Remove hooks due to reasons below
+    # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
+    # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
+    # CustomEvalHook => exclude validation in classification task
+    idx_hooks_to_remove = []
+    hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
+    for i, hook in enumerate(copied_cfg.custom_hooks):
+        if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
+            hook["enable_eval_before_run"] = False
+        for hook_to_remove in hooks_to_remove:
+            if hook_to_remove.lower() in hook["type"].lower():
+                idx_hooks_to_remove.append(i)
+
+    if idx_hooks_to_remove:
+        idx_hooks_to_remove.sort()
+        for i in reversed(idx_hooks_to_remove):
+            del copied_cfg.custom_hooks[i]
+
+    new_datasets = [SubDataset(datasets[0], batch_size)]
+
+    train_func(
+        dataset=new_datasets,
+        cfg=copied_cfg,
+        validate=validate,
+    )
+
+
 def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
@@ -54,44 +89,19 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
-    if not cuda_available():
+    if not (cuda_available() or is_xpu_available):
         logger.warning("Skip Auto-adaptive batch size: CUDA should be available, but it isn't.")
         return
-
-    def train_func_single_iter(batch_size):
-        copied_cfg = deepcopy(cfg)
-        _set_batch_size(copied_cfg, batch_size)
-        _set_max_epoch(copied_cfg, 1)  # setup for training a single iter to reduce time
-
-        # Remove hooks due to reasons below
-        # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
-        # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
-        # CustomEvalHook => exclude validation in classification task
-        idx_hooks_to_remove = []
-        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
-        for i, hook in enumerate(copied_cfg.custom_hooks):
-            if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
-                hook["enable_eval_before_run"] = False
-            for hook_to_remove in hooks_to_remove:
-                if hook_to_remove.lower() in hook["type"].lower():
-                    idx_hooks_to_remove.append(i)
-
-        if idx_hooks_to_remove:
-            idx_hooks_to_remove.sort()
-            for i in reversed(idx_hooks_to_remove):
-                del copied_cfg.custom_hooks[i]
-
-        new_datasets = [SubDataset(datasets[0], batch_size)]
-
-        train_func(
-            dataset=new_datasets,
-            cfg=copied_cfg,
-            validate=validate,
-        )
 
     default_bs = _get_batch_size(cfg)
     bs_search_algo = BsSearchAlgo(
         train_func=train_func_single_iter,
+        train_func_kwargs= {
+            "train_func" : train_func,
+            "cfg" : cfg,
+            "validate" : validate,
+            "datasets" : datasets,
+        },
         default_bs=default_bs,
         max_bs=len(datasets[0]),
     )
