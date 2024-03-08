@@ -148,7 +148,13 @@ class OTXBenchmark:
         for col in tag_columns:
             # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
             aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        return aggregated
+        # Average by task
+        task_grouped = data.groupby(["task"], as_index=False)
+        task_aggregated = task_grouped.mean(numeric_only=True)
+        task_aggregated["data_size"] = "all"
+        task_aggregated["model"] = "all"
+        task_aggregated.set_index(["task", "data_size", "model"], inplace=True)
+        return pd.concat([aggregated, task_aggregated])
 
     def _build_config(
         self,
