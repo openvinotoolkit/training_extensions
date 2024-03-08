@@ -118,7 +118,10 @@ class OpenVINOVisualPromptingInferencer(IInferencer):
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         self.configuration = {
             "image_encoder": {
-                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size", "resize_type", "downsizing"])
+                **attr.asdict(
+                    hparams.postprocessing,
+                    filter=lambda attr, value: attr.name in ["image_size", "resize_type", "downsizing"],
+                )
             },
             "decoder": {
                 **attr.asdict(
@@ -244,7 +247,7 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
 
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
         self.has_mask_inputs = [np.array([[0.0]]), np.array([[1.0]])]
-        
+
         self.reference_feats: Optional[np.ndarray] = None
         self.used_indices: Optional[np.ndarray] = None
 
