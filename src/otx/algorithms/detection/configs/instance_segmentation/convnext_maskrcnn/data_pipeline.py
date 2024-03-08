@@ -19,7 +19,7 @@ train_pipeline = [
         with_mask=True,
         poly2mask=False,
     ),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=True),
+    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size_divisor=32),
@@ -50,7 +50,7 @@ test_pipeline = [
         img_scale=__img_size,
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=True),
+            dict(type="Resize", keep_ratio=False),
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="Pad", size_divisor=32),
