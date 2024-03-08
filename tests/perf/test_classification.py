@@ -56,7 +56,8 @@ class TestPerfSingleLabelClassification(PerfTestBase):
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
@@ -136,7 +137,8 @@ class TestPerfMultiLabelClassification(PerfTestBase):
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
@@ -214,7 +216,8 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),

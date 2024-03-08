@@ -9,8 +9,10 @@ import gc
 import logging
 import os
 import subprocess
+from time import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -125,6 +127,7 @@ class Benchmark:
         for seed in range(num_repeat):
             sub_work_dir = work_dir / str(seed)
             tags["seed"] = str(seed)
+            extra_metrics = {}
 
             # Train & test
             command = [
@@ -150,7 +153,10 @@ class Benchmark:
             command.extend(["--deterministic", str(self.deterministic)])
             if self.num_epoch > 0:
                 command.extend(["--max_epochs", str(self.num_epoch)])
+            start_time = time()
             self._run_command(command)
+            extra_metrics["train/e2e_time"] = time() - start_time
+            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"epoch": "train/epoch"})
 
             command = [
                 "otx",
@@ -215,7 +221,7 @@ class Benchmark:
                 self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
 
             # Parse raw data into raw metrics
-            self._log_metrics(work_dir=sub_work_dir, tags=tags, criteria=criteria)
+            self._log_metrics(work_dir=sub_work_dir, tags=tags, criteria=criteria, extra_metrics=extra_metrics)
 
             # Force memory clean up
             gc.collect()
@@ -228,7 +234,7 @@ class Benchmark:
         else:
             subprocess.run(command, check=True)  # noqa: S603
 
-    def _log_metrics(self, work_dir: Path, tags: dict[str, str], criteria: list[Benchmark.Criterion]) -> None:
+    def _log_metrics(self, work_dir: Path, tags: dict[str, str], criteria: list[Benchmark.Criterion], extra_metrics: dict[str, Any] = {}) -> None:
         if not work_dir.exists():
             return
 
@@ -236,6 +242,8 @@ class Benchmark:
         csv_files = work_dir.glob("**/metrics.csv")
         raw_data = [pd.read_csv(csv_file) for csv_file in csv_files]
         raw_data = pd.concat(raw_data, ignore_index=True)
+        for k, v in extra_metrics.items():
+            raw_data[k] = v
 
         # Summarize
         metrics = []

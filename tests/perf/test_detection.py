@@ -74,7 +74,8 @@ class TestPerfObjectDetection(PerfTestBase):
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
