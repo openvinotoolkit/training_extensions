@@ -190,8 +190,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
         return {
             "predictions": predictions,
-            "saliency_map": saliency_map,
             "feature_vector": feature_vector,
+            "saliency_map": saliency_map,
         }
 
     def get_explain_fn(self) -> Callable:
