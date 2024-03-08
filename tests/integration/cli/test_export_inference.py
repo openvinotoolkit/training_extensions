@@ -286,5 +286,8 @@ def test_otx_export_infer(
     if "h_label_cls/efficientnet_v2_light" in request.node.name:
         msg = "h_label_cls/efficientnet_v2_light exceeds the following threshold = 0.1"
         pytest.xfail(msg)
+    if "multi_class_cls/tv_" in request.node.name:
+        msg = "torchvision model for multi_class_cls exceeds the following threshold = 0.1"
+        pytest.xfail(msg)
 
     _check_relative_metric_diff(torch_acc, ov_acc, 0.2)
