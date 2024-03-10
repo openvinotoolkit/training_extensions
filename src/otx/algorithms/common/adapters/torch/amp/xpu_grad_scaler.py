@@ -7,7 +7,11 @@ from collections import abc, defaultdict
 from typing import List
 
 import torch
-from intel_extension_for_pytorch.cpu.autocast._grad_scaler import _MultiDeviceReplicator
+
+from otx.algorithms.common.utils.utils import is_xpu_available
+
+if is_xpu_available():
+    from intel_extension_for_pytorch.cpu.autocast._grad_scaler import _MultiDeviceReplicator
 from torch.cuda.amp.grad_scaler import GradScaler, _refresh_per_optimizer_state
 
 
@@ -16,6 +20,8 @@ class XPUGradScaler(GradScaler):
 
     def __init__(self, init_scale=2.0**16, growth_factor=2.0, backoff_factor=0.5, growth_interval=2000, enabled=True):
         self._enabled = enabled
+        if not is_xpu_available():
+            raise RuntimeError("XPU GradScaler requires XPU device.")
 
         if self._enabled:
             assert growth_factor > 1.0, "The growth factor must be > 1.0."

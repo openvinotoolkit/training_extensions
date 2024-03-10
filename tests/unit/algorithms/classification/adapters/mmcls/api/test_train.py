@@ -96,7 +96,6 @@ class TestTrainModel:
         # Call the function
         train_model(model, [dataset, dataset], mmcv_cfg, distributed=True, validate=True)
 
-    @pytest.mark.skipif(is_xpu_available() or not torch.cuda.is_available(), reason="cuda is not available")
     def test_train_model_specific_timestamp_and_cuda_device(self, mock_modules, mmcv_cfg, model, dataset):
         # Create mock inputs
         _ = mock_modules
@@ -107,12 +106,15 @@ class TestTrainModel:
         # Call the function
         train_model(model, dataset, mmcv_cfg, timestamp=timestamp, device=device, meta=meta)
 
-    @pytest.mark.skipif(not is_xpu_available(), reason="xpu is not available")
-    def test_train_model_xpu_device(self, mock_modules, mmcv_cfg, model, dataset):
+    def test_train_model_xpu_device(self, mock_modules, mmcv_cfg, model, dataset, mocker):
         # Create mock inputs
         _ = mock_modules
         device = "xpu"
         mmcv_cfg.device = "xpu"
-
+        mocker.patch("otx.algorithms.classification.adapters.mmcls.apis.train.torch")
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.apis.train.torch.xpu.optimize",
+            return_value=(mocker.MagicMock(), mocker.MagicMock()),
+        )
         # Call the function
         train_model(model, dataset, mmcv_cfg, device=device)

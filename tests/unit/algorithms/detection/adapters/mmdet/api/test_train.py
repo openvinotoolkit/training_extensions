@@ -88,20 +88,24 @@ class TestTrainDetector:
         # Call the function
         train_detector(model, [dataset, dataset], mmcv_cfg, distributed=True, validate=True)
 
-    @pytest.mark.skipif(is_xpu_available() or not torch.cuda.is_available(), reason="cuda is not available")
-    def test_train_model_specific_timestamp_and_cuda_device(self, mock_modules, mmcv_cfg, model, dataset):
+    def test_train_model_specific_timestamp_and_cuda_device(self, mock_modules, mmcv_cfg, model, dataset, mocker):
         # Create mock inputs
         _ = mock_modules
         timestamp = "2024-01-01"
         mmcv_cfg.device = "cuda"
         meta = {"info": "some_info"}
+
         # Call the function
         train_detector(model, dataset, mmcv_cfg, timestamp=timestamp, meta=meta)
 
-    @pytest.mark.skipif(not is_xpu_available(), reason="xpu is not available")
-    def test_train_model_xpu_device(self, mock_modules, mmcv_cfg, model, dataset):
+    def test_train_model_xpu_device(self, mock_modules, mmcv_cfg, model, dataset, mocker):
         # Create mock inputs
         _ = mock_modules
         mmcv_cfg.device = "xpu"
+        mocker.patch("otx.algorithms.detection.adapters.mmdet.apis.train.torch")
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.apis.train.torch.xpu.optimize",
+            return_value=(mocker.MagicMock(), mocker.MagicMock()),
+        )
         # Call the function
         train_detector(model, dataset, mmcv_cfg)

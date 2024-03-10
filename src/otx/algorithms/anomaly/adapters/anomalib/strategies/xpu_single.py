@@ -30,7 +30,6 @@ class SingleXPUStrategy(SingleDeviceStrategy):
         checkpoint_io: Optional[CheckpointIO] = None,
         precision_plugin: Optional[PrecisionPlugin] = None,
     ):
-
         if not is_xpu_available():
             raise MisconfigurationException("`SingleXPUStrategy` requires XPU devices to run")
 
