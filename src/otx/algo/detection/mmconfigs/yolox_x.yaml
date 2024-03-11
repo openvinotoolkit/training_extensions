@@ -21,6 +21,7 @@ data_preprocessor:
     - 1.0
     - 1.0
     - 1.0
+  pad_value: 114
   bgr_to_rgb: false
   pad_size_divisor: 32
 backbone:

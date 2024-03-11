@@ -1,0 +1,146 @@
+model:
+  class_path: otx.algo.instance_segmentation.rtmdet_inst.RTMDetInst
+  init_args:
+    num_classes: 80
+    variant: tiny
+
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 0.004
+    weight_decay: 0.05
+
+scheduler:
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 20
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.1
+      patience: 10
+      monitor: val/map_50
+      min_lr: 4e-06
+
+metric:
+  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: segm
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
+  precision: 32 # 16/"16-true" does not work
+  max_epochs: 100
+  gradient_clip_val: 35.0
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      include_polygons: true
+      train_subset:
+        batch_size: 4
+        num_workers: 10
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: CachedMosaic
+            img_scale:
+              - 640
+              - 640
+            pad_val: 114.0
+            max_cached_images: 20
+            random_pop: false
+          - type: RandomResize
+            scale:
+              - 1280
+              - 1280
+            ratio_range:
+              - 0.5
+              - 2.0
+            keep_ratio: true
+          - type: RandomCrop
+            crop_size:
+              - 640
+              - 640
+          - type: YOLOXHSVRandomAug
+          - type: RandomFlip
+            prob: 0.5
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: CachedMixUp
+            img_scale:
+              - 640
+              - 640
+            ratio_range:
+              - 1.0
+              - 1.0
+            max_cached_images: 10
+            random_pop: false
+            pad_val:
+              - 114
+              - 114
+              - 114
+            prob: 0.5
+          - type: FilterAnnotations
+            min_gt_bbox_wh:
+              - 1
+              - 1
+          - type: PackDetInputs
+      val_subset:
+        batch_size: 2
+        num_workers: 10
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+      test_subset:
+        batch_size: 2
+        num_workers: 10
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            pad_to_square: true
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
