@@ -63,7 +63,7 @@ jobs:
           - task-short: "vsp"
             task: "visual_prompting"
     name: Perf-Benchmark-${{ matrix.task-short }}
-    runs-on: [self-hosted, linux, x64, dmount]
+    runs-on: [self-hosted, linux, x64, dmount, perf]
     timeout-minutes: 8640
     steps:
       - name: Checkout repository
