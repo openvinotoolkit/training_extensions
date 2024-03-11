@@ -11,6 +11,8 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+from time import time
+from typing import Any
 
 import pandas as pd
 
@@ -21,10 +23,8 @@ class Benchmark:
     """Benchmark runner for OTX2.x.
 
     Args:
-        benchmark_type (str): 'accuracy' or 'efficiency'
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
         output_root (str): Output root dirctory for logs and results. Defaults to './otx-benchmark'.
-        criteria (list[Criterion]): Benchmark criteria settings
         num_epoch (int): Overrides the per-model default number of epoch settings.
             Defaults to 0, which means no overriding.
         num_repeat (int): Number for trials with different random seed, which would be set
@@ -70,10 +70,8 @@ class Benchmark:
 
     def __init__(
         self,
-        benchmark_type: str = "accuracy",
         data_root: Path = Path("data"),
         output_root: Path = Path("otx-benchmark"),
-        criteria: list[Criterion] | None = None,
         num_epoch: int = 0,
         num_repeat: int = 1,
         eval_upto: str = "train",
@@ -82,10 +80,8 @@ class Benchmark:
         deterministic: bool = False,
         accelerator: str = "gpu",
     ):
-        self.benchmark_type = benchmark_type
         self.data_root = data_root
         self.output_root = output_root
-        self.criteria = criteria
         self.num_epoch = num_epoch
         self.num_repeat = num_repeat
         self.eval_upto = eval_upto
@@ -94,31 +90,29 @@ class Benchmark:
         self.deterministic = deterministic
         self.accelerator = accelerator
 
-        if num_epoch == 0 and benchmark_type == "efficiency":
-            self.num_epoch = 2
-
     def run(
         self,
         model: Model,
         dataset: Dataset,
+        criteria: list[Criterion],
     ) -> pd.DataFrame | None:
         """Run configured benchmark with given dataset and model and return the result.
 
         Args:
             model (Model): Target model settings
             dataset (Dataset): Target dataset settings
+            criteria (list[Criterion]): Target criteria settings
 
         Retruns:
             pd.DataFrame | None: Table with benchmark metrics
         """
 
-        run_name = f"{self.benchmark_type}/{model.task}/{model.name}/{dataset.name}"
+        run_name = f"{model.task}/{model.name}/{dataset.name}"
         log.info(f"{run_name = }")
         work_dir = self.output_root / run_name
         data_root = self.data_root / dataset.path
 
         tags = {
-            "benchmark": self.benchmark_type,
             "task": model.task,
             "data_size": dataset.size,
             "model": model.name,
@@ -133,6 +127,7 @@ class Benchmark:
         for seed in range(num_repeat):
             sub_work_dir = work_dir / str(seed)
             tags["seed"] = str(seed)
+            extra_metrics = {}
 
             # Train & test
             command = [
@@ -158,7 +153,10 @@ class Benchmark:
             command.extend(["--deterministic", str(self.deterministic)])
             if self.num_epoch > 0:
                 command.extend(["--max_epochs", str(self.num_epoch)])
+            start_time = time()
             self._run_command(command)
+            extra_metrics["train/e2e_time"] = time() - start_time
+            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"epoch": "train/epoch"})
 
             command = [
                 "otx",
@@ -169,9 +167,61 @@ class Benchmark:
             self._run_command(command)
 
             # Export & test
-            # Optimize & test
+            if self.eval_upto in ["export", "optimize"]:
+                command = [
+                    "otx",
+                    "export",
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
 
-            self._log_metrics(work_dir=sub_work_dir, tags=tags)
+                command = [  # NOTE: not working for h_label_cls. to be fixed
+                    "otx",
+                    "test",
+                    "--config",
+                    str(sub_work_dir / ".latest" / "export" / "configs.yaml"),
+                    "--checkpoint",
+                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export"})
+
+            # Optimize & test
+            if self.eval_upto == "optimize":
+                command = [
+                    "otx",
+                    "optimize",
+                    # NOTE: auto config should be implemented
+                    "--config",
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
+                    "--checkpoint",
+                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                command = [
+                    "otx",
+                    "test",
+                    # NOTE: auto config should be implemented
+                    "--config",
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
+                    "--checkpoint",
+                    str(sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"),
+                    "--work_dir",
+                    str(sub_work_dir),
+                ]
+                self._run_command(command)
+
+                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
+
+            # Parse raw data into raw metrics
+            self._log_metrics(work_dir=sub_work_dir, tags=tags, criteria=criteria, extra_metrics=extra_metrics)
 
             # Force memory clean up
             gc.collect()
@@ -184,16 +234,26 @@ class Benchmark:
         else:
             subprocess.run(command, check=True)  # noqa: S603
 
-    def _log_metrics(self, work_dir: Path, tags: dict[str, str]) -> None:
+    def _log_metrics(
+        self,
+        work_dir: Path,
+        tags: dict[str, str],
+        criteria: list[Benchmark.Criterion],
+        extra_metrics: dict[str, Any],
+    ) -> None:
         if not work_dir.exists():
             return
+
         # Load raw metrics
         csv_files = work_dir.glob("**/metrics.csv")
         raw_data = [pd.read_csv(csv_file) for csv_file in csv_files]
         raw_data = pd.concat(raw_data, ignore_index=True)
+        for k, v in extra_metrics.items():
+            raw_data[k] = v
+
         # Summarize
         metrics = []
-        for criterion in self.criteria:
+        for criterion in criteria:
             if criterion.name not in raw_data:
                 continue
             column = raw_data[criterion.name].dropna()
@@ -211,10 +271,19 @@ class Benchmark:
         if len(metrics) == 0:
             return
         metrics = pd.concat(metrics, axis=1)
+
         # Write csv w/ tags
         for k, v in tags.items():
             metrics[k] = v
         metrics.to_csv(work_dir / "benchmark.raw.csv", index=False)
+
+    def _rename_raw_data(self, work_dir: Path, replaces: dict[str, str]) -> None:
+        csv_files = work_dir.glob("**/metrics.csv")
+        for csv_file in csv_files:
+            data = pd.read_csv(csv_file)
+            for src_str, dst_str in replaces.items():
+                data.columns = data.columns.str.replace(src_str, dst_str)
+            data.to_csv(csv_file, index=False)
 
     @staticmethod
     def load_result(result_path: Path) -> pd.DataFrame | None:
@@ -236,11 +305,17 @@ class Benchmark:
         # Merge data
         data = pd.concat(results, ignore_index=True)
         # Average by unique group
-        grouped = data.groupby(["benchmark", "task", "data_size", "model"])
+        grouped = data.groupby(["task", "data_size", "model"])
         aggregated = grouped.mean(numeric_only=True)
         # Merge tag columns (non-numeric & non-index)
         tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
         for col in tag_columns:
             # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
             aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        return aggregated
+        # Average by task
+        task_grouped = data.groupby(["task"], as_index=False)
+        task_aggregated = task_grouped.mean(numeric_only=True)
+        task_aggregated["data_size"] = "all"
+        task_aggregated["model"] = "all"
+        task_aggregated = task_aggregated.set_index(["task", "data_size", "model"])
+        return pd.concat([aggregated, task_aggregated])
