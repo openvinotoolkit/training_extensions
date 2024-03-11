@@ -18,7 +18,7 @@ scheduler:
     init_args:
       mode: max
       factor: 0.1
-      patience: 10
+      patience: 9
       monitor: val/map_50
       min_lr: 4e-06
 

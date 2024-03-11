@@ -31,6 +31,10 @@ config:
       - prob: 0.5
         type: RandomFlip
       - type: PhotoMetricDistortion
+      - type: Pad
+        size:
+          - 512
+          - 512
       - type: PackSegInputs
     sampler:
       class_path: torch.utils.data.RandomSampler

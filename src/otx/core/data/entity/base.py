@@ -199,17 +199,17 @@ class ImageInfo(tv_tensors.TVTensor):
         return (h_img + top + bottom, w_img + left + right)
 
     @pad_shape.setter
-    def pad_shape(self, pad_shape: tuple[int, int]) -> None:
+    def pad_shape(self, pad_shape: tuple[int, int] | tuple[int, int, int]) -> None:
         """Set padding from the given pad shape.
 
         Args:
-            pad_shape: Padded image shape (height, width)
+            pad_shape: Padded image shape (height, width) or (height, width, channel)
                 which should be larger than this image shape.
                 In addition, the padded image should be padded
                 only for the right or bottom borders.
         """
         h_img, w_img = self.img_shape
-        h_pad, w_pad = pad_shape
+        h_pad, w_pad = pad_shape[0], pad_shape[1]
 
         if h_pad < h_img or w_pad < w_img:
             raise ValueError(pad_shape)
