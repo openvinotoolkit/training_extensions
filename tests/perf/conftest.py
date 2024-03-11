@@ -18,9 +18,6 @@ import pandas as pd
 import pytest
 import yaml
 
-from otx import __version__ as VERSION
-from otx.api.entities.model_template import ModelCategory, ModelTemplate
-
 from .benchmark import OTXBenchmark
 
 
@@ -162,6 +159,8 @@ def fxt_output_root(
 @pytest.fixture
 def fxt_model_id(request: pytest.FixtureRequest) -> str:
     """Skip by model category."""
+    from otx.api.entities.model_template import ModelCategory, ModelTemplate
+
     model_category: str = request.config.getoption("--model-category")
     model_template: ModelTemplate = request.param
     if model_category == "default":
@@ -198,7 +197,7 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tag
 
     cfg["eval_upto"] = request.config.getoption("--eval-upto")
     cfg["data_root"] = request.config.getoption("--data-root")
-    cfg["output_root"] = str(fxt_output_root)
+    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_size)
     cfg["dry_run"] = request.config.getoption("--dry-run")
 
     # Create benchmark
