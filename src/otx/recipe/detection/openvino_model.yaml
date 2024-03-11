@@ -18,7 +18,7 @@ scheduler:
   init_args:
     mode: min
     factor: 0.1
-    patience: 10
+    patience: 9
     monitor: train/loss
 
 engine:

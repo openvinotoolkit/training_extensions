@@ -60,6 +60,9 @@ def test_engine_from_config(
     test_metric = engine.test()
     assert len(test_metric) > 0
 
+    predict_result = engine.predict()
+    assert len(predict_result) > 0
+
     # A Task that doesn't have Export implemented yet.
     # [TODO]: Enable should progress for all Tasks.
     if task in [

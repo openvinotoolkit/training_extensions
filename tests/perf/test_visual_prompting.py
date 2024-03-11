@@ -27,7 +27,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -38,7 +38,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -47,31 +47,22 @@ class TestPerfVisualPrompting(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -86,12 +77,6 @@ class TestPerfVisualPrompting(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -102,6 +87,7 @@ class TestPerfVisualPrompting(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
 
 
@@ -120,31 +106,22 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={"max_epochs": "1"},
         ),
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/Dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -159,12 +136,6 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -175,4 +146,5 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
