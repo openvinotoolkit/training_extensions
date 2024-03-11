@@ -16,8 +16,8 @@ scheduler:
   - class_path: lightning.pytorch.cli.ReduceLROnPlateau
     init_args:
       mode: max
-      factor: 0.5
-      patience: 5
+      factor: 0.1
+      patience: 4
       monitor: val/map_50
 
 metric:
