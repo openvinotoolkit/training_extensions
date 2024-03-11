@@ -211,8 +211,9 @@ def test_otx_export_infer(
 
     # 5) test optimize
     if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        log.info(f"{task} will support optimize in the future. Skip the test.")
-        return
+        pytest.xfail(
+            "Optimize for visual prompting and zero shot visual prompting yields segmentation fault after optimize.",
+        )
 
     command_cfg = [
         "otx",
@@ -238,7 +239,10 @@ def test_otx_export_infer(
         key=lambda p: p.stat().st_mtime,
     )
     assert latest_dir.exists()
-    exported_model_path = str(latest_dir / "optimized_model.xml")
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        exported_model_path = str(latest_dir / "optimized_model_decoder.xml")
+    else:
+        exported_model_path = str(latest_dir / "optimized_model.xml")
 
     # 6) test optimized model
     tmp_path_test = run_cli_test(export_test_recipe, exported_model_path, Path("outputs") / "nncf_ptq", "cpu")
@@ -276,8 +280,8 @@ def test_otx_export_infer(
     msg = f"Recipe: {recipe}, (torch_accuracy, ov_accuracy): {torch_acc} , {ov_acc}"
     log.info(msg)
 
-    # Not compare w/ instance segmentation because training isn't able to be deterministic, which can lead to unstable test result.
-    if "maskrcnn_efficientnetb2b" in recipe:
+    # Not compare w/ instance segmentation and visual prompting tasks because training isn't able to be deterministic, which can lead to unstable test result.
+    if "maskrcnn_efficientnetb2b" in recipe or task in ("visual_prompting", "zero_shot_visual_prompting"):
         return
     threshold = 0.2
     if "multi_label_cls/efficientnet_b0_light" in request.node.name:
