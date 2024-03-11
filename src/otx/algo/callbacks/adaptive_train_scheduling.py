@@ -62,16 +62,6 @@ class AdaptiveTrainScheduling(Callback):
             trainer.check_val_every_n_epoch = adaptive_check_val_every_n_epoch
             self._change_early_stopping_patience(trainer.callbacks, adaptive_check_val_every_n_epoch)
             self._change_lr_scheduler_frequency(trainer.lr_scheduler_configs, adaptive_check_val_every_n_epoch)
-        else:
-            # To get the consistent result with the OTX1.x, the patience should be changed
-            # Since OTX1.x scheduler works with >= patience, however, OTX2.x scheduler works with > patience
-            for config in trainer.lr_scheduler_configs:
-                if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
-                    msg = (
-                        "The LR scheduler for OTX2 operates when the patience exceeds the set value, "
-                        "hence, the configured value is reduced by 1."
-                    )
-                    config.scheduler.patience -= 1
 
         if iter_per_epoch < trainer.log_every_n_steps:
             msg = (
@@ -133,8 +123,9 @@ class AdaptiveTrainScheduling(Callback):
 
                 if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
                     saved_patience = config.scheduler.patience
-                    adjusted_patience = (
-                        max(int(config.scheduler.patience / adaptive_interval), self.min_lrschedule_patience) - 1
+                    adjusted_patience = max(
+                        int((config.scheduler.patience + 1) / adaptive_interval) - 1,
+                        self.min_lrschedule_patience,
                     )
                     config.scheduler.patience = adjusted_patience
 
@@ -143,7 +134,7 @@ class AdaptiveTrainScheduling(Callback):
                         f"{saved_patience} --> {adjusted_patience}."
                     )
                     log.warning(msg)
-                    self._revert_lr_patience += [partial(_revert_patience, config, saved_patience)]
+                    self._revert_lr_patience += [partial(_revert_patience, config.scheduler, saved_patience)]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
