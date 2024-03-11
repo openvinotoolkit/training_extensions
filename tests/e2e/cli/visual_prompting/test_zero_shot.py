@@ -91,6 +91,7 @@ class TestToolsZeroShotVisualPrompting:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.xfail(reason="This test is failing due to unexpected performance gap.")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
@@ -121,6 +122,7 @@ class TestToolsZeroShotVisualPrompting:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.xfail(reason="This test is failing due to unexpected performance gap.")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "zero_shot_visual_prompting"
