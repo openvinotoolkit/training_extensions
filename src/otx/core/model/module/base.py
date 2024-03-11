@@ -159,10 +159,6 @@ class OTXLitModule(LightningModule):
                 lr_scheduler_config["interval"] = scheduler.interval
             if hasattr(scheduler, "monitor"):
                 lr_scheduler_config["monitor"] = scheduler.monitor
-            if hasattr(scheduler, "patience"):
-                # To get the consistent result with the OTX1.x, the patience should be changed
-                # Since OTX1.x scheduler works with >= patience, however, OTX2.x scheduler works with > patience
-                scheduler.patience = max(1, scheduler.patience - 1)
             lr_schedulers.append(lr_scheduler_config)
 
         return optimizers, lr_schedulers

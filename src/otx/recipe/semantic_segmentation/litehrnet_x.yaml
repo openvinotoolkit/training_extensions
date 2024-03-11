@@ -21,7 +21,7 @@ scheduler:
     init_args:
       mode: max
       factor: 0.1
-      patience: 5
+      patience: 4
       monitor: val/Dice
 
 metric:

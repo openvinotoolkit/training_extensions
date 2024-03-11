@@ -14,7 +14,7 @@ scheduler:
     init_args:
       mode: max
       factor: 0.1
-      patience: 2
+      patience: 1
       monitor: val/accuracy
 
 metric:
