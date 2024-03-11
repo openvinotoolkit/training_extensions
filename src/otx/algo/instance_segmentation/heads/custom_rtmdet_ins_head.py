@@ -67,6 +67,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
                 mode="bilinear",
                 align_corners=False,
             )
+            masks_chunk = masks_chunk.sigmoid()
             masks[:, inds] = (masks_chunk >= threshold).to(dtype=torch.bool)
         return masks
 
