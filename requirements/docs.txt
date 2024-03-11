@@ -1,4 +1,4 @@
-furo==2023.3.*
+furo==2024.1.*
 myst-parser==2.0.*
 sphinx==6.2.1
 pydata-sphinx-theme==0.15.2
