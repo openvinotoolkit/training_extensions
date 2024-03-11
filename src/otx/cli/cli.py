@@ -421,9 +421,10 @@ class OTXCLI:
                 )
                 warn(warning_msg, stacklevel=0)
                 model_config.init_args.num_classes = num_classes
-            
+
             # Hlabel classification
             from otx.core.data.dataset.classification import HLabelInfo
+
             if isinstance(self.datamodule.label_info, HLabelInfo):
                 hlabel_info = self.datamodule.label_info
                 model_config.init_args.num_multiclass_heads = hlabel_info.num_multiclass_heads

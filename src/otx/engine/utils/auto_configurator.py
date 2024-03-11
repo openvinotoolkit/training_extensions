@@ -256,13 +256,14 @@ class AutoConfigurator:
         if label_info is not None:
             num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
-            
+
             from otx.core.data.dataset.classification import HLabelInfo
+
             if isinstance(label_info, HLabelInfo):
                 init_args = self.config["model"]["init_args"]
                 init_args["num_multiclass_heads"] = label_info.num_multiclass_heads
                 init_args["num_multilabel_classes"] = label_info.num_multilabel_classes
-                
+
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
