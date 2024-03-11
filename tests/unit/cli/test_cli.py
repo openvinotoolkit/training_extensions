@@ -145,7 +145,7 @@ class TestOTXCLI:
               monitor: val/test_f1
               mode: max
               factor: 0.1
-              patience: 5
+              patience: 4
               threshold: 0.0001
               threshold_mode: rel
               cooldown: 0
