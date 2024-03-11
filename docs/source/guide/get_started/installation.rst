@@ -17,9 +17,9 @@ The current version of OpenVINO™ Training Extensions was tested in the followi
 
         If necessary, `install CUDA 11.7 <https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ (requires 'sudo' permission) and select it with ``export CUDA_HOME=/usr/local/cuda-11.7``.
 
-***********************************************
-Install OpenVINO™ Training Extensions for users
-***********************************************
+******************************************************
+Install OpenVINO™ Training Extensions for users (CUDA)
+******************************************************
 
 1. Clone the training_extensions
 repository with the following command:
@@ -60,7 +60,8 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
     # On CPU only systems:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cpu
 
-4. Install OpenVINO™ Training Extensions package from either:
+4. Install OpenVINO™ Training Extensions
+package from either:
 
 * A local source in development mode
 
@@ -76,6 +77,71 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
 5. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
+
+******************************************************
+Install OpenVINO™ Training Extensions for users (XPU)
+******************************************************
+
+1. Proceed with 1-2 steps from the above instructions
+cloning the repository and setting up the environment
+
+2. install Intel® Extension
+for PyTorch (IPEX):
+
+Please, refer to `official documentation <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2Bxpu>`_
+to ensure that necessary prerequisites are done.
+
+.. code-block::
+
+    python -m pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+3. Install mmcv and apply a custom patch
+to make it compatible with XPU devices:
+
+* From PyPI
+
+.. code-block::
+
+    curl -o mmcv-full-1.7.0.tar.gz https://files.pythonhosted.org/packages/a1/81/89120850923f4c8b49efba81af30160e7b1b305fdfa9671a661705a8abbf/mmcv-full-1.7.0.tar.gz
+    tar -zxvf mmcv-full-1.7.0.tar.gz
+    sed -i 's/c++14/c++17/g' mmcv-full-1.7.0/setup.py
+    MMCV_WITH_OPS=1 pip install ./mmcv-full-1.7.0
+    rm -r mmcv-full-1.7.0 mmcv-full-1.7.0.tar.gz
+
+* From source
+
+.. code-block::
+
+    wget https://gist.githubusercontent.com/sovrasov/44c41202c09ab38d657e796fccc86181/raw/146a50c5f99c8721c0bcc0fcc25b19064c4b29a2/mmcv_1_7_0_setup.patch
+    git apply mmcv_1_7_0_setup.patch
+    rm mmcv_1_7_0_setup.patch
+    MMCV_WITH_OPS=1 python setup.py develop --user
+
+4. Install OpenVINO™ Training Extensions
+package from source:
+
+.. code-block::
+
+    pip install -e .[full]
+
+5. Activate Intel OneAPI
+environment:
+
+.. code-block::
+
+    source /path/to/intel/oneapi/setvars.sh
+
+6. Currently, IPEX may stop during training with a segmentation error (core dump).
+To avoid this, please, execute:
+
+.. code-block::
+
+    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
+
+.. note::
+
+    Currently, OTX fully supports classification, object detection, and anomaly tasks with XPU devices.
+    (Instance Segmentation and Semantic Segmentation tasks may work with accuracy and performance problems)
 
 ****************************************************
 Install OpenVINO™ Training Extensions for developers
