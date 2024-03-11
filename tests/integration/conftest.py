@@ -140,12 +140,7 @@ def fxt_cli_override_command_per_task() -> dict:
     return {
         "multi_class_cls": [],
         "multi_label_cls": [],
-        "h_label_cls": [
-            "--model.num_multiclass_heads",
-            "2",
-            "--model.num_multilabel_classes",
-            "3",
-        ],
+        "h_label_cls": [],
         "detection": [],
         "rotated_detection": [],
         "instance_segmentation": [],

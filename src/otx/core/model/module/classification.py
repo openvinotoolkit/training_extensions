@@ -308,8 +308,6 @@ class OTXHlabelClsLitModule(OTXLitModule):
             self.metric.update(
                 **self._convert_pred_entity_to_compute_metric(preds, inputs),
             )
-        
-        breakpoint()
 
     def _convert_pred_entity_to_compute_metric(
         self,

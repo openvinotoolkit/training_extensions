@@ -62,10 +62,6 @@ def test_otx_e2e(
         "1" if task in ("zero_shot_visual_prompting") else "2",
         *fxt_cli_override_command_per_task[task],
     ]
-    # H-Label-CLS need to add --metric
-    if task in ("h_label_cls"):
-        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
-        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -105,10 +101,6 @@ def test_otx_e2e(
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
-    # H-Label-CLS need to add --metric
-    if task in ("h_label_cls"):
-        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
-        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
