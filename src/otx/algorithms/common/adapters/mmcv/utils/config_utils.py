@@ -25,6 +25,7 @@ from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
+from otx.algorithms.common.utils import is_xpu_available
 from otx.api.entities.datasets import DatasetEntity
 from otx.utils.logger import get_logger
 
@@ -505,11 +506,14 @@ def patch_persistent_workers(config: Config):
 
 def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     """Measure appropriate num_workers value and return it."""
-    num_gpus = torch.cuda.device_count()
-    if num_gpus == 0:
+    if is_xpu_available():
+        num_devices = torch.xpu.device_count()
+    else:
+        num_devices = torch.cuda.device_count()
+    if num_devices == 0:
         logger.warning("There is no GPUs. Use existing num_worker value.")
         return None
-    return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
+    return min(multiprocessing.cpu_count() // (num_dataloader * num_devices), 8)  # max available num_workers is 8
 
 
 def patch_from_hyperparams(config: Config, hyperparams, **kwargs):

@@ -1,4 +1,4 @@
-"""Common test case and helpersi for OTX"""
+"""Common test case and helpers for OTX"""
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -22,6 +22,11 @@ from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_bac
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
 from tests.test_suite.e2e_test_system import e2e_pytest_component
+
+try:
+    import intel_extension_for_pytorch
+except ImportError:
+    pass
 
 
 def get_template_rel_dir(template):
@@ -717,7 +722,6 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 def nncf_export_testing(template, root):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
-
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
@@ -755,7 +759,6 @@ def nncf_export_testing(template, root):
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
-
     template_work_dir = get_template_dir(template, root)
 
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
@@ -772,7 +775,6 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
-
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
@@ -804,7 +806,6 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
     if template.entrypoints.nncf is None:
         pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
-
     template_work_dir = get_template_dir(template, root)
 
     weights_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"

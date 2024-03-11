@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import Any, Dict
 
 import numpy as np
+from otx.algorithms.common.utils.utils import is_xpu_available
 import pytest
 import torch
 from mmaction.models.backbones.x3d import X3D
@@ -50,6 +51,9 @@ from tests.unit.algorithms.action.test_helpers import (
 
 DEFAULT_ACTION_CLS_DIR = os.path.join("src/otx/algorithms/action/configs/classification", "x3d")
 DEFAULT_ACTION_DET_DIR = os.path.join("src/otx/algorithms/action/configs/detection", "x3d_fast_rcnn")
+
+if is_xpu_available():
+    pytest.skip("Action task is not supported on XPU", allow_module_level=True)
 
 
 class MockModule(nn.Module):

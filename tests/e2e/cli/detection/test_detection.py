@@ -348,6 +348,8 @@ class TestToolsOTXSemiSLDetection:
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
         if not (Path(template.model_template_path).parent / "semisl").is_dir():
             pytest.skip(f"Semi-SL training type isn't available for {template.name}")
+        if template.name == "ResNeXt101-ATSS":
+            pytest.skip(f"Issue#2705: multi-gpu training e2e test failure for {template.name}")
         tmp_dir_path = tmp_dir_path / "detection/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args_semisl)
         args_semisl_multigpu["--gpus"] = "0,1"

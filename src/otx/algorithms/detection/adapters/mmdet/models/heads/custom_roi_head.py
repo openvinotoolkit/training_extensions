@@ -54,6 +54,14 @@ class CustomRoIHead(StandardRoIHead):
         bbox_results.update(loss_bbox=loss_bbox)
         return bbox_results
 
+    def _mask_forward(self, x, rois=None, pos_inds=None, bbox_feats=None):
+        """Mask head forward function used in both training and testing."""
+        mask_results = super()._mask_forward(x, rois, pos_inds, bbox_feats)
+        if mask_results["mask_pred"].device.type == "hpu":
+            mask_results["mask_pred"] = mask_results["mask_pred"].cpu()
+            mask_results["mask_feats"] = mask_results["mask_feats"].cpu()
+        return mask_results
+
 
 @HEADS.register_module()
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
@@ -124,6 +132,16 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             bbox_weights = torch.cat(bbox_weights, 0)
             valid_label_mask = torch.cat(valid_label_mask, 0)
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
+
+    def forward(self, x):
+        """ConvFCBBoxHead forward."""
+        # shared part
+        cls_score, bbox_pred = super().forward(x)
+        if cls_score.device.type == "hpu":
+            cls_score = cls_score.cpu()
+            bbox_pred = bbox_pred.cpu()
+
+        return cls_score, bbox_pred
 
     @force_fp32(apply_to=("cls_score", "bbox_pred"))
     def loss(

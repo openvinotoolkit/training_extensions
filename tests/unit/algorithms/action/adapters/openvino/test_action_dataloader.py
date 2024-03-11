@@ -6,6 +6,7 @@
 
 from copy import deepcopy
 from typing import List, Optional
+from otx.algorithms.common.utils.utils import is_xpu_available
 
 import pytest
 
@@ -34,6 +35,10 @@ from tests.unit.algorithms.action.test_helpers import (
     generate_action_det_otx_dataset,
     generate_labels,
 )
+
+
+if is_xpu_available():
+    pytest.skip("Action task is not supported on XPU", allow_module_level=True)
 
 
 class MockDatasetEntity(DatasetEntity):

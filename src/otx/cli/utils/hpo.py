@@ -21,6 +21,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 import yaml
 
+from otx.algorithms.common.utils import is_xpu_available
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -477,7 +478,13 @@ class HpoRunner:
             progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
             progress_updater_thread.start()
 
-        resource_type = "gpu" if torch.cuda.is_available() else "cpu"
+        if torch.cuda.is_available():
+            resource_type = "gpu"
+        elif is_xpu_available():
+            resource_type = "xpu"
+        else:
+            resource_type = "cpu"
+
         run_hpo_loop(
             hpo_algo,
             partial(
@@ -515,6 +522,11 @@ class HpoRunner:
         return hpo_algo
 
     def _prepare_asha(self):
+        if is_xpu_available():
+            asynchronous_sha = torch.xpu.device_count() != 1
+        else:
+            asynchronous_sha = torch.cuda.device_count() != 1
+
         args = {
             "search_space": self._hpo_config["hp_space"],
             "save_path": str(self._hpo_workdir),
@@ -529,7 +541,7 @@ class HpoRunner:
             "expected_time_ratio": self._hpo_time_ratio,
             "prior_hyper_parameters": self._get_default_hyper_parameters(),
             "asynchronous_bracket": True,
-            "asynchronous_sha": torch.cuda.device_count() != 1,
+            "asynchronous_sha": asynchronous_sha,
         }
 
         logger.debug(f"ASHA args = {args}")

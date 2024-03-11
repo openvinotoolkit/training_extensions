@@ -38,7 +38,6 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
-
         # Hook for class-sensitive weight loading
         if task_adapt:
             self._register_load_state_dict_pre_hook(

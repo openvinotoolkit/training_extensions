@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
+
 from .callback import (
     InferenceProgressCallback,
     OptimizationProgressCallback,
@@ -24,9 +26,13 @@ from .dist_utils import append_dist_rank_suffix
 from .ir import embed_ir_model_data
 from .utils import (
     UncopiableDefaultDict,
+    cast_bf16_to_fp32,
     get_arg_spec,
+    get_cfg_based_on_device,
     get_default_async_reqs_num,
     get_task_class,
+    is_hpu_available,
+    is_xpu_available,
     load_template,
     read_py_config,
     set_random_seed,
@@ -49,4 +55,25 @@ __all__ = [
     "OTXOpenVinoDataLoader",
     "read_py_config",
     "get_default_async_reqs_num",
+    "is_xpu_available",
+    "is_hpu_available",
+    "cast_bf16_to_fp32",
+    "get_cfg_based_on_device",
 ]
+
+
+if is_hpu_available():
+    os.environ["PT_HPU_LAZY_MODE"] = "1"
+    import habana_frameworks.torch.gpu_migration  # noqa: F401
+
+
+if is_xpu_available():
+    try:
+        import mmcv
+
+        from otx.algorithms.common.adapters.mmcv.utils.fp16_utils import custom_auto_fp16, custom_force_fp32
+
+        mmcv.runner.auto_fp16 = custom_auto_fp16
+        mmcv.runner.force_fp32 = custom_force_fp32
+    except ImportError:
+        pass

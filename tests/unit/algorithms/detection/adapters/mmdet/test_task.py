@@ -9,6 +9,7 @@ from contextlib import nullcontext
 from typing import Any, Dict
 
 import numpy as np
+from otx.algorithms.common.utils.utils import is_xpu_available
 import pytest
 import torch
 from torch import nn
@@ -242,6 +243,9 @@ class TestMMDetectionTask:
         num_gpu = 5
         mock_torch = mocker.patch.object(config_utils, "torch")
         mock_torch.cuda.device_count.return_value = num_gpu
+        if is_xpu_available():
+            mock_devcnt = mocker.patch.object(config_utils, "get_adaptive_num_workers")
+            mock_devcnt.return_value = num_cpu // num_gpu
 
         _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
         output_model = ModelEntity(self.det_dataset, _config)
@@ -506,6 +510,9 @@ class TestMMDetectionTask:
         num_gpu = 5
         mock_torch = mocker.patch.object(config_utils, "torch")
         mock_torch.cuda.device_count.return_value = num_gpu
+        if is_xpu_available():
+            mock_devcnt = mocker.patch.object(config_utils, "get_adaptive_num_workers")
+            mock_devcnt.return_value = 1
 
         _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
         output_model = ModelEntity(self.det_dataset, _config)

@@ -11,11 +11,16 @@ import numpy as np
 
 from otx.algorithms.action.adapters.mmaction.data import OTXActionDetDataset
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
+import pytest
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 FULL_BOX = np.array([[0, 0, 1, 1]])
+
+if is_xpu_available():
+    pytest.skip("Action task is not supported on XPU", allow_module_level=True)
 
 
 class MockDataInfoProxy(OTXActionDetDataset._DataInfoProxy):

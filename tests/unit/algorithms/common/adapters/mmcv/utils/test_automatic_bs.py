@@ -1,3 +1,4 @@
+from otx.algorithms.common.utils.utils import is_xpu_available
 import pytest
 from math import sqrt
 
@@ -68,6 +69,8 @@ def mock_dataset(mocker):
 def test_adapt_batch_size(
     mocker, mock_adapt_algo_cls, common_cfg, mock_dataset, not_increase, is_action_task, is_iter_based_runner
 ):
+    if is_xpu_available():
+        pytest.skip("Adaptive batch size is not supported on XPU")
     # prepare
     mock_train_func = mocker.MagicMock()
     new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2

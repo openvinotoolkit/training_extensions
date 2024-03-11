@@ -12,13 +12,13 @@ from functools import partial
 from typing import Any, Dict, Optional, Type, Union
 
 import torch
-from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms.classification.adapters.mmcls.apis.train import train_model
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -52,6 +52,7 @@ from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
+from otx.algorithms.common.utils import is_hpu_available
 from otx.algorithms.common.utils.data import get_dataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -68,6 +69,9 @@ from .configurer import (
     SemiSLClassificationConfigurer,
 )
 from .utils import build_classifier
+
+if is_hpu_available():
+    import habana_frameworks.torch.core as htcore
 
 logger = get_logger()
 
@@ -366,11 +370,15 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
-        if not torch.cuda.is_available():
+        if cfg.device == "cpu":
             # NOTE: mmcls does not wrap models w/ DP for CPU training not like mmdet
             # Raw DataContainer "img_metas" is exposed, which results in errors
             model = build_data_parallel(model, cfg, distributed=False)
         model.train()
+        if is_hpu_available():
+            # TODO (sungchul): move it to appropriate location if needed
+            htcore.hpu.ModuleCacher(max_graphs=10)(model=model.backbone, inplace=True)
+            htcore.hpu.ModuleCacher(max_graphs=10)(model=model.head, inplace=True)
 
         if cfg.distributed:
             convert_sync_batchnorm(model)

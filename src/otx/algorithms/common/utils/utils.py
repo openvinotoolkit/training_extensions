@@ -10,12 +10,33 @@ import random
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
 import onnx
+import torch
 import yaml
 from addict import Dict as adict
+
+from otx.utils.logger import get_logger
+from otx.utils.utils import add_suffix_to_filename
+
+logger = get_logger()
+
+
+HPU_AVAILABLE = None
+try:
+    import habana_frameworks.torch as htorch
+except ImportError:
+    HPU_AVAILABLE = False
+    htorch = None
+
+XPU_AVAILABLE = None
+try:
+    import intel_extension_for_pytorch as ipex
+except ImportError:
+    XPU_AVAILABLE = False
+    ipex = None
 
 
 class UncopiableDefaultDict(defaultdict):
@@ -104,6 +125,8 @@ def set_random_seed(seed, logger=None, deterministic=False):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    if is_xpu_available():
+        torch.xpu.manual_seed_all(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     if logger:
         logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
@@ -157,3 +180,42 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
         meta.value = str(extra_model_data[item])
 
     onnx.save(model, onnx_file)
+
+
+def is_xpu_available() -> bool:
+    """Checks if XPU device is available."""
+    global XPU_AVAILABLE  # noqa: PLW0603
+    if XPU_AVAILABLE is None:
+        XPU_AVAILABLE = hasattr(torch, "xpu") and torch.xpu.is_available()
+    return XPU_AVAILABLE
+
+
+def is_hpu_available() -> bool:
+    """Check if HPU device is available."""
+    global HPU_AVAILABLE  # noqa: PLW0603
+    if HPU_AVAILABLE is None:
+        HPU_AVAILABLE = htorch.hpu.is_available()
+    return HPU_AVAILABLE
+
+
+def cast_bf16_to_fp32(tensor: torch.Tensor) -> torch.Tensor:
+    """Cast bf16 tensor to fp32 before processed by numpy.
+
+    numpy doesn't support bfloat16, it is required to convert bfloat16 tensor to float32.
+    """
+    if tensor.dtype == torch.bfloat16:
+        tensor = tensor.to(torch.float32)
+    return tensor
+
+
+def get_cfg_based_on_device(cfg_file_path: Union[str, Path]) -> str:
+    """Find a config file according to device."""
+    if is_xpu_available():
+        cfg_for_device = add_suffix_to_filename(cfg_file_path, "_xpu")
+        if cfg_for_device.exists():
+            logger.info(
+                f"XPU is detected. XPU config file will be used : {Path(cfg_file_path).name} -> {cfg_for_device.name}"
+            )
+            cfg_file_path = cfg_for_device
+
+    return str(cfg_file_path)
