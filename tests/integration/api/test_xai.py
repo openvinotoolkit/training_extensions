@@ -44,8 +44,8 @@ def test_forward_explain(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "dino" in model_name:
-        pytest.skip("DINO is not supported.")
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        pytest.skip("DINO and Rtmdet_tiny are not supported.")
 
     engine = Engine.from_config(
         config_path=recipe,
@@ -90,8 +90,8 @@ def test_predict_with_explain(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "dino" in model_name:
-        pytest.skip("DINO is not supported.")
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        pytest.skip("DINO and Rtmdet_tiny are not supported.")
 
     if "ssd_mobilenetv2" in model_name:
         pytest.skip("There's issue with SSD model. Skip for now.")

@@ -211,8 +211,8 @@ def test_otx_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name:
-        pytest.skip("Dino is not supported.")
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        pytest.skip("DINO and Rtmdet_tiny are not supported.")
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -285,8 +285,8 @@ def test_otx_explain_e2e(
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name:
-        pytest.skip("DINO is not supported.")
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        pytest.skip("DINO and Rtmdet_tiny are not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"

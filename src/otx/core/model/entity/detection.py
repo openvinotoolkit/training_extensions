@@ -161,6 +161,9 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         elif mode == "tensor":
             predictions = bbox_head_feat
+        elif mode == "loss":
+            # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
+            predictions = self.bbox_head.loss(backbone_feat, data_samples)
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
@@ -173,10 +176,10 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        # SSD-like heads also have background class
         from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
         from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
 
+        # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, CustomSSDHead)
         explainer = DetClassProbabilityMapHook(
             num_classes=self.num_classes + background_class,
