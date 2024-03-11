@@ -326,6 +326,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
 <span class="kn">from</span> <span class="nn">otx.api.configuration.helper</span> <span class="kn">import</span> <span class="n">create</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.datasets</span> <span class="kn">import</span> <span class="n">DatasetEntity</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.model</span> <span class="kn">import</span> <span class="n">ModelEntity</span>
@@ -782,7 +783,13 @@ document.write(`
             <span class="n">progress_updater_thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_hpo_progress</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">hpo_algo</span><span class="p">],</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">progress_updater_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
-        <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span>
+        <span class="k">elif</span> <span class="n">is_xpu_available</span><span class="p">():</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;xpu&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+
         <span class="n">run_hpo_loop</span><span class="p">(</span>
             <span class="n">hpo_algo</span><span class="p">,</span>
             <span class="n">partial</span><span class="p">(</span>
@@ -820,6 +827,11 @@ document.write(`
         <span class="k">return</span> <span class="n">hpo_algo</span>
 
     <span class="k">def</span> <span class="nf">_prepare_asha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_xpu_available</span><span class="p">():</span>
+            <span class="n">asynchronous_sha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">asynchronous_sha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span>
+
         <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;search_space&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_config</span><span class="p">[</span><span class="s2">&quot;hp_space&quot;</span><span class="p">],</span>
             <span class="s2">&quot;save_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hpo_workdir</span><span class="p">),</span>
@@ -834,7 +846,7 @@ document.write(`
             <span class="s2">&quot;expected_time_ratio&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_time_ratio</span><span class="p">,</span>
             <span class="s2">&quot;prior_hyper_parameters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_hyper_parameters</span><span class="p">(),</span>
             <span class="s2">&quot;asynchronous_bracket&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">&quot;asynchronous_sha&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;asynchronous_sha&quot;</span><span class="p">:</span> <span class="n">asynchronous_sha</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ASHA args = </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>

@@ -30,5 +30,6 @@ otx.algorithms.detection.configs.detection.cspdarknet\_yolox\_x
    otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.data_pipeline
    otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.deployment
    otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.model
+   otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.model_xpy
    otx.algorithms.detection.configs.detection.cspdarknet_yolox_x.tile_pipeline
 

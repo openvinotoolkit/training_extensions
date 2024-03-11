@@ -343,7 +343,6 @@ document.write(`
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">task_adapt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
         <span class="c1"># Hook for class-sensitive weight loading</span>
         <span class="k">if</span> <span class="n">task_adapt</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_register_load_state_dict_pre_hook</span><span class="p">(</span>

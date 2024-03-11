@@ -381,6 +381,7 @@ document.write(`
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -737,6 +738,12 @@ boxes can be ignored when computing the loss.</p></li>
 <dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.SAMDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin.SAMDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SAMDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DetLossDynamicsTrackingMixin</span></code>, <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.L2SPDetectorMixin" title="otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin.L2SPDetectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">L2SPDetectorMixin</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">YOLOX</span></code></p>
 <p>SAM optimizer &amp; L2SP regularizer enabled custom YOLOX.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.extract_feat">
+<span class="sig-name descname"><span class="pre">extract_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_yolox_detector.html#CustomYOLOX.extract_feat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.extract_feat" title="Permalink to this definition">#</a></dt>
+<dd><p>Directly extract features from the backbone+neck.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.forward_train">
 <span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/detectors/custom_yolox_detector.html#CustomYOLOX.forward_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.forward_train" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function for CustomYOLOX.</p>
@@ -957,6 +964,7 @@ boxes can be ignored when computing the loss.</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX"><code class="docutils literal notranslate"><span class="pre">CustomYOLOX</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.extract_feat"><code class="docutils literal notranslate"><span class="pre">CustomYOLOX.extract_feat()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.forward_train"><code class="docutils literal notranslate"><span class="pre">CustomYOLOX.forward_train()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.load_state_dict_pre_hook"><code class="docutils literal notranslate"><span class="pre">CustomYOLOX.load_state_dict_pre_hook()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.detectors.CustomYOLOX.onnx_export"><code class="docutils literal notranslate"><span class="pre">CustomYOLOX.onnx_export()</span></code></a></li>

@@ -352,24 +352,26 @@ document.write(`
 <span class="sd">    Args:</span>
 <span class="sd">        hpo_algo (HpoBase): HPO algorithms.</span>
 <span class="sd">        train_func (Callable): Function to train a model.</span>
-<span class="sd">        resource_type (Literal[&#39;gpu&#39;, &#39;cpu&#39;], optional): Which type of resource to use.</span>
+<span class="sd">        resource_type (Literal[&#39;gpu&#39;, &#39;cpu&#39;, &#39;xpu&#39;], optional): Which type of resource to use.</span>
 <span class="sd">                                                         If can be changed depending on environment. Defaults to &quot;gpu&quot;.</span>
 <span class="sd">        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.</span>
 <span class="sd">                                                    It&#39;s used for CPUResourceManager. Defaults to None.</span>
-<span class="sd">        num_gpu_for_single_trial (Optional[int], optional): How many GPUs are used for a single trial.</span>
-<span class="sd">                                                            It&#39;s used for GPUResourceManager. Defaults to None.</span>
-<span class="sd">        available_gpu (Optional[str], optional): How many GPUs are available. It&#39;s used for GPUResourceManager.</span>
-<span class="sd">                                                 Defaults to None.</span>
+<span class="sd">        num_devices_per_trial (Optional[int], optional): Number of devices used for a single trial.</span>
+<span class="sd">                                                            It&#39;s used for GPUResourceManager and XPUResourceManager.</span>
+<span class="sd">                                                            Defaults to None.</span>
+<span class="sd">        available_devices (Optional[str], optional): Number of devices available.</span>
+<span class="sd">                                                    It&#39;s used for GPUResourceManager and XPUResourceManager.</span>
+<span class="sd">                                                    Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
         <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+        <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;xpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
         <span class="n">num_parallel_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">num_gpu_for_single_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">available_gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_devices_per_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">available_devices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hpo_algo</span> <span class="o">=</span> <span class="n">hpo_algo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_func</span> <span class="o">=</span> <span class="n">train_func</span>
@@ -379,7 +381,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_uid_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trial_fault_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resource_manager</span> <span class="o">=</span> <span class="n">get_resource_manager</span><span class="p">(</span>
-            <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_gpu_for_single_trial</span><span class="p">,</span> <span class="n">available_gpu</span>
+            <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_devices_per_trial</span><span class="p">,</span> <span class="n">available_devices</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_main_pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
 
@@ -533,26 +535,30 @@ document.write(`
 <div class="viewcode-block" id="run_hpo_loop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.run_hpo_loop">[docs]</a><span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
     <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
     <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+    <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="s2">&quot;xpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
     <span class="n">num_parallel_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">num_gpu_for_single_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">available_gpu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">num_devices_per_trial</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">available_devices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the HPO loop.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        hpo_algo (HpoBase): HPO algorithms.</span>
 <span class="sd">        train_func (Callable): Function to train a model.</span>
-<span class="sd">        resource_type (Literal[&#39;gpu&#39;, &#39;cpu&#39;], optional): Which type of resource to use.</span>
+<span class="sd">        resource_type (Literal[&#39;gpu&#39;, &#39;cpu&#39;, &#39;xpu&#39;], optional): Which type of resource to use.</span>
 <span class="sd">                                                         If can be changed depending on environment. Defaults to &quot;gpu&quot;.</span>
 <span class="sd">        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.</span>
 <span class="sd">                                                      It&#39;s used for CPUResourceManager. Defaults to None.</span>
-<span class="sd">        num_gpu_for_single_trial (Optional[int], optional): How many GPUs are used for a single trial.</span>
-<span class="sd">                                                            It&#39;s used for GPUResourceManager. Defaults to None.</span>
-<span class="sd">        available_gpu (Optional[str], optional): How many GPUs are available. It&#39;s used for GPUResourceManager.</span>
-<span class="sd">                                                 Defaults to None.</span>
+<span class="sd">        num_devices_per_trial (Optional[int], optional): Number of devices used for a single trial.</span>
+<span class="sd">                                                            It&#39;s used for GPUResourceManager and XPUResourceManager.</span>
+<span class="sd">                                                            Defaults to None.</span>
+<span class="sd">        available_devices (Optional[str], optional): Number of devices available.</span>
+<span class="sd">                                                    It&#39;s used for GPUResourceManager and XPUResourceManager.</span>
+<span class="sd">                                                    Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">hpo_loop</span> <span class="o">=</span> <span class="n">HpoLoop</span><span class="p">(</span><span class="n">hpo_algo</span><span class="p">,</span> <span class="n">train_func</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_gpu_for_single_trial</span><span class="p">,</span> <span class="n">available_gpu</span><span class="p">)</span>
+    <span class="n">hpo_loop</span> <span class="o">=</span> <span class="n">HpoLoop</span><span class="p">(</span>
+        <span class="n">hpo_algo</span><span class="p">,</span> <span class="n">train_func</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_devices_per_trial</span><span class="p">,</span> <span class="n">available_devices</span>
+    <span class="p">)</span>
     <span class="n">hpo_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
 </pre></div>
 

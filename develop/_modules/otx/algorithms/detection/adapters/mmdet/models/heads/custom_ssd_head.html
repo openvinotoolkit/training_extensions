@@ -386,6 +386,35 @@ document.write(`
                     <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="p">)</span>
 
+<div class="viewcode-block" id="CustomSSDHead.forward"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward features from the upstream network.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            feats (tuple[Tensor]): Features from the upstream network, each is</span>
+<span class="sd">                a 4D-tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                cls_scores (list[Tensor]): Classification scores for all scale</span>
+<span class="sd">                    levels, each is a 4D-tensor, the channels number is</span>
+<span class="sd">                    num_anchors * num_classes.</span>
+<span class="sd">                bbox_preds (list[Tensor]): Box energies / deltas for all scale</span>
+<span class="sd">                    levels, each is a 4D-tensor, the channels number is</span>
+<span class="sd">                    num_anchors * 4.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bbox_preds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">feat</span><span class="p">,</span> <span class="n">reg_conv</span><span class="p">,</span> <span class="n">cls_conv</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span><span class="p">):</span>
+            <span class="n">cls_out</span> <span class="o">=</span> <span class="n">cls_conv</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="n">reg_out</span> <span class="o">=</span> <span class="n">reg_conv</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cls_out</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;hpu&quot;</span><span class="p">:</span>
+                <span class="n">cls_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cls_out</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+                <span class="n">bbox_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reg_out</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cls_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cls_out</span><span class="p">)</span>
+                <span class="n">bbox_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reg_out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span></div>
+
 <div class="viewcode-block" id="CustomSSDHead.loss_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single">[docs]</a>    <span class="k">def</span> <span class="nf">loss_single</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cls_score</span><span class="p">,</span>

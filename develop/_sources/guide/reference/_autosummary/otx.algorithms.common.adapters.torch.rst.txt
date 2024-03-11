@@ -27,6 +27,7 @@ otx.algorithms.common.adapters.torch
    :toctree:
    :recursive:
 
+   otx.algorithms.common.adapters.torch.amp
    otx.algorithms.common.adapters.torch.dataloaders
    otx.algorithms.common.adapters.torch.utils
 

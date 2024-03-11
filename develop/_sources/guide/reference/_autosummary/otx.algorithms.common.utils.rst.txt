@@ -24,6 +24,10 @@ otx.algorithms.common.utils
       append_dist_rank_suffix
       read_py_config
       get_default_async_reqs_num
+      is_xpu_available
+      is_hpu_available
+      cast_bf16_to_fp32
+      get_cfg_based_on_device
    
    
 

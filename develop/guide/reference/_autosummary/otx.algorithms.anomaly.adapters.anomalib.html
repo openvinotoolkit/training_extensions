@@ -46,7 +46,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algorithms.anomaly.adapters.anomalib';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algorithms.anomaly.adapters.anomalib.callbacks" href="otx.algorithms.anomaly.adapters.anomalib.callbacks.html" />
+    <link rel="next" title="otx.algorithms.anomaly.adapters.anomalib.accelerators" href="otx.algorithms.anomaly.adapters.anomalib.accelerators.html" />
     <link rel="prev" title="otx.algorithms.anomaly.adapters" href="otx.algorithms.anomaly.adapters.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -381,6 +381,7 @@ document.write(`
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -464,14 +465,23 @@ document.write(`
 <p class="rubric">Modules</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.callbacks.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks" title="otx.algorithms.anomaly.adapters.anomalib.callbacks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.callbacks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.accelerators.html#module-otx.algorithms.anomaly.adapters.anomalib.accelerators" title="otx.algorithms.anomaly.adapters.anomalib.accelerators"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.accelerators</span></code></a></p></td>
+<td><p>Lightning accelerator for XPU device.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.callbacks.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks" title="otx.algorithms.anomaly.adapters.anomalib.callbacks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.callbacks</span></code></a></p></td>
 <td><p>Callbacks for OTX inference.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.config.html#module-otx.algorithms.anomaly.adapters.anomalib.config" title="otx.algorithms.anomaly.adapters.anomalib.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.config</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.config.html#module-otx.algorithms.anomaly.adapters.anomalib.config" title="otx.algorithms.anomaly.adapters.anomalib.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.config</span></code></a></p></td>
 <td><p>Initialization of Configurable parameter conversion between OTX and Anomalib.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.data.html#module-otx.algorithms.anomaly.adapters.anomalib.data" title="otx.algorithms.anomaly.adapters.anomalib.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.data</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.data.html#module-otx.algorithms.anomaly.adapters.anomalib.data" title="otx.algorithms.anomaly.adapters.anomalib.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.data</span></code></a></p></td>
 <td><p>Initialization of Anomaly Dataset Utils.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.plugins.html#module-otx.algorithms.anomaly.adapters.anomalib.plugins" title="otx.algorithms.anomaly.adapters.anomalib.plugins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.plugins</span></code></a></p></td>
+<td><p>Plugin for mixed-precision training on XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algorithms.anomaly.adapters.anomalib.strategies.html#module-otx.algorithms.anomaly.adapters.anomalib.strategies" title="otx.algorithms.anomaly.adapters.anomalib.strategies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.strategies</span></code></a></p></td>
+<td><p>Lightning strategy for single XPU device.</p></td>
 </tr>
 </tbody>
 </table>
@@ -497,11 +507,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="otx.algorithms.anomaly.adapters.anomalib.callbacks.html"
+       href="otx.algorithms.anomaly.adapters.anomalib.accelerators.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.algorithms.anomaly.adapters.anomalib.callbacks</p>
+        <p class="prev-next-title">otx.algorithms.anomaly.adapters.anomalib.accelerators</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

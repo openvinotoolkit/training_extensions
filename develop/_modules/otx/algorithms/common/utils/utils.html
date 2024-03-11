@@ -315,12 +315,33 @@ document.write(`
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">onnx</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">from</span> <span class="nn">addict</span> <span class="kn">import</span> <span class="n">Dict</span> <span class="k">as</span> <span class="n">adict</span>
+
+<span class="kn">from</span> <span class="nn">otx.utils.logger</span> <span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">add_suffix_to_filename</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="n">HPU_AVAILABLE</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">habana_frameworks.torch</span> <span class="k">as</span> <span class="nn">htorch</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HPU_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">htorch</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">XPU_AVAILABLE</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">XPU_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ipex</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="UncopiableDefaultDict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.UncopiableDefaultDict">[docs]</a><span class="k">class</span> <span class="nc">UncopiableDefaultDict</span><span class="p">(</span><span class="n">defaultdict</span><span class="p">):</span>
@@ -409,6 +430,8 @@ document.write(`
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">manual_seed_all</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_xpu_available</span><span class="p">():</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">manual_seed_all</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYTHONHASHSEED&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training seed was set to </span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2"> w/ deterministic=</span><span class="si">{</span><span class="n">deterministic</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -462,6 +485,45 @@ document.write(`
         <span class="n">meta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">extra_model_data</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
 
     <span class="n">onnx</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">onnx_file</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_xpu_available"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.is_xpu_available">[docs]</a><span class="k">def</span> <span class="nf">is_xpu_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if XPU device is available.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">XPU_AVAILABLE</span>  <span class="c1"># noqa: PLW0603</span>
+    <span class="k">if</span> <span class="n">XPU_AVAILABLE</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">XPU_AVAILABLE</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="s2">&quot;xpu&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">XPU_AVAILABLE</span></div>
+
+
+<div class="viewcode-block" id="is_hpu_available"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.is_hpu_available">[docs]</a><span class="k">def</span> <span class="nf">is_hpu_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if HPU device is available.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">HPU_AVAILABLE</span>  <span class="c1"># noqa: PLW0603</span>
+    <span class="k">if</span> <span class="n">HPU_AVAILABLE</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">HPU_AVAILABLE</span> <span class="o">=</span> <span class="n">htorch</span><span class="o">.</span><span class="n">hpu</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">HPU_AVAILABLE</span></div>
+
+
+<div class="viewcode-block" id="cast_bf16_to_fp32"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.cast_bf16_to_fp32">[docs]</a><span class="k">def</span> <span class="nf">cast_bf16_to_fp32</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast bf16 tensor to fp32 before processed by numpy.</span>
+
+<span class="sd">    numpy doesn&#39;t support bfloat16, it is required to convert bfloat16 tensor to float32.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">:</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tensor</span></div>
+
+
+<div class="viewcode-block" id="get_cfg_based_on_device"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algorithms.common.utils.html#otx.algorithms.common.utils.get_cfg_based_on_device">[docs]</a><span class="k">def</span> <span class="nf">get_cfg_based_on_device</span><span class="p">(</span><span class="n">cfg_file_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a config file according to device.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">is_xpu_available</span><span class="p">():</span>
+        <span class="n">cfg_for_device</span> <span class="o">=</span> <span class="n">add_suffix_to_filename</span><span class="p">(</span><span class="n">cfg_file_path</span><span class="p">,</span> <span class="s2">&quot;_xpu&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfg_for_device</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;XPU is detected. XPU config file will be used : </span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">cfg_file_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">cfg_for_device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">cfg_file_path</span> <span class="o">=</span> <span class="n">cfg_for_device</span>
+
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">cfg_file_path</span><span class="p">)</span></div>
 </pre></div>
 
                 </article>

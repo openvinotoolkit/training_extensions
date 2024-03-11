@@ -381,6 +381,7 @@ document.write(`
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -497,6 +498,18 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_default_async_reqs_num" title="otx.algorithms.common.utils.get_default_async_reqs_num"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_async_reqs_num</span></code></a>()</p></td>
 <td><p>Returns a default number of infer request for OV models.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.is_xpu_available" title="otx.algorithms.common.utils.is_xpu_available"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_xpu_available</span></code></a>()</p></td>
+<td><p>Checks if XPU device is available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.is_hpu_available" title="otx.algorithms.common.utils.is_hpu_available"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_hpu_available</span></code></a>()</p></td>
+<td><p>Check if HPU device is available.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.cast_bf16_to_fp32" title="otx.algorithms.common.utils.cast_bf16_to_fp32"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast_bf16_to_fp32</span></code></a>(tensor)</p></td>
+<td><p>Cast bf16 tensor to fp32 before processed by numpy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.common.utils.get_cfg_based_on_device" title="otx.algorithms.common.utils.get_cfg_based_on_device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_cfg_based_on_device</span></code></a>(cfg_file_path)</p></td>
+<td><p>Find a config file according to device.</p></td>
+</tr>
 </tbody>
 </table>
 <p class="rubric">Classes</p>
@@ -605,6 +618,13 @@ document.write(`
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.common.utils.cast_bf16_to_fp32">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">cast_bf16_to_fp32</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#cast_bf16_to_fp32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.cast_bf16_to_fp32" title="Permalink to this definition">#</a></dt>
+<dd><p>Cast bf16 tensor to fp32 before processed by numpy.</p>
+<p>numpy doesn’t support bfloat16, it is required to convert bfloat16 tensor to float32.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.embed_ir_model_data">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">embed_ir_model_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xml_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.12)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/ir.html#embed_ir_model_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.embed_ir_model_data" title="Permalink to this definition">#</a></dt>
 <dd><p>Embeds serialized data to IR xml file.</p>
@@ -622,6 +642,12 @@ document.write(`
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.get_arg_spec">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">get_arg_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#get_arg_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.get_arg_spec" title="Permalink to this definition">#</a></dt>
 <dd><p>Get argument spec of function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.common.utils.get_cfg_based_on_device">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">get_cfg_based_on_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#get_cfg_based_on_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.get_cfg_based_on_device" title="Permalink to this definition">#</a></dt>
+<dd><p>Find a config file according to device.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -684,6 +710,18 @@ document.write(`
 <dt class="sig sig-object py" id="otx.algorithms.common.utils.get_task_class">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">get_task_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#get_task_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.get_task_class" title="Permalink to this definition">#</a></dt>
 <dd><p>Return Task classes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.common.utils.is_hpu_available">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">is_hpu_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#is_hpu_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.is_hpu_available" title="Permalink to this definition">#</a></dt>
+<dd><p>Check if HPU device is available.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.common.utils.is_xpu_available">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.common.utils.</span></span><span class="sig-name descname"><span class="pre">is_xpu_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/otx/algorithms/common/utils/utils.html#is_xpu_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.common.utils.is_xpu_available" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks if XPU device is available.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -782,13 +820,17 @@ Default: False.</p></li>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.UncopiableDefaultDict"><code class="docutils literal notranslate"><span class="pre">UncopiableDefaultDict</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.append_dist_rank_suffix"><code class="docutils literal notranslate"><span class="pre">append_dist_rank_suffix()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.cast_bf16_to_fp32"><code class="docutils literal notranslate"><span class="pre">cast_bf16_to_fp32()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.embed_ir_model_data"><code class="docutils literal notranslate"><span class="pre">embed_ir_model_data()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_arg_spec"><code class="docutils literal notranslate"><span class="pre">get_arg_spec()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_cfg_based_on_device"><code class="docutils literal notranslate"><span class="pre">get_cfg_based_on_device()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_cls_img_indices"><code class="docutils literal notranslate"><span class="pre">get_cls_img_indices()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_default_async_reqs_num"><code class="docutils literal notranslate"><span class="pre">get_default_async_reqs_num()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_image"><code class="docutils literal notranslate"><span class="pre">get_image()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_old_new_img_indices"><code class="docutils literal notranslate"><span class="pre">get_old_new_img_indices()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.get_task_class"><code class="docutils literal notranslate"><span class="pre">get_task_class()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.is_hpu_available"><code class="docutils literal notranslate"><span class="pre">is_hpu_available()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.is_xpu_available"><code class="docutils literal notranslate"><span class="pre">is_xpu_available()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.load_template"><code class="docutils literal notranslate"><span class="pre">load_template()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.read_py_config"><code class="docutils literal notranslate"><span class="pre">read_py_config()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.common.utils.set_random_seed"><code class="docutils literal notranslate"><span class="pre">set_random_seed()</span></code></a></li>

@@ -28,4 +28,5 @@ otx.utils
    :recursive:
 
    otx.utils.logger
+   otx.utils.utils
 

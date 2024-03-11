@@ -381,6 +381,7 @@ document.write(`
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -497,7 +498,10 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension" title="otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DETRHeadExtension</span></code></a>([init_cfg])</p></td>
 <td><p>Head of DETR.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics</span></code></a>(*args[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomRPNHead</span></code></a>(in_channels[, init_cfg, num_convs])</p></td>
+<td><p>RPN head.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics" title="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHeadTrackingLossDynamics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CustomATSSHeadTrackingLossDynamics</span></code></a>(*args[, ...])</p></td>
 <td><p>CustomATSSHead which supports tracking loss dynamics.</p></td>
 </tr>
 </tbody>
@@ -595,6 +599,35 @@ bbox_targets_list (list[Tensor]): Regression targets of each</p>
 <dd><p>Bases: <a class="reference internal" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CrossDatasetDetectorHead" title="otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head.CrossDatasetDetectorHead"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossDatasetDetectorHead</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ATSSHead</span></code></p>
 <p>CustomATSSHead for OTX template.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.forward_single">
+<span class="sig-name descname"><span class="pre">forward_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHead.forward_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.forward_single" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward feature of a single scale level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>Tensor</em>) – Features of a single scale level.</p></li>
+<li><p><strong>(</strong> (<em>scale</em>) – obj: <cite>mmcv.cnn.Scale</cite>): Learnable scale module to resize
+the bbox prediction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>cls_score (Tensor): Cls scores for a single scale level</dt><dd><p>the channels number is num_anchors * num_classes.</p>
+</dd>
+<dt>bbox_pred (Tensor): Box energies / deltas for a single scale</dt><dd><p>level, the channels number is num_anchors * 4.</p>
+</dd>
+<dt>centerness (Tensor): Centerness for a single scale level, the</dt><dd><p>channel number is (N, num_anchors * 1, H, W).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets">
 <span class="sig-name descname"><span class="pre">get_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">anchor_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_flag_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unmap_outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html#CustomATSSHead.get_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets" title="Permalink to this definition">#</a></dt>
@@ -1196,6 +1229,29 @@ class label c.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomRPNHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'layer':</span> <span class="pre">'Conv2d',</span> <span class="pre">'std':</span> <span class="pre">0.01,</span> <span class="pre">'type':</span> <span class="pre">'Normal'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_convs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_rpn_head.html#CustomRPNHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RPNHead</span></code></p>
+<p>RPN head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of channels in the input feature map.</p></li>
+<li><p><strong>init_cfg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em><em>, </em><em>optional</em>) – Initialization config dict.</p></li>
+<li><p><strong>num_convs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – Number of convolution layers in the head. Default 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead.forward_single">
+<span class="sig-name descname"><span class="pre">forward_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_rpn_head.html#CustomRPNHead.forward_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead.forward_single" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward feature map of a single scale level.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.models.heads.</span></span><span class="sig-name descname"><span class="pre">CustomRetinaHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bg_loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_retina_head.html#CustomRetinaHead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RetinaHead</span></code></p>
@@ -1258,6 +1314,32 @@ positive anchors.</p></li>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SSDHead</span></code></p>
 <p>CustomSSDHead class for OTX.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head.html#CustomSSDHead.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward features from the upstream network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><em>Tensor</em><em>]</em>) – Features from the upstream network, each is
+a 4D-tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>cls_scores (list[Tensor]): Classification scores for all scale</dt><dd><p>levels, each is a 4D-tensor, the channels number is
+num_anchors * num_classes.</p>
+</dd>
+<dt>bbox_preds (list[Tensor]): Box energies / deltas for all scale</dt><dd><p>levels, each is a 4D-tensor, the channels number is
+num_anchors * 4.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss">
 <span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head.html#CustomSSDHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss" title="Permalink to this definition">#</a></dt>
@@ -1387,6 +1469,40 @@ Default: None.</p></li>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">YOLOXHead</span></code></p>
 <p>CustomYOLOXHead class for OTX.</p>
 <p>Initialize BaseModule, inherited from <cite>torch.nn.Module</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.forward_single">
+<span class="sig-name descname"><span class="pre">forward_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls_convs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_convs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_reg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_yolox_head.html#CustomYOLOXHead.forward_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.forward_single" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward feature of a single scale level.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objectnesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_bboxes_ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algorithms/detection/adapters/mmdet/models/heads/custom_yolox_head.html#CustomYOLOXHead.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.loss" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute loss of the head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_scores</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box scores for each scale level,
+each is a 4D-tensor, the channel number is
+num_priors * num_classes.</p></li>
+<li><p><strong>bbox_preds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Box energies / deltas for each scale
+level, each is a 4D-tensor, the channel number is
+num_priors * 4.</p></li>
+<li><p><strong>objectnesses</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em><em>, </em><em>Optional</em>) – Score factor for
+all scale level, each is a 4D-tensor, has shape
+(batch_size, 1, H, W).</p></li>
+<li><p><strong>gt_bboxes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – Ground truth bboxes for each image with
+shape (num_gts, 4) in [tl_x, tl_y, br_x, br_y] format.</p></li>
+<li><p><strong>gt_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – class indices corresponding to each box</p></li>
+<li><p><strong>img_metas</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a><em>]</em>) – Meta information of each image, e.g.,
+image size, scaling factor, etc.</p></li>
+<li><p><strong>gt_bboxes_ignore</strong> (<em>None</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><em>Tensor</em><em>]</em>) – specify which bounding
+boxes can be ignored when computing the loss.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1539,6 +1655,7 @@ image size, scaling factor, etc.</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.forward_single"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.forward_single()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.get_targets"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.get_targets()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomATSSHead.loss_single()</span></code></a></li>
@@ -1567,6 +1684,10 @@ image size, scaling factor, etc.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomFCNMaskHead.get_seg_masks"><code class="docutils literal notranslate"><span class="pre">CustomFCNMaskHead.get_seg_masks()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead"><code class="docutils literal notranslate"><span class="pre">CustomRPNHead</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRPNHead.forward_single"><code class="docutils literal notranslate"><span class="pre">CustomRPNHead.forward_single()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead"><code class="docutils literal notranslate"><span class="pre">CustomRetinaHead</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomRetinaHead.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomRetinaHead.loss_single()</span></code></a></li>
 </ul>
@@ -1576,6 +1697,7 @@ image size, scaling factor, etc.</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.forward"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead.forward()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead.loss()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomSSDHead.loss_single"><code class="docutils literal notranslate"><span class="pre">CustomSSDHead.loss_single()</span></code></a></li>
 </ul>
@@ -1585,7 +1707,11 @@ image size, scaling factor, etc.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomVFNetHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomVFNetHead.loss()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead"><code class="docutils literal notranslate"><span class="pre">CustomYOLOXHead</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead"><code class="docutils literal notranslate"><span class="pre">CustomYOLOXHead</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.forward_single"><code class="docutils literal notranslate"><span class="pre">CustomYOLOXHead.forward_single()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.CustomYOLOXHead.loss"><code class="docutils literal notranslate"><span class="pre">CustomYOLOXHead.loss()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension"><code class="docutils literal notranslate"><span class="pre">DETRHeadExtension</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat"><code class="docutils literal notranslate"><span class="pre">DETRHeadExtension.loss_by_feat()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.models.heads.DETRHeadExtension.loss_by_feat_single"><code class="docutils literal notranslate"><span class="pre">DETRHeadExtension.loss_by_feat_single()</span></code></a></li>

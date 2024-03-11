@@ -357,7 +357,15 @@ document.write(`
             <span class="n">valid_label_mask</span><span class="o">=</span><span class="n">valid_label_mask</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">bbox_results</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss_bbox</span><span class="o">=</span><span class="n">loss_bbox</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">bbox_results</span></div>
+        <span class="k">return</span> <span class="n">bbox_results</span>
+
+    <span class="k">def</span> <span class="nf">_mask_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">rois</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos_inds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bbox_feats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mask head forward function used in both training and testing.&quot;&quot;&quot;</span>
+        <span class="n">mask_results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_mask_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">pos_inds</span><span class="p">,</span> <span class="n">bbox_feats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask_results</span><span class="p">[</span><span class="s2">&quot;mask_pred&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;hpu&quot;</span><span class="p">:</span>
+            <span class="n">mask_results</span><span class="p">[</span><span class="s2">&quot;mask_pred&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_results</span><span class="p">[</span><span class="s2">&quot;mask_pred&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">mask_results</span><span class="p">[</span><span class="s2">&quot;mask_feats&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_results</span><span class="p">[</span><span class="s2">&quot;mask_feats&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">mask_results</span></div>
 
 
 <span class="nd">@HEADS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
@@ -429,6 +437,16 @@ document.write(`
             <span class="n">bbox_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">bbox_weights</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">valid_label_mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">label_weights</span><span class="p">,</span> <span class="n">bbox_targets</span><span class="p">,</span> <span class="n">bbox_weights</span><span class="p">,</span> <span class="n">valid_label_mask</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ConvFCBBoxHead forward.&quot;&quot;&quot;</span>
+        <span class="c1"># shared part</span>
+        <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cls_score</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;hpu&quot;</span><span class="p">:</span>
+            <span class="n">cls_score</span> <span class="o">=</span> <span class="n">cls_score</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">bbox_pred</span> <span class="o">=</span> <span class="n">bbox_pred</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span>
 
     <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_score&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_pred&quot;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span>

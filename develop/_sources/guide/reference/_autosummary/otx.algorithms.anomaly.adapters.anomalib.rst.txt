@@ -27,7 +27,10 @@ otx.algorithms.anomaly.adapters.anomalib
    :toctree:
    :recursive:
 
+   otx.algorithms.anomaly.adapters.anomalib.accelerators
    otx.algorithms.anomaly.adapters.anomalib.callbacks
    otx.algorithms.anomaly.adapters.anomalib.config
    otx.algorithms.anomaly.adapters.anomalib.data
+   otx.algorithms.anomaly.adapters.anomalib.plugins
+   otx.algorithms.anomaly.adapters.anomalib.strategies
 

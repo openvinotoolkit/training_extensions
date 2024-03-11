@@ -316,6 +316,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="kn">import</span> <span class="nn">otx</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.common.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
 <span class="kn">from</span> <span class="nn">otx.api.entities.model_template</span> <span class="kn">import</span> <span class="n">ModelTemplate</span>
 
 
@@ -393,6 +394,14 @@ document.write(`
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_ids</span> <span class="ow">in</span> <span class="n">devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;GPU &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">device_ids</span><span class="p">)]</span> <span class="o">=</span> <span class="n">name</span>
         <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;PyTorch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span>
+
+    <span class="k">if</span> <span class="n">is_xpu_available</span><span class="p">():</span>
+        <span class="n">devices</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">device_count</span><span class="p">()):</span>
+            <span class="n">devices</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">xpu</span><span class="o">.</span><span class="n">get_device_name</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device_ids</span> <span class="ow">in</span> <span class="n">devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">env_info</span><span class="p">[</span><span class="s2">&quot;GPU &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">device_ids</span><span class="p">)]</span> <span class="o">=</span> <span class="n">name</span>
+
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">env_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">report_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">report_str</span></div>

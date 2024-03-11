@@ -28,6 +28,7 @@ otx.algorithms.detection.adapters.mmdet.models.heads
       CustomVFNetHead
       CustomYOLOXHead
       DETRHeadExtension
+      CustomRPNHead
       CustomATSSHeadTrackingLossDynamics
    
    

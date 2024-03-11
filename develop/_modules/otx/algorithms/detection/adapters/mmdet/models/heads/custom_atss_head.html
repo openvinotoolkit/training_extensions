@@ -354,6 +354,32 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">bg_loss_weight</span> <span class="o">=</span> <span class="n">bg_loss_weight</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_qfl</span> <span class="o">=</span> <span class="n">use_qfl</span>
 
+<div class="viewcode-block" id="CustomATSSHead.forward_single"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.forward_single">[docs]</a>    <span class="k">def</span> <span class="nf">forward_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward feature of a single scale level.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (Tensor): Features of a single scale level.</span>
+<span class="sd">            scale (:obj: `mmcv.cnn.Scale`): Learnable scale module to resize</span>
+<span class="sd">                the bbox prediction.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple:</span>
+<span class="sd">                cls_score (Tensor): Cls scores for a single scale level</span>
+<span class="sd">                    the channels number is num_anchors * num_classes.</span>
+<span class="sd">                bbox_pred (Tensor): Box energies / deltas for a single scale</span>
+<span class="sd">                    level, the channels number is num_anchors * 4.</span>
+<span class="sd">                centerness (Tensor): Centerness for a single scale level, the</span>
+<span class="sd">                    channel number is (N, num_anchors * 1, H, W).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">centerness</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward_single</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cls_score</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;hpu&quot;</span><span class="p">:</span>
+            <span class="c1"># put further post-processing on cpu</span>
+            <span class="n">cls_score</span> <span class="o">=</span> <span class="n">cls_score</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">bbox_pred</span> <span class="o">=</span> <span class="n">bbox_pred</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="n">centerness</span> <span class="o">=</span> <span class="n">centerness</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">cls_score</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">,</span> <span class="n">centerness</span></div>
+
 <div class="viewcode-block" id="CustomATSSHead.loss"><a class="viewcode-back" href="../../../../../../../../guide/reference/_autosummary/otx.algorithms.detection.adapters.mmdet.models.heads.html#otx.algorithms.detection.adapters.mmdet.models.heads.CustomATSSHead.loss">[docs]</a>    <span class="nd">@force_fp32</span><span class="p">(</span><span class="n">apply_to</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cls_scores&quot;</span><span class="p">,</span> <span class="s2">&quot;bbox_preds&quot;</span><span class="p">,</span> <span class="s2">&quot;centernesses&quot;</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span><span class="p">,</span> <span class="n">centernesses</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">,</span> <span class="n">gt_labels</span><span class="p">,</span> <span class="n">img_metas</span><span class="p">,</span> <span class="n">gt_bboxes_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute losses of the head.</span>
