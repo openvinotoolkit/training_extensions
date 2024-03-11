@@ -123,10 +123,13 @@ class AdaptiveTrainScheduling(Callback):
 
                 if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
                     saved_patience = config.scheduler.patience
-                    adjusted_patience = max(
-                        int((config.scheduler.patience + 1) / adaptive_interval),
-                        self.min_lrschedule_patience,
-                    ) - 1
+                    adjusted_patience = (
+                        max(
+                            int((config.scheduler.patience + 1) / adaptive_interval),
+                            self.min_lrschedule_patience,
+                        )
+                        - 1
+                    )
                     config.scheduler.patience = adjusted_patience
 
                     msg = (
