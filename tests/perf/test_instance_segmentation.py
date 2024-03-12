@@ -114,6 +114,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [

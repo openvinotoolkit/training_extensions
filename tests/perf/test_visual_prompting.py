@@ -17,7 +17,8 @@ class TestPerfVisualPrompting(PerfTestBase):
     """Benchmark visual prompting."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="visual_prompting", name="sam_tiny_vit", category="other"),
+        Benchmark.Model(task="visual_prompting", name="sam_tiny_vit", category="speed"),
+        Benchmark.Model(task="visual_prompting", name="sam_vit_b", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [
@@ -95,8 +96,8 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
     """Benchmark zero-shot visual prompting."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_tiny_vit", category="other"),
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_vit_b", category="other"),
+        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_tiny_vit", category="speed"),
+        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_vit_b", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012

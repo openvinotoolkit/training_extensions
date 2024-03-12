@@ -21,6 +21,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", category="balance"),
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", category="accuracy"),
         Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="otx_dino_v2", category="other"),
     ]
 
     DATASET_TEST_CASES = [
