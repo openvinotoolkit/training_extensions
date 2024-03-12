@@ -99,9 +99,7 @@ class OTXTileTransform(Tile):
         # NOTE: intersection may return a GeometryCollection or MultiPolygon
         inter = polygon.intersection(roi_box)
         if isinstance(inter, (sg.GeometryCollection, sg.MultiPolygon)):
-            shapes = []
-            for geom in list(inter.geoms):
-                shapes.append((geom, geom.area))
+            shapes = [(geom, geom.area) for geom in list(inter.geoms)]
             shapes.sort(key=lambda x: x[1], reverse=True)
             inter = shapes[0][0]
             if not isinstance(inter, sg.Polygon):

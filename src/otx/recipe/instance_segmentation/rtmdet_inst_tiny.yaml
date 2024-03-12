@@ -37,7 +37,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
-  precision: 32 # 16/"16-true" does not work
+  precision: 16 # 16/"16-true" does not work
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
@@ -53,45 +53,14 @@ overrides:
           - type: LoadAnnotations
             with_bbox: true
             with_mask: true
-          - type: CachedMosaic
-            img_scale:
-              - 640
-              - 640
-            pad_val: 114.0
-            max_cached_images: 20
-            random_pop: false
-          - type: RandomResize
-            scale:
-              - 1280
-              - 1280
-            ratio_range:
-              - 0.5
-              - 2.0
+          - type: Resize
             keep_ratio: true
-          - type: RandomCrop
-            crop_size:
+            scale:
               - 640
               - 640
-          - type: YOLOXHSVRandomAug
-          - type: RandomFlip
-            prob: 0.5
           - type: Pad
             pad_to_square: true
             pad_val: 114
-          - type: CachedMixUp
-            img_scale:
-              - 640
-              - 640
-            ratio_range:
-              - 1.0
-              - 1.0
-            max_cached_images: 10
-            random_pop: false
-            pad_val:
-              - 114
-              - 114
-              - 114
-            prob: 0.5
           - type: FilterAnnotations
             min_gt_bbox_wh:
               - 1
