@@ -120,7 +120,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
                 max_per_img=100,
                 score_thr=0.05,
                 nms=ConfigDict(type="nms", iou_threshold=0.6),
-                min_bbox_size=10,
+                min_bbox_size=0,
             )
 
         stride = self.prior_generator.strides[0][0]
