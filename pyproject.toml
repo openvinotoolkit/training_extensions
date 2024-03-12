@@ -88,7 +88,8 @@ mmlab = [
     "oss2==2.17.0",
 ]
 anomaly = [
-    "anomalib==1.0.0",
+    # [FIXME] @ashwinvaidya17: Install using a temporary hot-fix commit due to a torchmetrics version conflict.
+    "anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@e78091883a620229c277a79674a904d9f785f8d5",
     # This is a dependency to avoid conflicts with installing the anomalib[core] option.
     "av>=10.0.0",
     "einops>=0.3.2",
