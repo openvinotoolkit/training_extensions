@@ -743,8 +743,8 @@ class Engine:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
             # breakpoint()
-            # kwargs["strategy"] = "single_xpu"
-            # kwargs["accelerator"] = "xpu"
+            kwargs["strategy"] = "xpu_single"
+            kwargs["accelerator"] = "xpu"
             self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 

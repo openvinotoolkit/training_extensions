@@ -6,14 +6,14 @@
 
 from typing import Optional
 
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch
 from lightning_fabric.plugins import CheckpointIO
 from lightning_fabric.utilities.types import _DEVICE
-from lightning.plugins.precision import PrecisionPlugin
-from lightning.strategies import StrategyRegistry
-from lightning.strategies.single_device import SingleDeviceStrategy
-from lightning.utilities.exceptions import MisconfigurationException
+from lightning.pytorch.plugins.precision import PrecisionPlugin
+from lightning.pytorch.strategies import StrategyRegistry
+from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
+from lightning.pytorch.utilities.exceptions import MisconfigurationException
 
 from otx.utils.utils import is_xpu_available
 

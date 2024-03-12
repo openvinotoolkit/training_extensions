@@ -6,7 +6,7 @@
 from typing import Any, Dict, Union
 
 import torch
-from lightning.accelerators import AcceleratorRegistry
+from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
 
 from otx.utils.utils import is_xpu_available
