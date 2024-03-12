@@ -57,7 +57,6 @@ class TestPerfSingleLabelClassification:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "Accuracy(train)",
@@ -150,7 +149,6 @@ class TestPerfMultiLabelClassification:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "Accuracy(train)",
@@ -243,7 +241,6 @@ class TestPerfHierarchicalLabelClassification:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "Accuracy(train)",

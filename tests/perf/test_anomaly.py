@@ -56,7 +56,6 @@ class TestPerfAnomalyClassification:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "f-measure(train)",
@@ -127,7 +126,6 @@ class TestPerfAnomalyDetection:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "f-measure(train)",
@@ -198,7 +196,6 @@ class TestPerfAnomalySegmentation:
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
             result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
             criteria=[
                 {
                     "name": "f-measure(train)",
