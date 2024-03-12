@@ -85,7 +85,7 @@ Install OpenVINO™ Training Extensions for users (XPU)
 1. Proceed with 1-2 steps from the above instructions
 cloning the repository and setting up the environment
 
-2. install Intel® Extension
+2. Install Intel® Extension
 for PyTorch (IPEX):
 
 Please, refer to `official documentation <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2Bxpu>`_
