@@ -163,7 +163,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             predictions = bbox_head_feat
         elif mode == "loss":
             # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
-            predictions = self.bbox_head.loss(backbone_feat, data_samples)
+            predictions = self.bbox_head.loss(backbone_feat, data_samples)["loss_cls"]
         else:
             msg = f'Invalid mode "{mode}".'
             raise RuntimeError(msg)
