@@ -112,6 +112,9 @@ to make it compatible with XPU devices:
 
 .. code-block::
 
+    git clone https://github.com/open-mmlab/mmcv
+    cd mmcv
+    git checkout v1.7.0
     wget https://gist.githubusercontent.com/sovrasov/44c41202c09ab38d657e796fccc86181/raw/146a50c5f99c8721c0bcc0fcc25b19064c4b29a2/mmcv_1_7_0_setup.patch
     git apply mmcv_1_7_0_setup.patch
     rm mmcv_1_7_0_setup.patch
