@@ -277,6 +277,20 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. note::
   We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
+.. code-block::
+
+  otx-workspace
+  ├── outputs/
+      ├── 20240403_134256/
+          ├── csv/
+          ├── checkpoints/
+          |   └── epoch_*.pth
+          ├── tensorboard/
+          └── configs.yaml
+      └── .latest
+          └── train/
+  ...
+
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
 After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
@@ -288,7 +302,7 @@ Validation
 1. ``otx test`` runs evaluation of a
 trained model on a particular dataset.
 
-Eval function receives test annotation information and model snapshot, trained in previous step.
+Test function receives test annotation information and model snapshot, trained in previous step.
 
 The default metric is mAP_50 measure.
 

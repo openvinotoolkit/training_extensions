@@ -11,10 +11,6 @@ To learn more about Instance Segmentation task, refer to :doc:`../../../explanat
 
   To learn deeper how to manage training process of the model including additional parameters and its modification.
 
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
-
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
-
 The process has been tested on the following configuration.
 
 - Ubuntu 20.04
@@ -51,14 +47,13 @@ Dataset preparation
 
 
 1. Clone a repository with
-`WGISD dataset <https://github.com/thsant/wgisd>`_.
+`car-seg dataset <https://universe.roboflow.com/gianmarco-russo-vt9xr/car-seg-un1pm>`_.
 
 .. code-block:: shell
 
   mkdir data ; cd data
-  git clone https://github.com/thsant/wgisd.git
-  cd wgisd
-  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
+  wget https://ultralytics.com/assets/carparts-seg.zip
+  unzip carparts-seg.zip
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
@@ -106,8 +101,8 @@ We can do that by running these commands:
   mv coco_annotations annotations
 
   # rename annotations to meet *_train.json pattern
-  mv annotations/train_bbox_instances.json annotations/instances_train.json
-  mv annotations/test_bbox_instances.json annotations/instances_val.json
+  mv annotations/train_polygons_instances.json annotations/instances_train.json
+  mv annotations/test_polygons_instances.json annotations/instances_val.json
   cp annotations/instances_val.json annotations/instances_test.json
 
   cd ../..
@@ -241,7 +236,7 @@ Here are the main outputs can expect with CLI:
 
   Because the dataset structure is mostly the same as detection, INSTANCE_SEGMENTATION requires the task type to be specified to enable auto-configuration.
 
-The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 20 minutes with full dataset.
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 10 minutes with full dataset.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about template-specific parameters using ``otx train params --help``.
@@ -250,37 +245,49 @@ It can be done by manually updating parameters in the ``template.yaml`` file in 
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
-.. code-block::
+.. tabs::
 
-                      otx train params --learning_parameters.batch_size 4 \
-                              --learning_parameters.num_iters 100 \
-                              --learning_parameters.enable_early_stopping false
+    .. tab:: CLI
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs/**_train/models`` folder,
-while training logs can be found in the ``outputs/**_train/logs`` dir.
+        .. code-block:: shell
 
-- ``weights.pth`` - a model snapshot
-- ``label_schema.json`` - a label schema used in training, created from a dataset
+            (otx) ...$ otx train ... --data.config.train_config.batch_size 4 \
+                                     --max_epochs 100
 
-These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
+    .. tab:: API
+
+        .. code-block:: python
+
+            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            data_config = DataModuleConfig(..., train_config=SubsetConfig(..., batch_size=4))
+            datamodule = OTXDataModule(..., config=data_config)
+
+            engine = Engine(..., datamodule=datamodule)
+
+            engine.train(max_epochs=100)
+
+
+5. The training result ``checkpoints/*.ckpt`` file is located in ``{work_dir}`` folder,
+while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. note::
-  We also can visualize the training using ``Tensorboard`` as these logs are located in ``outputs/**/logs/**/tf_logs``.
+  We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
 .. code-block::
 
-  otx-workspace-INSTANCE_SEGMENTATION
-  ├── outputs/
-      ├── 20230403_134256_train/
-          ├── logs/
-          ├── models/
-              ├── weights.pth
-              └── label_schema.json
-          └── cli_report.log
-      ├── latest_trained_model
-          ├── logs/
-          ├── models/
-          └── cli_report.log
+  otx-workspace
+  └── outputs/
+      ├── 20240403_134256/
+      |   ├── csv/
+      |   ├── checkpoints/
+      |   |   └── epoch_*.pth
+      |   ├── tensorboard/
+      |   └── configs.yaml
+      └── .latest
+          └── train/
   ...
 
 After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
@@ -289,46 +296,60 @@ After that, we have the PyTorch instance segmentation model trained with OpenVIN
 Validation
 ***********
 
-1. ``otx eval`` runs evaluation of a trained
+1. ``otx test`` runs evaluation of a trained
 model on a specific dataset.
 
-The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
+The test function receives test annotation information and model snapshot, trained in the previous step.
 
-``otx eval`` will output a F-measure for instance segmentation.
+``otx test`` will output a mAP_50 for instance segmentation.
 
 2. The command below will run validation on our dataset
-and save performance results in ``outputs/**_eval/performance.json`` file:
+and save performance results in ``otx-workspace``:
 
-.. code-block::
+.. tabs::
 
-  (otx) ...$ otx eval --test-data-roots <data_root_path>/wgisd
+    .. tab:: CLI (with work_dir)
 
-We will get a similar to this validation output:
+        .. code-block:: shell
 
-.. code-block::
+            (otx) ...$ otx test --work_dir otx-workspace
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/data_time       │   0.0007903117220848799   │
+            │      test/iter_time       │   0.062202490866184235    │
+            │         test/map          │    0.33679962158203125    │
+            │        test/map_50        │    0.5482384562492371     │
+            │        test/map_75        │    0.37118086218833923    │
+            └───────────────────────────┴───────────────────────────┘
 
-  ...
+    .. tab:: CLI (with config)
 
-  2023-04-26 12:46:27,856 | INFO : Inference completed
-  2023-04-26 12:46:27,856 | INFO : called evaluate()
-  2023-04-26 12:46:28,453 | INFO : F-measure after evaluation: 0.5576271186440678
-  2023-04-26 12:46:28,453 | INFO : Evaluation completed
-  Performance(score: 0.5576271186440678, dashboard: (1 metric groups))
+        .. code-block:: shell
 
-.. note::
+            (otx) ...$ otx test --config  src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml \
+                                --data_root data/wgisd \
+                                --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_059.ckpt
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/data_time       │   0.0007903117220848799   │
+            │      test/iter_time       │   0.062202490866184235    │
+            │         test/map          │    0.33679962158203125    │
+            │        test/map_50        │    0.5482384562492371     │
+            │        test/map_75        │    0.37118086218833923    │
+            └───────────────────────────┴───────────────────────────┘
 
-  You can omit ``--test-data-roots`` if you are currently inside a workspace and have test-data stuff written in ``data.yaml``.
+    .. tab:: API
 
-  Also, if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
-  you can omit ``--load-weights`` as well, assuming those weights are the default as ``latest_train_model/models/weights.pth``.
+        .. code-block:: python
+
+            engine.test()
 
 
-The output of ``./outputs/**_eval/performance.json`` consists of a dict with target metric name and its value.
+3. The output of ``{work_dir}/{timestamp}/csv/version_0/metrics.csv`` consists of
+a dict with target metric name and its value.
 
-.. code-block::
-
-  {"f-measure": 0.5576271186440678}
 
 *********
 Export
@@ -337,27 +358,35 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``outputs/**_export/openvino`` folder.
+and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
 
-.. note::
+.. tabs::
 
-  if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
-  you can omit ``--load-weights`` as well, assuming those weights are the default as ``latest_train_model/models/weights.pth``.
+    .. tab:: CLI (with work_dir)
 
-.. code-block::
+        .. code-block:: shell
 
-  (otx) ...$ otx export
+            (otx) ...$ otx export --work_dir otx-workspace
+            ...
+            Elapsed time: 0:00:06.588245
 
-  ...
-  [ SUCCESS ] Generated IR version 11 model.
-  [ SUCCESS ] XML file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.xml
-  [ SUCCESS ] BIN file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.bin
+    .. tab:: CLI (with config)
 
-  2023-04-26 12:47:48,293 - mmdeploy - INFO - Successfully exported OpenVINO model: outputs/20230426_124738_export/logs/model_ready.xml
-  2023-04-26 12:47:48,670 | INFO : Exporting completed
+        .. code-block:: shell
+
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
+            ...
+            Elapsed time: 0:00:06.588245
+
+    .. tab:: API
+
+        .. code-block:: python
+
+            engine.export()
+
 
 *************
 Optimization
