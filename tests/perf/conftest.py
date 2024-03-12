@@ -111,22 +111,22 @@ def fxt_current_date() -> str:
 @pytest.fixture(scope="session")
 def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
     otx_ref = request.config.getoption("--otx-ref")
-    if not otx_ref:
-        return None
 
-    # Install specific version
-    subprocess.run(
-        ["pip", "install", f"otx[full]@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"],
-        check=True,
-    )
+    if otx_ref:
+        # Install specific version
+        subprocess.run(
+            ["pip", "install", f"otx[full]@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"],
+            check=True,
+        )
 
     yield otx_ref
 
-    # Restore the current version
-    subprocess.run(
-        ["pip", "install", "-e", ".[full]"],
-        check=True,
-    )
+    if otx_ref:
+        # Restore the current version
+        subprocess.run(
+            ["pip", "install", "-e", ".[full]"],
+            check=True,
+        )
 
 
 @pytest.fixture(scope="session")
@@ -200,7 +200,7 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str]) -> OTXBenchmark:
+def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str], fxt_benchmark_reference: pd.DataFrame | None) -> OTXBenchmark:
     """Configure benchmark."""
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
@@ -229,6 +229,7 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tag
     cfg["data_root"] = request.config.getoption("--data-root")
     cfg["output_root"] = str(fxt_output_root / tags["task"] / data_size)
     cfg["dry_run"] = request.config.getoption("--dry-run")
+    cfg["reference_results"] = fxt_benchmark_reference
 
     # Create benchmark
     benchmark = OTXBenchmark(
@@ -305,46 +306,3 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     if ref is not None:
         ref.set_index(["task", "data_size", "model"], inplace=True)
     return ref
-
-
-@pytest.fixture(scope="session")
-def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> Callable:
-    """Return result checking function with reference data."""
-
-    def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
-        if fxt_benchmark_reference is None:
-            print("No benchmark references loaded. Skipping result checking.")
-            return
-
-        if result is None:
-            return
-
-        def get_entry(data: pd.DataFrame, key: Tuple) -> pd.Series:
-            if key in data.index:
-                return data.loc[key]
-            return None
-
-        target_entry = get_entry(fxt_benchmark_reference, key)
-        if target_entry is None:
-            print(f"No benchmark reference for {key} loaded. Skipping result checking.")
-            return
-
-        result_entry = get_entry(result, key)
-        assert result_entry is not None
-
-        def compare(name: str, op: str, margin: float):
-            if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
-                return
-            if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
-                return
-            if op == "==":
-                assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
-            elif op == "<":
-                assert result_entry[name] < target_entry[name] * (1.0 + margin)
-            elif op == ">":
-                assert result_entry[name] > target_entry[name] * (1.0 - margin)
-
-        for check in checks:
-            compare(**check)
-
-    return check_benchmark_result
