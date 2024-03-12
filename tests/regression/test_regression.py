@@ -797,6 +797,7 @@ class TestActionClassification(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
         ModelTestCase(task="action/action_classification", name="x3d"),
+        ModelTestCase(task="action/action_classification", name="movinet"),
     ]
     DATASET_TEST_CASES = [
         DatasetTestCase(

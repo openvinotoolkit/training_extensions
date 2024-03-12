@@ -21,6 +21,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", category="balance"),
         Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", category="accuracy"),
         Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", category="other"),
+        Benchmark.Model(task="classification/multi_class_cls", name="otx_dino_v2", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -30,7 +31,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="small",
             data_format="imagenet_with_subset_dirs",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -41,7 +42,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="medium",
             data_format="imagenet_with_subset_dirs",
             num_classes=67,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -50,31 +51,22 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             size="large",
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -89,12 +81,6 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -105,6 +91,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
 
 
@@ -125,7 +112,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="small",
             data_format="datumaro",
             num_classes=3,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         )
         for idx in (1, 2, 3)
@@ -136,7 +123,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=68,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
@@ -145,31 +132,22 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             size="large",
             data_format="datumaro",
             num_classes=21,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={},
         ),
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -184,12 +162,6 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -200,6 +172,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
 
 
@@ -220,7 +193,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             size="small",
             data_format="datumaro",
             num_classes=6,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "3",
                 "model.num_multilabel_classes": "0",
@@ -234,7 +207,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             size="medium",
             data_format="datumaro",
             num_classes=102,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "23",
                 "model.num_multilabel_classes": "0",
@@ -243,26 +216,17 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         # Add large dataset
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -277,12 +241,6 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -293,4 +251,5 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )

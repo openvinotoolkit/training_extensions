@@ -124,7 +124,11 @@ class AdaptiveTrainScheduling(Callback):
                 if hasattr(config, "scheduler") and hasattr(config.scheduler, "patience"):
                     saved_patience = config.scheduler.patience
                     adjusted_patience = (
-                        max(int(config.scheduler.patience / adaptive_interval), self.min_lrschedule_patience) - 1
+                        max(
+                            int((config.scheduler.patience + 1) / adaptive_interval),
+                            self.min_lrschedule_patience,
+                        )
+                        - 1
                     )
                     config.scheduler.patience = adjusted_patience
 
@@ -133,7 +137,7 @@ class AdaptiveTrainScheduling(Callback):
                         f"{saved_patience} --> {adjusted_patience}."
                     )
                     log.warning(msg)
-                    self._revert_lr_patience += [partial(_revert_patience, config, saved_patience)]
+                    self._revert_lr_patience += [partial(_revert_patience, config.scheduler, saved_patience)]
 
     def _change_early_stopping_patience(self, callbacks: list[Callback], adaptive_interval: int) -> None:
         """Change the EarlyStopping patience to change the patience.
