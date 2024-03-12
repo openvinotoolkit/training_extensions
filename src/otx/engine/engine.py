@@ -40,6 +40,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
+
+
 LITMODULE_PER_TASK = {
     OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.module.classification.OTXMulticlassClsLitModule",
     OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.module.classification.OTXMultilabelClsLitModule",
@@ -740,6 +742,9 @@ class Engine:
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
+            # breakpoint()
+            # kwargs["strategy"] = "single_xpu"
+            # kwargs["accelerator"] = "xpu"
             self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 

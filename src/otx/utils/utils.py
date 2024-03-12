@@ -6,10 +6,18 @@
 from __future__ import annotations
 
 from decimal import Decimal
+import torch
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+XPU_AVAILABLE = None
+try:
+    import intel_extension_for_pytorch as ipex
+except ImportError:
+    XPU_AVAILABLE = False
+    ipex = None
 
 
 def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
@@ -114,3 +122,11 @@ def remove_matched_files(directory: Path, pattern: str, file_to_leave: Path | No
     for weight in directory.rglob(pattern):
         if weight != file_to_leave:
             weight.unlink()
+
+
+def is_xpu_available() -> bool:
+    """Checks if XPU device is available."""
+    global XPU_AVAILABLE  # noqa: PLW0603
+    if XPU_AVAILABLE is None:
+        XPU_AVAILABLE = hasattr(torch, "xpu") and torch.xpu.is_available()
+    return XPU_AVAILABLE
