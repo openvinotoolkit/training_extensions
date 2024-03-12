@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import importlib
 import os
 import platform
 import subprocess
@@ -92,6 +93,13 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
+    parser.addoption(
+        "--otx-ref",
+        type=str,
+        help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
+        "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
+        "and reverted after run. Works only for v1.x assuming CLI compatibility.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -101,10 +109,31 @@ def fxt_current_date() -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
-    """Version / branch / commit info."""
-    import otx
+def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
+    otx_ref = request.config.getoption("--otx-ref")
+    if not otx_ref:
+        return None
 
+    # Install specific version
+    subprocess.run(
+        ["pip", "install", f"otx[full]@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"],
+        check=True,
+    )
+
+    yield otx_ref
+
+    # Restore the current version
+    subprocess.run(
+        ["pip", "install", "-e", ".[full]"],
+        check=True,
+    )
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
+    """Version / branch / commit info."""
+    otx = importlib.import_module("otx")
+    otx = importlib.reload(otx)  # To get re-installed OTX version
     version_str = otx.__version__
     try:
         branch_str = (
@@ -119,9 +148,10 @@ def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     except Exception:
         commit_str = os.environ.get("GH_CTX_SHA", "unknown")
     version_tags = {
-        "version": version_str,
-        "branch": branch_str,
-        "commit": commit_str,
+        "otx_version": version_str,
+        "otx_ref": fxt_otx_ref or commit_str,
+        "test_branch": branch_str,
+        "test_commit": commit_str,
         "date": fxt_current_date,
     }
     return version_tags
