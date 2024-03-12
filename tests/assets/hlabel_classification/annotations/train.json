@@ -145,13 +145,6 @@
           "attributes": {},
           "group": 1,
           "label_id": 2
-        },
-        {
-          "id": 1,
-          "type": "label",
-          "attributes": {},
-          "group": 0,
-          "label_id": 0
         }
       ],
       "attr": {
@@ -171,13 +164,6 @@
           "attributes": {},
           "group": 2,
           "label_id": 4
-        },
-        {
-          "id": 1,
-          "type": "label",
-          "attributes": {},
-          "group": 0,
-          "label_id": 3
         }
       ],
       "attr": {
@@ -197,13 +183,6 @@
           "attributes": {},
           "group": 1,
           "label_id": 1
-        },
-        {
-          "id": 1,
-          "type": "label",
-          "attributes": {},
-          "group": 0,
-          "label_id": 0
         }
       ],
       "attr": {

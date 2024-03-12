@@ -29,10 +29,10 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -45,10 +45,10 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -59,36 +59,27 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
         ),
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -103,12 +94,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -119,6 +104,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
 
 
@@ -128,6 +114,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [
@@ -137,10 +124,10 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -153,10 +140,10 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=3,
+            num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.algo.metrices.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -164,26 +151,17 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         # Add large dataset
     ]
 
-    BENCHMARK_TEST_CASES = [  # noqa: RUF012
-        {
-            "type": "accuracy",
-            "criteria": [
-                Benchmark.Criterion(name="epoch", summary="max", compare="<", margin=0.1),
-                Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
-                Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
-            ],
-        },
-        {
-            "type": "efficiency",
-            "criteria": [
-                Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-                Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-            ],
-        },
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
     ]
 
     @pytest.mark.parametrize(
@@ -198,12 +176,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         ids=lambda dataset: dataset.name,
         indirect=True,
     )
-    @pytest.mark.parametrize(
-        "fxt_benchmark",
-        BENCHMARK_TEST_CASES,
-        ids=lambda benchmark: benchmark["type"],
-        indirect=True,
-    )
     def test_perf(
         self,
         fxt_model: Benchmark.Model,
@@ -214,4 +186,5 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             model=fxt_model,
             dataset=fxt_dataset,
             benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )

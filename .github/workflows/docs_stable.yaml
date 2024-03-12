@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Build-Docs:
     runs-on: ubuntu-20.04
@@ -19,7 +22,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install tox
-        run: python -m pip install tox
+        run: python -m pip install --require-hashes --no-deps -r .ci/tox-deps.txt
       - name: Build-Docs
         run: tox -e build-doc
       - name: Create gh-pages branch
@@ -62,7 +65,7 @@ jobs:
           git add ./stable ${{ env.RELEASE_VERSION }}
           git commit -m "Update documentation" -a || true
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@fcea09907c44d7a7a3331c9c04080d55d87c95fe # master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
