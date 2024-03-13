@@ -10,14 +10,14 @@ from typing import Any, Callable, Dict, Generator, Optional, Union
 import lightning.pytorch as pl
 import torch
 from lightning_fabric.utilities.types import Optimizable
-from lightning.pytorch.plugins.precision import PrecisionPlugin
+from lightning.pytorch.plugins.precision.precision import Precision
 from lightning.pytorch.utilities import GradClipAlgorithmType
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
 from torch import Tensor
 from torch.optim import LBFGS, Optimizer
 
 
-class MixedPrecisionXPUPlugin(PrecisionPlugin):
+class MixedPrecisionXPUPlugin(Precision):
     """Plugin for Automatic Mixed Precision (AMP) training with ``torch.xpu.autocast``.
 
     Args:
@@ -37,7 +37,6 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
         self,
         optimizer: Optimizable,
         model: "pl.LightningModule",
-        optimizer_idx: int,
         closure: Callable[[], Any],
         **kwargs: Any,
     ) -> Any:
@@ -45,11 +44,11 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
         if self.scaler is None:
             # skip scaler logic, as bfloat16 does not require scaler
             return super().optimizer_step(
-                optimizer, model=model, optimizer_idx=optimizer_idx, closure=closure, **kwargs
+                optimizer, model=model, closure=closure, **kwargs
             )
         if isinstance(optimizer, LBFGS):
             raise MisconfigurationException(
-                f"Native AMP and the LBFGS optimizer are not compatible (optimizer {optimizer_idx})."
+                f"Native AMP and the LBFGS optimizer are not compatible."
             )
         closure_result = closure()
 
@@ -59,7 +58,7 @@ class MixedPrecisionXPUPlugin(PrecisionPlugin):
             # Note: `unscale` happens after the closure is executed, but before the `on_before_optimizer_step` hook.
             self.scaler.unscale_(optimizer)
 
-        self._after_closure(model, optimizer, optimizer_idx)
+        self._after_closure(model, optimizer)
         skipped_backward = closure_result is None
         # in manual optimization, the closure does not return a value
         if not model.automatic_optimization or not skipped_backward:
