@@ -622,6 +622,8 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
         self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
 
+        self.initialize_reference_info()
+
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
         return ZeroShotSegmentAnything(**self.config)
