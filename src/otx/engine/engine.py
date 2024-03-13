@@ -402,11 +402,16 @@ class Engine:
 
         self._build_trainer(**kwargs)
 
+        import time
+        num_samples = len(datamodule.subsets["test"])
+        start = time.time()
         predict_result = self.trainer.predict(
             model=lit_module,
             dataloaders=datamodule,
             return_predictions=return_predictions,
         )
+        print("FPS:", num_samples / (time.time() - start))
+        print("Time per sample:", (time.time() - start) / num_samples)
 
         if explain:
             if explain_config is None:
