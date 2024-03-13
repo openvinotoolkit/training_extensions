@@ -65,9 +65,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
         """Configure metrics."""
         self.val_metric = MetricCollection(
             {
-                "IoU": BinaryJaccardIndex(),
-                "F1": BinaryF1Score(),
-                "Dice": Dice(),
+                "iou": BinaryJaccardIndex(),
+                "f1-score": BinaryF1Score(),
+                "dice": Dice(),
                 "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
@@ -75,9 +75,9 @@ class OTXVisualPromptingLitModule(OTXLitModule):
 
         self.test_metric = MetricCollection(
             {
-                "IoU": BinaryJaccardIndex(),
-                "F1": BinaryF1Score(),
-                "Dice": Dice(),
+                "iou": BinaryJaccardIndex(),
+                "f1-score": BinaryF1Score(),
+                "dice": Dice(),
                 "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
@@ -237,7 +237,7 @@ class OTXVisualPromptingLitModule(OTXLitModule):
                 ]
                 _target = converted_entities["target"]
                 _metric.update(preds=_preds, target=_target)
-            elif _name in ["IoU", "F1", "Dice"]:
+            elif _name in ["iou", "f1-score", "dice"]:
                 # BinaryJaccardIndex, BinaryF1Score, Dice
                 for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                     _metric.update(cvt_preds["masks"], cvt_target["masks"])
@@ -250,9 +250,9 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         """Configure metrics."""
         self.test_metric = MetricCollection(
             {
-                "IoU": BinaryJaccardIndex().to(self.device),
-                "F1": BinaryF1Score().to(self.device),
-                "Dice": Dice().to(self.device),
+                "iou": BinaryJaccardIndex().to(self.device),
+                "f1-score": BinaryF1Score().to(self.device),
+                "dice": Dice().to(self.device),
                 "mAP": MeanAveragePrecision(iou_type="segm").to(self.device),
             },
         )
@@ -265,7 +265,6 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         """Load previously saved reference info."""
         super().on_test_start()
         if not self.model.load_latest_reference_info(self.device):
-            # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -280,7 +279,6 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
         if not self.model.load_latest_reference_info(self.device):
-            # TODO (sungchul): check fit_loop for OVModel # noqa: TD003
             log.warning("No reference info found. `Learn` will be automatically excuted first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -384,7 +382,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
                         _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
 
                 _metric.update(preds=_preds, target=_target)
-            elif _name in ["IoU", "F1", "Dice"]:
+            elif _name in ["iou", "f1-score", "dice"]:
                 # BinaryJaccardIndex, BinaryF1Score, Dice
                 for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                     _metric.update(
