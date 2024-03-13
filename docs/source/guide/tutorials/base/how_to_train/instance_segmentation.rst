@@ -275,7 +275,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
 
         .. code-block:: shell
 
-            (otx) ...$ otx train ... --data.config.train_config.batch_size 4 \
+            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
                                      --max_epochs 100
 
     .. tab:: API
@@ -286,7 +286,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
             from otx.core.data.module import OTXDataModule
             from otx.engine import Engine
 
-            data_config = DataModuleConfig(..., train_config=SubsetConfig(..., batch_size=4))
+            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
             datamodule = OTXDataModule(..., config=data_config)
 
             engine = Engine(..., datamodule=datamodule)
