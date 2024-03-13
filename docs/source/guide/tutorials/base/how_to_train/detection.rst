@@ -30,9 +30,9 @@ environment:
 
 .. code-block:: shell
 
-  .otx/bin/activate
-  # or by this line, if you created an environment, using tox
-  . venv/otx/bin/activate
+    .otx/bin/activate
+    # or by this line, if you created an environment, using tox
+    . venv/otx/bin/activate
 
 
 .. _wgisd_dataset_descpiption:
@@ -43,21 +43,21 @@ Dataset preparation
 
 ..  note::
 
-  Currently, we support the following object detection dataset formats:
+    Currently, we support the following object detection dataset formats:
 
-  - `COCO <https://cocodataset.org/#format-data>`_
-  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
-  - `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
+    - `COCO <https://cocodataset.org/#format-data>`_
+    - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
+    - `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
 
 1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
 .. code-block:: shell
 
-  mkdir data ; cd data
-  git clone https://github.com/thsant/wgisd.git
-  cd wgisd
-  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
+    mkdir data ; cd data
+    git clone https://github.com/thsant/wgisd.git
+    cd wgisd
+    git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
@@ -83,35 +83,35 @@ we need to reformat the dataset according to this structure:
 
 .. code-block:: shell
 
-  wgisd
-  ├── annotations/
-      ├── instances_train.json
-      ├── instances_val.json
-      (Optional)
-      └── instances_test.json
-  ├──images/
-      (The split on folders is optional)
-      ├── train
-      ├── val
-      └── test
-  (There may be more extra unrelated folders)
+    wgisd
+    ├── annotations/
+        ├── instances_train.json
+        ├── instances_val.json
+        (Optional)
+        └── instances_test.json
+    ├──images/
+        (The split on folders is optional)
+        ├── train
+        ├── val
+        └── test
+    (There may be more extra unrelated folders)
 
 We can do that by running these commands:
 
 .. code-block:: shell
 
-  # format images folder
-  mv data images
+    # format images folder
+    mv data images
 
-  # format annotations folder
-  mv coco_annotations annotations
+    # format annotations folder
+    mv coco_annotations annotations
 
-  # rename annotations to meet *_train.json pattern
-  mv annotations/train_bbox_instances.json annotations/instances_train.json
-  mv annotations/test_bbox_instances.json annotations/instances_val.json
-  cp annotations/instances_val.json annotations/instances_test.json
+    # rename annotations to meet *_train.json pattern
+    mv annotations/train_bbox_instances.json annotations/instances_train.json
+    mv annotations/test_bbox_instances.json annotations/instances_val.json
+    cp annotations/instances_val.json annotations/instances_test.json
 
-  cd ../..
+    cd ../..
 
 *********
 Training
@@ -173,29 +173,29 @@ Let's check the object detection configuration running the following command:
 
 .. code-block:: shell
 
-  # or its config path
-  (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd --print_config
+    # or its config path
+    (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd --print_config
 
-  ...
-  data_root: data/wgisd
-  work_dir: otx-workspace
-  callback_monitor: val/map_50
-  disable_infer_num_classes: false
-  engine:
+    ...
+    data_root: data/wgisd
+    work_dir: otx-workspace
+    callback_monitor: val/map_50
+    disable_infer_num_classes: false
+    engine:
     task: DETECTION
     device: auto
-  data:
-  ...
+    data:
+    ...
 
 .. note::
 
-  If you want to get configuration as yaml file, please use ``--print_config`` parameter and ``> configs.yaml``.
+    If you want to get configuration as yaml file, please use ``--print_config`` parameter and ``> configs.yaml``.
 
-  .. code-block:: shell
+    .. code-block:: shell
 
-    (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd --print_config > configs.yaml
-    # Update configs.yaml & Train configs.yaml
-    (otx) ...$ otx train --config configs.yaml
+        (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd --print_config > configs.yaml
+        # Update configs.yaml & Train configs.yaml
+        (otx) ...$ otx train --config configs.yaml
 
 
 3. ``otx train`` trains a model (a particular model template)
@@ -253,7 +253,6 @@ Here are the main outputs can expect with CLI:
 
             engine.train(...)
 
-These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
@@ -289,28 +288,28 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100, e
 while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. note::
-  We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
+    We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
 .. code-block::
 
-  otx-workspace
-  ├── outputs/
-      ├── 20240403_134256/
-          ├── csv/
-          ├── checkpoints/
-          |   └── epoch_*.pth
-          ├── tensorboard/
-          └── configs.yaml
-      └── .latest
-          └── train/
-  ...
+    otx-workspace
+    ├── outputs/
+        ├── 20240403_134256/
+            ├── csv/
+            ├── checkpoints/
+            |   └── epoch_*.pth
+            ├── tensorboard/
+            └── configs.yaml
+        └── .latest
+            └── train/
+    ...
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
 After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
 
 ***********
-Validation
+Evaluation
 ***********
 
 1. ``otx test`` runs evaluation of a
@@ -409,7 +408,9 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 
         .. code-block:: shell
 
-            (otx) ...$ otx test --work_dir otx-workspace --engine.device cpu
+            (otx) ...$ otx test --work_dir otx-workspace \
+                                --checkpoint otx-workspace/20240312_052847/exported_model.xml \
+                                --engine.device cpu
             ...
             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
             ┃        Test metric        ┃       DataLoader 0        ┃
