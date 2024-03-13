@@ -1,9 +1,6 @@
 model:
   class_path: otx.algo.anomaly.padim.Padim
   init_args:
-    input_size:
-      - 256
-      - 256
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
     pre_trained: True
@@ -15,10 +12,15 @@ engine:
 
 callback_monitor: step # this has no effect as Padim does not need to be trained
 
-data: ../../_base_/data/torchvision_base.yaml
+data: ../_base_/data/torchvision_base.yaml
 overrides:
+  precision: 32
   max_epochs: 1
   limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
+  callbacks:
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
   data:
     task: ANOMALY_CLASSIFICATION
     config:
