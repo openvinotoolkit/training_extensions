@@ -230,6 +230,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
+        is_cascade: bool = False,
     ) -> tuple[dict[str, Tensor], list[Tensor]] | None:
         """Get reference features.
 
@@ -244,6 +245,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             reference_feats (Tensor): Reference features for target prediction.
             used_indices (Tensor): To check which indices of reference features are validate.
             ori_shapes (List[Tensor]): List of original shapes per image.
+            is_cascade (bool): Whether use cascade inference. Defaults to False.
         """
         # initialize tensors to contain reference features and prompts
         largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
@@ -269,10 +271,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         ] += 1  # TODO (sungchul): check if the mask is bool or int # noqa: TD003
                     else:
                         if isinstance(input_prompt, BoundingBoxes):
-                            point_coords = input_prompt.reshape(1, 2, 2)
+                            point_coords = input_prompt.reshape(-1, 2, 2)
                             point_labels = torch.tensor([[2, 3]], device=point_coords.device)
                         elif isinstance(input_prompt, Points):
-                            point_coords = input_prompt.reshape(1, 1, 2)
+                            point_coords = input_prompt.reshape(-1, 1, 2)
                             point_labels = torch.tensor([[1]], device=point_coords.device)
                         elif isinstance(
                             input_prompt,
@@ -290,7 +292,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             point_coords=point_coords,
                             point_labels=point_labels,
                             ori_shape=ori_shape,
-                            is_cascade=False,
+                            is_cascade=is_cascade,
                         )
                         ref_mask[masks] += 1
                 ref_mask = torch.clip(ref_mask, 0, 1).to(torch.float32)
@@ -322,7 +324,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         ori_shapes: list[Tensor],
         threshold: float = 0.0,
         num_bg_points: int = 1,
-        is_cascade: bool = False,
+        is_cascade: bool = True,
     ) -> list[list[defaultdict[int, list[Tensor]]]]:
         """Zero-shot inference with reference features.
 
@@ -607,7 +609,6 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
         num_classes: int = 0,
         root_reference_info: Path | str = "vpm_zsl_reference_infos",
         save_outputs: bool = True,
-        is_cascade: bool = False,
         pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
         pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
         **kwargs,
@@ -617,10 +618,11 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
 
         self.save_outputs = save_outputs
         self.root_reference_info: Path = Path(root_reference_info)
-        self.is_cascade = is_cascade
 
         self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
+        
+        self.initialize_reference_info()
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -637,30 +639,49 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
     def learn(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
         reset_feat: bool = False,
+        is_cascade: bool = False,
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Learn to directly connect to the model."""
+        self.training = True
         if reset_feat:
             self.initialize_reference_info()
 
-        outputs = self.model.learn(**self._customize_inputs(inputs))
+        outputs = self.model.learn(
+            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            is_cascade=is_cascade,
+        )
         return self._customize_outputs(outputs, inputs)
 
     def infer(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+        is_cascade: bool = False,
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Infer to directly connect to the model."""
-        outputs = self.model.infer(**self._customize_inputs(inputs))
+        self.training = False
+        outputs = self.model.infer(
+            **self._customize_inputs(inputs, reference_feats=reference_feats, used_indices=used_indices),
+            is_cascade=is_cascade,
+        )
         return self._customize_outputs(outputs, inputs)
 
-    def _customize_inputs(self, inputs: ZeroShotVisualPromptingBatchDataEntity) -> dict[str, Any]:  # type: ignore[override]
+    def _customize_inputs(  # type: ignore[override]
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+    ) -> dict[str, Any]:  # type: ignore[override]
         """Customize the inputs for the model."""
         inputs = self.transforms(inputs)
         forward_inputs = {
             "images": [tv_tensors.wrap(image.unsqueeze(0), like=image) for image in inputs.images],
-            "reference_feats": self.reference_feats,
-            "used_indices": self.used_indices,
+            "reference_feats": reference_feats if reference_feats is not None else self.reference_feats,
+            "used_indices": used_indices if used_indices is not None else self.used_indices,
             "ori_shapes": [torch.tensor(info.ori_shape) for info in inputs.imgs_info],
         }
         if self.training:
@@ -668,9 +689,6 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
             forward_inputs.update(
                 {"processed_prompts": self._gather_prompts_with_labels(inputs.prompts, inputs.labels)},
             )
-        else:
-            # infer
-            forward_inputs.update({"is_cascade": self.is_cascade})
 
         return forward_inputs
 
@@ -717,14 +735,16 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
 
     def _gather_prompts_with_labels(
         self,
-        prompts: list[list[tv_tensors.TVTensor]],
-        labels: list[Tensor],
+        prompts: list[list[tv_tensors.TVTensor] | None],
+        labels: list[Tensor | None],
     ) -> list[dict[int, list[tv_tensors.TVTensor]]]:
         """Gather prompts according to labels."""
         total_processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]] = []
         for prompt, label in zip(prompts, labels):
+            if prompt is None and label is None:
+                continue
             processed_prompts = defaultdict(list)
-            for _prompt, _label in zip(prompt, label):
+            for _prompt, _label in zip(prompt, label):  # type: ignore[arg-type]
                 processed_prompts[int(_label)].append(_prompt)
             sorted_processed_prompts = dict(sorted(processed_prompts.items(), key=lambda x: x))
             total_processed_prompts.append(sorted_processed_prompts)
@@ -796,7 +816,7 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
         entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
         entity.prompts = [
-            self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
+            self.apply_prompts(prompt, info.ori_shape, self.model.image_size) if prompt is not None else prompt
             for prompt, info in zip(entity.prompts, entity.imgs_info)
         ]
         return entity

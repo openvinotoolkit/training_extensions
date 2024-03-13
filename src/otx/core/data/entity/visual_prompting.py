@@ -153,10 +153,10 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
         prompts (list[list[tv_tensors.TVTensor]]): List of prompts.
     """
 
-    masks: list[tv_tensors.Mask]
-    labels: list[LongTensor]
-    polygons: list[list[Polygon]]
-    prompts: list[list[tv_tensors.TVTensor]]
+    masks: list[tv_tensors.Mask | None]
+    labels: list[LongTensor | None]
+    polygons: list[list[Polygon] | None]
+    prompts: list[list[tv_tensors.TVTensor] | None]
 
     @property
     def task(self) -> OTXTaskType:
@@ -193,10 +193,14 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
         super().pin_memory()
         self.prompts = [
             [tv_tensors.wrap(prompt.pin_memory(), like=prompt) if prompt is not None else prompt for prompt in prompts]
+            if prompts is not None
+            else prompts
             for prompts in self.prompts
         ]
-        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
-        self.labels = [label.pin_memory() for label in self.labels]
+        self.masks = [
+            tv_tensors.wrap(mask.pin_memory(), like=mask) if mask is not None else mask for mask in self.masks
+        ]
+        self.labels = [label.pin_memory() if label is not None else label for label in self.labels]
         return self
 
 
