@@ -52,7 +52,7 @@ class SingleXPUStrategy(SingleDeviceStrategy):
             raise RuntimeError("XPU strategy doesn't support multiple optimizers")
         model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore
         self.optimizers = [optimizer]
-        trainer.model = model
+        self.model = model
 
 
 StrategyRegistry.register(
