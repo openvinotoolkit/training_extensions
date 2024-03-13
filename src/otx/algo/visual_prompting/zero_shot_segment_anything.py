@@ -597,7 +597,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 return None, torch.zeros(masks.shape[-2:], device="cpu")
 
             best_idx = torch.argmax(scores[0])
-        return logits[:, best_idx], masks[0, best_idx]
+        return logits[:, [best_idx]], masks[0, best_idx]
 
 
 class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
