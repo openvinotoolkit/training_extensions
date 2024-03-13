@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import importlib
 import os
 import platform
 import subprocess
@@ -17,9 +18,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import yaml
-
-from otx import __version__ as VERSION
-from otx.api.entities.model_template import ModelCategory, ModelTemplate
 
 from .benchmark import OTXBenchmark
 
@@ -95,6 +93,13 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
+    parser.addoption(
+        "--otx-ref",
+        type=str,
+        help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
+        "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
+        "and reverted after run. Works only for v1.x assuming CLI compatibility.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -104,10 +109,31 @@ def fxt_current_date() -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
-    """Version / branch / commit info."""
-    import otx
+def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
+    otx_ref = request.config.getoption("--otx-ref")
 
+    if otx_ref:
+        # Install specific version
+        subprocess.run(
+            ["pip", "install", f"otx[full]@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"],
+            check=True,
+        )
+
+    yield otx_ref
+
+    if otx_ref:
+        # Restore the current version
+        subprocess.run(
+            ["pip", "install", "-e", ".[full]"],
+            check=True,
+        )
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
+    """Version / branch / commit info."""
+    otx = importlib.import_module("otx")
+    otx = importlib.reload(otx)  # To get re-installed OTX version
     version_str = otx.__version__
     try:
         branch_str = (
@@ -122,9 +148,10 @@ def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     except Exception:
         commit_str = os.environ.get("GH_CTX_SHA", "unknown")
     version_tags = {
-        "version": version_str,
-        "branch": branch_str,
-        "commit": commit_str,
+        "otx_version": version_str,
+        "otx_ref": fxt_otx_ref or commit_str,
+        "test_branch": branch_str,
+        "test_commit": commit_str,
         "date": fxt_current_date,
     }
     return version_tags
@@ -162,6 +189,8 @@ def fxt_output_root(
 @pytest.fixture
 def fxt_model_id(request: pytest.FixtureRequest) -> str:
     """Skip by model category."""
+    from otx.api.entities.model_template import ModelCategory, ModelTemplate
+
     model_category: str = request.config.getoption("--model-category")
     model_template: ModelTemplate = request.param
     if model_category == "default":
@@ -171,7 +200,12 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str]) -> OTXBenchmark:
+def fxt_benchmark(
+    request: pytest.FixtureRequest,
+    fxt_output_root: Path,
+    fxt_tags: dict[str, str],
+    fxt_benchmark_reference: pd.DataFrame | None,
+) -> OTXBenchmark:
     """Configure benchmark."""
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
@@ -198,8 +232,9 @@ def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tag
 
     cfg["eval_upto"] = request.config.getoption("--eval-upto")
     cfg["data_root"] = request.config.getoption("--data-root")
-    cfg["output_root"] = str(fxt_output_root)
+    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_size)
     cfg["dry_run"] = request.config.getoption("--dry-run")
+    cfg["reference_results"] = fxt_benchmark_reference
 
     # Create benchmark
     benchmark = OTXBenchmark(
@@ -222,7 +257,7 @@ def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], clie
         exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
         if exp.lifecycle_stage != "active":
             client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
         run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
@@ -258,8 +293,8 @@ def fxt_benchmark_summary(
             return
 
         # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-        working_branch = fxt_tags["branch"]
-        if working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", working_branch)):
+        test_branch = fxt_tags["test_branch"]
+        if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
             try:
                 log_perf_results_to_mlflow(all_results, fxt_tags, fxt_mlflow_client)
             except Exception as e:
@@ -276,46 +311,3 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     if ref is not None:
         ref.set_index(["task", "data_size", "model"], inplace=True)
     return ref
-
-
-@pytest.fixture(scope="session")
-def fxt_check_benchmark_result(fxt_benchmark_reference: pd.DataFrame | None) -> Callable:
-    """Return result checking function with reference data."""
-
-    def check_benchmark_result(result: pd.DataFrame, key: Tuple, checks: List[Dict]):
-        if fxt_benchmark_reference is None:
-            print("No benchmark references loaded. Skipping result checking.")
-            return
-
-        if result is None:
-            return
-
-        def get_entry(data: pd.DataFrame, key: Tuple) -> pd.Series:
-            if key in data.index:
-                return data.loc[key]
-            return None
-
-        target_entry = get_entry(fxt_benchmark_reference, key)
-        if target_entry is None:
-            print(f"No benchmark reference for {key} loaded. Skipping result checking.")
-            return
-
-        result_entry = get_entry(result, key)
-        assert result_entry is not None
-
-        def compare(name: str, op: str, margin: float):
-            if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
-                return
-            if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
-                return
-            if op == "==":
-                assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
-            elif op == "<":
-                assert result_entry[name] < target_entry[name] * (1.0 + margin)
-            elif op == ">":
-                assert result_entry[name] > target_entry[name] * (1.0 - margin)
-
-        for check in checks:
-            compare(**check)
-
-    return check_benchmark_result

@@ -6,10 +6,10 @@
 
 import os
 import glob
+import numpy as np
 import pandas as pd
 import yaml
 from pathlib import Path
-from typing import List, Optional
 
 from tests.test_suite.run_test_command import check_run
 
@@ -23,7 +23,7 @@ class OTXBenchmark:
         >>> yolox_result = bm.run('YOLOX-TINY')
 
     Args:
-        datasets (List[str]): Paths to datasets relative to the data_root.
+        datasets (list[str]): Paths to datasets relative to the data_root.
             Intended for, but not restricted to different sampling based on same dataset.
         data_root (str): Path to the root of dataset directories. Defaults to './data'.
         num_epoch (int): Overrides the per-model default number of epoch settings.
@@ -46,7 +46,7 @@ class OTXBenchmark:
 
     def __init__(
         self,
-        datasets: List[str],
+        datasets: list[str],
         data_root: str = "data",
         num_epoch: int = 0,
         num_repeat: int = 1,
@@ -57,6 +57,7 @@ class OTXBenchmark:
         dry_run: bool = False,
         tags: dict | None = None,
         subset_dir_names: dict | None = None,
+        reference_results: pd.DataFrame | None = None,
     ):
         self.datasets = datasets
         self.data_root = data_root
@@ -69,6 +70,7 @@ class OTXBenchmark:
         self.dry_run = dry_run
         self.tags = tags or {}
         self.subset_dir_names = subset_dir_names or {"train": "", "val": "", "test": ""}
+        self.reference_results = reference_results
 
     def run(
         self,
@@ -216,3 +218,38 @@ class OTXBenchmark:
             train_params["learning_parameters.max_epochs"] = num_epoch
         else:
             train_params["learning_parameters.num_iters"] = num_epoch
+
+    def check(self, result: pd.DataFrame, criteria: list[dict]):
+        """Check result w.r.t. reference data.
+
+        Args:
+            result (pd.DataFrame): Result data frame
+            criteria (list[dict]): Criteria to check results
+        """
+        if result is None:
+            return
+
+        if self.reference_results is None:
+            print("No benchmark references loaded. Skipping result checking.")
+            return
+
+        for key, result_entry in result.iterrows():
+            if key not in self.reference_results.index:
+                print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+                continue
+            target_entry = self.reference_results.loc[key]
+
+            def compare(name: str, op: str, margin: float):
+                if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
+                    return
+                if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
+                    return
+                if op == "==":
+                    assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
+                elif op == "<":
+                    assert result_entry[name] < target_entry[name] * (1.0 + margin)
+                elif op == ">":
+                    assert result_entry[name] > target_entry[name] * (1.0 - margin)
+
+            for criterion in criteria:
+                compare(**criterion)
