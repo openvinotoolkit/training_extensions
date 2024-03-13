@@ -176,13 +176,17 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
+                exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
+                if not exported_model_path.exists():
+                    exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
+
                 command = [  # NOTE: not working for h_label_cls. to be fixed
                     "otx",
                     "test",
                     "--config",
-                    str(sub_work_dir / ".latest" / "export" / "configs.yaml"),
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    str(exported_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
@@ -199,11 +203,15 @@ class Benchmark:
                     "--config",
                     f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    str(exported_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
                 self._run_command(command)
+
+                optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
+                if not optimized_model_path.exists():
+                    optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
 
                 command = [
                     "otx",
@@ -212,7 +220,7 @@ class Benchmark:
                     "--config",
                     f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"),
+                    str(optimized_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
