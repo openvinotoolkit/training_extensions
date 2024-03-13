@@ -200,7 +200,12 @@ def fxt_model_id(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture
-def fxt_benchmark(request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str], fxt_benchmark_reference: pd.DataFrame | None) -> OTXBenchmark:
+def fxt_benchmark(
+    request: pytest.FixtureRequest,
+    fxt_output_root: Path,
+    fxt_tags: dict[str, str],
+    fxt_benchmark_reference: pd.DataFrame | None,
+) -> OTXBenchmark:
     """Configure benchmark."""
     # Skip by dataset size
     data_size_option: str = request.config.getoption("--data-size")
