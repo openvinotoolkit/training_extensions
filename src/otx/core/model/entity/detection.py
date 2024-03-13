@@ -134,7 +134,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def _forward_explain_detection(
         self: SingleStageDetector,
         inputs: torch.Tensor,
-        data_samples: OptSampleList = None,
+        data_samples: OptSampleList | None = None,
         mode: str = "tensor",
     ) -> dict[str, torch.Tensor]:
         """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""

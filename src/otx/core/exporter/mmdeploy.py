@@ -47,6 +47,7 @@ class MMdeployExporter(OTXModelExporter):
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
         max_num_detections (int, optional): Maximum number of detections per image. Defaults to 0.
+        output_names (list[str], optional): Additional names for the output nodes in addition to ones in "ir_config" .
     """
 
     def __init__(

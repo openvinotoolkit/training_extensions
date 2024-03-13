@@ -209,10 +209,10 @@ def test_otx_e2e(
 
     # 5) otx export with XAI
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
-        pytest.skip("Supported only for classification, detection and instance segmentation task.")
+        return  # Supported only for classification, detection and instance segmentation task.
 
     if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO and Rtmdet_tiny are not supported.")
+        return  # DINO and Rtmdet_tiny are not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
