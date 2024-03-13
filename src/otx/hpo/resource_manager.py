@@ -180,6 +180,10 @@ class GPUResourceManager(AcceleratorManager):
 class XPUResourceManager(AcceleratorManager):
     """Resource manager class for XPU."""
 
+    def __init__(self, num_devices_per_trial: int = 1, available_devices: Optional[str] = None):
+        super().__init__(num_devices_per_trial, available_devices)
+        torch.xpu.init()  # Avoid default_generators index error in multi XPU environment
+
     def _set_available_devices(self, available_devices: Optional[str] = None) -> List[int]:
         if available_devices is None:
             visible_devices = os.getenv("ONEAPI_DEVICE_SELECTOR", "").split(":")
