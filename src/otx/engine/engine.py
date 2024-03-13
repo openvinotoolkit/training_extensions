@@ -756,7 +756,7 @@ class Engine:
                 # add plugin for Automatic Mixed Precision on XPU
                 if kwargs["precision"] == 16:
                     self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
-                    self._cache.update(precision=None)
+                    self._cache.args["precision"] = None
 
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
