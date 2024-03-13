@@ -324,3 +324,4 @@ markers = [
     "gpu: mark tests which require NVIDIA GPU device",
     # "cpu: mark tests which require CPU device",
 ]
+python_files = "tests/**/*.py"

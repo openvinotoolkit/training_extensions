@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 import os
+import pandas as pd
 import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
@@ -18,8 +19,6 @@ from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
 
-if TYPE_CHECKING:
-    import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -302,6 +301,7 @@ def fxt_benchmark(
     fxt_dry_run: bool,
     fxt_deterministic: bool,
     fxt_accelerator: str,
+    fxt_benchmark_reference: pd.DataFrame | None,
 ) -> Benchmark:
     """Configure benchmark."""
     return Benchmark(
@@ -314,6 +314,7 @@ def fxt_benchmark(
         dry_run=fxt_dry_run,
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
+        reference_results=fxt_benchmark_reference,
     )
 
 
@@ -360,6 +361,15 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
             client.log_metric(run.info.run_id, k, v)
 
 
+@pytest.fixture(scope="session")
+def fxt_benchmark_reference() -> pd.DataFrame | None:
+    """Load reference benchmark results with index."""
+    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    if ref is not None:
+        ref.set_index(["task", "data_size", "model"], inplace=True)
+    return ref
+
+
 class PerfTestBase:
     """Base perf test structure."""
 
@@ -375,5 +385,7 @@ class PerfTestBase:
             dataset=dataset,
             criteria=criteria,
         )
-        print(result)
-        # Check results
+        benchmark.check(
+            result=result,
+            criteria=criteria,
+        )
