@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from copy import deepcopy
 from math import sqrt
 from typing import Callable, Dict, List
 
@@ -40,11 +39,10 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
 
-def train_func_single_iter(batch_size, train_func, cfg, validate, datasets):
+def train_func_single_iter(batch_size, train_func, cfg, validate, datasets, meta, model):
     caching.MemCacheHandlerSingleton.create("null", 0)
-    copied_cfg = deepcopy(cfg)
-    _set_batch_size(copied_cfg, batch_size)
-    _set_max_epoch(copied_cfg, 1)  # setup for training a single iter to reduce time
+    _set_batch_size(cfg, batch_size)
+    _set_max_epoch(cfg, 1)  # setup for training a single iter to reduce time
 
     # Remove hooks due to reasons below
     # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
@@ -52,7 +50,7 @@ def train_func_single_iter(batch_size, train_func, cfg, validate, datasets):
     # CustomEvalHook => exclude validation in classification task
     idx_hooks_to_remove = []
     hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
-    for i, hook in enumerate(copied_cfg.custom_hooks):
+    for i, hook in enumerate(cfg.custom_hooks):
         if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
             hook["enable_eval_before_run"] = False
         for hook_to_remove in hooks_to_remove:
@@ -62,18 +60,23 @@ def train_func_single_iter(batch_size, train_func, cfg, validate, datasets):
     if idx_hooks_to_remove:
         idx_hooks_to_remove.sort()
         for i in reversed(idx_hooks_to_remove):
-            del copied_cfg.custom_hooks[i]
+            del cfg.custom_hooks[i]
 
-    new_datasets = [SubDataset(datasets[0], batch_size)]
+    # new_datasets = [SubDataset(datasets[0], batch_size)]
+    from mmdet.datasets import build_dataset
+    datasets = [build_dataset(cfg.data.train)]
 
     train_func(
-        dataset=new_datasets,
-        cfg=copied_cfg,
+        dataset=datasets,
+        cfg=cfg,
         validate=validate,
+        model=model,
+        meta=meta,
+        distributed=False,
     )
 
 
-def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True):
+def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True, meta=None, model=None):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -101,6 +104,8 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
             "cfg" : cfg,
             "validate" : validate,
             "datasets" : datasets,
+            "meta" : meta,
+            "model" : model,
         },
         default_bs=default_bs,
         max_bs=len(datasets[0]),

@@ -260,14 +260,27 @@ class MMDetectionTask(OTXDetectionTask):
 
         cfg.pop('algo_backend')
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
-            train_func = partial(train_detector, meta=meta, model=model, distributed=False)
+            # train_func = partial(train_detector, meta=meta, model=model, distributed=False)
+            # import pickle
+            # breakpoint()
+            # temp = pickle.dumps(datasets)
+            # new_ds = pickle.loads(temp)
             adapt_batch_size(
-                train_func,
+                train_detector,
                 cfg,
                 datasets,
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+                meta=meta,
+                model=model,
             )
+            # adapt_batch_size(
+            #     train_func,
+            #     cfg,
+            #     datasets,
+            #     isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+            #     not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            # )
             breakpoint()
 
         train_detector(

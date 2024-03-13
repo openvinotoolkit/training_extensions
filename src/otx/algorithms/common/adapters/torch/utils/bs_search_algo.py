@@ -10,7 +10,6 @@ import os
 
 import torch
 import torch.distributed as dist
-import intel_extension_for_pytorch
 
 from otx.utils.logger import get_logger
 
@@ -18,6 +17,7 @@ logger = get_logger()
 
 
 def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[bool, int]:
+    import intel_extension_for_pytorch
     mp.set_start_method(None, True)
     cuda_oom = False
     # torch.cuda.reset_max_memory_cached(device=None)

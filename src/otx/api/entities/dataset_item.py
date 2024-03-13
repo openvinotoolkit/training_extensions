@@ -460,13 +460,21 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return clone
 
     def __getstate__(self):
+        _ = self.roi
         ret = self.__dict__
         ret["_DatasetItemEntity__roi_lock"] = None
         return ret
 
     def __setstate__(self, d):
+        lock_obj = Lock()
+        for key in list(d.keys()):
+            if "_DatasetItemEntity" in key:
+                if "roi_lock" in key:
+                    d[key] = lock_obj
+                    d[key.replace("_DatasetItemEntity", "")] = lock_obj
+                else:
+                    d[key.replace("_DatasetItemEntity", "")] = d[key]
         self.__dict__ = d
-        self.__roi_lock = Lock()
 
     def append_metadata_item(self, data: IMetadata, model: Optional[ModelEntity] = None):
         """Appends metadata produced by some model to the dataset item.
