@@ -138,7 +138,7 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        if self.task == OTXTaskType.DETECTION and self.device == DeviceType.xpu:
+        if self.task == OTXTaskType.DETECTION and self.device.accelerator == DeviceType.xpu:
             from mmcv.ops.nms import NMSop
             from mmcv.ops.roi_align import RoIAlign
             from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
