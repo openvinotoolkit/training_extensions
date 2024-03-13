@@ -272,10 +272,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
     @torch.no_grad()
     def learn(
-        self,
-        batch: List[Dict[str, Any]],
-        reset_feat: bool = False,
-        is_cascade: bool = False
+        self, batch: List[Dict[str, Any]], reset_feat: bool = False, is_cascade: bool = False
     ) -> Union[None, Tuple[ParameterDict, Tensor]]:
         """Get reference features.
 
