@@ -56,6 +56,8 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
 
         # convert xywh to xyxy format
         bboxes = np.array(gt_bboxes, dtype=np.float32)
+        if len(bboxes) == 0:
+            bboxes = np.empty((0, 4))
         bboxes[:, 2:] += bboxes[:, :2]
 
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)

@@ -169,11 +169,13 @@ class OTXInstanceSegLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            rles = (
-                [encode_rle(mask) for mask in masks.data]
-                if len(masks)
-                else polygon_to_rle(polygons, *imgs_info.ori_shape)
-            )
+            rles = []
+            if len(bboxes):
+                rles = (
+                    [encode_rle(mask) for mask in masks.data]
+                    if len(masks)
+                    else polygon_to_rle(polygons, *imgs_info.ori_shape)
+                )
             target_info.append(
                 {
                     "boxes": bboxes.data,
