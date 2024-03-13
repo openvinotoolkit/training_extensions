@@ -41,6 +41,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",  # Refer sections its title
     "sphinx.ext.intersphinx",  # Generate links to the documentation
     "sphinx_tabs.tabs",
+    "sphinx_design",
 ]
 
 source_suffix = {
