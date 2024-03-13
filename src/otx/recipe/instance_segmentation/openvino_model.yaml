@@ -35,4 +35,4 @@ overrides:
       image_color_channel: RGB
       data_format: coco_instances
       test_subset:
-        batch_size: 128
+        batch_size: 256
