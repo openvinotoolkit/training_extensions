@@ -25,6 +25,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
+from otx.algo.plugins import MixedPrecisionXPUPlugin
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import AutoConfigurator
@@ -741,10 +742,13 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
+            # set up xpu device
+            if self._device.accelerator == DeviceType.xpu:
+                self._cache.update(strategy="xpu_single")
+                # add plugin for Automatic Mixed Precision on XPU
+                if kwargs["precision"] == 16:
+                    self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
             kwargs = self._cache.args
-            # breakpoint()
-            kwargs["strategy"] = "xpu_single"
-            kwargs["accelerator"] = "xpu"
             self._trainer = Trainer(**kwargs)
             self.work_dir = self._trainer.default_root_dir
 

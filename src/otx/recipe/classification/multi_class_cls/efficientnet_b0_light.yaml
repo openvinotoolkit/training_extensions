@@ -27,7 +27,7 @@ metric:
 
 engine:
   task: MULTI_CLASS_CLS
-  device: xpu
+  device: auto
 
 callback_monitor: val/accuracy
 

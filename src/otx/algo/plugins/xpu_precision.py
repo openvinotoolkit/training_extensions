@@ -7,12 +7,12 @@
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Generator, Optional, Union
 
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch
 from lightning_fabric.utilities.types import Optimizable
-from pytorch_lightning.plugins.precision.precision_plugin import PrecisionPlugin
-from pytorch_lightning.utilities import GradClipAlgorithmType
-from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from lightning.pytorch.plugins.precision import PrecisionPlugin
+from lightning.pytorch.utilities import GradClipAlgorithmType
+from lightning.pytorch.utilities.exceptions import MisconfigurationException
 from torch import Tensor
 from torch.optim import LBFGS, Optimizer
 

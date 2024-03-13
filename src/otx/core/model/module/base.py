@@ -62,6 +62,7 @@ class OTXLitModule(LightningModule):
         """Step for model training."""
 
         train_loss = self.model(inputs)
+        print(train_loss["loss_bbox"].device, inputs.images.device, self.device)
 
         if isinstance(train_loss, Tensor):
             self.log(
