@@ -57,18 +57,18 @@ Here we provide a feature called ``overrides``.
     ...
 
     overrides:
-    data:
-        config:
-        train_subset:
-            transforms:
-            - type: LoadImageFromFile
-            - backend: cv2
-                scale: 224
-                type: RandomResizedCrop
-            - direction: horizontal
-                prob: 0.5
-                type: RandomFlip
-            - type: PackInputs
+        data:
+            config:
+            train_subset:
+                transforms:
+                - type: LoadImageFromFile
+                - backend: cv2
+                    scale: 224
+                    type: RandomResizedCrop
+                - direction: horizontal
+                    prob: 0.5
+                    type: RandomFlip
+                - type: PackInputs
     ...
 
 This feature allows you to override the values need from the default configuration.
@@ -88,7 +88,7 @@ For example, if you want to change the patience of EarlyStopping, you can config
 
     overrides:
     ...
-    callbacks:
-        - class_path: ligthning.pytorch.callbacks.EarlyStopping
-        init_args:
-            patience: 3
+        callbacks:
+            - class_path: ligthning.pytorch.callbacks.EarlyStopping
+            init_args:
+                patience: 3

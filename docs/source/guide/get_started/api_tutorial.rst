@@ -1,5 +1,5 @@
-Utilize OpenVINO™ Training Extensions APIs in your project
-==========================================================
+OpenVINO™ Training Extensions API Quick-Start
+==============================================
 
 Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.

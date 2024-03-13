@@ -1,4 +1,4 @@
-OpenVINO™ Training Extensions CLI commands
+OpenVINO™ Training Extensions CLI Usage
 ==========================================
 
 All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
