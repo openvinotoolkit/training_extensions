@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.data.transform_libs.mmdet &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/tabs.js"></script>
+    <script src="../../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/data/transform_libs/mmdet';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.data.transform_libs.mmdet</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Helper to support MMDET data transform functions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">mmcv.transforms</span> <span class="kn">import</span> <span class="n">BaseTransform</span>
+<span class="kn">from</span> <span class="nn">mmdet.datasets.transforms</span> <span class="kn">import</span> <span class="n">LoadAnnotations</span> <span class="k">as</span> <span class="n">MMDetLoadAnnotations</span>
+<span class="kn">from</span> <span class="nn">mmdet.datasets.transforms</span> <span class="kn">import</span> <span class="n">PackDetInputs</span> <span class="k">as</span> <span class="n">MMDetPackDetInputs</span>
+<span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">TRANSFORMS</span> <span class="k">as</span> <span class="n">MMDET_TRANSFORMS</span>
+<span class="kn">from</span> <span class="nn">mmdet.structures.mask</span> <span class="kn">import</span> <span class="n">BitmapMasks</span><span class="p">,</span> <span class="n">PolygonMasks</span>
+<span class="kn">from</span> <span class="nn">mmengine.registry</span> <span class="kn">import</span> <span class="n">Registry</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetDataEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegDataEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.visual_prompting</span> <span class="kn">import</span> <span class="n">VisualPromptingDataEntity</span>
+
+<span class="kn">from</span> <span class="nn">.mmcv</span> <span class="kn">import</span> <span class="n">MMCVTransformLib</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mmdet.structures.det_data_sample</span> <span class="kn">import</span> <span class="n">DetDataSample</span>
+
+    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">SubsetConfig</span>
+
+<span class="n">TRANSFORMS</span> <span class="o">=</span> <span class="n">Registry</span><span class="p">(</span>  <span class="c1"># to make mmdeploy use mmdet pipeline module</span>
+    <span class="s2">&quot;transform&quot;</span><span class="p">,</span>
+    <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;otx&quot;</span><span class="p">,</span>
+    <span class="n">parent</span><span class="o">=</span><span class="n">MMDET_TRANSFORMS</span><span class="p">,</span>
+    <span class="n">locations</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;otx.core.data.transform_libs.mmdet&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="LoadAnnotations"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.LoadAnnotations">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">LoadAnnotations</span><span class="p">(</span><span class="n">MMDetLoadAnnotations</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to override MMDet LoadAnnotations.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_point</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_point</span><span class="p">:</span>
+            <span class="c1"># TODO(sungchul): add point prompts in mmx # noqa: TD003</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;with_point for mmx is not supported yet, changed to False.&quot;</span><span class="p">)</span>
+            <span class="n">with_point</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_point</span> <span class="o">=</span> <span class="n">with_point</span>
+
+<div class="viewcode-block" id="LoadAnnotations.transform"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.LoadAnnotations.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform OTXDataEntity to MMDet annotation data entity format.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">otx_data_entity</span> <span class="o">:=</span> <span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__otx__&quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;__otx__ key should be passed from the previous pipeline (LoadImageFromFile)&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_bbox</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">otx_data_entity</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">DetDataEntity</span><span class="p">,</span> <span class="n">InstanceSegDataEntity</span><span class="p">,</span> <span class="n">VisualPromptingDataEntity</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">gt_bboxes</span> <span class="o">=</span> <span class="n">otx_data_entity</span><span class="o">.</span><span class="n">bboxes</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_bboxes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_label</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">otx_data_entity</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">DetDataEntity</span><span class="p">,</span> <span class="n">InstanceSegDataEntity</span><span class="p">,</span> <span class="n">VisualPromptingDataEntity</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">gt_bboxes_labels</span> <span class="o">=</span> <span class="n">otx_data_entity</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_bboxes_labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_bboxes_labels</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_ignore_flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">gt_bboxes_labels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_mask</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="p">(</span><span class="n">InstanceSegDataEntity</span><span class="p">,</span> <span class="n">VisualPromptingDataEntity</span><span class="p">)):</span>
+            <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;ori_shape&quot;</span><span class="p">]</span>
+            <span class="n">gt_masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_gt_masks</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gt_masks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_point</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="p">(</span><span class="n">VisualPromptingDataEntity</span><span class="p">)):</span>
+            <span class="c1"># TODO(sungchul): add point prompts in mmx # noqa: TD003</span>
+            <span class="c1"># gt_points = otx_data_entity.points.numpy()</span>
+            <span class="c1"># results[&quot;gt_points&quot;] = gt_points</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_gt_masks</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">otx_data_entity</span><span class="p">:</span> <span class="n">InstanceSegDataEntity</span> <span class="o">|</span> <span class="n">VisualPromptingDataEntity</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BitmapMasks</span> <span class="o">|</span> <span class="n">PolygonMasks</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate ground truth masks based on the given otx_data_entity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            otx_data_entity (OTXDataEntity): The data entity containing the masks or polygons.</span>
+<span class="sd">            height (int): The height of the masks.</span>
+<span class="sd">            width (int): The width of the masks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            gt_masks (BitmapMasks or PolygonMasks): The generated ground truth masks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="o">.</span><span class="n">masks</span><span class="p">):</span>
+            <span class="n">gt_masks</span> <span class="o">=</span> <span class="n">BitmapMasks</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="o">.</span><span class="n">masks</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gt_masks</span> <span class="o">=</span> <span class="n">PolygonMasks</span><span class="p">(</span>
+                <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">points</span><span class="p">)]</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">otx_data_entity</span><span class="o">.</span><span class="n">polygons</span><span class="p">],</span>
+                <span class="n">height</span><span class="p">,</span>
+                <span class="n">width</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">gt_masks</span></div>
+
+
+<div class="viewcode-block" id="PackDetInputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register_module</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PackDetInputs</span><span class="p">(</span><span class="n">MMDetPackDetInputs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to override PackDetInputs LoadAnnotations.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PackDetInputs.transform"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetDataEntity</span> <span class="o">|</span> <span class="n">InstanceSegDataEntity</span> <span class="o">|</span> <span class="n">VisualPromptingDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack MMDet data entity into DetDataEntity, InstanceSegDataEntity, or VisualPromptingDataEntity.&quot;&quot;&quot;</span>
+        <span class="n">otx_data_entity</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;__otx__&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="n">DetDataEntity</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack_det_inputs</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="n">InstanceSegDataEntity</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack_inst_inputs</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">otx_data_entity</span><span class="p">,</span> <span class="n">VisualPromptingDataEntity</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack_visprompt_inputs</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Unsupported data entity type&quot;</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.pack_det_inputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.pack_det_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">pack_det_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack MMDet data entity into DetDataEntity.&quot;&quot;&quot;</span>
+        <span class="n">transformed</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">data_samples</span> <span class="o">=</span> <span class="n">transformed</span><span class="p">[</span><span class="s2">&quot;data_samples&quot;</span><span class="p">]</span>
+        <span class="n">image_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_image_info</span><span class="p">(</span><span class="n">src_image_info</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;__otx__&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">img_info</span><span class="p">,</span> <span class="n">data_samples</span><span class="o">=</span><span class="n">data_samples</span><span class="p">)</span>
+
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_bboxes</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="k">return</span> <span class="n">DetDataEntity</span><span class="p">(</span>
+            <span class="n">image</span><span class="o">=</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">transformed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">)),</span>
+            <span class="n">img_info</span><span class="o">=</span><span class="n">image_info</span><span class="p">,</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.pack_inst_inputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.pack_inst_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">pack_inst_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack MMDet data entity into InstanceSegDataEntity.&quot;&quot;&quot;</span>
+        <span class="n">transformed</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">data_samples</span> <span class="o">=</span> <span class="n">transformed</span><span class="p">[</span><span class="s2">&quot;data_samples&quot;</span><span class="p">]</span>
+        <span class="n">image_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_image_info</span><span class="p">(</span><span class="n">src_image_info</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;__otx__&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">img_info</span><span class="p">,</span> <span class="n">data_samples</span><span class="o">=</span><span class="n">data_samples</span><span class="p">)</span>
+
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_bboxes</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="n">masks</span><span class="p">,</span> <span class="n">polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_masks_and_polygons</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">masks</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">InstanceSegDataEntity</span><span class="p">(</span>
+            <span class="n">image</span><span class="o">=</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">transformed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">)),</span>
+            <span class="n">img_info</span><span class="o">=</span><span class="n">image_info</span><span class="p">,</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+            <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+            <span class="n">polygons</span><span class="o">=</span><span class="n">polygons</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.pack_visprompt_inputs"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.pack_visprompt_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">pack_visprompt_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VisualPromptingDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pack MMDet data entity into VisualPromptingDataEntity.&quot;&quot;&quot;</span>
+        <span class="n">transformed</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">data_samples</span> <span class="o">=</span> <span class="n">transformed</span><span class="p">[</span><span class="s2">&quot;data_samples&quot;</span><span class="p">]</span>
+        <span class="n">image_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_image_info</span><span class="p">(</span><span class="n">src_image_info</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;__otx__&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">img_info</span><span class="p">,</span> <span class="n">data_samples</span><span class="o">=</span><span class="n">data_samples</span><span class="p">)</span>
+
+        <span class="n">bboxes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_bboxes</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span> <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">gt_instances</span><span class="o">.</span><span class="n">labels</span>
+
+        <span class="k">return</span> <span class="n">VisualPromptingDataEntity</span><span class="p">(</span>
+            <span class="n">image</span><span class="o">=</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">transformed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inputs&quot;</span><span class="p">)),</span>
+            <span class="n">img_info</span><span class="o">=</span><span class="n">image_info</span><span class="p">,</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+            <span class="n">points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+            <span class="n">polygons</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.create_image_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.create_image_info">[docs]</a>    <span class="k">def</span> <span class="nf">create_image_info</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="n">DetDataSample</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create ImageInfo instance from data_samples.&quot;&quot;&quot;</span>
+        <span class="c1"># Some MM* transforms return (H, W, C), not (H, W)</span>
+        <span class="n">img_shape</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">img_shape</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">img_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">img_shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">ori_shape</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">ori_shape</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_samples</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">pad_shape</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">metainfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pad_shape&quot;</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pad_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">pad_shape</span> <span class="o">=</span> <span class="n">pad_shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">data_samples</span><span class="o">.</span><span class="n">metainfo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+
+        <span class="n">image_info</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">src_image_info</span><span class="p">)</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="n">img_shape</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">ori_shape</span> <span class="o">=</span> <span class="n">ori_shape</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">pad_shape</span> <span class="o">=</span> <span class="n">pad_shape</span>
+
+        <span class="k">return</span> <span class="n">image_info</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.convert_bboxes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.convert_bboxes">[docs]</a>    <span class="k">def</span> <span class="nf">convert_bboxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_bboxes</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert bounding boxes to tv_tensors.BoundingBoxes format.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span>
+            <span class="n">original_bboxes</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxFormat</span><span class="o">.</span><span class="n">XYXY</span><span class="p">,</span>
+            <span class="n">canvas_size</span><span class="o">=</span><span class="n">img_shape</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PackDetInputs.convert_masks_and_polygons"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PackDetInputs.convert_masks_and_polygons">[docs]</a>    <span class="k">def</span> <span class="nf">convert_masks_and_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">masks</span><span class="p">:</span> <span class="n">BitmapMasks</span> <span class="o">|</span> <span class="n">PolygonMasks</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert masks and polygons to the desired format.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">BitmapMasks</span><span class="p">):</span>
+            <span class="n">masks_tensor</span> <span class="o">=</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">masks</span><span class="o">.</span><span class="n">to_ndarray</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">masks_tensor</span> <span class="o">=</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">polygons</span> <span class="o">=</span> <span class="p">[</span><span class="n">Polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">masks</span><span class="o">.</span><span class="n">masks</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">PolygonMasks</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">masks_tensor</span><span class="p">,</span> <span class="n">polygons</span></div></div>
+
+
+<div class="viewcode-block" id="PerturbBoundingBoxes"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PerturbBoundingBoxes">[docs]</a><span class="nd">@TRANSFORMS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">PerturbBoundingBoxes</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perturb bounding boxes with random offset values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        offset (int): Offset value to be used for bounding boxes perturbation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+
+<div class="viewcode-block" id="PerturbBoundingBoxes.transform"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PerturbBoundingBoxes.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert random perturbation into bounding boxes.&quot;&quot;&quot;</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;img_shape&quot;</span><span class="p">]</span>
+        <span class="n">perturbed_bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]:</span>
+            <span class="n">perturbed_bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_perturbed_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span>
+            <span class="n">perturbed_bboxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perturbed_bbox</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;gt_bboxes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">perturbed_bboxes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="PerturbBoundingBoxes.get_perturbed_bbox"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.PerturbBoundingBoxes.get_perturbed_bbox">[docs]</a>    <span class="k">def</span> <span class="nf">get_perturbed_bbox</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">offset_bbox</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate bounding box.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bbox (np.ndarray): Bounding box coordinates.</span>
+<span class="sd">            width (int): Width of image.</span>
+<span class="sd">            height (int): Height of image.</span>
+<span class="sd">            offset_bbox (int): Offset to apply to the bounding box, defaults to 0.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[int]: Generated bounding box.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">get_randomness</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">offset_bbox</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">offset_bbox</span><span class="p">))</span>  <span class="c1"># noqa: NPY002</span>
+
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">bbox</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">get_randomness</span><span class="p">(</span><span class="n">width</span><span class="p">)),</span>
+                <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y1</span> <span class="o">+</span> <span class="n">get_randomness</span><span class="p">(</span><span class="n">height</span><span class="p">)),</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">get_randomness</span><span class="p">(</span><span class="n">width</span><span class="p">)),</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">y2</span> <span class="o">+</span> <span class="n">get_randomness</span><span class="p">(</span><span class="n">height</span><span class="p">)),</span>
+            <span class="p">],</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MMDetTransformLib"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.MMDetTransformLib">[docs]</a><span class="k">class</span> <span class="nc">MMDetTransformLib</span><span class="p">(</span><span class="n">MMCVTransformLib</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper to support MMDET transforms in OTX.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MMDetTransformLib.get_builder"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.MMDetTransformLib.get_builder">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_builder</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Registry</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform builder obtained from MMDet.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TRANSFORMS</span></div>
+
+<div class="viewcode-block" id="MMDetTransformLib.generate"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.transform_libs.mmdet.html#otx.core.data.transform_libs.mmdet.MMDetTransformLib.generate">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate MMDET transforms from the configuration.&quot;&quot;&quot;</span>
+        <span class="n">transforms</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_check_mandatory_transforms</span><span class="p">(</span>
+            <span class="n">transforms</span><span class="p">,</span>
+            <span class="n">mandatory_transforms</span><span class="o">=</span><span class="p">{</span><span class="n">LoadAnnotations</span><span class="p">,</span> <span class="n">PackDetInputs</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">transforms</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

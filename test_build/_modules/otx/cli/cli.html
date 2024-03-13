@@ -1,0 +1,906 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.cli.cli &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/tabs.js"></script>
+    <script src="../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/cli/cli';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.cli.cli</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;CLI entrypoints.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">dataclasses</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">jsonargparse</span> <span class="kn">import</span> <span class="n">ActionConfigFile</span><span class="p">,</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">namespace_to_dict</span>
+<span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
+
+<span class="kn">from</span> <span class="nn">otx</span> <span class="kn">import</span> <span class="n">OTX_LOGO</span><span class="p">,</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">otx.cli.utils</span> <span class="kn">import</span> <span class="n">absolute_path</span>
+<span class="kn">from</span> <span class="nn">otx.cli.utils.help_formatter</span> <span class="kn">import</span> <span class="n">CustomHelpFormatter</span>
+<span class="kn">from</span> <span class="nn">otx.cli.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">add_list_type_arguments</span><span class="p">,</span> <span class="n">get_short_docstring</span><span class="p">,</span> <span class="n">patch_update_configs</span>
+<span class="kn">from</span> <span class="nn">otx.cli.utils.workspace</span> <span class="kn">import</span> <span class="n">Workspace</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.imports</span> <span class="kn">import</span> <span class="n">get_otx_root_path</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._actions</span> <span class="kn">import</span> <span class="n">_ActionSubCommands</span>
+
+    <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
+
+<span class="n">_ENGINE_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">otx.core.config</span> <span class="kn">import</span> <span class="n">register_configs</span>
+    <span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+    <span class="n">register_configs</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">_ENGINE_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="OTXCLI"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI">[docs]</a><span class="k">class</span> <span class="nc">OTXCLI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX CLI entrypoint.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize OTX CLI.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_method_arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">with</span> <span class="n">patch_update_configs</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_parser</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_subcommands</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">_skip_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;subcommand&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OTXCLI.init_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.init_parser">[docs]</a>    <span class="k">def</span> <span class="nf">init_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the argument parser for the OTX CLI.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ArgumentParser: The initialized argument parser.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;OpenVINO Training-Extension command line tool&quot;</span><span class="p">,</span>
+            <span class="n">env_prefix</span><span class="o">=</span><span class="s2">&quot;otx&quot;</span><span class="p">,</span>
+            <span class="n">parser_mode</span><span class="o">=</span><span class="s2">&quot;omegaconf&quot;</span><span class="p">,</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">CustomHelpFormatter</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
+            <span class="n">version</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;%(prog)s </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Display OTX version number.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span></div>
+
+<div class="viewcode-block" id="OTXCLI.engine_subcommand_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommand_parser">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">engine_subcommand_parser</span><span class="p">(</span><span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ArgumentParser</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an ArgumentParser object for the engine subcommand.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs: Additional keyword arguments to be passed to the ArgumentParser constructor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ArgumentParser: The created ArgumentParser object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span>
+            <span class="n">formatter_class</span><span class="o">=</span><span class="n">CustomHelpFormatter</span><span class="p">,</span>
+            <span class="n">parser_mode</span><span class="o">=</span><span class="s2">&quot;omegaconf&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Verbose mode. This shows a configuration argument that allows for more specific overrides. </span><span class="se">\</span>
+<span class="s2">                Multiple -v options increase the verbosity. The maximum is 2.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--config&quot;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="n">ActionConfigFile</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to a configuration file in json or yaml format.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--data_root&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">absolute_path</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to dataset root.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--work_dir&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">absolute_path</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="n">absolute_path</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to work directory. The default is created as otx-workspace.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--task&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Task Type.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--seed&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Sets seed for pseudo-random number generators in: pytorch, numpy, python.random.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--callback_monitor&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The metric to monitor the model performance during training callbacks.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--disable-infer-num-classes&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;OTX automatically infers num_classes from the given dataset &quot;</span>
+            <span class="s2">&quot;and applies it to the model initialization.&quot;</span>
+            <span class="s2">&quot;Consequently, there might be a mismatch with the provided model configuration during runtime. &quot;</span>
+            <span class="s2">&quot;Setting this option to true will disable this behavior.&quot;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">engine_skip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="s2">&quot;work_dir&quot;</span><span class="p">}</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_class_arguments</span><span class="p">(</span>
+            <span class="n">Engine</span><span class="p">,</span>
+            <span class="s2">&quot;engine&quot;</span><span class="p">,</span>
+            <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">sub_configs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">instantiate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">skip</span><span class="o">=</span><span class="n">engine_skip</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Model Settings</span>
+        <span class="kn">from</span> <span class="nn">otx.core.model.entity.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
+
+        <span class="n">model_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fail_untyped&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span>
+            <span class="n">OTXModel</span><span class="p">,</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">model_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Datamodule Settings</span>
+        <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_class_arguments</span><span class="p">(</span>
+            <span class="n">OTXDataModule</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+            <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">sub_configs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Optimizer &amp; Scheduler Settings</span>
+        <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerTypeUnion</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span>
+        <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+        <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
+
+        <span class="n">add_list_type_arguments</span><span class="p">(</span>
+            <span class="n">parser</span><span class="p">,</span>
+            <span class="n">baseclass</span><span class="o">=</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]),</span>
+            <span class="n">nested_key</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span>
+            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">add_list_type_arguments</span><span class="p">(</span>
+            <span class="n">parser</span><span class="p">,</span>
+            <span class="n">baseclass</span><span class="o">=</span><span class="p">(</span><span class="n">LRScheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerTypeUnion</span><span class="p">]),</span>
+            <span class="n">nested_key</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span>
+            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_class_arguments</span><span class="p">(</span><span class="n">Workspace</span><span class="p">,</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;data_root&quot;</span><span class="p">,</span> <span class="s2">&quot;engine.data_root&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;data_root&quot;</span><span class="p">,</span> <span class="s2">&quot;data.config.data_root&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;engine.device&quot;</span><span class="p">,</span> <span class="s2">&quot;data.config.device&quot;</span><span class="p">)</span>
+
+        <span class="n">added_arguments</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_method_arguments</span><span class="p">(</span>
+            <span class="n">Engine</span><span class="p">,</span>
+            <span class="n">subcommand</span><span class="p">,</span>
+            <span class="n">skip</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">OTXCLI</span><span class="o">.</span><span class="n">engine_subcommands</span><span class="p">()[</span><span class="n">subcommand</span><span class="p">]),</span>
+            <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;callbacks&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;callback_monitor&quot;</span><span class="p">,</span> <span class="s2">&quot;callbacks.init_args.monitor&quot;</span><span class="p">)</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;callbacks.init_args.dirpath&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="s2">&quot;instantiate&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;logger&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;logger.init_args.save_dir&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="s2">&quot;instantiate&quot;</span><span class="p">)</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;workspace.work_dir&quot;</span><span class="p">,</span> <span class="s2">&quot;logger.init_args.log_dir&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="s2">&quot;instantiate&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;checkpoint&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span> <span class="ow">and</span> <span class="s2">&quot;--checkpoint&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+            <span class="c1"># This is code for an OVModel that uses checkpoint in model.model_name.</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">link_arguments</span><span class="p">(</span><span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;model.init_args.model_name&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Load default subcommand config file</span>
+        <span class="n">default_config_file</span> <span class="o">=</span> <span class="n">get_otx_root_path</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;recipe&quot;</span> <span class="o">/</span> <span class="s2">&quot;_base_&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">.yaml&quot;</span>
+        <span class="k">if</span> <span class="n">default_config_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">default_config_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">default_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">default_config</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">parser</span><span class="p">,</span> <span class="n">added_arguments</span></div>
+
+<div class="viewcode-block" id="OTXCLI.engine_subcommands"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommands">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">engine_subcommands</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns dictionary the subcommands of engine, and whose value is the argument to be skipped in the CLI.</span>
+
+<span class="sd">        This allows the CLI to skip duplicate keys when creating the Engine and when running the subcommand.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary where the keys are the subcommands and the values are sets of skipped arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;accelerator&quot;</span><span class="p">,</span> <span class="s2">&quot;devices&quot;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;seed&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;datamodule&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;predict&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;datamodule&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;export&quot;</span><span class="p">:</span> <span class="n">device_kwargs</span><span class="p">,</span>
+            <span class="s2">&quot;optimize&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;datamodule&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
+            <span class="s2">&quot;explain&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;datamodule&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="OTXCLI.add_subcommands"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.add_subcommands">[docs]</a>    <span class="k">def</span> <span class="nf">add_subcommands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds subcommands to the CLI parser.</span>
+
+<span class="sd">        This method initializes and configures subcommands for the OTX CLI parser.</span>
+<span class="sd">        It iterates over the available subcommands, adds arguments specific to each subcommand,</span>
+<span class="sd">        and registers them with the parser.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_parsers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ArgumentParser</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">parser_subcommands</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_subcommands</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_extension_subcommands_parser</span><span class="p">(</span><span class="n">parser_subcommands</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_ENGINE_AVAILABLE</span><span class="p">:</span>
+            <span class="c1"># If environment is not configured to use Engine, do not add a subcommand for Engine.</span>
+            <span class="k">return</span>
+        <span class="k">for</span> <span class="n">subcommand</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_subcommands</span><span class="p">():</span>
+            <span class="c1"># If already have a workspace or run it from the root of a workspace, utilize config and checkpoint in cache</span>
+            <span class="n">root_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--work_dir&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="s2">&quot;--work_dir&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">root_dir</span> <span class="o">/</span> <span class="s2">&quot;.latest&quot;</span> <span class="o">/</span> <span class="s2">&quot;train&quot;</span>  <span class="c1"># The config and checkpoint used in the latest training.</span>
+
+            <span class="n">parser_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_default_config</span><span class="p">()</span>
+            <span class="n">sub_parser</span><span class="p">,</span> <span class="n">added_arguments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_subcommand_parser</span><span class="p">(</span><span class="n">subcommand</span><span class="o">=</span><span class="n">subcommand</span><span class="p">,</span> <span class="o">**</span><span class="n">parser_kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;checkpoint&quot;</span> <span class="ow">in</span> <span class="n">added_arguments</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_cache_ckpt</span><span class="p">(</span><span class="n">parser</span><span class="o">=</span><span class="n">sub_parser</span><span class="p">)</span>
+
+            <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Engine</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">)</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="n">get_short_docstring</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_method_arguments</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span> <span class="o">=</span> <span class="n">added_arguments</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_parsers</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub_parser</span>
+            <span class="n">parser_subcommands</span><span class="o">.</span><span class="n">add_subcommand</span><span class="p">(</span><span class="n">subcommand</span><span class="p">,</span> <span class="n">sub_parser</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">description</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_cache_ckpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;checkpoints&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">checkpoint_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="n">ckpt_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;epoch_*.ckpt&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ckpt_files</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">latest_checkpoint</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ckpt_files</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">latest_checkpoint</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;--print_config&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load default checkpoint from </span><span class="si">{</span><span class="n">latest_checkpoint</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_default_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">parser_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">parser_kwargs</span><span class="p">[</span><span class="s2">&quot;default_config_files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="s2">&quot;--print_config&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Load default config from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">&#39;configs.yaml&#39;</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">parser_kwargs</span>
+
+        <span class="c1"># If don&#39;t use cache, use the default config from auto configuration.</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">task</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;--data_root&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+            <span class="n">data_root</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--data_root&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;--task&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--task&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">enable_auto_config</span> <span class="o">=</span> <span class="n">data_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;--config&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>
+        <span class="k">if</span> <span class="n">enable_auto_config</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">otx.engine.utils.auto_configurator</span> <span class="kn">import</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="p">,</span> <span class="n">AutoConfigurator</span>
+
+            <span class="n">auto_configurator</span> <span class="o">=</span> <span class="n">AutoConfigurator</span><span class="p">(</span>
+                <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">OTXTaskType</span><span class="p">(</span><span class="n">task</span><span class="p">)</span> <span class="k">if</span> <span class="n">task</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">task</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">config_file_path</span> <span class="o">=</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="p">[</span><span class="n">auto_configurator</span><span class="o">.</span><span class="n">task</span><span class="p">]</span>
+            <span class="n">parser_kwargs</span><span class="p">[</span><span class="s2">&quot;default_config_files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">parser_kwargs</span>
+
+    <span class="k">def</span> <span class="nf">_set_extension_subcommands_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser_subcommands</span><span class="p">:</span> <span class="n">_ActionSubCommands</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">otx.cli.install</span> <span class="kn">import</span> <span class="n">add_install_parser</span>
+
+        <span class="n">add_install_parser</span><span class="p">(</span><span class="n">parser_subcommands</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_ENGINE_AVAILABLE</span><span class="p">:</span>
+            <span class="c1"># `otx find` arguments</span>
+            <span class="n">find_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">(</span><span class="n">formatter_class</span><span class="o">=</span><span class="n">CustomHelpFormatter</span><span class="p">)</span>
+            <span class="n">find_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+                <span class="s2">&quot;--task&quot;</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Value for filtering by task. Default is None, which shows all recipes.&quot;</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="n">OTXTaskType</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">find_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+                <span class="s2">&quot;--pattern&quot;</span><span class="p">,</span>
+                <span class="n">help</span><span class="o">=</span><span class="s2">&quot;This allows you to filter the model name of the recipe. </span><span class="se">\</span>
+<span class="s2">                      For example, if you want to find all models that contain the word &#39;efficient&#39;, </span><span class="se">\</span>
+<span class="s2">                      you can use &#39;--pattern efficient&#39;&quot;</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">parser_subcommands</span><span class="o">.</span><span class="n">add_subcommand</span><span class="p">(</span><span class="s2">&quot;find&quot;</span><span class="p">,</span> <span class="n">find_parser</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;This shows the model provided by OTX.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_classes"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_classes">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instantiate_engine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the necessary classes based on the subcommand.</span>
+
+<span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
+<span class="sd">        If it is, it instantiates the necessary classes such as config, datamodule, model, and engine.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instantiate_engine (bool, optional): Whether to instantiate the engine. Defaults to True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_subcommands</span><span class="p">():</span>
+            <span class="c1"># For num_classes update, Model and Metric are instantiated separately.</span>
+            <span class="n">model_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+            <span class="n">metric_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metric&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Instantiate the things that don&#39;t need to special handling</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Instantiate the model and needed components</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">)</span>
+
+            <span class="c1"># Instantiate the metric with changing the num_classes</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_metric</span><span class="p">(</span><span class="n">metric_config</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">metric</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span>
+
+            <span class="k">if</span> <span class="n">instantiate_engine</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_engine</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_engine"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_engine">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Engine</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate an Engine object with the specified parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An instance of the Engine class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;engine&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Engine</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">datamodule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span>
+            <span class="n">work_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">work_dir</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">engine_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_metric"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_metric">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the metric based on the metric_config.</span>
+
+<span class="sd">        It also pathces the num_classes according to the model classes information.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            metric_config (Namespace): The metric configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">partial_instantiate_class</span>
+
+        <span class="k">if</span> <span class="n">metric_config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]:</span>
+            <span class="n">metric_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="n">metric_config</span><span class="p">,</span> <span class="s2">&quot;metric&quot;</span><span class="p">,</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">metric_config</span><span class="p">))</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">(</span><span class="n">metric_kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">metric</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">metric</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The configuration of metric is None.&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_model"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the model based on the subcommand.</span>
+
+<span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
+<span class="sd">        If it is, it instantiates the model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_config (Namespace): The model configuration.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: The model and optimizer and scheduler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">otx.core.model.entity.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
+
+        <span class="c1"># Update num_classes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">num_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="p">,</span> <span class="s2">&quot;num_classes&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">num_classes</span> <span class="o">!=</span> <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span><span class="p">:</span>
+                <span class="n">warning_msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The `num_classes` in dataset is </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but, the `num_classes` of model is </span><span class="si">{</span><span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;So, Update `model.num_classes` to </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+
+            <span class="c1"># Hlabel classification</span>
+            <span class="kn">from</span> <span class="nn">otx.core.data.dataset.classification</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">,</span> <span class="n">HLabelInfo</span><span class="p">):</span>
+                <span class="n">hlabel_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="o">=</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span>
+                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">=</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multilabel_classes</span>
+
+        <span class="c1"># Parses the OTXModel separately to update num_classes.</span>
+        <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
+        <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model_parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="c1"># Update tile config due to adaptive tiling</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The model does not have a tile_config attribute. Please check if the model supports tiling.&quot;</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">tile_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">Namespace</span><span class="p">(</span><span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">tile_config</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="c1"># TODO(Eugene): Need to find a better way to configure image size for OV Models</span>
+            <span class="c1"># https://github.com/openvinotoolkit/training_extensions/pull/2925</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tile_image_size</span>
+
+        <span class="c1"># Update self.config with model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span>
+
+        <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">partial_instantiate_class</span>
+
+        <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">optimizer_kwargs</span><span class="p">]</span>
+        <span class="n">optimizers</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">([</span><span class="n">_opt</span> <span class="k">for</span> <span class="n">_opt</span> <span class="ow">in</span> <span class="n">optimizer_kwargs</span> <span class="k">if</span> <span class="n">_opt</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">optimizers</span><span class="p">:</span>
+            <span class="c1"># Updates the instantiated optimizer.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimizers</span>
+
+        <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">scheduler_kwargs</span><span class="p">]</span>
+        <span class="n">schedulers</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">([</span><span class="n">_sch</span> <span class="k">for</span> <span class="n">_sch</span> <span class="ow">in</span> <span class="n">scheduler_kwargs</span> <span class="k">if</span> <span class="n">_sch</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">schedulers</span><span class="p">:</span>
+            <span class="c1"># Updates the instantiated scheduler.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schedulers</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">schedulers</span></div>
+
+<div class="viewcode-block" id="OTXCLI.get_config_value"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_config_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the value of a configuration key from the given config object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config (Namespace): The config object containing the configuration values.</span>
+<span class="sd">            key (str): The key of the configuration value to retrieve.</span>
+<span class="sd">            default (Any, optional): The default value to return if the key is not found. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Any: The value of the configuration key, or the default value if the key is not found.</span>
+<span class="sd">                if the value is a Namespace, it is converted to a dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">Namespace</span><span class="p">)</span> <span class="k">else</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="OTXCLI.get_subcommand_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_subcommand_parser">[docs]</a>    <span class="k">def</span> <span class="nf">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the argument parser for the specified subcommand.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            subcommand (str | None): The name of the subcommand. If None, returns the main parser.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ArgumentParser: The argument parser for the specified subcommand.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">subcommand</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span>
+        <span class="c1"># return the subcommand parser for the subcommand passed</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_parsers</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OTXCLI.prepare_subcommand_kwargs"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.prepare_subcommand_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_subcommand_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepares the keyword arguments to pass to the subcommand to run.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_method_arguments</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="OTXCLI.save_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.save_config">[docs]</a>    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the configuration for the specified subcommand.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            work_dir (Path): The working directory where the configuration file will be saved.</span>
+
+<span class="sd">        The configuration is saved as a YAML file in the engine&#39;s working directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;workspace&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">multifile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">skip_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># if train -&gt; Update `.latest` folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_latest</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OTXCLI.update_latest"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.update_latest">[docs]</a>    <span class="k">def</span> <span class="nf">update_latest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the latest cache directory with the latest configurations and checkpoint file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            work_dir (Path): The working directory where the configurations and checkpoint files are located.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">latest_dir</span> <span class="o">=</span> <span class="n">work_dir</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;.latest&quot;</span>
+        <span class="n">latest_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">latest_dir</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span>
+        <span class="k">if</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">cache_dir</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="n">cache_dir</span><span class="o">.</span><span class="n">symlink_to</span><span class="p">(</span><span class="n">work_dir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OTXCLI.set_seed"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.set_seed">[docs]</a>    <span class="k">def</span> <span class="nf">set_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the random seed for reproducibility.</span>
+
+<span class="sd">        This method retrieves the seed value from the argparser and uses it to set the random seed.</span>
+<span class="sd">        If a seed value is provided, it will be used to set the random seed using the</span>
+<span class="sd">        `seed_everything` function from the `lightning` module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">lightning</span> <span class="kn">import</span> <span class="n">seed_everything</span>
+
+            <span class="n">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OTXCLI.run"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes the specified subcommand.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the subcommand is not recognized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[blue]</span><span class="si">{</span><span class="n">OTX_LOGO</span><span class="si">}</span><span class="s2">[/blue] ver.</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="o">==</span> <span class="s2">&quot;install&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">otx.cli.install</span> <span class="kn">import</span> <span class="n">otx_install</span>
+
+            <span class="n">otx_install</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;install&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="o">==</span> <span class="s2">&quot;find&quot;</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">otx.engine.utils.api</span> <span class="kn">import</span> <span class="n">list_models</span>
+
+            <span class="n">list_models</span><span class="p">(</span><span class="n">print_table</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_subcommands</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_seed</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">()</span>
+            <span class="n">fn_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_subcommand_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">fn_kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">work_dir</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unrecognized subcommand: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

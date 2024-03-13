@@ -1,0 +1,877 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.cli.utils.installation &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/cli/utils/installation';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.cli.utils.installation</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="sd">&quot;&quot;&quot;OTX installation util functions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">requires</span>
+<span class="kn">from</span> <span class="nn">importlib.util</span> <span class="kn">import</span> <span class="n">find_spec</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
+<span class="kn">from</span> <span class="nn">importlib_resources</span> <span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">Requirement</span>
+
+<span class="n">AVAILABLE_TORCH_VERSIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;1.13.0&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;torchvision&quot;</span><span class="p">:</span> <span class="s2">&quot;0.14.0&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;11.6&quot;</span><span class="p">,</span> <span class="s2">&quot;11.7&quot;</span><span class="p">)},</span>
+    <span class="s2">&quot;1.13.1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;torchvision&quot;</span><span class="p">:</span> <span class="s2">&quot;0.14.1&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;11.6&quot;</span><span class="p">,</span> <span class="s2">&quot;11.7&quot;</span><span class="p">)},</span>
+    <span class="s2">&quot;2.0.0&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;torchvision&quot;</span><span class="p">:</span> <span class="s2">&quot;0.15.1&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;11.7&quot;</span><span class="p">,</span> <span class="s2">&quot;11.8&quot;</span><span class="p">)},</span>
+    <span class="s2">&quot;2.0.1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;torchvision&quot;</span><span class="p">:</span> <span class="s2">&quot;0.15.2&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;11.7&quot;</span><span class="p">,</span> <span class="s2">&quot;11.8&quot;</span><span class="p">)},</span>
+    <span class="s2">&quot;2.1.1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;torchvision&quot;</span><span class="p">:</span> <span class="s2">&quot;0.16.1&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;11.8&quot;</span><span class="p">,</span> <span class="s2">&quot;12.1&quot;</span><span class="p">)},</span>
+<span class="p">}</span>
+
+<span class="n">MM_REQUIREMENTS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;mmcv&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmcv-full&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmengine&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmdet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmsegmentation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmpretrain&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mmdeploy&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_requirements"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_requirements">[docs]</a><span class="k">def</span> <span class="nf">get_requirements</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;otx&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Requirement</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get requirements of module from importlib.metadata.</span>
+
+<span class="sd">    This function returns list of required packages from importlib_metadata.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; get_requirements(&quot;otx&quot;)</span>
+<span class="sd">        {</span>
+<span class="sd">            &quot;api&quot;: [&quot;attrs&gt;=21.2.0&quot;, ...],</span>
+<span class="sd">            &quot;anomaly&quot;: [&quot;anomalib==0.5.1&quot;, ...],</span>
+<span class="sd">            ...</span>
+<span class="sd">        }</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict[str, list[Requirement]]: List of required packages for each optional-extras.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">requirement_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">requires</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="n">extra_requirement</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Requirement</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">requirement_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">extra_requirement</span>
+    <span class="k">for</span> <span class="n">requirement</span> <span class="ow">in</span> <span class="n">requirement_list</span><span class="p">:</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="s2">&quot;api&quot;</span>
+        <span class="n">requirement_extra</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">requirement</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">requirement_extra</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">requirement_extra</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">extra</span> <span class="o">=</span> <span class="n">requirement_extra</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;==&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_requirement_name</span> <span class="o">=</span> <span class="n">requirement_extra</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">_requirement</span> <span class="o">=</span> <span class="n">Requirement</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">_requirement_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">extra</span> <span class="ow">in</span> <span class="n">extra_requirement</span><span class="p">:</span>
+            <span class="n">extra_requirement</span><span class="p">[</span><span class="n">extra</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_requirement</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extra_requirement</span><span class="p">[</span><span class="n">extra</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_requirement</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">extra_requirement</span></div>
+
+
+<div class="viewcode-block" id="parse_requirements"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.parse_requirements">[docs]</a><span class="k">def</span> <span class="nf">parse_requirements</span><span class="p">(</span>
+    <span class="n">requirements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Requirement</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse requirements and returns torch, mmcv and task requirements.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requirements (list[Requirement]): List of requirements.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If torch requirement is not found.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; requirements = [</span>
+<span class="sd">        ...     Requirement.parse(&quot;torch==1.13.0&quot;),</span>
+<span class="sd">        ...     Requirement.parse(&quot;mmcv-full==1.7.0&quot;),</span>
+<span class="sd">        ...     Requirement.parse(&quot;mmcls==0.12.0&quot;),</span>
+<span class="sd">        ...     Requirement.parse(&quot;onnx&gt;=1.8.1&quot;),</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; parse_requirements(requirements=requirements)</span>
+<span class="sd">        (Requirement.parse(&quot;torch==1.13.0&quot;),</span>
+<span class="sd">        [Requirement.parse(&quot;mmcv-full==1.7.0&quot;), Requirement.parse(&quot;mmcls==0.12.0&quot;)],</span>
+<span class="sd">        Requirement.parse(&quot;onnx&gt;=1.8.1&quot;))</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple[str, list[str], list[str]]: Tuple of torch, mmcv and other requirements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">torch_requirement</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">mm_requirements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">other_requirements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">requirement</span> <span class="ow">in</span> <span class="n">requirements</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">requirement</span><span class="o">.</span><span class="n">unsafe_name</span> <span class="o">==</span> <span class="s2">&quot;torch&quot;</span><span class="p">:</span>
+            <span class="n">torch_requirement</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">requirement</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">requirement</span><span class="o">.</span><span class="n">specs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;requirements.txt contains. Please remove other versions of torch from requirements.&quot;</span><span class="p">,</span>
+                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">requirement</span><span class="o">.</span><span class="n">unsafe_name</span> <span class="ow">in</span> <span class="n">MM_REQUIREMENTS</span><span class="p">:</span>
+            <span class="n">mm_requirements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">requirement</span><span class="p">))</span>
+
+        <span class="c1"># Rest of the requirements are task requirements.</span>
+        <span class="c1"># Other torch-related requirements such as `torchvision` are to be excluded.</span>
+        <span class="c1"># This is because torch-related requirements are already handled in torch_requirement.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if not requirement.unsafe_name.startswith(&quot;torch&quot;):</span>
+            <span class="n">other_requirements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">requirement</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">torch_requirement</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Could not find torch requirement. OTX depends on torch. Please add torch to your requirements.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="n">msg</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Get the unique list of the requirements.</span>
+    <span class="n">mm_requirements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mm_requirements</span><span class="p">))</span>
+    <span class="n">other_requirements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">other_requirements</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">torch_requirement</span><span class="p">,</span> <span class="n">mm_requirements</span><span class="p">,</span> <span class="n">other_requirements</span></div>
+
+
+<div class="viewcode-block" id="get_cuda_version"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_cuda_version">[docs]</a><span class="k">def</span> <span class="nf">get_cuda_version</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CUDA version installed on the system.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # Assume that CUDA version is 11.2</span>
+<span class="sd">        &gt;&gt;&gt; get_cuda_version()</span>
+<span class="sd">        &quot;11.2&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; # Assume that CUDA is not installed on the system</span>
+<span class="sd">        &gt;&gt;&gt; get_cuda_version()</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str | None: CUDA version installed on the system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. Check CUDA_HOME Environment variable</span>
+    <span class="n">cuda_home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CUDA_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;/usr/local/cuda&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">cuda_home</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Check $CUDA_HOME/version.json file.</span>
+        <span class="n">version_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cuda_home</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;version.json&quot;</span>
+        <span class="k">if</span> <span class="n">version_file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">version_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="n">cuda_version</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cuda_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">cuda_version_parts</span> <span class="o">=</span> <span class="n">cuda_version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cuda_version_parts</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="c1"># 2. &#39;nvcc --version&#39; check &amp; without version.json case</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nvcc&quot;</span><span class="p">,</span> <span class="s2">&quot;--version&quot;</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+
+        <span class="n">cuda_version_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;cuda_(\d+\.\d+)&quot;</span>
+        <span class="n">cuda_version_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cuda_version_pattern</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cuda_version_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cuda_version_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Could not find cuda-version. Instead, the CPU version of torch will be installed.&quot;</span>
+        <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="update_cuda_version_with_available_torch_cuda_build"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.update_cuda_version_with_available_torch_cuda_build">[docs]</a><span class="k">def</span> <span class="nf">update_cuda_version_with_available_torch_cuda_build</span><span class="p">(</span><span class="n">cuda_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">torch_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update the installed CUDA version with the highest supported CUDA version by PyTorch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cuda_version (str): The installed CUDA version.</span>
+<span class="sd">        torch_version (str): The PyTorch version.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Warning: If the installed CUDA version is not supported by PyTorch.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; update_cuda_version_with_available_torch_cuda_builds(&quot;11.1&quot;, &quot;1.13.0&quot;)</span>
+<span class="sd">        &quot;11.6&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; update_cuda_version_with_available_torch_cuda_builds(&quot;11.7&quot;, &quot;1.13.0&quot;)</span>
+<span class="sd">        &quot;11.7&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; update_cuda_version_with_available_torch_cuda_builds(&quot;11.8&quot;, &quot;1.13.0&quot;)</span>
+<span class="sd">        &quot;11.7&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; update_cuda_version_with_available_torch_cuda_builds(&quot;12.1&quot;, &quot;2.0.1&quot;)</span>
+<span class="sd">        &quot;11.8&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The updated CUDA version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_supported_cuda</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">AVAILABLE_TORCH_VERSIONS</span><span class="p">[</span><span class="n">torch_version</span><span class="p">][</span><span class="s2">&quot;cuda&quot;</span><span class="p">])</span>
+    <span class="n">min_supported_cuda</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">AVAILABLE_TORCH_VERSIONS</span><span class="p">[</span><span class="n">torch_version</span><span class="p">][</span><span class="s2">&quot;cuda&quot;</span><span class="p">])</span>
+    <span class="n">bounded_cuda_version</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">cuda_version</span><span class="p">,</span> <span class="n">max_supported_cuda</span><span class="p">),</span> <span class="n">min_supported_cuda</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cuda_version</span> <span class="o">!=</span> <span class="n">bounded_cuda_version</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Installed CUDA version is v</span><span class="si">{</span><span class="n">cuda_version</span><span class="si">}</span><span class="s2">. </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;v</span><span class="si">{</span><span class="n">min_supported_cuda</span><span class="si">}</span><span class="s2"> &lt;= Supported CUDA version &lt;= v</span><span class="si">{</span><span class="n">max_supported_cuda</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;This script will use CUDA v</span><span class="si">{</span><span class="n">bounded_cuda_version</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;However, this may not be safe, and you are advised to install the correct version of CUDA.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;For more details, refer to https://pytorch.org/get-started/locally/&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cuda_version</span> <span class="o">=</span> <span class="n">bounded_cuda_version</span>
+
+    <span class="k">return</span> <span class="n">cuda_version</span></div>
+
+
+<div class="viewcode-block" id="get_cuda_suffix"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_cuda_suffix">[docs]</a><span class="k">def</span> <span class="nf">get_cuda_suffix</span><span class="p">(</span><span class="n">cuda_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CUDA suffix for PyTorch or mmX versions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cuda_version (str): CUDA version installed on the system.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The CUDA version of PyTorch is not always the same as the CUDA version</span>
+<span class="sd">            that is installed on the system. For example, the latest PyTorch</span>
+<span class="sd">            version (1.10.0) supports CUDA 11.3, but the latest CUDA version</span>
+<span class="sd">            that is available for download is 11.2. Therefore, we need to use</span>
+<span class="sd">            the latest available CUDA version for PyTorch instead of the CUDA</span>
+<span class="sd">            version that is installed on the system. Therefore, this function</span>
+<span class="sd">            shoudl be regularly updated to reflect the latest available CUDA.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; get_cuda_suffix(cuda_version=&quot;11.2&quot;)</span>
+<span class="sd">        &quot;cu112&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; get_cuda_suffix(cuda_version=&quot;11.8&quot;)</span>
+<span class="sd">        &quot;cu118&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: CUDA suffix for PyTorch or mmX version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;cu</span><span class="si">{</span><span class="n">cuda_version</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="get_hardware_suffix"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_hardware_suffix">[docs]</a><span class="k">def</span> <span class="nf">get_hardware_suffix</span><span class="p">(</span><span class="n">with_available_torch_build</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">torch_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get hardware suffix for PyTorch or mmX versions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        with_available_torch_build (bool): Whether to use the latest available</span>
+<span class="sd">            PyTorch build or not. If True, the latest available PyTorch build</span>
+<span class="sd">            will be used. If False, the installed PyTorch build will be used.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        torch_version (str | None): PyTorch version. This is only used when the</span>
+<span class="sd">            ``with_available_torch_build`` is True.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; # Assume that CUDA version is 11.2</span>
+<span class="sd">        &gt;&gt;&gt; get_hardware_suffix()</span>
+<span class="sd">        &quot;cu112&quot;</span>
+
+<span class="sd">        &gt;&gt;&gt; # Assume that CUDA is not installed on the system</span>
+<span class="sd">        &gt;&gt;&gt; get_hardware_suffix()</span>
+<span class="sd">        &quot;cpu&quot;</span>
+
+<span class="sd">        Assume that that installed CUDA version is 12.1.</span>
+<span class="sd">        However, the latest available CUDA version for PyTorch v2.0 is 11.8.</span>
+<span class="sd">        Therefore, we use 11.8 instead of 12.1. This is because PyTorch does not</span>
+<span class="sd">        support CUDA 12.1 yet. In this case, we could correct the CUDA version</span>
+<span class="sd">        by setting `with_available_torch_build` to True.</span>
+
+<span class="sd">        &gt;&gt;&gt; cuda_version = get_cuda_version()</span>
+<span class="sd">        &quot;12.1&quot;</span>
+<span class="sd">        &gt;&gt;&gt; get_hardware_suffix(with_available_torch_build=True, torch_version=&quot;2.0.1&quot;)</span>
+<span class="sd">        &quot;cu118&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Hardware suffix for PyTorch or mmX version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cuda_version</span> <span class="o">=</span> <span class="n">get_cuda_version</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">cuda_version</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">with_available_torch_build</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">torch_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;``torch_version`` must be provided when with_available_torch_build is True.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">cuda_version</span> <span class="o">=</span> <span class="n">update_cuda_version_with_available_torch_cuda_build</span><span class="p">(</span><span class="n">cuda_version</span><span class="p">,</span> <span class="n">torch_version</span><span class="p">)</span>
+        <span class="n">hardware_suffix</span> <span class="o">=</span> <span class="n">get_cuda_suffix</span><span class="p">(</span><span class="n">cuda_version</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hardware_suffix</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+
+    <span class="k">return</span> <span class="n">hardware_suffix</span></div>
+
+
+<div class="viewcode-block" id="add_hardware_suffix_to_torch"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.add_hardware_suffix_to_torch">[docs]</a><span class="k">def</span> <span class="nf">add_hardware_suffix_to_torch</span><span class="p">(</span>
+    <span class="n">requirement</span><span class="p">:</span> <span class="n">Requirement</span><span class="p">,</span>
+    <span class="n">hardware_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">with_available_torch_build</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add hardware suffix to the torch requirement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requirement (Requirement): Requirement object comprising requirement</span>
+<span class="sd">            details.</span>
+<span class="sd">        hardware_suffix (str | None): Hardware suffix. If None, it will be set</span>
+<span class="sd">            to the correct hardware suffix. Defaults to None.</span>
+<span class="sd">        with_available_torch_build (bool): To check whether the installed</span>
+<span class="sd">            CUDA version is supported by the latest available PyTorch build.</span>
+<span class="sd">            Defaults to False.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from pkg_resources import Requirement</span>
+<span class="sd">        &gt;&gt;&gt; req = &quot;torch&gt;=1.13.0, &lt;=2.0.1&quot;</span>
+<span class="sd">        &gt;&gt;&gt; requirement = Requirement.parse(req)</span>
+<span class="sd">        &gt;&gt;&gt; requirement.name, requirement.specs</span>
+<span class="sd">        (&#39;torch&#39;, [(&#39;&gt;=&#39;, &#39;1.13.0&#39;), (&#39;&lt;=&#39;, &#39;2.0.1&#39;)])</span>
+
+<span class="sd">        &gt;&gt;&gt; add_hardware_suffix_to_torch(requirement)</span>
+<span class="sd">        &#39;torch&gt;=1.13.0+cu121, &lt;=2.0.1+cu121&#39;</span>
+
+<span class="sd">        ``with_available_torch_build=True`` will use the latest available PyTorch build.</span>
+<span class="sd">        &gt;&gt;&gt; req = &quot;torch==2.0.1&quot;</span>
+<span class="sd">        &gt;&gt;&gt; requirement = Requirement.parse(req)</span>
+<span class="sd">        &gt;&gt;&gt; add_hardware_suffix_to_torch(requirement, with_available_torch_build=True)</span>
+<span class="sd">        &#39;torch==2.0.1+cu118&#39;</span>
+
+<span class="sd">        It is possible to pass the ``hardware_suffix`` manually.</span>
+<span class="sd">        &gt;&gt;&gt; req = &quot;torch==2.0.1&quot;</span>
+<span class="sd">        &gt;&gt;&gt; requirement = Requirement.parse(req)</span>
+<span class="sd">        &gt;&gt;&gt; add_hardware_suffix_to_torch(requirement, hardware_suffix=&quot;cu121&quot;)</span>
+<span class="sd">        &#39;torch==2.0.1+cu111&#39;</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: When the requirement has more than two version criterion.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Updated torch package with the right cuda suffix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">requirement</span><span class="o">.</span><span class="n">unsafe_name</span>
+    <span class="n">updated_specs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">operator</span><span class="p">,</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">requirement</span><span class="o">.</span><span class="n">specs</span><span class="p">:</span>
+        <span class="n">hardware_suffix</span> <span class="o">=</span> <span class="n">hardware_suffix</span> <span class="ow">or</span> <span class="n">get_hardware_suffix</span><span class="p">(</span><span class="n">with_available_torch_build</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="n">updated_version</span> <span class="o">=</span> <span class="n">version</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+</span><span class="si">{</span><span class="n">hardware_suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span> <span class="s2">&quot;2.1.1&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">version</span>
+
+        <span class="c1"># ``specs`` contains operators and versions as follows:</span>
+        <span class="c1"># These are to be concatenated again for the updated version.</span>
+        <span class="n">updated_specs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">operator</span> <span class="o">+</span> <span class="n">updated_version</span><span class="p">)</span>
+
+    <span class="n">updated_requirement</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">updated_specs</span><span class="p">:</span>
+        <span class="c1"># This is the case when specs are e.g. [&#39;&lt;=1.9.1+cu111&#39;]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_specs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">updated_requirement</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">updated_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># This is the case when specs are e.g., [&#39;&lt;=1.9.1+cu111&#39;, &#39;&gt;=1.8.1+cu111&#39;]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated_specs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">updated_requirement</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">updated_specs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="n">updated_specs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Requirement version can be a single value or a range. </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;For example it could be torch&gt;=1.8.1 &quot;</span>
+                <span class="s2">&quot;or torch&gt;=1.8.1, &lt;=1.9.1</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="n">updated_specs</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">updated_requirement</span></div>
+
+
+<div class="viewcode-block" id="get_torch_install_args"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_torch_install_args">[docs]</a><span class="k">def</span> <span class="nf">get_torch_install_args</span><span class="p">(</span><span class="n">requirement</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Requirement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the install arguments for Torch requirement.</span>
+
+<span class="sd">    This function will return the install arguments for the Torch requirement</span>
+<span class="sd">    and its corresponding torchvision requirement.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requirement (str | Requirement): The torch requirement.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: If the OS is not supported.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; from pkg_resources import Requirement</span>
+<span class="sd">        &gt;&gt;&gt; requriment = &quot;torch&gt;=1.13.0&quot;</span>
+<span class="sd">        &gt;&gt;&gt; get_torch_install_args(requirement)</span>
+<span class="sd">        [&#39;--extra-index-url&#39;, &#39;https://download.pytorch.org/whl/cpu&#39;,</span>
+<span class="sd">        &#39;torch==1.13.0+cpu&#39;, &#39;torchvision==0.14.0+cpu&#39;]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[str]: The install arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">requirement</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">requirement</span> <span class="o">=</span> <span class="n">Requirement</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">requirement</span><span class="p">)</span>
+
+    <span class="c1"># NOTE: This does not take into account if the requirement has multiple versions</span>
+    <span class="c1">#   such as torch&lt;2.0.1,&gt;=1.13.0</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">requirement</span><span class="o">.</span><span class="n">specs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">requirement</span><span class="p">)]</span>
+    <span class="n">operator</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">requirement</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">install_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Linux&quot;</span><span class="p">,</span> <span class="s2">&quot;Windows&quot;</span><span class="p">):</span>
+        <span class="c1"># Get the hardware suffix (eg., +cpu, +cu116 and +cu118 etc.)</span>
+        <span class="n">hardware_suffix</span> <span class="o">=</span> <span class="n">get_hardware_suffix</span><span class="p">(</span><span class="n">with_available_torch_build</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">torch_version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="c1"># Create the PyTorch Index URL to download the correct wheel.</span>
+        <span class="n">index_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://download.pytorch.org/whl/</span><span class="si">{</span><span class="n">hardware_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Create the PyTorch version depending on the CUDA version. For example,</span>
+        <span class="c1"># If CUDA version is 11.2, then the PyTorch version is 1.8.0+cu112.</span>
+        <span class="c1"># If CUDA version is None, then the PyTorch version is 1.8.0+cpu.</span>
+        <span class="n">torch_version</span> <span class="o">=</span> <span class="n">add_hardware_suffix_to_torch</span><span class="p">(</span><span class="n">requirement</span><span class="p">,</span> <span class="n">hardware_suffix</span><span class="p">,</span> <span class="n">with_available_torch_build</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Get the torchvision version depending on the torch version.</span>
+        <span class="n">torchvision_version</span> <span class="o">=</span> <span class="n">AVAILABLE_TORCH_VERSIONS</span><span class="p">[</span><span class="n">version</span><span class="p">][</span><span class="s2">&quot;torchvision&quot;</span><span class="p">]</span>
+        <span class="n">torchvision_requirement</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;torchvision</span><span class="si">{</span><span class="n">operator</span><span class="si">}{</span><span class="n">torchvision_version</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">torchvision_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;0.16.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.16.1&quot;</span><span class="p">):</span>
+            <span class="n">torchvision_requirement</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;+</span><span class="si">{</span><span class="n">hardware_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Return the install arguments.</span>
+        <span class="n">install_args</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="s2">&quot;--extra-index-url&quot;</span><span class="p">,</span>
+            <span class="c1"># &quot;--index-url&quot;,</span>
+            <span class="n">index_url</span><span class="p">,</span>
+            <span class="n">torch_version</span><span class="p">,</span>
+            <span class="n">torchvision_requirement</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="k">elif</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;macos&quot;</span><span class="p">,</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">):</span>
+        <span class="n">torch_version</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">requirement</span><span class="p">)</span>
+        <span class="n">install_args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">torch_version</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unsupported OS: </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">install_args</span></div>
+
+
+<div class="viewcode-block" id="get_mmcv_install_args"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_mmcv_install_args">[docs]</a><span class="k">def</span> <span class="nf">get_mmcv_install_args</span><span class="p">(</span><span class="n">torch_requirement</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Requirement</span><span class="p">,</span> <span class="n">mmcv_requirements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the install arguments for MMCV.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        torch_requirement (str | Requirement): Torch requirement.</span>
+<span class="sd">        mmcv_requirements (list[str]): MMCV requirements.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotImplementedError: Not implemented for MacOS.</span>
+<span class="sd">        RuntimeError: If the OS is not supported.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list[str]: List of mmcv install arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">torch_requirement</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">torch_requirement</span> <span class="o">=</span> <span class="n">Requirement</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">torch_requirement</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Linux&quot;</span><span class="p">,</span> <span class="s2">&quot;Windows&quot;</span><span class="p">,</span> <span class="s2">&quot;Darwin&quot;</span><span class="p">,</span> <span class="s2">&quot;macos&quot;</span><span class="p">):</span>
+        <span class="c1"># Get the hardware suffix (eg., +cpu, +cu116 and +cu118 etc.)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">torch_requirement</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">hardware_suffix</span> <span class="o">=</span> <span class="n">get_hardware_suffix</span><span class="p">(</span><span class="n">with_available_torch_build</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">torch_version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="c1"># MMCV builds are only available for major.minor.0 torch versions.</span>
+        <span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">mmcv_torch_version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">major</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">minor</span><span class="si">}</span><span class="s2">.0&quot;</span>
+        <span class="n">mmcv_index_url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;https://download.openmmlab.com/mmcv/dist/</span><span class="si">{</span><span class="n">hardware_suffix</span><span class="si">}</span><span class="s2">/torch</span><span class="si">{</span><span class="n">mmcv_torch_version</span><span class="si">}</span><span class="s2">/index.html&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Return the install arguments.</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;--find-links&quot;</span><span class="p">,</span> <span class="n">mmcv_index_url</span><span class="p">,</span> <span class="o">*</span><span class="n">mmcv_requirements</span><span class="p">]</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unsupported OS: </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mim_installation"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.mim_installation">[docs]</a><span class="k">def</span> <span class="nf">mim_installation</span><span class="p">(</span><span class="n">requirements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Installing libraries with mim api.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        requirements (list[str]): List of MMCV-related libraries.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ModuleNotFoundError: Raise an error if mim import is not possible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;mim&quot;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The mmX library installation requires mim. mim is not currently installed.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">mim</span> <span class="kn">import</span> <span class="n">install</span>
+
+    <span class="k">return</span> <span class="n">install</span><span class="p">(</span><span class="n">requirements</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_module_version"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.get_module_version">[docs]</a><span class="k">def</span> <span class="nf">get_module_version</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the version of the specified Python module.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module_name (str): The name of the module to get the version of.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str | None: The version of the module, or None if the module is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">module_version</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">get_distribution</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span><span class="o">.</span><span class="n">version</span>
+    <span class="k">except</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">DistributionNotFound</span><span class="p">:</span>
+        <span class="n">module_version</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">module_version</span></div>
+
+
+<div class="viewcode-block" id="patch_mmaction2"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.installation.html#otx.cli.utils.installation.patch_mmaction2">[docs]</a><span class="k">def</span> <span class="nf">patch_mmaction2</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch MMAction2==1.2.0 with the custom code.</span>
+
+<span class="sd">    The patch is at `src/otx/cli/patches/mmaction2.patch`.</span>
+<span class="sd">    The reason why we need is that `__init__.py` is missing in</span>
+<span class="sd">    https://github.com/open-mmlab/mmaction2/tree/v1.2.0/mmaction/models/localizers/drn</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dir_patches</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s2">&quot;otx&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;cli&quot;</span> <span class="o">/</span> <span class="s2">&quot;patches&quot;</span>
+    <span class="n">file_mmaction2_patch</span> <span class="o">=</span> <span class="n">dir_patches</span> <span class="o">/</span> <span class="s2">&quot;mmaction2.patch&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_mmaction2_patch</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cannot find `mmaction2.patch` file from </span><span class="si">{</span><span class="n">dir_patches</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">spec</span> <span class="o">:=</span> <span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;mmaction&quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot find mmaction spec&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">spec_origin</span> <span class="o">:=</span> <span class="n">spec</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot find mmaction spec origin&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">dir_mmaction_parent</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">spec_origin</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+
+    <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;patch&quot;</span><span class="p">,</span> <span class="s2">&quot;-p0&quot;</span><span class="p">,</span> <span class="s2">&quot;--forward&quot;</span><span class="p">],</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">dir_mmaction_parent</span><span class="p">,</span>
+        <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">file_mmaction2_patch</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cannot patch. Error code: </span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">, stdout: </span><span class="si">{</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2"> and stderr: </span><span class="si">{</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;MMAction2 is already patched. Skip patching it.&quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

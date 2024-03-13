@@ -1,0 +1,499 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview: module code &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/index';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>All modules for which code is available</h1>
+<ul><li><a href="otx/algo/action_classification/backbones/movinet.html">otx.algo.action_classification.backbones.movinet</a></li>
+<li><a href="otx/algo/action_classification/heads/movinet_head.html">otx.algo.action_classification.heads.movinet_head</a></li>
+<li><a href="otx/algo/action_classification/movinet.html">otx.algo.action_classification.movinet</a></li>
+<li><a href="otx/algo/action_classification/openvino_model.html">otx.algo.action_classification.openvino_model</a></li>
+<li><a href="otx/algo/action_classification/recognizers/movinet_recognizer.html">otx.algo.action_classification.recognizers.movinet_recognizer</a></li>
+<li><a href="otx/algo/action_classification/recognizers/recognizer.html">otx.algo.action_classification.recognizers.recognizer</a></li>
+<li><a href="otx/algo/action_classification/x3d.html">otx.algo.action_classification.x3d</a></li>
+<li><a href="otx/algo/action_detection/x3d_fastrcnn.html">otx.algo.action_detection.x3d_fastrcnn</a></li>
+<li><a href="otx/algo/anomaly/padim.html">otx.algo.anomaly.padim</a></li>
+<li><a href="otx/algo/anomaly/stfpm.html">otx.algo.anomaly.stfpm</a></li>
+<li><a href="otx/algo/callbacks/adaptive_train_scheduling.html">otx.algo.callbacks.adaptive_train_scheduling</a></li>
+<li><a href="otx/algo/callbacks/iteration_timer.html">otx.algo.callbacks.iteration_timer</a></li>
+<li><a href="otx/algo/classification/backbones/otx_efficientnet.html">otx.algo.classification.backbones.otx_efficientnet</a></li>
+<li><a href="otx/algo/classification/backbones/otx_efficientnet_v2.html">otx.algo.classification.backbones.otx_efficientnet_v2</a></li>
+<li><a href="otx/algo/classification/backbones/otx_mobilenet_v3.html">otx.algo.classification.backbones.otx_mobilenet_v3</a></li>
+<li><a href="otx/algo/classification/deit_tiny.html">otx.algo.classification.deit_tiny</a></li>
+<li><a href="otx/algo/classification/efficientnet_b0.html">otx.algo.classification.efficientnet_b0</a></li>
+<li><a href="otx/algo/classification/efficientnet_v2.html">otx.algo.classification.efficientnet_v2</a></li>
+<li><a href="otx/algo/classification/heads/custom_hlabel_linear_cls_head.html">otx.algo.classification.heads.custom_hlabel_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_hlabel_non_linear_cls_head.html">otx.algo.classification.heads.custom_hlabel_non_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_multilabel_linear_cls_head.html">otx.algo.classification.heads.custom_multilabel_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_multilabel_non_linear_cls_head.html">otx.algo.classification.heads.custom_multilabel_non_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/losses/asymmetric_angular_loss_with_ignore.html">otx.algo.classification.losses.asymmetric_angular_loss_with_ignore</a></li>
+<li><a href="otx/algo/classification/mobilenet_v3_large.html">otx.algo.classification.mobilenet_v3_large</a></li>
+<li><a href="otx/algo/classification/otx_dino_v2.html">otx.algo.classification.otx_dino_v2</a></li>
+<li><a href="otx/algo/classification/torchvision_model.html">otx.algo.classification.torchvision_model</a></li>
+<li><a href="otx/algo/detection/atss.html">otx.algo.detection.atss</a></li>
+<li><a href="otx/algo/detection/backbones/pytorchcv_backbones.html">otx.algo.detection.backbones.pytorchcv_backbones</a></li>
+<li><a href="otx/algo/detection/heads/class_incremental_mixin.html">otx.algo.detection.heads.class_incremental_mixin</a></li>
+<li><a href="otx/algo/detection/heads/custom_anchor_generator.html">otx.algo.detection.heads.custom_anchor_generator</a></li>
+<li><a href="otx/algo/detection/heads/custom_atss_head.html">otx.algo.detection.heads.custom_atss_head</a></li>
+<li><a href="otx/algo/detection/heads/custom_ssd_head.html">otx.algo.detection.heads.custom_ssd_head</a></li>
+<li><a href="otx/algo/detection/losses/cross_focal_loss.html">otx.algo.detection.losses.cross_focal_loss</a></li>
+<li><a href="otx/algo/detection/rtmdet.html">otx.algo.detection.rtmdet</a></li>
+<li><a href="otx/algo/detection/ssd.html">otx.algo.detection.ssd</a></li>
+<li><a href="otx/algo/detection/yolox.html">otx.algo.detection.yolox</a></li>
+<li><a href="otx/algo/hooks/recording_forward_hook.html">otx.algo.hooks.recording_forward_hook</a></li>
+<li><a href="otx/algo/instance_segmentation/heads/custom_roi_head.html">otx.algo.instance_segmentation.heads.custom_roi_head</a></li>
+<li><a href="otx/algo/instance_segmentation/maskrcnn.html">otx.algo.instance_segmentation.maskrcnn</a></li>
+<li><a href="otx/algo/instance_segmentation/otx_instseg_evaluation.html">otx.algo.instance_segmentation.otx_instseg_evaluation</a></li>
+<li><a href="otx/algo/instance_segmentation/rtmdet_inst.html">otx.algo.instance_segmentation.rtmdet_inst</a></li>
+<li><a href="otx/algo/samplers/balanced_sampler.html">otx.algo.samplers.balanced_sampler</a></li>
+<li><a href="otx/algo/samplers/class_incremental_sampler.html">otx.algo.samplers.class_incremental_sampler</a></li>
+<li><a href="otx/algo/schedulers/warmup_schedulers.html">otx.algo.schedulers.warmup_schedulers</a></li>
+<li><a href="otx/algo/segmentation/backbones/dinov2.html">otx.algo.segmentation.backbones.dinov2</a></li>
+<li><a href="otx/algo/segmentation/backbones/litehrnet.html">otx.algo.segmentation.backbones.litehrnet</a></li>
+<li><a href="otx/algo/segmentation/dino_v2_seg.html">otx.algo.segmentation.dino_v2_seg</a></li>
+<li><a href="otx/algo/segmentation/heads/custom_fcn_head.html">otx.algo.segmentation.heads.custom_fcn_head</a></li>
+<li><a href="otx/algo/segmentation/heads/custom_ham_head.html">otx.algo.segmentation.heads.custom_ham_head</a></li>
+<li><a href="otx/algo/segmentation/litehrnet.html">otx.algo.segmentation.litehrnet</a></li>
+<li><a href="otx/algo/segmentation/losses/cross_entropy_loss_with_ignore.html">otx.algo.segmentation.losses.cross_entropy_loss_with_ignore</a></li>
+<li><a href="otx/algo/segmentation/segnext.html">otx.algo.segmentation.segnext</a></li>
+<li><a href="otx/algo/utils/mmconfig.html">otx.algo.utils.mmconfig</a></li>
+<li><a href="otx/algo/utils/segmentation.html">otx.algo.utils.segmentation</a></li>
+<li><a href="otx/algo/utils/support_otx_v1.html">otx.algo.utils.support_otx_v1</a></li>
+<li><a href="otx/algo/utils/xai_utils.html">otx.algo.utils.xai_utils</a></li>
+<li><a href="otx/algo/visual_prompting/backbones/tiny_vit.html">otx.algo.visual_prompting.backbones.tiny_vit</a></li>
+<li><a href="otx/algo/visual_prompting/backbones/vit.html">otx.algo.visual_prompting.backbones.vit</a></li>
+<li><a href="otx/algo/visual_prompting/decoders/sam_mask_decoder.html">otx.algo.visual_prompting.decoders.sam_mask_decoder</a></li>
+<li><a href="otx/algo/visual_prompting/encoders/sam_image_encoder.html">otx.algo.visual_prompting.encoders.sam_image_encoder</a></li>
+<li><a href="otx/algo/visual_prompting/encoders/sam_prompt_encoder.html">otx.algo.visual_prompting.encoders.sam_prompt_encoder</a></li>
+<li><a href="otx/algo/visual_prompting/openvino_models.html">otx.algo.visual_prompting.openvino_models</a></li>
+<li><a href="otx/algo/visual_prompting/segment_anything.html">otx.algo.visual_prompting.segment_anything</a></li>
+<li><a href="otx/algo/visual_prompting/utils/layer_norm_2d.html">otx.algo.visual_prompting.utils.layer_norm_2d</a></li>
+<li><a href="otx/algo/visual_prompting/utils/mlp_block.html">otx.algo.visual_prompting.utils.mlp_block</a></li>
+<li><a href="otx/algo/visual_prompting/zero_shot_segment_anything.html">otx.algo.visual_prompting.zero_shot_segment_anything</a></li>
+<li><a href="otx/cli.html">otx.cli</a></li>
+<ul><li><a href="otx/cli/cli.html">otx.cli.cli</a></li>
+<li><a href="otx/cli/install.html">otx.cli.install</a></li>
+<li><a href="otx/cli/utils.html">otx.cli.utils</a></li>
+<ul><li><a href="otx/cli/utils/help_formatter.html">otx.cli.utils.help_formatter</a></li>
+<li><a href="otx/cli/utils/installation.html">otx.cli.utils.installation</a></li>
+<li><a href="otx/cli/utils/jsonargparse.html">otx.cli.utils.jsonargparse</a></li>
+<li><a href="otx/cli/utils/workspace.html">otx.cli.utils.workspace</a></li>
+</ul></ul><li><a href="otx/core/config.html">otx.core.config</a></li>
+<ul><li><a href="otx/core/config/data.html">otx.core.config.data</a></li>
+<li><a href="otx/core/config/device.html">otx.core.config.device</a></li>
+<li><a href="otx/core/config/explain.html">otx.core.config.explain</a></li>
+<li><a href="otx/core/config/hpo.html">otx.core.config.hpo</a></li>
+</ul><li><a href="otx/core/data/dataset/action_classification.html">otx.core.data.dataset.action_classification</a></li>
+<li><a href="otx/core/data/dataset/action_detection.html">otx.core.data.dataset.action_detection</a></li>
+<li><a href="otx/core/data/dataset/anomaly/dataset.html">otx.core.data.dataset.anomaly.dataset</a></li>
+<li><a href="otx/core/data/dataset/base.html">otx.core.data.dataset.base</a></li>
+<li><a href="otx/core/data/dataset/classification.html">otx.core.data.dataset.classification</a></li>
+<li><a href="otx/core/data/dataset/detection.html">otx.core.data.dataset.detection</a></li>
+<li><a href="otx/core/data/dataset/instance_segmentation.html">otx.core.data.dataset.instance_segmentation</a></li>
+<li><a href="otx/core/data/dataset/segmentation.html">otx.core.data.dataset.segmentation</a></li>
+<li><a href="otx/core/data/dataset/tile.html">otx.core.data.dataset.tile</a></li>
+<li><a href="otx/core/data/dataset/visual_prompting.html">otx.core.data.dataset.visual_prompting</a></li>
+<li><a href="otx/core/data/entity/action_classification.html">otx.core.data.entity.action_classification</a></li>
+<li><a href="otx/core/data/entity/action_detection.html">otx.core.data.entity.action_detection</a></li>
+<li><a href="otx/core/data/entity/anomaly/classification.html">otx.core.data.entity.anomaly.classification</a></li>
+<li><a href="otx/core/data/entity/anomaly/detection.html">otx.core.data.entity.anomaly.detection</a></li>
+<li><a href="otx/core/data/entity/anomaly/segmentation.html">otx.core.data.entity.anomaly.segmentation</a></li>
+<li><a href="otx/core/data/entity/base.html">otx.core.data.entity.base</a></li>
+<li><a href="otx/core/data/entity/classification.html">otx.core.data.entity.classification</a></li>
+<li><a href="otx/core/data/entity/detection.html">otx.core.data.entity.detection</a></li>
+<li><a href="otx/core/data/entity/instance_segmentation.html">otx.core.data.entity.instance_segmentation</a></li>
+<li><a href="otx/core/data/entity/segmentation.html">otx.core.data.entity.segmentation</a></li>
+<li><a href="otx/core/data/entity/tile.html">otx.core.data.entity.tile</a></li>
+<li><a href="otx/core/data/entity/utils.html">otx.core.data.entity.utils</a></li>
+<li><a href="otx/core/data/entity/visual_prompting.html">otx.core.data.entity.visual_prompting</a></li>
+<li><a href="otx/core/data/factory.html">otx.core.data.factory</a></li>
+<li><a href="otx/core/data/mem_cache.html">otx.core.data.mem_cache</a></li>
+<li><a href="otx/core/data/module.html">otx.core.data.module</a></li>
+<li><a href="otx/core/data/pre_filtering.html">otx.core.data.pre_filtering</a></li>
+<li><a href="otx/core/data/tile_adaptor.html">otx.core.data.tile_adaptor</a></li>
+<li><a href="otx/core/data/transform_libs/mmaction.html">otx.core.data.transform_libs.mmaction</a></li>
+<li><a href="otx/core/data/transform_libs/mmcv.html">otx.core.data.transform_libs.mmcv</a></li>
+<li><a href="otx/core/data/transform_libs/mmdet.html">otx.core.data.transform_libs.mmdet</a></li>
+<li><a href="otx/core/data/transform_libs/mmpretrain.html">otx.core.data.transform_libs.mmpretrain</a></li>
+<li><a href="otx/core/data/transform_libs/mmseg.html">otx.core.data.transform_libs.mmseg</a></li>
+<li><a href="otx/core/data/transform_libs/torchvision.html">otx.core.data.transform_libs.torchvision</a></li>
+<li><a href="otx/core/exporter/base.html">otx.core.exporter.base</a></li>
+<li><a href="otx/core/exporter/mmdeploy.html">otx.core.exporter.mmdeploy</a></li>
+<li><a href="otx/core/exporter/native.html">otx.core.exporter.native</a></li>
+<li><a href="otx/core/exporter/visual_prompting.html">otx.core.exporter.visual_prompting</a></li>
+<li><a href="otx/core/metrics/accuracy.html">otx.core.metrics.accuracy</a></li>
+<li><a href="otx/core/metrics/fmeasure.html">otx.core.metrics.fmeasure</a></li>
+<li><a href="otx/core/model/entity/action_classification.html">otx.core.model.entity.action_classification</a></li>
+<li><a href="otx/core/model/entity/action_detection.html">otx.core.model.entity.action_detection</a></li>
+<li><a href="otx/core/model/entity/base.html">otx.core.model.entity.base</a></li>
+<li><a href="otx/core/model/entity/classification.html">otx.core.model.entity.classification</a></li>
+<li><a href="otx/core/model/entity/detection.html">otx.core.model.entity.detection</a></li>
+<li><a href="otx/core/model/entity/instance_segmentation.html">otx.core.model.entity.instance_segmentation</a></li>
+<li><a href="otx/core/model/entity/rotated_detection.html">otx.core.model.entity.rotated_detection</a></li>
+<li><a href="otx/core/model/entity/segmentation.html">otx.core.model.entity.segmentation</a></li>
+<li><a href="otx/core/model/entity/utils/mmaction.html">otx.core.model.entity.utils.mmaction</a></li>
+<li><a href="otx/core/model/entity/utils/mmdet.html">otx.core.model.entity.utils.mmdet</a></li>
+<li><a href="otx/core/model/entity/utils/mmpretrain.html">otx.core.model.entity.utils.mmpretrain</a></li>
+<li><a href="otx/core/model/entity/utils/mmseg.html">otx.core.model.entity.utils.mmseg</a></li>
+<li><a href="otx/core/model/entity/visual_prompting.html">otx.core.model.entity.visual_prompting</a></li>
+<li><a href="otx/core/model/module/action_classification.html">otx.core.model.module.action_classification</a></li>
+<li><a href="otx/core/model/module/action_detection.html">otx.core.model.module.action_detection</a></li>
+<li><a href="otx/core/model/module/anomaly/anomaly_lightning.html">otx.core.model.module.anomaly.anomaly_lightning</a></li>
+<li><a href="otx/core/model/module/base.html">otx.core.model.module.base</a></li>
+<li><a href="otx/core/model/module/classification.html">otx.core.model.module.classification</a></li>
+<li><a href="otx/core/model/module/detection.html">otx.core.model.module.detection</a></li>
+<li><a href="otx/core/model/module/instance_segmentation.html">otx.core.model.module.instance_segmentation</a></li>
+<li><a href="otx/core/model/module/rotated_detection.html">otx.core.model.module.rotated_detection</a></li>
+<li><a href="otx/core/model/module/segmentation.html">otx.core.model.module.segmentation</a></li>
+<li><a href="otx/core/model/module/visual_prompting.html">otx.core.model.module.visual_prompting</a></li>
+<li><a href="otx/core/types/device.html">otx.core.types.device</a></li>
+<li><a href="otx/core/types/explain.html">otx.core.types.explain</a></li>
+<li><a href="otx/core/types/export.html">otx.core.types.export</a></li>
+<li><a href="otx/core/types/image.html">otx.core.types.image</a></li>
+<li><a href="otx/core/types/precision.html">otx.core.types.precision</a></li>
+<li><a href="otx/core/types/task.html">otx.core.types.task</a></li>
+<li><a href="otx/core/types/transformer_libs.html">otx.core.types.transformer_libs</a></li>
+<li><a href="otx/core/utils/build.html">otx.core.utils.build</a></li>
+<li><a href="otx/core/utils/cache.html">otx.core.utils.cache</a></li>
+<li><a href="otx/core/utils/config.html">otx.core.utils.config</a></li>
+<li><a href="otx/core/utils/imports.html">otx.core.utils.imports</a></li>
+<li><a href="otx/core/utils/instantiators.html">otx.core.utils.instantiators</a></li>
+<li><a href="otx/core/utils/mask_util.html">otx.core.utils.mask_util</a></li>
+<li><a href="otx/core/utils/pylogger.html">otx.core.utils.pylogger</a></li>
+<li><a href="otx/core/utils/tile_merge.html">otx.core.utils.tile_merge</a></li>
+<li><a href="otx/core/utils/utils.html">otx.core.utils.utils</a></li>
+<li><a href="otx/data/anomaly/anomaly.html">otx.data.anomaly.anomaly</a></li>
+<li><a href="otx/engine/engine.html">otx.engine.engine</a></li>
+<li><a href="otx/engine/hpo/hpo_api.html">otx.engine.hpo.hpo_api</a></li>
+<li><a href="otx/engine/hpo/hpo_trial.html">otx.engine.hpo.hpo_trial</a></li>
+<li><a href="otx/engine/hpo/utils.html">otx.engine.hpo.utils</a></li>
+<li><a href="otx/engine/utils/api.html">otx.engine.utils.api</a></li>
+<li><a href="otx/engine/utils/auto_configurator.html">otx.engine.utils.auto_configurator</a></li>
+<li><a href="otx/hpo/hpo_base.html">otx.hpo.hpo_base</a></li>
+<li><a href="otx/hpo/hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li><a href="otx/hpo/hyperband.html">otx.hpo.hyperband</a></li>
+<li><a href="otx/hpo/resource_manager.html">otx.hpo.resource_manager</a></li>
+<li><a href="otx/hpo/search_space.html">otx.hpo.search_space</a></li>
+<li><a href="otx/hpo/utils.html">otx.hpo.utils</a></li>
+<li><a href="otx/utils/signal.html">otx.utils.signal</a></li>
+<li><a href="otx/utils/utils.html">otx.utils.utils</a></li>
+</ul>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
