@@ -52,7 +52,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
       cancel-in-progress: true
-    uses: ./.github/workflows/run_tests_in_tox_custom.yml
+    uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: ${{ matrix.python-version }}
       toxenv-pyver: ${{ matrix.tox-env }}
@@ -61,16 +61,12 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-v100-1']"
   Coverage-Test:
     needs: Code-Quality-Checks
     concurrency:
       group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}}
       cancel-in-progress: true
-    runs-on: ["otx-gpu-v100-1"]
-    container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:11.7.1.1-devel-ubuntu20.04
-      options: --runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g
+    runs-on: [self-hosted, linux, x64, dev]
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
