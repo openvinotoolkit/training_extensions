@@ -271,7 +271,12 @@ class ZeroShotSegmentAnything(SegmentAnything):
             self.reference_info["reference_feats"] = Parameter(padded_reference_feats, requires_grad=False)
 
     @torch.no_grad()
-    def learn(self, batch: List[Dict[str, Any]], reset_feat: bool = False) -> Union[None, Tuple[ParameterDict, Tensor]]:
+    def learn(
+        self,
+        batch: List[Dict[str, Any]],
+        reset_feat: bool = False,
+        is_cascade: bool = False
+    ) -> Union[None, Tuple[ParameterDict, Tensor]]:
         """Get reference features.
 
         Using given images, get reference features and save it to PromptGetter.
@@ -284,6 +289,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             reset_feat (bool): Whether reset reference_info.
                 For OTX standalone, resetting reference_info will be conducted in on_train_start.
                 For other frameworks, setting it to True is required to reset reference_info. Defaults to False.
+            is_cascade (bool): Whether use cascade inference. Defaults to False.
 
         Returns:
             (Tuple[ParameterDict, Tensor]): reference_info and ref_masks.
@@ -348,7 +354,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                             point_coords=point_coords,
                             point_labels=point_labels,
                             original_size=original_size,
-                            is_cascade=False,
+                            is_cascade=is_cascade,
                         )
                         ref_mask[masks] += 1
                 ref_mask = torch.clip(ref_mask, 0, 1).to(torch.float32)
@@ -377,7 +383,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         batch: List[Dict[str, Any]],
         reference_feats: Union[np.ndarray, Tensor],
         used_indices: Union[np.ndarray, Tensor],
-        is_cascade: bool = False,
+        is_cascade: bool = True,
     ) -> List[List[DefaultDict[int, List[Tensor]]]]:
         """Zero-shot inference with reference features.
 
@@ -389,7 +395,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 If it is np.ndarray, it will be converted to torch tensor.
             used_indices (Union[np.ndarray, Tensor]): To check which indices of reference features are validate.
                 If it is np.ndarray, it will be converted to torch tensor.
-            is_cascade (bool): Whether use cascade inference. Defaults to False.
+            is_cascade (bool): Whether use cascade inference. Defaults to True.
 
         Returns:
             (List[List[DefaultDict[int, List[Tensor]]]]): Target results.
@@ -521,7 +527,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 mask_input = torch.zeros(1, 1, *map(lambda x: x * 4, image_embeddings.shape[2:]), device=self.device)
                 has_mask_input = self.has_mask_inputs[0].to(self.device)
 
-            elif is_cascade and i == 1:
+            elif i == 1:
                 # Cascaded Post-refinement-1
                 mask_input, masks = self._postprocess_masks(masks, logits, scores, is_single=True)  # noqa: F821
                 if masks.sum() == 0:
@@ -529,7 +535,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
                 has_mask_input = self.has_mask_inputs[1].to(self.device)
 
-            elif is_cascade and i == 2:
+            elif i == 2:
                 # Cascaded Post-refinement-2
                 mask_input, masks = self._postprocess_masks(masks, logits, scores)  # noqa: F821
                 if masks.sum() == 0:
@@ -721,8 +727,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # all predicted masks were zero masks, ignore them.
                 return None, torch.zeros(masks.shape[-2:], device="cpu")
 
-            best_idx = torch.argmax(scores[0])
-        return logits[:, best_idx], masks[0, best_idx]
+            best_idx = int(torch.argmax(scores[0]))
+        return logits[:, [best_idx]], masks[0, best_idx]
 
     def set_metrics(self) -> None:
         """Skip set_metrics unused in zero-shot learning."""
