@@ -138,6 +138,14 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
+        if self.task == OTXTaskType.DETECTION and self.device == DeviceType.xpu:
+            from mmcv.ops.nms import NMSop
+            from mmcv.ops.roi_align import RoIAlign
+            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
+
+            NMSop.forward = monkey_patched_nms
+            RoIAlign.forward = monkey_patched_roi_align
+
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
         )
@@ -748,7 +756,7 @@ class Engine:
                 # add plugin for Automatic Mixed Precision on XPU
                 if kwargs["precision"] == 16:
                     self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
-                    self._cache.update(precision=None)
+                    self._cache.args["precision"] = None
 
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
