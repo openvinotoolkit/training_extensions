@@ -335,7 +335,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
             ori_shapes (list[Tensor]): Original image size.
             threshold (float): Threshold to control masked region. Defaults to 0.0.
             num_bg_points (1): Number of background points. Defaults to 1.
-            is_cascade (bool): Whether use cascade inference. Defaults to False.
+            is_cascade (bool): Whether use cascade inference. Defaults to True.
 
         Returns:
             (list[list[defaultdict[int, list[Tensor]]]]): List of predicted masks and used points.
@@ -594,7 +594,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # all predicted masks were zero masks, ignore them.
                 return None, torch.zeros(masks.shape[-2:], device="cpu")
 
-            best_idx = torch.argmax(scores[0])
+            best_idx = int(torch.argmax(scores[0]))
         return logits[:, [best_idx]], masks[0, best_idx]
 
 
@@ -651,6 +651,9 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
     def infer(
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
+        reference_feats: Tensor | None = None,
+        used_indices: Tensor | None = None,
+        is_cascade: bool = True,
     ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Infer to directly connect to the model."""
         outputs = self.model.infer(**self._customize_inputs(inputs))
