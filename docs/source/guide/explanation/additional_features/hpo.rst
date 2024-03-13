@@ -17,9 +17,9 @@ Key features of OpenVINO™ Training Extensions include:
 
 You can run HPO by just adding **--enable-hpo** argument as below:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -28,7 +28,7 @@ You can run HPO by just adding **--enable-hpo** argument as below:
             engine = Engine(data_root="<path_to_data_root>")
             engine.train(run_hpo=True)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 

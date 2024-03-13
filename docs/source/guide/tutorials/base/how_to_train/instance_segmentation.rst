@@ -122,9 +122,9 @@ The list of supported templates for instance segmentation is available with the 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/segmentation/instance_segmentation>`.
 
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -143,26 +143,26 @@ The list of supported templates for instance segmentation is available with the 
           │ INSTANCE_SEGMENTATION │ maskrcnn_swint_tile           │ src/otx/recipe/instance_segmentation/maskrcnn_swint_tile.yaml                      │               
           └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
 
-        .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
-            from otx.engine.utils.api import list_models
+          from otx.engine.utils.api import list_models
 
-            model_lists = list_models(task="INSTANCE_SEGMENTATION")
-            print(model_lists)
-            '''
-            [
-              'maskrcnn_swint',
-              'maskrcnn_r50',
-              'maskrcnn_r50_tile',
-              'rtmdet_inst_tiny',
-              'maskrcnn_swint_tile',
-              'maskrcnn_efficientnetb2b_tile',
-              'openvino_model',
-              'maskrcnn_efficientnetb2b',
-            ]
-            '''
+          model_lists = list_models(task="INSTANCE_SEGMENTATION")
+          print(model_lists)
+          '''
+          [
+            'maskrcnn_swint',
+            'maskrcnn_r50',
+            'maskrcnn_r50_tile',
+            'rtmdet_inst_tiny',
+            'maskrcnn_swint_tile',
+            'maskrcnn_efficientnetb2b_tile',
+            'openvino_model',
+            'maskrcnn_efficientnetb2b',
+          ]
+          '''
 
 2. On this step we will configure configuration
 with:
@@ -208,21 +208,21 @@ Here are the main outputs can expect with CLI:
 - ``{work_dir}/{timestamp}/configs.yaml`` - The configuration file used in the training can be reused to reproduce the training.
 - ``{work_dir}/.latest`` - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (auto-config)
+    .. tab-item:: CLI (auto-config)
 
         .. code-block:: shell
 
             (otx) ...$ otx train --data_root data/wgisd --task INSTANCE_SEGMENTATION
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
             (otx) ...$ otx train --config src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml --data_root data/wgisd
 
-    .. tab:: API (from_config)
+    .. tab-item:: API (from_config)
 
         .. code-block:: python
 
@@ -239,7 +239,7 @@ Here are the main outputs can expect with CLI:
 
             engine.train(...)
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -269,16 +269,16 @@ It can be done by manually updating parameters in the ``template.yaml`` file in 
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
                                      --max_epochs 100
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -330,9 +330,9 @@ The test function receives test annotation information and model snapshot, train
 2. The command below will run validation on our dataset
 and save performance results in ``otx-workspace``:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -347,7 +347,7 @@ and save performance results in ``otx-workspace``:
             │        test/map_75        │    0.37118086218833923    │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -364,7 +364,7 @@ and save performance results in ``otx-workspace``:
             │        test/map_75        │    0.37118086218833923    │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -387,9 +387,9 @@ It allows running the model on the Intel hardware much more efficient, especiall
 2. We can run the below command line to export the trained model
 and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -397,7 +397,7 @@ and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -405,7 +405,7 @@ and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -424,9 +424,9 @@ Please, refer to :doc:`optimization explanation <../../../explanation/additional
 2.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -438,7 +438,7 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
             Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
             Elapsed time: 0:00:24.958733
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -450,9 +450,9 @@ Please note, that PTQ will take some time (generally less than NNCF optimization
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -468,7 +468,7 @@ it to the ``otx test`` function.
             └───────────────────────────┴───────────────────────────┘
             Elapsed time: 0:00:10.260521
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 

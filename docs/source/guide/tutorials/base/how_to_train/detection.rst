@@ -125,9 +125,9 @@ The list of supported templates for object detection is available with the comma
     The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection/object_detection>`.
 
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -141,7 +141,7 @@ The list of supported templates for object detection is available with the comma
             │ DETECTION │ atss_mobilenetv2      │ src/otx/recipe/detection/atss_mobilenetv2.yaml                 │                              
             └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -206,21 +206,21 @@ Here are the main outputs can expect with CLI:
 - ``{work_dir}/{timestamp}/configs.yaml`` - The configuration file used in the training can be reused to reproduce the training.
 - ``{work_dir}/.latest`` - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (auto-config)
+    .. tab-item:: CLI (auto-config)
 
         .. code-block:: shell
 
             (otx) ...$ otx train --data_root data/wgisd
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
             (otx) ...$ otx train --config src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd
 
-    .. tab:: API (from_config)
+    .. tab-item:: API (from_config)
 
         .. code-block:: python
 
@@ -237,7 +237,7 @@ Here are the main outputs can expect with CLI:
 
             engine.train(...)
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -259,16 +259,16 @@ Learn more about specific parameters using ``otx train --help -v`` or ``otx trai
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
                                      --max_epochs 100
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -322,9 +322,9 @@ The default metric is mAP_50 measure.
 2. That's how we can evaluate the snapshot in ``otx-workspace``
 folder on WGISD dataset and save results to ``otx-workspace``:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -337,7 +337,7 @@ folder on WGISD dataset and save results to ``otx-workspace``:
             │      test/iter_time       │    0.08180806040763855    │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -352,7 +352,7 @@ folder on WGISD dataset and save results to ``otx-workspace``:
             │      test/iter_time       │    0.08180806040763855    │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -374,9 +374,9 @@ Also, the resulting IR model is required to run PTQ optimization in the section 
 2. That's how we can export the trained model ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt``
 from the previous section and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -384,7 +384,7 @@ from the previous section and save the exported model to the ``{work_dir}/{times
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -392,7 +392,7 @@ from the previous section and save the exported model to the ``{work_dir}/{times
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -402,9 +402,9 @@ from the previous section and save the exported model to the ``{work_dir}/{times
 3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using ``otx test`` and passing the IR model path to the ``--checkpoint`` parameter.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -431,7 +431,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
             │      test/mar_small       │           -1.0            │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -459,7 +459,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
             │      test/mar_small       │           -1.0            │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -472,15 +472,15 @@ Learn more about template-specific parameters using ``otx export --help``.
 
 For example, If you want to get the ONNX model format you can run it like below.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt --export_format ONNX
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -488,15 +488,15 @@ For example, If you want to get the ONNX model format you can run it like below.
 
 If you also want to export ``saliency_map``, a feature related to explain, and ``feature_vector`` information for XAI, you can do the following.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt --explain True
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -517,9 +517,9 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 2.  Command example for optimizing OpenVINO™ model (.xml)
 with OpenVINO™ PTQ.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -531,7 +531,7 @@ with OpenVINO™ PTQ.
             Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
             Elapsed time: 0:00:24.958733
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -545,9 +545,9 @@ Please note, that PTQ will take some time without logging to optimize the model.
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -563,7 +563,7 @@ it to the ``otx test`` function.
             └───────────────────────────┴───────────────────────────┘
             Elapsed time: 0:00:10.260521
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 

@@ -7,9 +7,9 @@ Auto-configuration can help to save time, it eases the process of interaction wi
 At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
 Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -18,7 +18,7 @@ Basically, to start the training and obtain a good baseline with the best trade-
             engine = Engine(data_root="<path_to_data_root>")
             engine.train()
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: bash
 
@@ -42,9 +42,9 @@ Supported dataset formats for each task:
 
 If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might not intend:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -53,7 +53,7 @@ If we have a dataset format occluded with other tasks, for example ``COCO`` form
             engine = Engine(data_root="<path_to_data_root>", task="<TASK_TYPE>")
             engine.train()
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: bash
 
@@ -78,15 +78,15 @@ The learning rate is also adjusted based on the updated batch size accordingly.
 
 To use this feature, add the following parameter:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
             Need to update!
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: bash
 
@@ -101,15 +101,15 @@ Similar to the previous method, the learning rate is adjusted according to the u
 
 To use this feature, add the following parameter:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
             Need to update!
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: bash
 
@@ -132,9 +132,9 @@ To simplify the process of setting ``num_workers`` manually, this feature automa
 
 To use this feature, add the following parameter:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -144,7 +144,7 @@ To use this feature, add the following parameter:
             data_config = DataModuleConfig(..., auto_num_workers=True)
             datamodule = OTXDataModule(..., config=data_config)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 

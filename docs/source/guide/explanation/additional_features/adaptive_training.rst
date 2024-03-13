@@ -9,9 +9,9 @@ To handle this, we have implemented module named ``AdaptiveTrainScheduling``. Th
     ``AdaptiveTrainScheduling`` changes the interval of the validation, evaluation and updating learning rate by checking the number of dataset.
 
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -19,7 +19,7 @@ To handle this, we have implemented module named ``AdaptiveTrainScheduling``. Th
             
             engine.train(callbacks=[AdaptiveTrainScheduling()])
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 

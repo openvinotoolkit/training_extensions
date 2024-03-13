@@ -21,9 +21,9 @@ One can enable in-memory caching for maximizing GPU utilization and reducing mod
 training time in those cases.
 
 
-.. tabs::
+.. tab-set::
 
-   .. tab:: API
+   .. tab-item:: API
 
       .. code-block:: python
 
@@ -33,7 +33,7 @@ training time in those cases.
          data_config = DataModuleConfig(..., mem_cache_size="8GB")
          datamodule = OTXDataModule(..., config=data_config)
 
-   .. tab:: CLI
+   .. tab-item:: CLI
 
       .. code-block:: shell
 

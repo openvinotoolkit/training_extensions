@@ -90,9 +90,9 @@ Training
 1. For this example let's look at the
 anomaly detection tasks
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -104,7 +104,7 @@ anomaly detection tasks
             │ ANOMALY_DETECTION │ padim      │ src/otx/recipe/anomaly_detection/padim.yaml │                                 
             └───────────────────┴────────────┴─────────────────────────────────────────────┘ 
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -121,23 +121,23 @@ You can see two anomaly detection models, STFPM and PADIM. For more detail on ea
 2. Let's proceed with PADIM for
 this example.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (auto-config)
+    .. tab-item:: CLI (auto-config)
 
         .. code-block:: shell
 
             (otx) ...$  otx train --data_root datasets/MVTec/bottle \
                                   --task ANOMALY_DETECTION
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
             (otx) ...$  otx train --config src/otx/recipe/anomaly_detection/padim.yaml \
                                   --data_root datasets/MVTec/bottle
 
-    .. tab:: API (from_config)
+    .. tab-item:: API (from_config)
 
         .. code-block:: python
 
@@ -154,7 +154,7 @@ this example.
 
             engine.train(...)
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -177,16 +177,16 @@ Learn more about specific parameters using ``otx train --help -v`` or ``otx trai
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
                                      --max_epochs 100
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -212,9 +212,9 @@ Evaluation
 
 Now we have trained the model, let's see how it performs on a specific dataset. In this example, we will use the same dataset to generate evaluation metrics. To perform evaluation you need to run the following commands:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -230,7 +230,7 @@ Now we have trained the model, let's see how it performs on a specific dataset. 
             │      test/iter_time       │    0.6630784869194031     │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -248,7 +248,7 @@ Now we have trained the model, let's see how it performs on a specific dataset. 
             │      test/iter_time       │    0.6630784869194031     │
             └───────────────────────────┴───────────────────────────┘
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -271,9 +271,9 @@ It allows running the model on the Intel hardware much more efficient, especiall
 2. We can run the below command line to export the trained model
 and save the exported model to the ``openvino`` folder:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -281,7 +281,7 @@ and save the exported model to the ``openvino`` folder:
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -289,7 +289,7 @@ and save the exported model to the ``openvino`` folder:
             ...
             Elapsed time: 0:00:06.588245
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -297,9 +297,9 @@ and save the exported model to the ``openvino`` folder:
 
 Now that we have the exported model, let's check its performance using ``otx test``:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI (with work_dir)
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
@@ -308,7 +308,7 @@ Now that we have the exported model, let's check its performance using ``otx tes
                                 --engine.device cpu
             ...
 
-    .. tab:: CLI (with config)
+    .. tab-item:: CLI (with config)
 
         .. code-block:: shell
 
@@ -318,7 +318,7 @@ Now that we have the exported model, let's check its performance using ``otx tes
                                 --engine.device cpu
             ...
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -337,9 +337,9 @@ For more information refer to the :doc:`optimization explanation <../../../expla
 1. Let's start with PTQ
 optimization.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -351,7 +351,7 @@ optimization.
             Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
             Elapsed time: 0:00:24.958733
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -363,9 +363,9 @@ Please note, that PTQ will take some time without logging to optimize the model.
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -376,7 +376,7 @@ it to the ``otx test`` function.
             ...
             Elapsed time: 0:00:10.260521
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 

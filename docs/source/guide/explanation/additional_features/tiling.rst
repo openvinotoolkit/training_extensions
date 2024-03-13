@@ -49,9 +49,9 @@ Currently, tiling is supported for both detection and instance segmentation mode
 
 To enable tiling in OTX training, set ``data.config.tile_config.enable_tiler`` parameter to 1. Here's an example of enabling tiling:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -61,7 +61,7 @@ To enable tiling in OTX training, set ``data.config.tile_config.enable_tiler`` p
             data_config = DataModuleConfig(..., tile_config=TileConfig(enable_tiler=True))
             datamodule = OTXDataModule(..., config=data_config)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -86,9 +86,9 @@ This computation is performed by dividing the average object size by the desired
 
 Here's an example of setting the object size ratio to 5%:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -99,7 +99,7 @@ Here's an example of setting the object size ratio to 5%:
             data_config = DataModuleConfig(..., tile_config=tile_config)
             datamodule = OTXDataModule(..., config=data_config)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -124,9 +124,9 @@ It's important to note that sampling is applied to the training and validation d
 
 This can be configured with ``data.config.tile_config.enable_adaptive_tiling`` parameter. Here's an example:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -137,7 +137,7 @@ This can be configured with ``data.config.tile_config.enable_adaptive_tiling`` p
             data_config = DataModuleConfig(..., tile_config=tile_config)
             datamodule = OTXDataModule(..., config=data_config)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -151,9 +151,9 @@ Manual Tiling Parameter Configuration
 
 Users can disable adaptive tiling and customize the tiling process by setting the following parameters:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -164,7 +164,7 @@ Users can disable adaptive tiling and customize the tiling process by setting th
             data_config = DataModuleConfig(..., tile_config=tile_config)
             datamodule = OTXDataModule(..., config=data_config)
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -190,15 +190,15 @@ Run Tiling on OpenVINO Exported Model
 
 After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
             engine.export(checkpoint="<Tiling-torch-model>")
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
@@ -206,15 +206,15 @@ After training a model with tiling enabled, you can export the model to OpenVINO
 
 After exporting the model, you can run inference on the exported model using the following command:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
             engine.test(checkpoint="<Tiling-IR-model>")
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 

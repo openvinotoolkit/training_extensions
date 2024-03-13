@@ -219,9 +219,9 @@ Create an output model and start actual training:
 
 The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Custom Model
+    .. tab-item:: Custom Model
 
         .. code-block:: python
 
@@ -233,7 +233,7 @@ The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
             engine = Engine(data_root="data/wgisd", model=model)
             engine.train()
 
-    .. tab:: Custom Model with checkpoint
+    .. tab-item:: Custom Model with checkpoint
 
         .. code-block:: python
 
@@ -245,7 +245,7 @@ The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
             engine = Engine(data_root="data/wgisd", model=model, checkpoint="<path/to/checkpoint>")
             engine.train()
 
-    .. tab:: Custom Optimizer & Scheduler
+    .. tab-item:: Custom Optimizer & Scheduler
 
         .. code-block:: python
 
@@ -287,21 +287,21 @@ The datamodule used by the Engine is of type ``otx.core.data.module.OTXDataModul
 
 5. You can use train-specific arguments with ``train()`` function.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Change Max Epochs
+    .. tab-item:: Change Max Epochs
 
         .. code-block:: python
 
             engine.train(max_epochs=10)
 
-    .. tab:: Fix Training Seed & Set Deterministic
+    .. tab-item:: Fix Training Seed & Set Deterministic
 
         .. code-block:: python
 
             engine.train(seed=1234, deterministic=True)
 
-    .. tab:: Use Mixed Precision
+    .. tab-item:: Use Mixed Precision
 
         .. code-block:: python
 
@@ -313,7 +313,7 @@ The datamodule used by the Engine is of type ``otx.core.data.module.OTXDataModul
             - "64", "32", "16", "bf16",
             - 64, 32, 16
 
-    .. tab:: Change Validation Metric
+    .. tab-item:: Change Validation Metric
 
         .. code-block:: python
 
@@ -322,7 +322,7 @@ The datamodule used by the Engine is of type ``otx.core.data.module.OTXDataModul
             metric = FMeasue(num_classes=5)
             engine.train(metric=metric)
 
-    .. tab:: Set Callbacks & Logger
+    .. tab-item:: Set Callbacks & Logger
 
         .. code-block:: python
 
@@ -354,15 +354,15 @@ Evaluation
 
 If the training is already in place, we just need to use the code below:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Evaluate Model
+    .. tab-item:: Evaluate Model
 
         .. code-block:: python
 
             engine.test()
 
-    .. tab:: Evaluate Model with different checkpoint
+    .. tab-item:: Evaluate Model with different checkpoint
 
         .. code-block:: python
 
@@ -372,7 +372,7 @@ If the training is already in place, we just need to use the code below:
 
             The format that can enter the checkpoint is of type torch (.ckpt) or exported model (.onnx, .xml).
 
-    .. tab:: Evaluate Model with different datamodule or dataloader
+    .. tab-item:: Evaluate Model with different datamodule or dataloader
 
         .. code-block:: python
 
@@ -381,7 +381,7 @@ If the training is already in place, we just need to use the code below:
             datamodule = OTXDataModule(data_root="data/wgisd")
             engine.test(datamodule=datamodule)
 
-    .. tab:: Evaluate Model with different metrics
+    .. tab-item:: Evaluate Model with different metrics
 
         .. code-block:: python
 
@@ -401,21 +401,21 @@ If the engine is trained, you can proceed with the export using the current engi
 The default value for ``export_format`` is ``OPENVINO``.
 The default value for ``export_precision`` is ``FP32``.
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Export OpenVINO™ IR
+    .. tab-item:: Export OpenVINO™ IR
 
         .. code-block:: python
 
             engine.export()
 
-    .. tab:: Export ONNX
+    .. tab-item:: Export ONNX
 
         .. code-block:: python
 
             engine.export(export_format="ONNX")
 
-    .. tab:: Export with explain features
+    .. tab-item:: Export with explain features
 
         .. code-block:: python
 
@@ -425,13 +425,13 @@ The default value for ``export_precision`` is ``FP32``.
 
             This ensures that it is exported with a ``saliency_map`` and ``feature_vector`` that will be used in the XAI.
 
-    .. tab:: Export with different checkpoint
+    .. tab-item:: Export with different checkpoint
 
         .. code-block:: python
 
             engine.export(checkpoint="<path/to/checkpoint>")
 
-    .. tab:: Export with FP16
+    .. tab-item:: Export with FP16
 
         .. code-block:: python
 
@@ -444,15 +444,15 @@ XAI
 
 To run the XAI with the OpenVINO™ IR model, we need to create an output model and run the XAI procedure:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Run XAI
+    .. tab-item:: Run XAI
 
         .. code-block:: python
 
             engine.explain(checkpoint="<path/to/ir/xml>")
 
-    .. tab:: Evaluate Model with different datamodule or dataloader
+    .. tab-item:: Evaluate Model with different datamodule or dataloader
 
         .. code-block:: python
 
@@ -461,7 +461,7 @@ To run the XAI with the OpenVINO™ IR model, we need to create an output model 
             datamodule = OTXDataModule(data_root="data/wgisd")
             engine.explain(..., datamodule=datamodule)
 
-    .. tab:: Dump saliency_map
+    .. tab-item:: Dump saliency_map
 
         .. code-block:: python
 
@@ -474,15 +474,15 @@ Optimization
 
 To run the optimization with PTQ on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: Run PTQ Optimization
+    .. tab-item:: Run PTQ Optimization
 
         .. code-block:: python
 
             engine.optimize(checkpoint="<path/to/ir/xml>")
 
-    .. tab:: Evaluate Model with different datamodule or dataloader
+    .. tab-item:: Evaluate Model with different datamodule or dataloader
 
         .. code-block:: python
 

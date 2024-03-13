@@ -14,9 +14,9 @@ To run Post-training quantization it is required to convert the model to OpenVIN
 Please, refer to our :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` on how to optimize your model using PTQ.
 
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
@@ -24,7 +24,7 @@ Please, refer to our :doc:`dedicated tutorials <../../tutorials/base/how_to_trai
             ...
             engine.optimize(checkpoint="<IR-checkpoint-path>")
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 

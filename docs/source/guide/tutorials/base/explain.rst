@@ -23,15 +23,15 @@ created in the previous step.
 
 2. ``otx explain`` returns saliency maps (heatmaps with red colored areas of focus)
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: shell
 
             Need to update!
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 

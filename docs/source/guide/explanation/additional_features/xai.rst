@@ -95,15 +95,15 @@ Below we show the comparison of described algorithms. ``Access to the model inte
 +-------------------------------------------+----------------------------+--------------------------------------------+
 
 
-.. tabs::
+.. tab-set::
 
-    .. tab:: API
+    .. tab-item:: API
 
         .. code-block:: python
 
             engine.explain(checkpoint="<checkpoint-path>")
 
-    .. tab:: CLI
+    .. tab-item:: CLI
 
         .. code-block:: bash
 
