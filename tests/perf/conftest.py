@@ -257,7 +257,7 @@ def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], clie
         exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
         if exp.lifecycle_stage != "active":
             client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
         run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
@@ -293,8 +293,8 @@ def fxt_benchmark_summary(
             return
 
         # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-        working_branch = fxt_tags["branch"]
-        if working_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", working_branch)):
+        test_branch = fxt_tags["test_branch"]
+        if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
             try:
                 log_perf_results_to_mlflow(all_results, fxt_tags, fxt_mlflow_client)
             except Exception as e:
