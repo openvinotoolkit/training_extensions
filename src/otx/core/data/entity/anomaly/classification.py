@@ -6,7 +6,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+
+import torch
+from torchvision import tv_tensors
 
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
@@ -16,9 +18,6 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
-
-if TYPE_CHECKING:
-    import torch
 
 
 @register_pytree_node  # Ideally, we should not use this decorator
@@ -53,10 +52,11 @@ class AnomalyClassificationDataBatch(OTXBatchDataEntity):
         stack_images: bool = True,
     ) -> AnomalyClassificationDataBatch:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
-        batch = super().collate_fn(entities, stack_images=stack_images)
+        batch = super().collate_fn(entities)
+        images = tv_tensors.Image(data=torch.stack(tuple(batch.images), dim=0)) if stack_images else batch.images
         return AnomalyClassificationDataBatch(
             batch_size=batch.batch_size,
-            images=batch.images,
+            images=images,
             imgs_info=batch.imgs_info,
             labels=[entity.label for entity in entities],
         )

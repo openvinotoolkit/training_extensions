@@ -26,6 +26,9 @@ overrides:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         patience: 5
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
   data:
     task: ANOMALY_SEGMENTATION
     config:

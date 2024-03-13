@@ -46,8 +46,6 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
 
-    from otx.core.data.entity.classification import HLabelData
-
 
 class ExplainableOTXClsModel(
     OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
@@ -164,6 +162,11 @@ class ExplainableOTXClsModel(
         func_type = types.MethodType
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OTXMulticlassClsModel(
@@ -315,11 +318,6 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         export_params["onnx_export_configuration"] = None
 
         return export_params
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -479,11 +477,6 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
         return export_params
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
 
 class OTXHlabelClsModel(
     ExplainableOTXClsModel[
@@ -503,16 +496,16 @@ class OTXHlabelClsModel(
 
         label_info: HLabelInfo = self.label_info  # type: ignore[assignment]
         hierarchical_config["cls_heads_info"] = {
-            "num_multiclass_heads": label_info.hlabel_data.num_multiclass_heads,
-            "num_multilabel_classes": label_info.hlabel_data.num_multilabel_classes,
-            "head_idx_to_logits_range": label_info.hlabel_data.head_idx_to_logits_range,
-            "num_single_label_classes": label_info.hlabel_data.num_single_label_classes,
-            "class_to_group_idx": label_info.hlabel_data.class_to_group_idx,
-            "all_groups": label_info.hlabel_data.all_groups,
-            "label_to_idx": label_info.hlabel_data.label_to_idx,
-            "empty_multiclass_head_indices": label_info.hlabel_data.empty_multiclass_head_indices,
+            "num_multiclass_heads": label_info.num_multiclass_heads,
+            "num_multilabel_classes": label_info.num_multilabel_classes,
+            "head_idx_to_logits_range": label_info.head_idx_to_logits_range,
+            "num_single_label_classes": label_info.num_single_label_classes,
+            "class_to_group_idx": label_info.class_to_group_idx,
+            "all_groups": label_info.all_groups,
+            "label_to_idx": label_info.label_to_idx,
+            "empty_multiclass_head_indices": label_info.empty_multiclass_head_indices,
         }
-        hierarchical_config["label_tree_edges"] = label_info.hlabel_data.label_tree_edges
+        hierarchical_config["label_tree_edges"] = label_info.label_tree_edges
 
         parameters["metadata"].update(
             {
@@ -549,13 +542,13 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         self.classification_layers = classification_layers
         return model
 
-    def set_hlabel_data(self, hierarchical_info: HLabelData) -> None:
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
 
         Args:
             hierarchical_info: the label information represents the hierarchy.
         """
-        self.model.head.set_hlabel_data(hierarchical_info)
+        self.model.head.set_hlabel_info(hierarchical_info)
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -662,11 +655,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
         return export_params
 
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
 
 class OVMulticlassClassificationModel(
     OVModel[MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity, MulticlassClsBatchPredEntityWithXAI],
@@ -765,7 +753,7 @@ class OVHlabelClassificationModel(
             model_api_configuration,
         )
 
-    def set_hlabel_data(self, hierarchical_info: HLabelData) -> None:
+    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
         """Set hierarchical information in model head.
 
         Since OV IR model consist of all required hierarchy information,

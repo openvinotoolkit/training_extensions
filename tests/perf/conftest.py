@@ -9,25 +9,23 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import pytest
 from cpuinfo import get_cpu_info
+from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 log = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser):
     """Add custom options for perf tests."""
-    parser.addoption(
-        "--benchmark-type",
-        action="store",
-        default="accuracy",
-        choices=("accuracy", "efficiency", "all"),
-        help="Choose accuracy|efficiency|all. Defaults to accuracy.",
-    )
     parser.addoption(
         "--model-category",
         action="store",
@@ -106,15 +104,6 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def fxt_benchmark_type(request: pytest.FixtureRequest) -> str:
-    """Select benchmark type."""
-    benchmark_type: str = request.config.getoption("--benchmark-type")
-    msg = f"{benchmark_type = }"
-    log.info(msg)
-    return benchmark_type
-
-
-@pytest.fixture(scope="session")
 def fxt_model_category(request: pytest.FixtureRequest) -> str:
     """Model category to run the benchmark."""
     model_category = request.config.getoption("--model-category")
@@ -169,21 +158,29 @@ def fxt_data_root(request: pytest.FixtureRequest) -> Path:
 
 
 @pytest.fixture(scope="session")
-def fxt_output_root(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> Path:
+def fxt_current_date() -> str:
+    tz = timezone(offset=timedelta(hours=9), name="Seoul")
+    return datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
+
+
+@pytest.fixture(scope="session")
+def fxt_output_root(
+    request: pytest.FixtureRequest,
+    tmp_path_factory: pytest.TempPathFactory,
+    fxt_current_date: str,
+) -> Path:
     """Output root + date + short commit hash."""
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    tz = timezone(offset=timedelta(hours=9), name="Seoul")
-    date_str = datetime.now(tz=tz).strftime("%Y%m%d-%H%M%S")
-    output_root = Path(output_root) / date_str
+    output_root = Path(output_root) / fxt_current_date
     msg = f"{output_root = }"
     log.info(msg)
     return output_root
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags() -> dict[str, str]:
+def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     """Version / branch / commit info."""
     import otx
 
@@ -200,6 +197,7 @@ def fxt_version_tags() -> dict[str, str]:
         "version": version_str,
         "branch": branch_str,
         "commit": commit_str,
+        "date": fxt_current_date,
     }
     msg = f"{version_tags = }"
     log.info(msg)
@@ -210,8 +208,7 @@ def fxt_version_tags() -> dict[str, str]:
 def fxt_summary_csv(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
     """Path to benchmark result summary csv file."""
     summary_csv = request.config.getoption("--summary-csv")
-    if summary_csv is None:
-        summary_csv = fxt_output_root / "benchmark-summary.csv"
+    summary_csv = fxt_output_root / "benchmark-summary.csv" if summary_csv is None else Path(summary_csv)
     msg = f"{summary_csv = }"
     log.info(msg)
     return summary_csv
@@ -245,14 +242,16 @@ def fxt_user_name(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_mlflow_tracking_uri(request: pytest.FixtureRequest) -> str:
-    """MLFLow tracking server URI."""
+def fxt_mlflow_client(request: pytest.FixtureRequest) -> MlflowClient:
+    """MLFLow tracking client."""
     mlflow_tracking_uri = urlparse(
         request.config.getoption("--mlflow-tracking-uri"),
     ).geturl()
     msg = f"{mlflow_tracking_uri = }"
     log.info(msg)
-    return mlflow_tracking_uri
+    if mlflow_tracking_uri:
+        return MlflowClient(mlflow_tracking_uri)
+    return None
 
 
 @pytest.fixture()
@@ -294,8 +293,6 @@ def fxt_tags(fxt_user_name: str, fxt_version_tags: dict[str, str]) -> dict[str, 
 
 @pytest.fixture()
 def fxt_benchmark(
-    request: pytest.FixtureRequest,
-    fxt_benchmark_type: str,
     fxt_data_root: Path,
     fxt_output_root: Path,
     fxt_num_epoch: int,
@@ -307,15 +304,9 @@ def fxt_benchmark(
     fxt_accelerator: str,
 ) -> Benchmark:
     """Configure benchmark."""
-    benchmark_type: str = request.param["type"]
-    if fxt_benchmark_type not in {"all", benchmark_type}:
-        pytest.skip(f"{benchmark_type} benchmark")
-
     return Benchmark(
-        benchmark_type=benchmark_type,
         data_root=fxt_data_root,
         output_root=fxt_output_root,
-        criteria=request.param["criteria"],
         num_epoch=fxt_num_epoch,
         num_repeat=fxt_num_repeat,
         eval_upto=fxt_eval_upto,
@@ -330,6 +321,8 @@ def fxt_benchmark(
 def fxt_benchmark_summary(
     fxt_output_root: Path,
     fxt_summary_csv: Path,
+    fxt_mlflow_client: MlflowClient,
+    fxt_tags: dict[str, str],
 ):
     """Summarize all results at the end of test session."""
     yield
@@ -337,8 +330,34 @@ def fxt_benchmark_summary(
     if all_results is not None:
         print("=" * 20, "[Benchmark summary]")
         print(all_results)
+        fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
         all_results.to_csv(fxt_summary_csv)
         print(f"  -> Saved to {fxt_summary_csv}.")
+
+        if fxt_mlflow_client:
+            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+
+
+def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
+    for index, data in results.iterrows():
+        task, data_size, model = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+        exp_tags = {
+            "task": task,
+            "model": model,
+            "data_size": data_size,
+        }
+        exp = client.get_experiment_by_name(exp_name)
+        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
+        if exp.lifecycle_stage != "active":
+            client.restore_experiment(exp_id)
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
+        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        run_tags.update(**exp_tags, **tags)
+        run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
+        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        for k, v in run_metrics.items():
+            client.log_metric(run.info.run_id, k, v)
 
 
 class PerfTestBase:
@@ -349,9 +368,12 @@ class PerfTestBase:
         model: Benchmark.Model,
         dataset: Benchmark.Dataset,
         benchmark: Benchmark,
+        criteria: list[Benchmark.Criterion],
     ) -> None:
         result = benchmark.run(
             model=model,
             dataset=dataset,
+            criteria=criteria,
         )
         print(result)
+        # Check results

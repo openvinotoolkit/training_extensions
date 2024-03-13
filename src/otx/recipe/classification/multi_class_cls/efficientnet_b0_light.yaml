@@ -15,7 +15,7 @@ scheduler:
   class_path: lightning.pytorch.cli.ReduceLROnPlateau
   init_args:
     mode: max
-    factor: 0.5
+    factor: 0.1
     patience: 1
     monitor: val/accuracy
 

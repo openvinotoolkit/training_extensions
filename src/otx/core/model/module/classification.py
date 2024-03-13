@@ -18,7 +18,6 @@ from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
     HlabelClsBatchPredEntityWithXAI,
-    HLabelData,
     MulticlassClsBatchDataEntity,
     MulticlassClsBatchPredEntity,
     MulticlassClsBatchPredEntityWithXAI,
@@ -238,7 +237,12 @@ class OTXHlabelClsLitModule(OTXLitModule):
             scheduler=scheduler,
             metric=metric,
         )
-        self.hlabel_data: HLabelData
+
+        self.label_info: HLabelInfo
+        self.num_labels: int
+        self.num_multiclass_heads: int
+        self.num_multilabel_classes: int
+        self.num_singlelabel_classes: int
 
     def configure_metric(self) -> None:
         """Configure the metric."""
@@ -248,8 +252,8 @@ class OTXHlabelClsLitModule(OTXLitModule):
             for name, param in sig.parameters.items():
                 if name in ["num_multiclass_heads", "num_multilabel_classes"]:
                     param_dict[name] = getattr(self.model, name)
-                elif name == "head_logits_info":
-                    param_dict[name] = self.hlabel_data.head_idx_to_logits_range
+                elif name == "head_logits_info" and isinstance(self.label_info, HLabelInfo):
+                    param_dict[name] = self.label_info.head_idx_to_logits_range
                 else:
                     param_dict[name] = param.default
             param_dict.pop("kwargs", {})
@@ -270,15 +274,13 @@ class OTXHlabelClsLitModule(OTXLitModule):
             msg = f"The type of self.label_info should be HLabelInfo, got {type(self.label_info)}."
             raise TypeError(msg)
 
-        self.hlabel_data = self.label_info.hlabel_data
-
         # Set the OTXHlabelClsModel params to make proper hlabel setup.
-        self.model.set_hlabel_data(self.hlabel_data)
+        self.model.set_hlabel_info(self.label_info)
 
         # Set the OTXHlabelClsLitModule params.
         self.num_labels = len(self.label_info.label_names)
-        self.num_multiclass_heads = self.hlabel_data.num_multiclass_heads
-        self.num_multilabel_classes = self.hlabel_data.num_multilabel_classes
+        self.num_multiclass_heads = self.label_info.num_multiclass_heads
+        self.num_multilabel_classes = self.label_info.num_multilabel_classes
         self.num_singlelabel_classes = self.num_labels - self.num_multilabel_classes
 
     def _log_metrics(self, meter: Metric, key: str) -> None:

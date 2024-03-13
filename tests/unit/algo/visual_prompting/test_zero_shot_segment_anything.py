@@ -65,7 +65,7 @@ class TestPromptGetter:
         mocker.patch.object(prompt_getter, "_point_selection", return_value=(result_point_selection, torch.zeros(1, 2)))
         image_embeddings = torch.ones(1, 4, 4, 4)
         reference_feats = torch.rand(1, 1, 4)
-        used_indices = torch.as_tensor([[0]])
+        used_indices = torch.as_tensor([0])
         ori_shape = torch.tensor([prompt_getter.image_size, prompt_getter.image_size], dtype=torch.int64)
 
         total_points_scores, total_bg_coords = prompt_getter.get_prompt_candidates(
@@ -415,6 +415,25 @@ class TestZeroShotSegmentAnything:
         assert all(torch.tensor([2, 2, 0.5]) == used_points[0][0])
         assert all(torch.tensor([0, 0, 0.7]) == used_points[1][2])
 
+    def test_predict_masks(self, mocker, build_zero_shot_segment_anything) -> None:
+        """Test _predict_masks."""
+        mocker.patch(
+            "otx.algo.visual_prompting.segment_anything.SegmentAnything.forward",
+            return_value=(torch.ones(1, 4, 8, 8), torch.tensor([[0.1, 0.2, 0.5, 0.7]]), torch.ones(1, 4, 4, 4)),
+        )
+
+        zero_shot_segment_anything = build_zero_shot_segment_anything()
+        zero_shot_segment_anything.image_size = 6
+
+        mask = zero_shot_segment_anything._predict_masks(
+            mode="infer",
+            image_embeddings=torch.rand(1),
+            point_coords=torch.rand(1, 2, 2),
+            point_labels=torch.randint(low=0, high=2, size=(1, 2)),
+            ori_shape=torch.tensor([8, 8], dtype=torch.int64),
+        )
+        assert mask.shape == (8, 8)
+
     @pytest.mark.parametrize(
         ("masks", "logits", "expected"),
         [
@@ -450,6 +469,50 @@ class TestOTXZeroShotSegmentAnything:
         assert zero_shot_segment_anything is not None
         assert isinstance(zero_shot_segment_anything, torch.nn.Module)
         assert zero_shot_segment_anything.__class__.__name__ == "ZeroShotSegmentAnything"
+
+    @pytest.mark.parametrize("training", [True, False])
+    def test_forward(self, mocker, model, training: bool) -> None:
+        """Test forward."""
+        mocker_learn = mocker.patch.object(model, "learn")
+        mocker_infer = mocker.patch.object(model, "infer")
+        model.training = training
+
+        model.forward(None)
+
+        if training:
+            mocker_learn.assert_called_once()
+        else:
+            mocker_infer.assert_called_once()
+
+    @pytest.mark.parametrize("reset_feat", [True, False])
+    def test_learn(self, mocker, model, reset_feat: bool) -> None:
+        """Test learn."""
+        mocker_initialize_reference_info = mocker.patch.object(model, "initialize_reference_info")
+        mocker_learn = mocker.patch.object(model.model, "learn")
+        mocker_customize_inputs = mocker.patch.object(model, "_customize_inputs")
+        mocker_customize_outputs = mocker.patch.object(model, "_customize_outputs")
+
+        model.learn(None, reset_feat=reset_feat)
+
+        if reset_feat:
+            mocker_initialize_reference_info.assert_called_once()
+        else:
+            mocker_initialize_reference_info.assert_not_called()
+        mocker_learn.assert_called_once()
+        mocker_customize_inputs.assert_called_once()
+        mocker_customize_outputs.assert_called_once()
+
+    def test_infer(self, mocker, model) -> None:
+        """Test infer."""
+        mocker_infer = mocker.patch.object(model.model, "infer")
+        mocker_customize_inputs = mocker.patch.object(model, "_customize_inputs")
+        mocker_customize_outputs = mocker.patch.object(model, "_customize_outputs")
+
+        model.infer(None)
+
+        mocker_infer.assert_called_once()
+        mocker_customize_inputs.assert_called_once()
+        mocker_customize_outputs.assert_called_once()
 
     @pytest.mark.parametrize("is_training", [True, False])
     def test_customize_inputs_learn(

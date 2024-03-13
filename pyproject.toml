@@ -28,15 +28,15 @@ classifiers = [
 ]
 dependencies = [
     "datumaro==1.6.0rc1",
-    "omegaconf",
-    "rich>=13.5.2",
+    "omegaconf==2.3.0",
+    "rich==13.7.1",
     "jsonargparse==4.27.1",
-    "psutil", # Mem cache needs system checks
-    "ftfy",
-    "regex",
-    "importlib_resources",
-    "docstring_parser", # CLI help-formatter
-    "rich_argparse", # CLI help-formatter
+    "psutil==5.9.8", # Mem cache needs system checks
+    "ftfy==6.1.3",
+    "regex==2023.12.25",
+    "importlib_resources==6.1.3",
+    "docstring_parser==0.15", # CLI help-formatter
+    "rich_argparse==1.4.0", # CLI help-formatter
 ]
 
 [project.optional-dependencies]
@@ -50,7 +50,7 @@ dev = [
     "pytest-mock",
     "pytest-csv",
     "pytest-cov",
-    "mlflow==2.8.1",        # For regression test
+    "mlflow==2.11.1",        # For regression test
     "py-cpuinfo==9.0.0",    # For regression test
 ]
 docs = [
@@ -88,7 +88,18 @@ mmlab = [
     "oss2==2.17.0",
 ]
 anomaly = [
-    "anomalib==1.0.0",
+    # [FIXME] @ashwinvaidya17: Install using a temporary hot-fix commit due to a torchmetrics version conflict.
+    "anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@e78091883a620229c277a79674a904d9f785f8d5",
+    # This is a dependency to avoid conflicts with installing the anomalib[core] option.
+    "av>=10.0.0",
+    "einops>=0.3.2",
+    "freia>=0.2",
+    "imgaug==0.4.0",
+    "kornia>=0.6.6,<0.6.10",
+    "matplotlib>=3.4.3",
+    "opencv-python>=4.5.3.56",
+    "pandas>=1.1.0",
+    "open-clip-torch>=2.23.0",
 ]
 
 [project.scripts]
