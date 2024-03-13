@@ -4,7 +4,7 @@ OpenVINO™ Training Extensions API Quick-Start
 Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.
 
-For demonstration purposes we will use the Object Detection SSD model with `WGISD <https://github.com/thsant/wgisd>`_ public dataset as we did for the :doc:`CLI tutorial <../base/how_to_train/detection>`.
+For demonstration purposes we will use the Object Detection SSD model with `WGISD <https://github.com/thsant/wgisd>`_ public dataset as we did for the :doc:`CLI tutorial <../tutorials/base/how_to_train/detection>`.
 
 .. note::
 
