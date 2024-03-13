@@ -121,24 +121,48 @@ The list of supported templates for instance segmentation is available with the 
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/segmentation/instance_segmentation>`.
 
-  To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for backbone replacement <../../advanced/backbones>`.
 
-.. code-block:: shell
+.. tabs::
 
-  (otx) ...$ otx find --task INSTANCE_SEGMENTATION
+    .. tab:: CLI
 
-  ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               
-  ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃               
-  ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩               
-  │ INSTANCE_SEGMENTATION │ openvino_model                │ src/otx/recipe/instance_segmentation/openvino_model.yaml                           │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_r50                  │ src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml                             │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_r50_tile             │ src/otx/recipe/instance_segmentation/maskrcnn_r50_tile.yaml                        │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_swint                │ src/otx/recipe/instance_segmentation/maskrcnn_swint.yaml                           │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b      │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml                 │               
-  │ INSTANCE_SEGMENTATION │ rtmdet_inst_tiny              │ src/otx/recipe/instance_segmentation/rtmdet_inst_tiny.yaml                         │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b_tile │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b_tile.yaml            │               
-  │ INSTANCE_SEGMENTATION │ maskrcnn_swint_tile           │ src/otx/recipe/instance_segmentation/maskrcnn_swint_tile.yaml                      │               
-  └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+        .. code-block:: shell
+
+          (otx) ...$ otx find --task INSTANCE_SEGMENTATION
+
+          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               
+          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃               
+          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩               
+          │ INSTANCE_SEGMENTATION │ openvino_model                │ src/otx/recipe/instance_segmentation/openvino_model.yaml                           │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_r50                  │ src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml                             │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_r50_tile             │ src/otx/recipe/instance_segmentation/maskrcnn_r50_tile.yaml                        │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_swint                │ src/otx/recipe/instance_segmentation/maskrcnn_swint.yaml                           │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b      │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml                 │               
+          │ INSTANCE_SEGMENTATION │ rtmdet_inst_tiny              │ src/otx/recipe/instance_segmentation/rtmdet_inst_tiny.yaml                         │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b_tile │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b_tile.yaml            │               
+          │ INSTANCE_SEGMENTATION │ maskrcnn_swint_tile           │ src/otx/recipe/instance_segmentation/maskrcnn_swint_tile.yaml                      │               
+          └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+
+        .. tab:: API
+
+        .. code-block:: python
+
+            from otx.engine.utils.api import list_models
+
+            model_lists = list_models(task="INSTANCE_SEGMENTATION")
+            print(model_lists)
+            '''
+            [
+              'maskrcnn_swint',
+              'maskrcnn_r50',
+              'maskrcnn_r50_tile',
+              'rtmdet_inst_tiny',
+              'maskrcnn_swint_tile',
+              'maskrcnn_efficientnetb2b_tile',
+              'openvino_model',
+              'maskrcnn_efficientnetb2b',
+            ]
+            '''
 
 2. On this step we will configure configuration
 with:
@@ -397,28 +421,59 @@ It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
 
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
-2. Command example for optimizing
-a PyTorch model (`.pth`) with OpenVINO™ `NNCF <https://github.com/openvinotoolkit/nncf>`_.
-
-.. note::
-
-  if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
-  you can omit ``--load-weights`` as well (nncf only), assuming those weights are the default as ``latest_train_model/models/weights.pth``.
-
-.. code-block::
-
-  (otx) ...$ otx optimize
-
-3.  Command example for optimizing
+2.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
-.. code-block::
+.. tabs::
 
-  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml
+    .. tab:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+                                     --checkpoint otx-workspace/20240312_052847/exported_model.xml
+
+            ...
+            Statistics collection ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 30/30 • 0:00:14 • 0:00:00
+            Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
+            Elapsed time: 0:00:24.958733
+
+    .. tab:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240312_052847/exported_model.xml"
+            engine.optimize(checkpoint=ckpt_path)
 
 Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-4. Now we have fully trained, optimized and exported an
-efficient model representation ready-to-use instance segmentation model.
+3. Finally, we can also evaluate the optimized model by passing
+it to the ``otx test`` function.
 
-The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+.. tabs::
+
+    .. tab:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace \ 
+                                --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
+                                --engine.device cpu
+
+            ...
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │       test/map_50         │    0.5482384562492371     │
+            └───────────────────────────┴───────────────────────────┘
+            Elapsed time: 0:00:10.260521
+
+    .. tab:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240312_055042/optimized_model.xml"
+            engine.test(checkpoint=ckpt_path)
+
+3. Now we have fully trained, optimized and exported an
+efficient model representation ready-to-use instance segmentation model.

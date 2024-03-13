@@ -9,12 +9,6 @@ On this page, we show how to train, validate, export and optimize ATSS model on 
 
 To have a specific example in this tutorial, all commands will be run on the ATSS model. It's a medium model, that achieves relatively high accuracy while keeping the inference fast.
 
-.. note::
-
-  To learn how to deploy the trained model and run the exported demo, refer to :doc:`../deploy`.
-
-  To learn how to run the demo in CLI and visualize results, refer to :doc:`../demo`.
-
 The process has been tested on the following configuration.
 
 - Ubuntu 20.04
@@ -128,21 +122,41 @@ The list of supported templates for object detection is available with the comma
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection/object_detection>`.
+    The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection/object_detection>`.
 
-  To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for backbone replacement <../../advanced/backbones>`.
 
-.. code-block:: shell
+.. tabs::
 
-  (otx) ...$ otx find --task DETECTION --pattern atss
-  ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                              
-  ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃                              
-  ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                              
-  │ DETECTION │ atss_mobilenetv2_tile │ src/otx/recipe/detection/atss_mobilenetv2_tile.yaml            │                              
-  │ DETECTION │ atss_r50_fpn          │ src/otx/recipe/detection/atss_r50_fpn.yaml                     │                              
-  │ DETECTION │ atss_resnext101       │ src/otx/recipe/detection/atss_resnext101.yaml                  │                              
-  │ DETECTION │ atss_mobilenetv2      │ src/otx/recipe/detection/atss_mobilenetv2.yaml                 │                              
-  └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
+    .. tab:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx find --task DETECTION --pattern atss
+            ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                              
+            ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃                              
+            ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                              
+            │ DETECTION │ atss_mobilenetv2_tile │ src/otx/recipe/detection/atss_mobilenetv2_tile.yaml            │                              
+            │ DETECTION │ atss_r50_fpn          │ src/otx/recipe/detection/atss_r50_fpn.yaml                     │                              
+            │ DETECTION │ atss_resnext101       │ src/otx/recipe/detection/atss_resnext101.yaml                  │                              
+            │ DETECTION │ atss_mobilenetv2      │ src/otx/recipe/detection/atss_mobilenetv2.yaml                 │                              
+            └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
+
+    .. tab:: API
+
+        .. code-block:: python
+
+            from otx.engine.utils.api import list_models
+
+            model_lists = list_models(task="DETECTION", pattern="atss")
+            print(model_lists)
+            '''
+            [
+                'atss_r50_fpn',
+                'atss_mobilenetv2',
+                'atss_mobilenetv2_tile',
+                'atss_resnext101',
+            ]
+            '''
 
 .. _detection_workspace:
 
@@ -527,7 +541,7 @@ with OpenVINO™ PTQ.
 The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
 Please note, that PTQ will take some time without logging to optimize the model.
 
-4. Finally, we can also evaluate the optimized model by passing
+3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
 .. tabs::

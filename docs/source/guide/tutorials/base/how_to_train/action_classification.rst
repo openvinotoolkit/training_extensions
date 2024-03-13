@@ -29,7 +29,7 @@ to create a universal virtual environment for OpenVINO™ Training Extensions.
 2. Activate your virtual
 environment:
 
-.. code-block::
+.. code-block:: shell
 
   .otx/bin/activate
   # or by this line, if you created an environment, using tox
@@ -74,14 +74,9 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
 Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``.
 Then, you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
-.. code-block::
+.. code-block:: shell
 
-  (otx) ...$ python3 src/otx/algorithms/action/utils/convert_public_data_to_cvat.py \
-                     --task action_classification \
-                     --src_path ./data/hmdb51/rawframes \
-                     --dst_path ./data/hmdb51/CVAT/train \
-                     --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
-                     --label_map ./data/hmdb51/label_map.txt
+  Need to update!
 
 The resulting folder structure will be as follows:
 

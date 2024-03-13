@@ -15,7 +15,7 @@ For visualization we use images from WGISD dataset from the :doc:`object detecti
 1. Activate the virtual environment 
 created in the previous step.
 
-.. code-block::
+.. code-block:: shell
 
   .otx/bin/activate
   # or by this line, if you created an environment, using tox
@@ -23,10 +23,20 @@ created in the previous step.
 
 2. ``otx explain`` returns saliency maps (heatmaps with red colored areas of focus)
 
-.. code-block:: shell
+.. tabs::
 
-    otx explain --input otx-workspace-DETECTION/splitted_dataset/val/ \
-                --load-weights outputs/weights.pth
+    .. tab:: CLI
+
+        .. code-block:: shell
+
+            Need to update!
+
+    .. tab:: API
+
+        .. code-block:: python
+
+            Need to update!
+
 
 3. To specify the algorithm of saliency map creation for classification, 
 we can define the ``--explain-algorithm`` parameter.
