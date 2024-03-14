@@ -191,12 +191,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
     def pin_memory(self) -> ZeroShotVisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
         super().pin_memory()
-        self.prompts = [
-            [tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in prompts]
-            if prompts is not None
-            else prompts
-            for prompts in self.prompts
-        ]
+        self.prompts = [[tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in prompts] for prompts in self.prompts]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
         return self

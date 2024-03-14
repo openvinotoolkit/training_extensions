@@ -553,7 +553,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             processed_image, meta = self.model["image_encoder"].preprocess(numpy_image)
             images.append(processed_image)
             metas.append(meta)
-
             if self.training:
                 points: list[np.ndarray] = []
                 bboxes: list[np.ndarray] = []
