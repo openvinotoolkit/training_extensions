@@ -48,7 +48,7 @@ packaging==23.0
 pathspec==0.11.2
 pbr==5.11.1
 pexpect==4.8.0
-Pillow==9.0.1
+Pillow==10.2.0
 platformdirs==2.5.1
 pluggy==1.0.0
 pre-commit==2.15.0
