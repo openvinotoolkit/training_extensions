@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/perf_benchmark.yaml
     with:
       model-category: default
-      data-size: all
+      data-group: all
       num-repeat: 0
       num-epoch: 0
       eval-upto: optimize

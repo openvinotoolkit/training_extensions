@@ -142,7 +142,7 @@ class OTXBenchmark:
         data = pd.concat(results, ignore_index=True)
         data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
         # Average by unique group
-        grouped = data.groupby(["task", "data_size", "model"])
+        grouped = data.groupby(["task", "data_group", "model"])
         aggregated = grouped.mean(numeric_only=True)
         # Merge tag columns (non-numeric & non-index)
         tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
@@ -152,9 +152,9 @@ class OTXBenchmark:
         # Average by task
         task_grouped = data.groupby(["task"], as_index=False)
         task_aggregated = task_grouped.mean(numeric_only=True)
-        task_aggregated["data_size"] = "all"
+        task_aggregated["data_group"] = "all"
         task_aggregated["model"] = "all"
-        task_aggregated.set_index(["task", "data_size", "model"], inplace=True)
+        task_aggregated.set_index(["task", "data_group", "model"], inplace=True)
         return pd.concat([aggregated, task_aggregated])
 
     def _build_config(

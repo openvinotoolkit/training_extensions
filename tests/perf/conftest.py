@@ -32,7 +32,7 @@ def pytest_addoption(parser):
         help="Choose default|all. Defaults to all.",
     )
     parser.addoption(
-        "--data-size",
+        "--data-group",
         action="store",
         default="all",
         choices=("small", "medium", "large", "all"),
@@ -42,7 +42,7 @@ def pytest_addoption(parser):
         "--num-repeat",
         action="store",
         default=0,
-        help="Overrides default per-data-size number of repeat setting. "
+        help="Overrides default per-data-group number of repeat setting. "
         "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
         "Defaults to 0 (small=3, medium=3, large=1).",
     )
@@ -207,18 +207,18 @@ def fxt_benchmark(
     fxt_benchmark_reference: pd.DataFrame | None,
 ) -> OTXBenchmark:
     """Configure benchmark."""
-    # Skip by dataset size
-    data_size_option: str = request.config.getoption("--data-size")
-    data_size: str = request.param[0]
-    if data_size_option != "all":
-        if data_size_option != data_size:
-            pytest.skip(f"{data_size} datasets")
+    # Skip by data group
+    data_group_option: str = request.config.getoption("--data-group")
+    data_group: str = request.param[0]
+    if data_group_option != "all":
+        if data_group_option != data_group:
+            pytest.skip(f"{data_group} datasets")
 
     # Options
     cfg: dict = request.param[1].copy()
 
     tags = cfg.get("tags", {})
-    tags["data_size"] = data_size
+    tags["data_group"] = data_group
     tags.update(fxt_tags)
     cfg["tags"] = tags
 
@@ -232,7 +232,7 @@ def fxt_benchmark(
 
     cfg["eval_upto"] = request.config.getoption("--eval-upto")
     cfg["data_root"] = request.config.getoption("--data-root")
-    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_size)
+    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_group)
     cfg["dry_run"] = request.config.getoption("--dry-run")
     cfg["reference_results"] = fxt_benchmark_reference
 
@@ -246,12 +246,12 @@ def fxt_benchmark(
 
 def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
     for index, data in results.iterrows():
-        task, data_size, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+        task, data_group, model = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group}"
         exp_tags = {
             "task": task,
             "model": model,
-            "data_size": data_size,
+            "data_group": data_group,
         }
         exp = client.get_experiment_by_name(exp_name)
         exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
@@ -309,5 +309,5 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref.set_index(["task", "data_size", "model"], inplace=True)
+        ref.set_index(["task", "data_group", "model"], inplace=True)
     return ref
