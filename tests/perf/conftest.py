@@ -366,7 +366,10 @@ def fxt_benchmark_summary(
         print(f"  -> Saved to {fxt_summary_csv}.")
 
         if fxt_mlflow_client:
-            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+            try:
+                _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+            except Exception as e:
+                print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
