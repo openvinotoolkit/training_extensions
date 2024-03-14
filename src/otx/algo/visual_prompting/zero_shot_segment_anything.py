@@ -813,7 +813,10 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
     def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
         entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
-        entity.prompts = [self.apply_prompts(prompt, info.ori_shape, self.model.image_size) for prompt, info in zip(entity.prompts, entity.imgs_info)]
+        entity.prompts = [
+            self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
+            for prompt, info in zip(entity.prompts, entity.imgs_info)
+        ]
         return entity
 
     def initialize_reference_info(self) -> None:
