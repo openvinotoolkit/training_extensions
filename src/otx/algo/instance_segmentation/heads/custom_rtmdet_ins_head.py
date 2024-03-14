@@ -10,7 +10,11 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmcv.ops import batched_nms
+from mmcv.ops import RoIAlign, batched_nms
+from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.models.dense_heads.rtmdet_ins_head import _mask_predict_by_feat_single
+from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops.nms import multiclass_nms
 from mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from mmdet.registry import MODELS
 from mmdet.structures.bbox import get_box_tensor, get_box_wh, scale_boxes
@@ -23,6 +27,10 @@ if TYPE_CHECKING:
 @MODELS.register_module()
 class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
     """Custom RTMDet instance segmentation head."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.roi_align = RoIAlign(output_size=(28, 28))
 
     def mask_postprocess(
         self,
@@ -180,3 +188,171 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
             )
 
         return results
+
+
+def _nms_with_mask_static(
+    self: CustomRTMDetInsSepBNHead,
+    priors: torch.Tensor,
+    bboxes: torch.Tensor,
+    scores: torch.Tensor,
+    kernels: torch.Tensor,
+    mask_feats: torch.Tensor,
+    max_output_boxes_per_class: int = 1000,
+    iou_threshold: float = 0.5,
+    score_threshold: float = 0.05,
+    pre_top_k: int = -1,
+    keep_top_k: int = -1,
+    mask_thr_binary: float = 0.5,  # noqa: ARG001
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Wrapper for `multiclass_nms` with ONNXRuntime.
+
+    Args:
+        self: The instance of `RTMDetInsHead`.
+        priors (Tensor): The prior boxes of shape [num_boxes, 4].
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        kernels (Tensor): The dynamic conv kernels.
+        mask_feats (Tensor): The mask feature.
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+        mask_thr_binary (float): Binarization threshold for masks.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
+    """
+    dets, labels, inds = multiclass_nms(
+        bboxes,
+        scores,
+        max_output_boxes_per_class,
+        iou_threshold,
+        score_threshold,
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k,
+        output_index=True,
+    )
+
+    batch_size = bboxes.shape[0]
+    batch_inds = torch.arange(batch_size, device=bboxes.device).view(-1, 1)
+    kernels = kernels[batch_inds, inds, :]
+    priors = priors.unsqueeze(0).repeat(batch_size, 1, 1)
+    priors = priors[batch_inds, inds, :]
+    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels, priors)
+    stride = self.prior_generator.strides[0][0]
+    mask_logits = F.interpolate(mask_logits, scale_factor=stride, mode="bilinear")
+    masks = mask_logits.sigmoid()
+
+    batch_index = (
+        torch.arange(dets.size(0), device=dets.device).float().view(-1, 1, 1).expand(dets.size(0), dets.size(1), 1)
+    )
+    rois = torch.cat([batch_index, dets[..., :4]], dim=-1)
+    cropped_masks = self.roi_align(masks, rois[0])
+    cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
+    cropped_masks = cropped_masks.unsqueeze(0)
+    return dets, labels, cropped_masks
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name="otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head.CustomRTMDetInsSepBNHead.predict_by_feat",
+)
+def rtmdet_ins_head__predict_by_feat(
+    self: CustomRTMDetInsSepBNHead,
+    cls_scores: list[torch.Tensor],
+    bbox_preds: list[torch.Tensor],
+    kernel_preds: list[torch.Tensor],
+    mask_feat: torch.Tensor,
+    score_factors: list[torch.Tensor] | None = None,  # noqa: ARG001
+    batch_img_metas: list[dict] | None = None,  # noqa: ARG001
+    cfg: ConfigDict | None = None,
+    rescale: bool = False,  # noqa: ARG001
+    with_nms: bool = True,  # noqa: ARG001
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Rewrite `predict_by_feat` of `RTMDet-Ins` for default backend.
+
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
+
+    Args:
+        ctx: Context that contains original meta information.
+        cls_scores (list[Tensor]): Classification scores for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 4, H, W).
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
+        rescale (bool): If True, return boxes in original image space.
+            Defaults to False.
+        with_nms (bool): If True, do nms before return boxes.
+            Defaults to True.
+
+    Returns:
+        tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
+            where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
+            size and the score between 0 and 1. The shape of the second
+            tensor in the tuple is (N, num_box), and each element
+            represents the class label of the corresponding box.
+    """
+    if len(cls_scores) != len(bbox_preds):
+        msg = "The length of cls_scores and bbox_preds should be the same."
+        raise ValueError(msg)
+    device = cls_scores[0].device
+    cfg = self.test_cfg if cfg is None else cfg
+    batch_size = bbox_preds[0].shape[0]
+    featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
+    mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device, with_stride=True)
+
+    flatten_cls_scores = [
+        cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels) for cls_score in cls_scores
+    ]
+    flatten_bbox_preds = [bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4) for bbox_pred in bbox_preds]
+    flatten_kernel_preds = [
+        kernel_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, self.num_gen_params) for kernel_pred in kernel_preds
+    ]
+    flatten_cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
+    _flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
+    flatten_kernel_preds = torch.cat(flatten_kernel_preds, dim=1)
+    priors = torch.cat(mlvl_priors)
+    tl_x = priors[..., 0] - _flatten_bbox_preds[..., 0]
+    tl_y = priors[..., 1] - _flatten_bbox_preds[..., 1]
+    br_x = priors[..., 0] + _flatten_bbox_preds[..., 2]
+    br_y = priors[..., 1] + _flatten_bbox_preds[..., 3]
+    bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
+    scores = flatten_cls_scores
+
+    ctx = FUNCTION_REWRITER.get_context()
+    deploy_cfg = ctx.cfg
+    post_params = get_post_processing_params(deploy_cfg)
+    max_output_boxes_per_class = post_params.max_output_boxes_per_class
+    iou_threshold = cfg.nms.get("iou_threshold", post_params.iou_threshold)
+    score_threshold = cfg.get("score_thr", post_params.score_threshold)
+    pre_top_k = post_params.pre_top_k
+    keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
+    mask_thr_binary = cfg.get("mask_thr_binary", 0.5)
+
+    return _nms_with_mask_static(
+        self,
+        priors,
+        bboxes,
+        scores,
+        flatten_kernel_preds,
+        mask_feat,
+        max_output_boxes_per_class,
+        iou_threshold,
+        score_threshold,
+        pre_top_k,
+        keep_top_k,
+        mask_thr_binary,
+    )
