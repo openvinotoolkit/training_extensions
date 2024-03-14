@@ -135,7 +135,6 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
             logger.warning("XPU supports fp32 training only currently.")
         dtype = torch.float32
         model.train()
-        model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     if "bf16_training" in cfg.optimizer_config:
         # Remove unused parameters in runner
