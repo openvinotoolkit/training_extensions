@@ -96,7 +96,7 @@ def test_engine_from_config(
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
         OTXTaskType.MULTI_LABEL_CLS,
-        # Will be supported after merging PR#2997
+        # Restore these models after fixing undetermined CI failures for ATSS and Mask RCNN
         # OTXTaskType.DETECTION,
         # OTXTaskType.ROTATED_DETECTION,
         # OTXTaskType.INSTANCE_SEGMENTATION,
