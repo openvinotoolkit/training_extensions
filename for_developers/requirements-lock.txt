@@ -23,7 +23,7 @@ exceptiongroup==1.1.1
 filelock==3.10.7
 gitdb==4.0.11
 GitPython==3.1.40
-httplib2==0.20.2
+httplib2==0.22.0
 identify==2.5.31
 idna==3.3
 importlib-metadata==4.6.4
