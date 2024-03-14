@@ -5,20 +5,18 @@ from __future__ import annotations
 
 import logging
 import os
-import pandas as pd
 import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
+import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
-
 
 log = logging.getLogger(__name__)
 
@@ -100,6 +98,13 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
+    parser.addoption(
+        "--otx-ref",
+        type=str,
+        help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
+        "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
+        "and reverted after run. Works only for v2.x assuming CLI compatibility.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -179,11 +184,35 @@ def fxt_output_root(
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
-    """Version / branch / commit info."""
-    import otx
+def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
+    otx_ref = request.config.getoption("--otx-ref")
 
-    version_str = otx.__version__
+    if otx_ref:
+        # Install specific version
+        cmd = ["pip", "install", f"otx@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+        cmd = ["otx", "install"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+
+    msg = f"{otx_ref = }"
+    log.info(msg)
+    yield otx_ref
+
+    if otx_ref:
+        # Restore the current version
+        cmd = ["pip", "install", "-e", "."]
+        subprocess.run(cmd, check=True)  # noqa: S603
+        cmd = ["otx", "install"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
+    """Version / branch / commit info."""
+    try:
+        version_str = subprocess.check_output(["otx", "--version"]).decode("ascii").strip()[4:]  # noqa: S603, S607
+    except Exception:
+        version_str = "unknown"
     try:
         branch_str = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()  # noqa: S603, S607
     except Exception:
@@ -193,9 +222,10 @@ def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     except Exception:
         commit_str = os.environ.get("GH_CTX_SHA", "unknown")
     version_tags = {
-        "version": version_str,
-        "branch": branch_str,
-        "commit": commit_str,
+        "otx_version": version_str,
+        "otx_ref": fxt_otx_ref or commit_str,
+        "test_branch": branch_str,
+        "test_commit": commit_str,
         "date": fxt_current_date,
     }
     msg = f"{version_tags = }"
@@ -366,7 +396,7 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref.set_index(["task", "data_size", "model"], inplace=True)
+        ref = ref.set_index(["task", "data_size", "model"])
     return ref
 
 
