@@ -55,7 +55,7 @@ class OTXDetectionLitModule(OTXLitModule):
         if "confidence_threshold" in ckpt:
             self.test_meta_info["best_confidence_threshold"] = ckpt["confidence_threshold"]
             self.test_meta_info["vary_confidence_threshold"] = False
-        elif "confidence_threshold" in ckpt["hyper_parameters"]:
+        elif "hyper_parameters" in ckpt and "confidence_threshold" in ckpt["hyper_parameters"]:
             self.test_meta_info["best_confidence_threshold"] = ckpt["hyper_parameters"]["confidence_threshold"]
             self.test_meta_info["vary_confidence_threshold"] = False
         super().load_state_dict(ckpt, *args, **kwargs)
