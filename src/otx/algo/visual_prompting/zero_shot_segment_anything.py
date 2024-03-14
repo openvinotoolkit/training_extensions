@@ -735,14 +735,12 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
 
     def _gather_prompts_with_labels(
         self,
-        prompts: list[list[tv_tensors.TVTensor] | None],
-        labels: list[Tensor | None],
+        prompts: list[list[tv_tensors.TVTensor]],
+        labels: list[Tensor],
     ) -> list[dict[int, list[tv_tensors.TVTensor]]]:
         """Gather prompts according to labels."""
         total_processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]] = []
         for prompt, label in zip(prompts, labels):
-            if prompt is None and label is None:
-                continue
             processed_prompts = defaultdict(list)
             for _prompt, _label in zip(prompt, label):  # type: ignore[arg-type]
                 processed_prompts[int(_label)].append(_prompt)
@@ -815,10 +813,7 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
     def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
         entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
-        entity.prompts = [
-            self.apply_prompts(prompt, info.ori_shape, self.model.image_size) if prompt is not None else prompt
-            for prompt, info in zip(entity.prompts, entity.imgs_info)
-        ]
+        entity.prompts = [self.apply_prompts(prompt, info.ori_shape, self.model.image_size) for prompt, info in zip(entity.prompts, entity.imgs_info)]
         return entity
 
     def initialize_reference_info(self) -> None:

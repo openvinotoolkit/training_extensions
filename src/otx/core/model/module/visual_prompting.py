@@ -205,9 +205,6 @@ class OTXVisualPromptingLitModule(OTXLitModule):
             inputs.polygons,
             inputs.labels,
         ):
-            if masks is None and labels is None and polygons is None:
-                continue
-
             bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)  # type: ignore[arg-type]
             target_info.append(
                 {
