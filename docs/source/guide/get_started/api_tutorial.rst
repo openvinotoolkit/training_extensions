@@ -215,7 +215,7 @@ Create an output model and start actual training:
     This can use callbacks provided by OTX and several training techniques.
     However, in this case, no arguments are specified for train.
 
-1. If you want to specify the model, you can do so as shown below:
+3. If you want to specify the model, you can do so as shown below:
 
 The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
 

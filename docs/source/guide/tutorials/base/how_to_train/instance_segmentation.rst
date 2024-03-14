@@ -262,7 +262,7 @@ Here are the main outputs can expect with CLI:
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 10 minutes with full dataset.
 
-1. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about template-specific parameters using ``otx train params --help``.
 
 It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
