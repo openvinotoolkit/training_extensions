@@ -1,6 +1,7 @@
 name: Build Docs for the latest
 
 on:
+  workflow_dispatch: # run on request (no need for PR)
   push:
     branches:
       - develop
