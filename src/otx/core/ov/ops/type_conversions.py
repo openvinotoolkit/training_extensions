@@ -25,6 +25,7 @@ _ov_to_torch = {
     "u1": torch.uint8,  # no type in torch
     "u4": torch.uint8,  # no type in torch
     "u8": torch.uint8,
+    "u16": torch.int32,  # no type in torch
     "u32": torch.int32,  # no type in torch
     "u64": torch.int64,  # no type in torch
     "i4": torch.int8,  # no type in torch

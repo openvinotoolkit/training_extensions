@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import torch
 import numpy as np
 from typing import Tuple
 import pytest
@@ -45,11 +46,21 @@ class TestResizeLongestSide:
             (np.array([[4, 4], [8, 8]]), (16, 16), np.array([[2, 2], [4, 4]])),
         ],
     )
-    def test_apply_coords(self, coords: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
+    @pytest.mark.parametrize("type", ["numpy", "torch"])
+    def test_apply_coords(self, coords: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray, type: str):
         """Test apply_coords."""
+        if type == "torch":
+            coords = torch.tensor(coords)
+            original_size = torch.tensor(original_size)
+            expected = torch.tensor(expected)
         result = self.resize_longest_side.apply_coords(coords, original_size, self.resize_longest_side.target_length)
 
-        assert np.array_equal(result, expected)
+        if type == "torch":
+            assert isinstance(result, torch.Tensor)
+            assert torch.equal(result, expected)
+        else:
+            assert isinstance(result, np.ndarray)
+            assert np.array_equal(result, expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
@@ -59,11 +70,21 @@ class TestResizeLongestSide:
             (np.array([[4, 4, 8, 8], [8, 8, 12, 12]]), (16, 16), np.array([[2, 2, 4, 4], [4, 4, 6, 6]])),
         ],
     )
-    def test_apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
+    @pytest.mark.parametrize("type", ["numpy", "torch"])
+    def test_apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray, type: str):
         """Test apply_boxes."""
-        result = self.resize_longest_side.apply_boxes(boxes, original_size)
+        if type == "torch":
+            boxes = torch.tensor(boxes)
+            original_size = torch.tensor(original_size)
+            expected = torch.tensor(expected)
+        result = self.resize_longest_side.apply_boxes(boxes, original_size, self.resize_longest_side.target_length)
 
-        assert np.array_equal(result, expected)
+        if type == "torch":
+            assert isinstance(result, torch.Tensor)
+            assert torch.equal(result, expected)
+        else:
+            assert isinstance(result, np.ndarray)
+            assert np.array_equal(result, expected)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(

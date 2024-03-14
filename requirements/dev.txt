@@ -10,3 +10,4 @@ onnx==1.13.0
 onnxruntime==1.14.1
 pytest-csv==3.0.*
 tox==4.11.*
+mlflow==2.9.*

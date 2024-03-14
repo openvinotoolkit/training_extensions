@@ -60,11 +60,13 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = (
-        Registry("src/otx/algorithms/visual_prompting", experimental=True)
+    templates = [
+        template
+        for template in Registry("src/otx/algorithms/visual_prompting", experimental=True)
         .filter(task_type="VISUAL_PROMPTING")
         .templates
-    )
+        if "Zero_Shot" not in template.name
+    ]
     templates_ids = [template.model_template_id for template in templates]
 
 
@@ -120,7 +122,15 @@ class TestToolsVisualPrompting:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
+        otx_eval_openvino_testing(
+            template,
+            tmp_dir_path,
+            otx_dir,
+            args,
+            threshold=0.2,
+            half_precision=half_precision,
+            is_visual_prompting=True,
+        )
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -141,4 +151,4 @@ class TestToolsVisualPrompting:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
-        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args, is_visual_prompting=True)

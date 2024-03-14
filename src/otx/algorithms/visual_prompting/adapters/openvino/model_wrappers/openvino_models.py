@@ -59,6 +59,20 @@ class ImageEncoder(ImageModel):
         return dict_inputs, meta
 
 
+class PromptGetter(ImageModel):
+    """PromptGetter class for zero-shot visual prompting of openvino model wrapper."""
+
+    __model__ = "prompt_getter"
+
+    @classmethod
+    def parameters(cls) -> Dict[str, Any]:  # noqa: D102
+        parameters = super().parameters()
+        parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
+        parameters.update({"sim_threshold": NumericalValue(value_type=float, default_value=0.5, min=0, max=1)})
+        parameters.update({"num_bg_points": NumericalValue(value_type=int, default_value=1, min=0, max=1024)})
+        return parameters
+
+
 class Decoder(SegmentationModel):
     """Decoder class for visual prompting of openvino model wrapper."""
 
@@ -76,12 +90,13 @@ class Decoder(SegmentationModel):
     def parameters(cls):  # noqa: D102
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
+        parameters.update({"mask_threshold": NumericalValue(value_type=float, default_value=0.0, min=0, max=1)})
         return parameters
 
     def _get_outputs(self):
         return "low_res_masks"
 
-    def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
+    def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Preprocess prompts."""
         processed_prompts = []
         # TODO (sungchul): process points
@@ -174,7 +189,7 @@ class Decoder(SegmentationModel):
         )
 
         prepadded_size = self.get_padded_size(original_size, self.image_size).astype(np.int64)
-        resized_cropped_soft_prediction = resized_soft_prediction[..., : prepadded_size[0], : prepadded_size[1]]
+        resized_cropped_soft_prediction = resized_soft_prediction[: prepadded_size[0], : prepadded_size[1], ...]
 
         original_size = original_size.astype(np.int64)
         h, w = original_size

@@ -264,7 +264,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 
             confusion_matrices = []
             for cls_idx in cls_index:
-                group_labels_idx = set([cls_idx - 1])
+                group_labels_idx = set([cls_idx])
                 y_true = [int(not group_labels_idx.issubset(true_labels)) for true_labels in true_label_idx]
                 y_pred = [int(not group_labels_idx.issubset(pred_labels)) for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))

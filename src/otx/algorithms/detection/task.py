@@ -446,8 +446,8 @@ class OTXDetectionTask(OTXTask, ABC):
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
         metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
         output_resultset.performance = metric.get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("Evaluation completed")
 
     def _add_predictions_to_dataset(

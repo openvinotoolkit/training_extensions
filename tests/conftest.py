@@ -13,6 +13,7 @@ from .test_suite.pytest_insertions import (
     otx_pytest_addoption_insertion,
 )
 from .unit.api.fixtures.general import label_schema_example  # noqa: F401
+import mlflow
 
 pytest_plugins = get_pytest_plugins_from_otx()  # noqa: F405
 
@@ -93,3 +94,18 @@ def manage_tm_config_for_testing():
 
     if created_cfg_dir:
         os.rmdir(cfg_dir)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def init_mlflow_tracking():
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    if uri is not None:
+        mlflow.set_tracking_uri(uri=uri)
+
+    yield
+
+
+@pytest.fixture(scope="session")
+def fxt_mlflow_client():
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    return mlflow.MlflowClient(uri) if uri is not None else None

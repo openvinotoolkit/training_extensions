@@ -13,7 +13,7 @@ framework: OTXVisualPrompting v0.1.0
 # Task implementations.
 entrypoints:
   base: otx.algorithms.visual_prompting.tasks.ZeroShotTask
-  openvino: otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask
+  openvino: otx.algorithms.visual_prompting.tasks.openvino.OpenVINOZeroShotVisualPromptingTask
 
 # Hyper Parameters
 hyper_parameters:
@@ -34,5 +34,5 @@ training_targets:
   - CPU
 
 # Computational Complexity
-gigaflops: 38.95
-size: 47
+gigaflops: 38.18
+size: 25

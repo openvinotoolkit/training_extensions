@@ -15,6 +15,7 @@ from openvino.model_api.models.types import NumericalValue
 from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
     Decoder,
     ImageEncoder,
+    PromptGetter,
 )
 from otx.api.entities.label import LabelEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -45,6 +46,16 @@ class TestImageEncoder:
         assert meta["resized_shape"] == (4, 4, 3)
         assert "resize_type" in meta
         assert meta["resize_type"] == "fit_to_window"
+
+
+class TestPromptGetter:
+    @e2e_pytest_unit
+    def test_parameters(self):
+        """Test parameters."""
+        params = PromptGetter.parameters()
+
+        assert params.get("sim_threshold").default_value == 0.5
+        assert params.get("num_bg_points").default_value == 1
 
 
 class TestDecoder:

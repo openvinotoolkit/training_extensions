@@ -17,7 +17,6 @@
 from typing import Any, List
 
 import numpy as np
-import torch
 from bson import ObjectId
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import Callback
@@ -118,17 +117,19 @@ class ZeroShotInferenceCallback(Callback):
             output = batch_output[0]
             annotations: List[Annotation] = []
             for label, masks in output.items():
-                hard_prediction = torch.where(torch.stack(masks, dim=0).sum(dim=0) > 0, 1, 0)
-                hard_prediction = hard_prediction.numpy()
+                for soft_prediction in map(lambda x: x.numpy(), masks):
+                    hard_prediction = create_hard_prediction_from_soft_prediction(
+                        soft_prediction=soft_prediction, soft_threshold=0.5
+                    )
 
-                # TODO (sungchul): consider use_mask
-                # generate polygon annotations
-                annotation = create_annotation_from_segmentation_map(
-                    hard_prediction=hard_prediction,
-                    soft_prediction=hard_prediction,
-                    label_map={1: self.label_schema.get(label)},
-                )
-                annotations.extend(annotation)
+                    # TODO (sungchul): consider use_mask
+                    # generate polygon annotations
+                    annotation = create_annotation_from_segmentation_map(
+                        hard_prediction=hard_prediction,
+                        soft_prediction=soft_prediction,
+                        label_map={1: self.label_schema.get(label)},
+                    )
+                    annotations.extend(annotation)
 
             # TODO (sungchul): consider use_mask
             dataset_item.append_annotations(annotations)

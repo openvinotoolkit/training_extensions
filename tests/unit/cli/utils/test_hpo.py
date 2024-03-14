@@ -1,4 +1,5 @@
 import json
+import yaml
 from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -449,6 +450,19 @@ class TestHpoRunner:
     def test_init_wrong_hpo_time_ratio(self, cls_task_env, hpo_time_ratio):
         with pytest.raises(ValueError):
             HpoRunner(cls_task_env, 100, 10, "fake_path", hpo_time_ratio)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("diff_from_min_bs", [0, 1])
+    def test_init_fix_batch_size(self, cls_task_env, diff_from_min_bs):
+        task_env = TaskEnvironmentManager(cls_task_env)
+        with (Path(task_env.get_model_template_path()).parent / "hpo_config.yaml").open() as f:
+            hpo_config = yaml.safe_load(f)
+        batch_size_name = task_env.get_batch_size_name()
+        min_bs = hpo_config["hp_space"][batch_size_name]["range"][0]
+        train_dataset_size = min_bs + diff_from_min_bs
+
+        hpo_runner = HpoRunner(cls_task_env, train_dataset_size, 10, "fake_path")
+        assert batch_size_name in hpo_runner._fixed_hp
 
     @e2e_pytest_unit
     def test_run_hpo(self, mocker, cls_task_env):
