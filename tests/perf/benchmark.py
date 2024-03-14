@@ -8,10 +8,9 @@ import os
 import glob
 import numpy as np
 import pandas as pd
+import subprocess
 import yaml
 from pathlib import Path
-
-from tests.test_suite.run_test_command import check_run
 
 
 class OTXBenchmark:
@@ -105,7 +104,7 @@ class OTXBenchmark:
         if self.dry_run:
             cmd.append("-d")
         # Run benchmark
-        check_run(cmd)
+        subprocess.run(cmd, check=True)
         # Load result
         result = self.load_result(cfg_dir)
         return result
