@@ -1,5 +1,5 @@
 Visual Prompting (Zero-shot learning)
-=================
+=====================================
 
 Visual prompting is a computer vision task that uses a combination of an image and prompts, such as texts, bounding boxes, points, and so on to troubleshoot problems.
 Using these useful prompts, the main purpose of this task is to obtain labels from unlabeled datasets, and to use generated label information on particular domains or to develop a new model with the generated information.
@@ -41,15 +41,6 @@ We support three dataset formats for visual prompting:
 - `Pascal VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
 
 
-If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
-
-.. code-block::
-
-    $ otx train <model_template> \
-        --train-data-roots <path_to_data_root> \
-        --val-data-roots <path_to_data_root>
-
-
 ******
 Models
 ******
@@ -57,11 +48,11 @@ Models
 
 We support the following model templates in experimental phase:
 
-+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-|                                                                                          Template ID                                                                                          |          Name          | Complexity (GFLOPs) | Model size (MB) |
-+===============================================================================================================================================================================================+========================+=====================+=================+
-| `Zero_Shot_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/zero_shot_sam_tiny_vit/template_experimental.yaml>`_ | Zero_Shot_SAM_Tiny_ViT | 38.18               | 25              |
-+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+|                                                                                          Template ID                                                          |          Name          | Complexity (GFLOPs) | Model size (MB) |
++===============================================================================================================================================================+========================+=====================+=================+
+| `Zero_Shot_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/zeto_shot_visual_prompting/sam_tiny_vit.yaml>`_   | Zero_Shot_SAM_Tiny_ViT | 38.18               | 25              |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 ***************
 Simple tutorial
@@ -73,19 +64,18 @@ There are two steps for zero-shot inference: ``learn`` and ``infer``.
 Extracted reference features will be saved in the model checkpoint (such as `weight.pth`) with the model.
 You can do ``learn`` with the following source code:
 
-.. code-block::
+.. code-block:: shell
 
-    $ otx train <model_template> \
-        --train-data-roots <path_to_data_root> \
-        --val-data-roots <path_to_data_root>
+    (otx) ...$ otx train --config <model_config_path> \
+        --data_root <path_to_data_root>
 
 ``Infer`` is to get predicted masks on given target images. Unlike ``learn``, this stage doesn't need any prompt information.
 
 .. code-block::
 
-    $ otx eval <model_template> \
-        --load-weights <path_to_weights_from_learn>
-        --test-data-roots <path_to_data_root>
+    (otx) ...$ otx test --config <model_config_path> \
+        --data_root <path_to_data_root> \
+        --checkpoint <path_to_weights_from_learn>
 
 
 For example, when the positive (green) and the negative (red) points were given with the reference image for ``learn`` stage, you can get basic `SAM <https://arxiv.org/abs/2304.02643>`_ prediction result (left).

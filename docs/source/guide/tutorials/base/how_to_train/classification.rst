@@ -8,16 +8,12 @@ To learn more about Classification task, refer to :doc:`../../../explanation/alg
 
   To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
-
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
-
 The process has been tested on the following configuration.
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
 - Intel(R) Core(TM) i9-10980XE
-- CUDA Toolkit 11.1
+- CUDA Toolkit 11.8
 
 .. note::
 
@@ -35,7 +31,7 @@ to create a universal virtual environment for OpenVINO™ Training Extensions.
 2. Activate your virtual
 environment:
 
-.. code-block::
+.. code-block:: shell
 
   .otx/bin/activate
   # or by this line, if you created an environment, using tox
@@ -48,7 +44,7 @@ Dataset preparation
 Download and prepare a `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_
 with the following command:
 
-.. code-block::
+.. code-block:: shell
 
   cd data
   wget http://download.tensorflow.org/example_images/flower_photos.tgz
@@ -87,23 +83,35 @@ The list of supported templates for classification is available with the command
 
   You also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
-.. code-block::
+.. code-block:: shell
 
-  (otx) ...$ otx find --task classification
+  (otx) ...$ otx find --task MULTI_CLSS_CLS
+  ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
+  ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃                                  
+  ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
+  │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │                                  
+  │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │                                  
+  │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │                                  
+  │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │                                  
+  │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │                                  
+  │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │                                  
+  │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │                                  
+  │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │                                  
+  │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │                                  
+  │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │                                  
+  │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │                                  
+  │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │                                  
+  │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │                                  
+  │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │                                  
+  │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │                                  
+  │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │                                  
+  │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │                                  
+  └─────────────────┴──────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
 
-  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
-  |      TASK      |                         ID                        |          NAME         |                                          PATH                                         |
-  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
-  | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
-  | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
-  | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
-  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
-
-To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+To have a specific example in this tutorial, all commands will be run on the :ref:`otx_mobilenet_v3_large <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
 2.  Next, you need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classification.
 For other classification types you need to prepare splits in advance.
-
 
 .. note::
 
@@ -111,24 +119,25 @@ For other classification types you need to prepare splits in advance.
 
 Let's prepare an OpenVINO™ Training Extensions classification workspace running the following command:
 
-.. code-block::
+.. code-block:: shell
 
-  (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
+  (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml  --data_root data/flower_photos --print_config
 
-  [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
-  [*] Load Model Name: MobileNet-V3-large-1x
-  [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION/data.yaml
-
-  (otx) ...$ cd ./otx-workspace-CLASSIFICATION
-
-It will create **otx-workspace-CLASSIFICATION** with all necessary configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
+  data_root: data/flower_photos
+  work_dir: otx-regression
+  callback_monitor: val/accuracy
+  disable_infer_num_classes: false
+  engine:
+    task: MULTI_CLASS_CLS
+    device: auto
+  data:
+  ...
 
 3. To start training you need to call ``otx train``
-command in our workspace:
 
-.. code-block::
+.. code-block:: shell
 
-  (otx) ...$ otx train
+  (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml  --data_root data/flower_photos
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 

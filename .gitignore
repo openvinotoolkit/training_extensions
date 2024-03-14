@@ -9,16 +9,11 @@ env
 otx-workspace*
 .env
 .tox
-results/
 
-data/*
 .coverage
-results/
 
 build/
 dist/
-!src/otx/recipes/**
-src/otx/recipes/**/__pycache__
 *egg-info
 
 *.pth
@@ -43,9 +38,5 @@ src/**/*.c
 src/**/*.html
 src/**/*.so
 
-
-# Dataset made by unit-test
-tests/**/detcon_mask/*
-
-# sphinx-autosummary generated files
-docs/**/_autosummary/
+# For regression test data storage
+for_developers/regression_test/postgres_data/**/*

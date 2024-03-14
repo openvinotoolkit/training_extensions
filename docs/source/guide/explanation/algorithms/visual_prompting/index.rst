@@ -1,5 +1,5 @@
 Visual Prompting
-============
+================
 
 .. toctree::
    :maxdepth: 1

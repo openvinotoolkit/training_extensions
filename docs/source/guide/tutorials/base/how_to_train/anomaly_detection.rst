@@ -5,18 +5,14 @@ This tutorial demonstrates how to train, evaluate, and deploy a classification, 
 Read :doc:`../../../explanation/algorithms/anomaly/index` for more information about the Anomaly tasks.
 
 .. note::
-  To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
-
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
-
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+    To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
 The process has been tested with the following configuration:
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
-- Intel(R) Core(TM) i9-10980XE
-- CUDA Toolkit 11.1
+- Intel(R) Core(TM) i9-11900
+- CUDA Toolkit 11.8
 
 
 *****************************
@@ -26,21 +22,14 @@ Setup the Virtual environment
 1. To create a universal virtual environment for OpenVINO™ Training Extensions,
 please follow the installation process in the :doc:`quick start guide <../../../get_started/installation>`.
 
-2. Alternatively, if you want to only train anomaly models, then you can create a task specific environment.
-Then also follow the installation process in the guide above, but substitute ``pip install -e .[anomaly]`` with the following command:
-
-.. code-block::
-
-    pip install -e .[anomaly]
-
-3. Activate your virtual
+2. Activate your virtual
 environment:
 
-.. code-block::
+.. code-block:: shell
 
-  .otx/bin/activate
-  # or by this line, if you created an environment, using tox
-  . venv/otx/bin/activate
+    .otx/bin/activate
+    # or by this line, if you created an environment, using tox
+    . venv/otx/bin/activate
 
 **************************
 Dataset Preparation
@@ -101,31 +90,121 @@ Training
 1. For this example let's look at the
 anomaly detection tasks
 
-.. code-block:: bash
+.. tab-set::
 
-    (otx) ...$  otx find --task anomaly_detection
+    .. tab-item:: CLI
 
-::
+        .. code-block:: shell
 
-    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
-    |        TASK       |              ID             |  NAME |                            BASE PATH                             |
-    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
-    | ANOMALY_DETECTION | ote_anomaly_detection_stfpm | STFPM | src/otx/algorithms/anomaly/configs/detection/stfpm/template.yaml |
-    | ANOMALY_DETECTION | ote_anomaly_detection_padim | PADIM | src/otx/algorithms/anomaly/configs/detection/padim/template.yaml |
-    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
+            (otx) ...$  otx find --task ANOMALY_DETECTION
+            ┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                 
+            ┃ Task              ┃ Model Name ┃ Recipe Path                                 ┃                                 
+            ┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                 
+            │ ANOMALY_DETECTION │ stfpm      │ src/otx/recipe/anomaly_detection/stfpm.yaml │                                 
+            │ ANOMALY_DETECTION │ padim      │ src/otx/recipe/anomaly_detection/padim.yaml │                                 
+            └───────────────────┴────────────┴─────────────────────────────────────────────┘ 
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.engine.utils.api import list_models
+
+            model_lists = list_models(task="ANOMALY_DETECTION")
+            print(model_lists)
+            '''
+            ['stfpm', 'padim']
+            '''
 
 You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib's `STFPM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_ and `PADIM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/padim.html>`_ documentation.
 
 2. Let's proceed with PADIM for
 this example.
 
-.. code-block:: bash
+.. tab-set::
 
-    (otx) ...$  otx train ote_anomaly_detection_padim \
-                          --train-data-roots datasets/MVTec/bottle/train \
-                          --val-data-roots datasets/MVTec/bottle/test
+    .. tab-item:: CLI (auto-config)
 
-This will start training and generate artifacts for commands such as ``export`` and ``optimize``. You will notice the ``otx-workspace-ANOMALY_DETECTION`` directory in your current working directory. This is where all the artifacts are stored.
+        .. code-block:: shell
+
+            (otx) ...$  otx train --data_root datasets/MVTec/bottle \
+                                  --task ANOMALY_DETECTION
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$  otx train --config src/otx/recipe/anomaly_detection/padim.yaml \
+                                  --data_root datasets/MVTec/bottle
+
+    .. tab-item:: API (from_config)
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "datasets/MVTec/bottle"
+            recipe = "src/otx/recipe/anomaly_detection/padim.yaml"
+
+            engine = Engine.from_config(
+                      config_path=recipe,
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "datasets/MVTec/bottle"
+
+            engine = Engine(
+                        model="padim",
+                        data_root=data_root,
+                        task="ANOMALY_DETECTION",
+                        work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+
+3. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs.
+Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
+
+For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
+                                     --max_epochs 100
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
+            datamodule = OTXDataModule(..., config=data_config)
+
+            engine = Engine(..., datamodule=datamodule)
+
+            engine.train(max_epochs=100)
+
+4. The training result ``checkpoints/*.ckpt`` file is located in ``{work_dir}`` folder,
+while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
+
+This will start training and generate artifacts for commands such as ``export`` and ``optimize``. You will notice the ``otx-workspace`` directory in your current working directory. This is where all the artifacts are stored.
 
 **************
 Evaluation
@@ -133,16 +212,47 @@ Evaluation
 
 Now we have trained the model, let's see how it performs on a specific dataset. In this example, we will use the same dataset to generate evaluation metrics. To perform evaluation you need to run the following commands:
 
-.. code-block:: bash
+.. tab-set::
 
-    (otx) ...$ otx eval ote_anomaly_detection_padim \
-                        --test-data-roots datasets/MVTec/bottle/test \
-                        --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-                        --output otx-workspace-ANOMALY_DETECTION/outputs
+    .. tab-item:: CLI (with work_dir)
 
-You should see an output similar to the following::
+        .. code-block:: shell
 
-    MultiScorePerformance(score: 0.6356589147286821, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6356589147286821`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
+            (otx) ...$ otx test --work_dir otx-workspace
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │        image_AUROC        │            0.8            │
+            │       image_F1Score       │            0.8            │
+            │        pixel_AUROC        │            0.8            │
+            │       pixel_F1Score       │            0.8            │
+            │      test/data_time       │    0.6517705321311951     │
+            │      test/iter_time       │    0.6630784869194031     │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --config  src/otx/recipe/anomaly_detection/padim.yaml \
+                                --data_root datasets/MVTec/bottle \
+                                --checkpoint otx-workspace/20240313_042421/checkpoints/epoch_010.ckpt
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │        image_AUROC        │            0.8            │
+            │       image_F1Score       │            0.8            │
+            │        pixel_AUROC        │            0.8            │
+            │       pixel_F1Score       │            0.8            │
+            │      test/data_time       │    0.6517705321311951     │
+            │      test/iter_time       │    0.6630784869194031     │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.test()
 
 
 The primary metric here is the f-measure computed against the ground-truth bounding boxes. It is also called the local score. In addition, f-measure is also used to compute the global score. The global score is computed based on the global label of the image. That is, the image is anomalous if it contains at least one anomaly. This global score is stored as an additional metric.
@@ -151,50 +261,70 @@ The primary metric here is the f-measure computed against the ground-truth bound
 
     All task types report Image-level F-measure as the primary metric. In addition, both localization tasks (anomaly detection and anomaly segmentation) also report localization performance (F-measure for anomaly detection and Dice-coefficient for anomaly segmentation).
 
-******
+*******
 Export
-******
+*******
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``openvino`` folder:
 
-.. code-block::
+.. tab-set::
 
-    otx export ote_anomaly_detection_padim \
-        --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --output otx-workspace-ANOMALY_DETECTION/openvino
+    .. tab-item:: CLI (with work_dir)
 
-You will see the outputs similar to the following:
+        .. code-block:: shell
 
-.. code-block::
+            (otx) ...$ otx export --work_dir otx-workspace
+            ...
+            Elapsed time: 0:00:06.588245
 
-    [INFO] 2023-02-21 16:42:43,207 - otx.algorithms.anomaly.tasks.inference - Initializing the task environment.
-    [INFO] 2023-02-21 16:42:43,632 - otx.algorithms.anomaly.tasks.train - Loaded model weights from Task Environment
-    [WARNING] 2023-02-21 16:42:43,639 - otx.algorithms.anomaly.tasks.inference - Ommitting feature dumping is not implemented.The saliency maps and representation vector outputs will be dumped in the exported model.
-    [INFO] 2023-02-21 16:42:43,640 - otx.algorithms.anomaly.tasks.inference - Exporting the OpenVINO model.
-    [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
-    Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html
-    [ SUCCESS ] Generated IR version 11 model.
-    [ SUCCESS ] XML file: /tmp/otx-anomaliba3imqkmo/onnx_model.xml
-    [ SUCCESS ] BIN file: /tmp/otx-anomaliba3imqkmo/onnx_model.bin
+    .. tab-item:: CLI (with config)
 
-Now that we have the exported model, let's check its performance using ``otx eval``:
+        .. code-block:: shell
 
-.. code-block:: bash
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240313_042421/checkpoints/epoch_010.ckpt
+            ...
+            Elapsed time: 0:00:06.588245
 
-    otx eval ote_anomaly_detection_padim \
-        --test-data-roots datasets/MVTec/bottle/test \
-        --load-weights otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml \
-        --output otx-workspace-ANOMALY_DETECTION/openvino
+    .. tab-item:: API
 
-This gives the following results:
+        .. code-block:: python
 
-.. code-block::
+            engine.export()
 
-    MultiScorePerformance(score: 0.6511627906976744, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6511627906976744`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
+Now that we have the exported model, let's check its performance using ``otx test``:
+
+.. tab-set::
+
+    .. tab-item:: CLI (with work_dir)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace \
+                                --checkpoint otx-workspace/20240313_052847/exported_model.xml \
+                                --engine.device cpu
+            ...
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --config src/otx/recipe/anomaly_detection/padim.yamll \
+                                --data_root data/wgisd \
+                                --checkpoint otx-workspace/20240312_052847/exported_model.xml \
+                                --engine.device cpu
+            ...
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            exported_model = engine.export()
+            engine.test(checkpoint=exported_model)
+
 
 ************
 Optimization
@@ -207,41 +337,51 @@ For more information refer to the :doc:`optimization explanation <../../../expla
 1. Let's start with PTQ
 optimization.
 
-.. code-block::
+.. tab-set::
 
-    otx optimize ote_anomaly_detection_padim \
-        --train-data-roots datasets/MVTec/bottle/train \
-        --load-weights otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml \
-        --output otx-workspace-ANOMALY_DETECTION/ptq_model
+    .. tab-item:: CLI
 
-This command generates the following files that can be used to run :doc:`otx demo <../demo>`:
+        .. code-block:: shell
 
-- image_threshold
-- pixel_threshold
-- label_schema.json
-- max
-- min
-- openvino.bin
-- openvino.xml
+            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+                                     --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
-2. To perform NNCF optimization, pass the torch ``pth``
-weights to the ``opitmize`` command:
+            ...
+            Statistics collection ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 30/30 • 0:00:14 • 0:00:00
+            Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
+            Elapsed time: 0:00:24.958733
 
-.. code-block::
+    .. tab-item:: API
 
-    otx optimize ote_anomaly_detection_padim \
-        --train-data-roots datasets/MVTec/bottle/train \
-        --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --output otx-workspace-ANOMALY_DETECTION/nncf_model
+        .. code-block:: python
 
-Similar to PTQ optimization, it generates the following files:
+            ckpt_path = "otx-workspace/20240312_052847/exported_model.xml"
+            engine.optimize(checkpoint=ckpt_path)
 
-- image_threshold
-- pixel_threshold
-- label_schema.json
-- max
-- min
-- weights.pth
+Please note, that PTQ will take some time without logging to optimize the model.
+
+3. Finally, we can also evaluate the optimized model by passing
+it to the ``otx test`` function.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace \ 
+                                --checkpoint otx-workspace/20240313_055042/optimized_model.xml \
+                                --engine.device cpu
+
+            ...
+            Elapsed time: 0:00:10.260521
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240313_055042/optimized_model.xml"
+            engine.test(checkpoint=ckpt_path)
 
 
 *******************************
@@ -249,7 +389,7 @@ Segmentation and Classification
 *******************************
 
 While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models.
-To see what tasks are available, you can pass ``anomaly_segmentation`` and ``anomaly_classification`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
+To see what tasks are available, you can pass ``ANOMALY_SEGMENTATION`` and ``ANOMALY_CLASSIFICATION`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
 
 .. note::
 

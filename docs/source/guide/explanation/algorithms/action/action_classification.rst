@@ -32,11 +32,16 @@ Currently OpenVINO™ Training Extensions supports `X3D <https://arxiv.org/abs/2
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
 | Template ID                                                                                                                                                                            | Name    | Complexity (GFLOPs) | Model size (MB)         |
 +========================================================================================================================================================================================+=========+=====================+=========================+
-| `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/classification/x3d/template.yaml>`_           | X3D     | 2.49                | 3.79                    |
+| `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/action/action_classification/x3d.yaml>`_                         | X3D     | 2.49                | 3.79                    |
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
-| `Custom_Action_Classificaiton_MoViNet <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/classification/movinet/template.yaml>`_   | MoViNet | 2.71                | 3.10                    |
+| `Custom_Action_Classificaiton_MoViNet <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/action/action_classification/movinet.yaml>`_                 | MoViNet | 2.71                | 3.10                    |
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
 
+To see which models are available for the task, the following command can be executed:
+
+.. code-block:: shell
+
+        (otx) ...$ otx find --task ACTION_CLASSIFICATION
 
 In the table below the **top-1 accuracy** on some academic datasets are presented. Each model is trained with single NVIDIA GeForce RTX 3090.
 

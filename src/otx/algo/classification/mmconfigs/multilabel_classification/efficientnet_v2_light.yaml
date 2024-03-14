@@ -1,0 +1,28 @@
+backbone:
+  pretrained: true
+  type: OTXEfficientNetV2
+head:
+  in_channels: 1280
+  num_classes: 1000
+  loss:
+    reduction: sum
+    gamma_neg: 1.0
+    gamma_pos: 0.0
+    type: AsymmetricAngularLossWithIgnore
+  normalized: true
+  scale: 7.0
+  type: CustomMultiLabelLinearClsHead
+neck:
+  type: GlobalAveragePooling
+data_preprocessor:
+  mean:
+    - 123.675
+    - 116.28
+    - 103.53
+  std:
+    - 58.395
+    - 57.12
+    - 57.375
+  to_rgb: False
+  type: ClsDataPreprocessor
+type: ImageClassifier

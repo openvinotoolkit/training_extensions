@@ -1,0 +1,28 @@
+backbone:
+  version: b0
+  pretrained: true
+  type: OTXEfficientNet
+head:
+  in_channels: 1280
+  loss:
+    loss_weight: 1.0
+    type: CrossEntropyLoss
+  num_classes: 1000
+  topk:
+    - 1
+    - 5
+  type: LinearClsHead
+neck:
+  type: GlobalAveragePooling
+data_preprocessor:
+  mean:
+    - 123.675
+    - 116.28
+    - 103.53
+  std:
+    - 58.395
+    - 57.12
+    - 57.375
+  to_rgb: False
+  type: ClsDataPreprocessor
+type: ImageClassifier

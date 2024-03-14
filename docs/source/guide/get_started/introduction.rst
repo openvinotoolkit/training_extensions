@@ -31,8 +31,6 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 OpenVINO™ Training Extensions supports the :doc:`following learning methods <../explanation/algorithms/index>`:
 
 - **Supervised**, incremental training, which includes class incremental scenario and contrastive learning for classification and semantic segmentation tasks
-- **Semi-supervised learning**
-- **Self-supervised learning**
 
 OpenVINO™ Training Extensions will provide the :doc:`following features <../explanation/additional_features/index>` in coming releases:
 
@@ -46,16 +44,74 @@ OpenVINO™ Training Extensions will provide the :doc:`following features <../ex
 Documentation content
 *********************
 
-1. **Quick start guide**:
+1. :octicon:`light-bulb` **Quick start guide**:
 
-   1. Installation
-   2. All possible OpenVINO™ Training Extensions CLI commands
+   .. grid::
+      :gutter: 1
 
-2. **Tutorials**:
+      .. grid-item-card:: Installation Guide
+         :link: installation
+         :link-type: doc
+         :text-align: center
 
-   This section reveals tutorials on how to use CLI for every supported task and training type.
-   It provides the end-to-end solution from installation to model deployment and demo visualization on specific examples for each of the supported tasks.
-   In the advanced section tutorial on how to use APIs instead of CLI is presented.
+      .. grid-item-card:: API Quick-Start
+         :link: api_tutorial
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: CLI Commands
+         :link: cli_commands
+         :link-type: doc
+         :text-align: center
+
+2. :octicon:`book` **Tutorials**:
+
+   .. grid:: 1 2 2 3
+      :margin: 1 1 0 0
+      :gutter: 1
+
+      .. grid-item-card:: Classification
+         :link: ../tutorials/base/how_to_train/classification
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Detection
+         :link: ../tutorials/base/how_to_train/detection
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Instance Segmentation
+         :link: ../tutorials/base/how_to_train/instance_segmentation
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Semantic Segmentation
+         :link: ../tutorials/base/how_to_train/semantic_segmentation
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Anomaly Task
+         :link: ../tutorials/base/how_to_train/anomaly_detection
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Action Classification
+         :link: ../tutorials/base/how_to_train/action_classification
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Action Detection
+         :link: ../tutorials/base/how_to_train/action_detection
+         :link-type: doc
+         :text-align: center
+
+      .. grid-item-card:: Visual Prompting
+         :text-align: center
+
+      .. grid-item-card:: Advanced
+         :link: ../tutorials/advanced/index
+         :link-type: doc
+         :text-align: center
 
 3. **Explanation section**:
 
