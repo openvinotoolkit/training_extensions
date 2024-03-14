@@ -38,9 +38,6 @@ def fxt_local_seed() -> int:
 
 
 TASK_NAME_TO_MAIN_METRIC_NAME = {
-    "anomaly_classification": "test/accuracy",
-    "anomaly_segmentation": "test/accuracy",
-    "anomaly_detection": "test/accuracy",
     "semantic_segmentation": "test/Dice",
     "multi_label_cls": "test/accuracy",
     "multi_class_cls": "test/accuracy",
