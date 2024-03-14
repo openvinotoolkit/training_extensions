@@ -34,6 +34,12 @@ OpenVINO™ Training Extensions supports the :doc:`following learning methods <.
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
+OpenVINO™ Training Extensions supports training and validation on the following devices:
+
+- **CPU**
+- **CUDA**
+- **XPU**
+
 OpenVINO™ Training Extensions will provide the :doc:`following features <../explanation/additional_features/index>` in coming releases:
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
