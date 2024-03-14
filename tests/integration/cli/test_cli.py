@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
-
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
+
 from tests.integration.cli.utils import run_main
 
 
