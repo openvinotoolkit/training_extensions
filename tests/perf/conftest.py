@@ -309,5 +309,5 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref.set_index(["task", "data_group", "model"], inplace=True)
+        ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref
