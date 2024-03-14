@@ -31,7 +31,7 @@ def pytest_addoption(parser):
         help="Choose default|all. Defaults to all.",
     )
     parser.addoption(
-        "--data-size",
+        "--data-group",
         action="store",
         default="all",
         choices=("small", "medium", "large", "all"),
@@ -41,7 +41,7 @@ def pytest_addoption(parser):
         "--num-repeat",
         action="store",
         default=0,
-        help="Overrides default per-data-size number of repeat setting. "
+        help="Overrides default per-data-group number of repeat setting. "
         "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
         "Defaults to 0 (small=3, medium=3, large=1).",
     )
@@ -118,12 +118,12 @@ def fxt_model_category(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_data_size(request: pytest.FixtureRequest) -> str:
-    """Data size to run the benchmark."""
-    data_size = request.config.getoption("--data-size")
-    msg = f"{data_size = }"
+def fxt_data_group(request: pytest.FixtureRequest) -> str:
+    """Data group to run the benchmark."""
+    data_group = request.config.getoption("--data-group")
+    msg = f"{data_group = }"
     log.info(msg)
-    return data_size
+    return data_group
 
 
 @pytest.fixture(scope="session")
@@ -296,11 +296,11 @@ def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.M
 
 
 @pytest.fixture()
-def fxt_dataset(request: pytest.FixtureRequest, fxt_data_size) -> Benchmark.Data:
+def fxt_dataset(request: pytest.FixtureRequest, fxt_data_group) -> Benchmark.Data:
     """Skip datasets according to user options."""
     dataset: Benchmark.Dataset = request.param
-    if fxt_data_size not in {"all", dataset.size}:
-        pytest.skip(f"{dataset.size} size dataset")
+    if fxt_data_group not in {"all", dataset.group}:
+        pytest.skip(f"{dataset.group} group dataset")
     return dataset
 
 
@@ -377,12 +377,12 @@ def fxt_benchmark_summary(
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
     for index, data in results.iterrows():
-        task, data_size, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+        task, data_group, model = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group}"
         exp_tags = {
             "task": task,
             "model": model,
-            "data_size": data_size,
+            "data_group": data_group,
         }
         exp = client.get_experiment_by_name(exp_name)
         exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
@@ -402,7 +402,7 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref = ref.set_index(["task", "data_size", "model"])
+        ref = ref.set_index(["task", "data_group", "model"])
     return ref
 
 

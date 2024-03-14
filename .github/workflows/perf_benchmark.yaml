@@ -10,9 +10,9 @@ on:
           - default # speed, balance, accuracy models only
           - all # default + other models
         default: default
-      data-size:
+      data-group:
         type: choice
-        description: Dataset size to run benchmark
+        description: Data group to run benchmark
         options:
           - small
           - medium
@@ -20,7 +20,7 @@ on:
           - all
         default: all
       num-repeat:
-        description: Overrides default per-data-size number of repeat setting
+        description: Overrides default per-data-group number of repeat setting
         default: 0
       num-epoch:
         description: Overrides default per-model number of epoch setting
@@ -89,7 +89,7 @@ jobs:
           tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
           --model-category ${{ inputs.model-category }}
           --data-root ${{ inputs.data-root }}
-          --data-size ${{ inputs.data-size }}
+          --data-group ${{ inputs.data-group }}
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}
           --eval-upto ${{ inputs.eval-upto }}

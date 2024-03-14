@@ -55,7 +55,7 @@ class Benchmark:
 
         name: str
         path: Path
-        size: str
+        group: str
         data_format: str
         num_classes: int
         num_repeat: int = 1
@@ -131,7 +131,7 @@ class Benchmark:
 
         tags = {
             "task": model.task,
-            "data_size": dataset.size,
+            "data_group": dataset.group,
             "model": model.name,
             "dataset": dataset.name,
             **self.tags,
@@ -336,7 +336,7 @@ class Benchmark:
         # Merge data
         data = pd.concat(results, ignore_index=True)
         # Average by unique group
-        grouped = data.groupby(["task", "data_size", "model"])
+        grouped = data.groupby(["task", "data_group", "model"])
         aggregated = grouped.mean(numeric_only=True)
         # Merge tag columns (non-numeric & non-index)
         tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
@@ -346,9 +346,9 @@ class Benchmark:
         # Average by task
         task_grouped = data.groupby(["task"], as_index=False)
         task_aggregated = task_grouped.mean(numeric_only=True)
-        task_aggregated["data_size"] = "all"
+        task_aggregated["data_group"] = "all"
         task_aggregated["model"] = "all"
-        task_aggregated = task_aggregated.set_index(["task", "data_size", "model"])
+        task_aggregated = task_aggregated.set_index(["task", "data_group", "model"])
         return pd.concat([aggregated, task_aggregated])
 
     def check(self, result: pd.DataFrame, criteria: list[Criterion]):

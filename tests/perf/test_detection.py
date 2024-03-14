@@ -30,7 +30,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name=f"pothole_small_{idx}",
             path=Path("detection/pothole_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
@@ -46,7 +46,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="pothole_medium",
             path=Path("detection/pothole_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
@@ -60,7 +60,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_large",
             path=Path("detection/vitens_large"),
-            size="large",
+            group="large",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
