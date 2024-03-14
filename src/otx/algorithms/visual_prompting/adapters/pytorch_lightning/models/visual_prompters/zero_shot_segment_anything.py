@@ -724,7 +724,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # all predicted masks were zero masks, ignore them.
                 return None, torch.zeros(masks.shape[-2:], device="cpu")
 
-            best_idx = int(torch.argmax(scores[0]))
+            best_idx = torch.argmax(scores[0])
         return logits[:, [best_idx]], masks[0, best_idx]
 
     def set_metrics(self) -> None:
