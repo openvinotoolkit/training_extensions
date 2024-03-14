@@ -1,4 +1,4 @@
-OpenVINO™ Training Extensions CLI commands
+OpenVINO™ Training Extensions CLI Usage
 ==========================================
 
 All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
@@ -6,110 +6,264 @@ All possible OpenVINO™ Training Extensions CLI commands are presented below al
 .. note::
 
     To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/algorithms/index>` in the documentation.
+    Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or LightningCLI.
+    `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>_`
+
+*****
+Help
+*****
+
+``otx --help`` show available sub-commands.
+
+.. code-block:: shell
+
+    (otx) ...$ otx --help
+    ╭─ Arguments ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+    │ Usage: otx [-h] [-v] {install,find,train,test,predict,export,optimize,explain} ...                              │
+    │                                                                                                                 │
+    │                                                                                                                 │
+    │ OpenVINO Training-Extension command line tool                                                                   │
+    │                                                                                                                 │
+    │                                                                                                                 │
+    │ Options:                                                                                                        │
+    │   -h, --help            Show this help message and exit.                                                        │
+    │   -v, --version         Display OTX version number.                                                             │
+    │                                                                                                                 │
+    │ Subcommands:                                                                                                    │
+    │   For more details of each subcommand, add it as an argument followed by --help.                                │
+    │                                                                                                                 │
+    │                                                                                                                 │
+    │   Available subcommands:                                                                                        │
+    │     install             Install OTX requirements.                                                               │
+    │     find                This shows the model provided by OTX.                                                   │
+    │     train               Trains the model using the provided LightningModule and OTXDataModule.                  │
+    │     test                Run the testing phase of the engine.                                                    │
+    │     predict             Run predictions using the specified model and data.                                     │
+    │     export              Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.  │
+    │     optimize            Applies NNCF.PTQ to the underlying models (now works only for OV models).               │
+    │     explain             Run XAI using the specified model and data (test subset).                               │
+    │                                                                                                                 │
+    ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+.. note::
+
+    After installing the package, if torch is not installed properly, this will only show the ``install`` subcommand. You can refer to this :doc:`installation section <installation>`.
+
+
+The subcommand can get help output in the following way.
+For basic subcommand help, the Verbosity Level is 0. In this case, the CLI provides a Quick-Guide in markdown.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --help
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃                OpenVINO™ Training Extensions CLI Guide                ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+    Github Repository:
+    https://github.com/openvinotoolkit/training_extensions.
+
+    A better guide is provided by the documentation.
+    ╭─ Quick-Start ─────────────────────────────────────────────────────────╮
+    │                                                                       │
+    │  1 you can train with data_root only. then OTX will provide default   │
+    │    model.                                                             │
+    │                                                                       │
+    │                                                                       │
+    │  otx train --data_root <DATASET_PATH>                                 │
+    │                                                                       │
+    │                                                                       │
+    │  2 you can pick a model or datamodule as Config file or Class.        │
+    │                                                                       │
+    │                                                                       │
+    │  otx train                                                            │
+    │  --data_root <DATASET_PATH>                                           │
+    │  --model <CONFIG | CLASS_PATH_OR_NAME> --data <CONFIG |               │
+    │  CLASS_PATH_OR_NAME>                                                  │
+    │                                                                       │
+    │                                                                       │
+    │  3 Of course, you can override the various values with commands.      │
+    │                                                                       │
+    │                                                                       │
+    │  otx train                                                            │
+    │  --data_root <DATASET_PATH>                                           │
+    │  --max_epochs <EPOCHS, int> --checkpoint <CKPT_PATH, str>             │
+    │                                                                       │
+    │                                                                       │
+    │  4 If you have a complete configuration file, run it like this.       │
+    │                                                                       │
+    │                                                                       │
+    │  otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>     │
+    │                                                                       │
+    │                                                                       │
+    │ To get more overridable argument information, run the command below.  │
+    │                                                                       │
+    │                                                                       │
+    │  # Verbosity Level 1                                                  │
+    │  otx train [optional_arguments] -h -v                                 │
+    │  # Verbosity Level 2                                                  │
+    │  otx train [optional_arguments] -h -vv                                │
+    │                                                                       │
+    ╰───────────────────────────────────────────────────────────────────────╯
+
+For Verbosity Level 1, it shows Quick-Guide & the essential arguments.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --help -v
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃                OpenVINO™ Training Extensions CLI Guide                ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+    Github Repository:
+    https://github.com/openvinotoolkit/training_extensions.
+
+    A better guide is provided by the documentation.
+    ╭─ Quick-Start ─────────────────────────────────────────────────────────╮
+    │  ...                                                                  │
+    ╰───────────────────────────────────────────────────────────────────────╯
+    ╭─ Arguments ─────────────────────────────────────────────────────────────────────────────────────╮
+    │ Usage: otx [options] train [-h] [-c CONFIG] [--print_config [=flags]]                           │
+    │                            [--data_root DATA_ROOT] [--task TASK]                                │
+    │                            [--engine CONFIG]                                                    │
+    │                            [--work_dir WORK_DIR]                                                │
+    │                            [--engine.checkpoint CHECKPOINT]                                     │
+    │                            [--engine.device {auto,gpu,cpu,tpu,ipu,hpu,mps}]                     │
+    │                            [--model.help CLASS_PATH_OR_NAME]                                    │
+    │                            [--model CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE]         │
+    │                            [--data CONFIG]                                                      │
+    │                            [--optimizer CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE]     │
+    │                            [--scheduler CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE]     │
+    │                                                                                                 │
+    ...
+
+For Verbosity Level 2, it shows all available arguments.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --help -vv
+
+
+************
+print_config
+************
+
+Preview all configuration values that will be executed through that command line.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --config <config-file-path> --print_config
+
+
+.. code-block:: yaml
+
+    data_root: tests/assets/car_tree_bug
+    callback_monitor: val/map_50
+    engine:
+      task: DETECTION
+      work_dir: ./otx-workspace
+      device: auto
+    model:
+      class_path: otx.algo.detection.atss.ATSS
+      init_args:
+        num_classes: 1000
+        variant: mobilenetv2
+    optimizer: ...
+    scheduler: ...
+    data:
+      task: DETECTION
+      config:
+        data_format: coco_instances
+        train_subset: ...
+        val_subset: ...
+        test_subset: ...
+        mem_cache_size: 1GB
+        mem_cache_img_max_size: null
+        image_color_channel: RGB
+        include_polygons: false
+    max_epochs: 2
+    deterministic: false
+    precision: 16
+    callbacks: ...
+    logger: ...
+
+Users can also pre-generate a config file with an example like the one below.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --config <config-file-path> --print_config > config.yaml
+
 
 *****
 Find
 *****
 
-``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--backbone BACKBONE`` to find the backbone from supported frameworks.
+``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OTX.
 
-.. code-block::
+.. code-block:: shell
 
     (otx) ...$ otx find --help
-    usage: otx find [-h] [--task TASK] [--template] [--backbone BACKBONE [BACKBONE ...]]
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'ROTATED_DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION',
-                            'ANOMALY_CLASSIFICATION', 'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
-      --template            Shows a list of templates that can be used immediately.
-      --backbone BACKBONE [BACKBONE ...]
-                            The currently supported options: ['otx', 'mmcls', 'mmdet', 'mmseg', 'torchvision', 'pytorchcv', 'omz.mmcls'].
+    ╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+    │ Usage: otx [options] find [-h]                                                                                                                                                            │
+    │                           [--task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETEC │
+    │                           [--pattern PATTERN]                                                                                                                                             │
+    │                                                                                                                                                                                           │
+    │                                                                                                                                                                                           │
+    │ Options:                                                                                                                                                                                  │
+    │   -h, --help            Show this help message and exit.                                                                                                                                  │
+    │   --task {ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETECTION,ROTATED_DETECTION,DE │
+    │                         Value for filtering by task. Default is None, which shows all recipes. (type: None, default: None)                                                                │
+    │   --pattern PATTERN     This allows you to filter the model name of the recipe. For example, if you want to find all models that contain the word 'efficient', you can use '--pattern     │
+    │                         efficient' (type: None, default: None)                                                                                                                            │
+    │                                                                                                                                                                                           │
+    ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 
 Example to find ready-to-use templates for the detection task:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx find --task detection
-    +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
-    |    TASK   |                 ID                |       NAME       |                                     BASE PATH                                      |
-    +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
-    | DETECTION | Custom_Object_Detection_Gen3_ATSS | MobileNetV2-ATSS |   src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml    |
-    | DETECTION |  Object_Detection_ResNeXt101_ATSS | ResNeXt101-ATSS  |    src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml    |
-    | DETECTION |  Custom_Object_Detection_Gen3_SSD |       SSD        |    src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml    |
-    | DETECTION |      Object_Detection_YOLOX_L     |     YOLOX-L      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml   |
-    | DETECTION |      Object_Detection_YOLOX_S     |     YOLOX-S      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml   |
-    | DETECTION |   Custom_Object_Detection_YOLOX   |    YOLOX-TINY    | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml |
-    | DETECTION |      Object_Detection_YOLOX_X     |     YOLOX-X      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml   |
-    +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
+    (otx) ...$ otx find --task DETECTION
+    ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
+    ┃ Task      ┃ Model Name            ┃ Recipe Path                                 ┃                                  
+    ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
+    │ DETECTION │ yolox_tiny            │ recipe/detection/yolox_tiny.yaml            │                                  
+    │ DETECTION │ atss_mobilenetv2_tile │ recipe/detection/atss_mobilenetv2_tile.yaml │                                  
+    │ DETECTION │ openvino_model        │ recipe/detection/openvino_model.yaml        │                                  
+    │ DETECTION │ atss_mobilenetv2      │ recipe/detection/atss_mobilenetv2.yaml      │                                  
+    │ DETECTION │ atss_resnext101       │ recipe/detection/atss_resnext101.yaml       │                                  
+    │ DETECTION │ yolox_l_tile          │ recipe/detection/yolox_l_tile.yaml          │                                  
+    │ DETECTION │ ssd_mobilenetv2_tile  │ recipe/detection/ssd_mobilenetv2_tile.yaml  │                                  
+    │ DETECTION │ atss_r50_fpn          │ recipe/detection/atss_r50_fpn.yaml          │                                  
+    │ DETECTION │ yolox_tiny_tile       │ recipe/detection/yolox_tiny_tile.yaml       │                                  
+    │ DETECTION │ yolox_s               │ recipe/detection/yolox_s.yaml               │                                  
+    │ DETECTION │ yolox_s_tile          │ recipe/detection/yolox_s_tile.yaml          │                                  
+    │ DETECTION │ rtmdet_tiny           │ recipe/detection/rtmdet_tiny.yaml           │                                  
+    │ DETECTION │ yolox_x               │ recipe/detection/yolox_x.yaml               │                                  
+    │ DETECTION │ yolox_x_tile          │ recipe/detection/yolox_x_tile.yaml          │                                  
+    │ DETECTION │ ssd_mobilenetv2       │ recipe/detection/ssd_mobilenetv2.yaml       │                                  
+    │ DETECTION │ yolox_l               │ recipe/detection/yolox_l.yaml               │                                  
+    └───────────┴───────────────────────┴─────────────────────────────────────────────┘
 
-Example to find supported torchvision backbones for the detection task:
+Example to find yolo named model for the detection task:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx find --task detection --backbone torchvision
-    +-------+--------------------------------+---------------+---------+
-    | Index |         Backbone Type          | Required-Args | Options |
-    +-------+--------------------------------+---------------+---------+
-    |   1   |      torchvision.alexnet       |               |         |
-    |   2   |      torchvision.resnet18      |               |         |
-    |   3   |      torchvision.resnet34      |               |         |
-    |   4   |      torchvision.resnet50      |               |         |
-    ...
-    |   33  | torchvision.shufflenet_v2_x1_0 |               |         |
-    |   34  | torchvision.shufflenet_v2_x1_5 |               |         |
-    |   35  | torchvision.shufflenet_v2_x2_0 |               |         |
-    +-------+--------------------------------+---------------+---------+
-
-
-
-*************************
-Building workspace folder
-*************************
-
-``otx build`` creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for modifying the backbone of the model.
-
-.. code-block::
-
-    (otx) ...$ otx build --help
-    usage: otx build [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
-                    [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--workspace WORKSPACE] [--model MODEL] [--backbone BACKBONE]
-                    [template]
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --train-data-roots TRAIN_DATA_ROOTS
-                            Comma-separated paths to training data folders.
-      --val-data-roots VAL_DATA_ROOTS
-                            Comma-separated paths to validation data folders.
-      --test-data-roots TEST_DATA_ROOTS
-                            Comma-separated paths to test data folders.
-      --unlabeled-data-roots UNLABELED_DATA_ROOTS
-                            Comma-separated paths to unlabeled data folders
-      --unlabeled-file-list UNLABELED_FILE_LIST
-                            Comma-separated paths to unlabeled file list
-      --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION', 'ANOMALY_CLASSIFICATION', 'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
-      --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
-      --workspace WORKSPACE   Location where the workspace.
-      --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
-      --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
-                            If there is an already created backbone configuration yaml file, enter the corresponding path.
-      --deterministic       Set deterministic to True, default=False.
-      --seed SEED           Set seed for configuration.
+    (otx) ...$ otx find --task DETECTION --pattern 'yolo*'
+    ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                        
+    ┃ Task      ┃ Model Name      ┃ Recipe Path                           ┃                                        
+    ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                        
+    │ DETECTION │ yolox_tiny      │ recipe/detection/yolox_tiny.yaml      │                                        
+    │ DETECTION │ yolox_x         │ recipe/detection/yolox_x.yaml         │                                        
+    │ DETECTION │ yolox_l_tile    │ recipe/detection/yolox_l_tile.yaml    │                                        
+    │ DETECTION │ yolox_s         │ recipe/detection/yolox_s.yaml         │                                        
+    │ DETECTION │ yolox_l         │ recipe/detection/yolox_l.yaml         │                                        
+    │ DETECTION │ yolox_x_tile    │ recipe/detection/yolox_x_tile.yaml    │                                        
+    │ DETECTION │ yolox_s_tile    │ recipe/detection/yolox_s_tile.yaml    │                                        
+    │ DETECTION │ yolox_tiny_tile │ recipe/detection/yolox_tiny_tile.yaml │                                        
+    └───────────┴─────────────────┴───────────────────────────────────────┘
 
 
-For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
-To learn more about backbone replacement, please refer to the :doc:`following advanced tutorial <../tutorials/advanced/backbones>`.
-
-.. code-block::
-
-    (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ----------------
 Dataset handling
@@ -136,164 +290,57 @@ Then pass the path to ``coco_data_root`` to both root options:
 
 .. code-block::
 
-  --train-data-roots coco_data_root --val-data-roots coco_data_root
+  --data_root coco_data_root
 
-However, if you store your training set and validation separately - provide paths to both accordingly.
-OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to ``splitted_dataset`` folder inside the workspace folder. This split can be further used for training.
-
-.. note::
-
-    Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` documentation.
-
-If you have multiple annotation files like below, add additional argument (``--train-ann-files``). Then, you could use the annotation what you selected.
-OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (``--train-ann-files``)
-
-.. code-block::
-
-  coco_data_root
-    |---- annotations
-      |---- instances_train.json
-      |---- instances_train_1percent.json
-      |---- instances_train_10percent.json
-      |---- instances_val.json
-    |---- images
-      |---- train
-        |---- 000.jpg
-        ....
-    |---- val
-        |---- 000.jpg
-        ....
-
-.. code-block::
-
-  --train-data-roots coco_data_root --train-ann-files coco_data_root/annotations/instances_train_10percent.json
-
-.. note::
-
-   For now, only COCO format data could be used for direct annotation input
 
 *********
 Training
 *********
 
-``otx train`` trains a model (a particular model template) on a dataset and saves results in two files:
+``otx train`` trains a model (a particular model template) on a dataset:
 
-- ``weights.pth`` - a model snapshot
-- ``label_schema.json`` - a label schema used in training, created from a dataset
+The results will be saved in ``./otx-workspace/`` folder by default. The output folder can be modified by ``--work_dir`` option. These files are used by other commands: ``export``, ``test``, ``demo``, etc.
 
-The results will be saved in ``./outputs/`` folder by default. The output folder can be modified by ``--output`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
-
-``otx train`` receives ``template`` as a positional argument. ``template`` can be a path to the specific ``template.yaml`` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
-
-However, if you created a workspace with ``otx build``, the training process can be started (in the workspace directory) just with ``otx train`` command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.
-
-.. code-block::
-
-    otx train --help
-    usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
-                    [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [-o OUTPUT] [--workspace WORKSPACE] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
-                    [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE] [--data DATA]
-                    [template] {params} ...
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-      {params}              sub-command help
-        params              Hyper parameters defined in template file.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --train-data-roots TRAIN_DATA_ROOTS
-                            Comma-separated paths to training data folders.
-      --val-data-roots VAL_DATA_ROOTS
-                            Comma-separated paths to validation data folders.
-      --unlabeled-data-roots UNLABELED_DATA_ROOTS
-                            Comma-separated paths to unlabeled data folders
-      --unlabeled-file-list UNLABELED_FILE_LIST
-                            Comma-separated paths to unlabeled file list
-      --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.
-      --resume-from RESUME_FROM
-                            Resume training from previously saved checkpoint
-      -o OUTPUT, --output OUTPUT
-                            Location where trained model will be stored.
-      --workspace WORKSPACE   Location where the intermediate output of the training will be stored.
-      --enable-hpo          Execute hyper parameters optimization (HPO) before training.
-      --hpo-time-ratio HPO_TIME_RATIO
-                            Expected ratio of total time to run HPO to time taken for full fine-tuning.
-      --gpus GPUS           Comma-separated indices of GPU.               If there are more than one available GPU, then model is trained with multi GPUs.
-      --rdzv-endpoint RDZV_ENDPOINT
-                            Rendezvous endpoint for multi-node training.
-      --base-rank BASE_RANK
-                            Base rank of the current node workers.
-      --world-size WORLD_SIZE
-                            Total number of workers in a worker group.
-      --mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE
-                            Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).
-      --deterministic       Set deterministic to True, default=False.
-      --seed SEED           Change seed for training.
-      --data DATA           The data.yaml path want to use in train task.
+``otx train`` receives ``--config`` as a argument. ``config`` can be a path to the specific ``*.yaml`` file. Also, the path to data root should be passed to the CLI to start training.
 
 
 
-Example of the command line to start object detection training:
+Example of the command line to start training using Auto-Configuration:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx train SSD  --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
+    (otx) ...$ otx train --data_root <dataset-root> --task <TASK>
 
+You can use the recipe configuration provided by OTX. The corresponding configuration file can be found via ``otx find``.
+
+.. code-block:: shell
+
+    (otx) ...$ otx train --config <config-file-path> --data_root <dataset-root>
 
 .. note::
-  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tensorboard``.
 
 .. note::
-  ``--mem-cache-size`` provides in-memory caching for decoded images in main memory.
+  ``--data.config.mem_cache_size`` provides in-memory caching for decoded images in main memory.
   If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
   image decoding can account for a non-negligible overhead in data pre-processing.
   This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
   If your machine has enough main memory, we recommend increasing this value as much as possible.
-  For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--mem-cache-size=8GB``.
+  For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.config.mem_cache_size 8GB``.
 
 It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
-You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
+You can override the configurable arguments.
+For example, that is how you can change the max epochs and the batch size for the training:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx train TEMPLATE params --help
-
-
-
-For example, that is how you can change the learning rate and the batch size for the SSD model:
-
-.. code-block::
-
-    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> \
-                             --val-data-roots <path/to/val/root> \
-                             params \
-                             --learning_parameters.batch_size 16 \
-                             --learning_parameters.learning_rate 0.001
-
-You could also enable storage caching to boost data loading at the expanse of storage:
-
-.. code-block::
-
-    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> \
-                             --val-data-roots <path/to/val/root> \
-                             params \
-                             --algo_backend.storage_cache_scheme JPEG/75
-
-.. note::
-  Not all templates support stroage cache. We are working on extending supported templates.
-
-
-As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the ``--gpus`` argument. It will start the distributed data-parallel training with the GPUs you have specified.
+    (otx) ...$ otx train ... --data.config.train_subset.batch_size <batch-size> --max_epochs <max-epochs>
 
 .. note::
 
-    Multi-GPU training is currently supported for all tasks except for action tasks. We'll add support for them in the near future.
+    ``train``, ``test`` works based on ``lightning.Tranier``. You can change the Trainer component with the arguments of train and test. You can find more arguments in this documentation.
+    `Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>_`
 
 **********
 Exporting
@@ -301,142 +348,90 @@ Exporting
 
 ``otx export`` exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.
 
-With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
+The command below performs exporting to the ``{work_dir}/`` path.
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx export --help
-    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth>
 
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
+The command results in ``exported_model.xml``, ``exported_model.bin``.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.
-      -o OUTPUT, --output OUTPUT
-                            Location where exported model will be stored.
-      --workspace WORKSPACE   Location where the intermediate output of the export will be stored.
-      --dump-features       Whether to return feature vector and saliency map for explanation purposes.
-      --half-precision      This flag indicated if model is exported in half precision (FP16).
+To use the exported model as an input for ``otx explain``, please dump additional outputs with internal information, using ``--explain``:
+
+.. code-block:: shell
+
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth> --explain True
 
 
-The command below performs exporting to the ``outputs/openvino`` path.
+.. note::
+    If ``.latest`` exists in work_dir, you can omit checkpoint and config.
+    You can also omit ``--work_dir`` if you run from the root of the workspace that contains ``.latest``.
 
-.. code-block::
+    .. code-block:: shell
 
-    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino
+        (otx) ...$ otx export --work_dir <workspace-path>
 
-The command results in ``openvino.xml``, ``openvino.bin`` and ``label_schema.json``
-
-To use the exported model as an input for ``otx explain``, please dump additional outputs with internal information, using ``--dump-features``:
-
-.. code-block::
-
-    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino/with_features --dump-features
+        # OR if you are in the workspace root
+        (otx) ...$ otx export
 
 
 ************
 Optimization
 ************
 
-``otx optimize`` optimizes a model using `NNCF <https://github.com/openvinotoolkit/nncf>`_ or `PTQ <https://github.com/openvinotoolkit/nncf#post-training-quantization>`_ depending on the model and transforms it to ``INT8`` format.
+``otx optimize`` optimizes a model using `PTQ <https://github.com/openvinotoolkit/nncf#post-training-quantization>`_ depending on the model and transforms it to ``INT8`` format.
 
-- NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch
 - PTQ optimization used for models exported in the OpenVINO™ IR format
-
-With the ``--help`` command, you can list additional information:
-
-.. code-block::
-
-    usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT]
-                        [--workspace WORKSPACE]
-                        [template] {params} ...
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-      {params}              sub-command help
-        params              Hyper parameters defined in template file.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --train-data-roots TRAIN_DATA_ROOTS
-                            Comma-separated paths to training data folders.
-      --val-data-roots VAL_DATA_ROOTS
-                            Comma-separated paths to validation data folders.
-      --load-weights LOAD_WEIGHTS
-                            Load weights of trained model
-      -o OUTPUT, --output OUTPUT
-                            Location where optimized model will be stored.
-      --workspace WORKSPACE   Location where the intermediate output of the task will be stored.
-
-Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
-
-.. code-block::
-
-    (otx) ...$ otx optimize SSD --load-weights <path/to/trained/weights.pth> \
-                                --train-data-roots <path/to/train/root> \
-                                --val-data-roots <path/to/val/root> \
-                                --output outputs/nncf
-
 
 Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> \
-                                --val-data-roots <path/to/val/root> \
-                                --output outputs/ptq
+    (otx) ...$ otx optimize ... --checkpoint <path/to/openvino.xml> \
+                                --data_root <path/to/val/root> \
 
 
-Thus, to use PTQ pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.
+Thus, to use PTQ pass the path to exported IR (.xml) model.
 
+.. note::
+    If ``.latest`` exists in work_dir, you can omit checkpoint and config.
+    You can also omit ``--work_dir`` if you run from the root of the workspace that contains ``.latest``.
+
+    .. code-block:: shell
+
+        (otx) ...$ otx optimize --work_dir <workspace-path>
+
+        # OR if you are in the workspace root
+        (otx) ...$ otx optimize
 
 ***********
 Evaluation
 ***********
 
-``otx eval`` runs the evaluation of a model on the specific dataset.
-
-With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
-
-.. code-block::
-
-    (otx) ...$ otx eval --help
-    usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [template] {params} ...
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-      {params}              sub-command help
-        params              Hyper parameters defined in template file.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --test-data-roots TEST_DATA_ROOTS
-                            Comma-separated paths to test data folders.
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint. It could be a trained/optimized model (with PTQ only) or exported model.
-      -o OUTPUT, --output OUTPUT
-                            Location where the intermediate output of the task will be stored.
-      --workspace WORKSPACE   Path to the workspace where the command will run.
-
+``otx test`` runs the evaluation of a model on the specific dataset.
 
 The command below will evaluate the trained model on the provided dataset:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx eval SSD --test-data-roots <path/to/test/root> \
-                            --load-weights <path/to/model_weghts> \
-                            --output <path/to/outputs>
+    (otx) ...$ otx test ... --data_root <path/to/test/root> \
+                            --checkpoint <path/to/model_weghts>
 
 .. note::
 
-    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--checkpoint`` option.
 
+
+.. note::
+    If ``.latest`` exists in work_dir, you can omit checkpoint and config.
+    You can also omit ``--work_dir`` if you run from the root of the workspace that contains ``.latest``.
+
+    .. code-block:: shell
+
+        (otx) ...$ otx test --work_dir <workspace-path>
+
+        # OR if you are in the workspace root
+        (otx) ...$ otx test
 
 ***********
 Explanation
@@ -444,149 +439,62 @@ Explanation
 
 ``otx explain`` runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model's decision-making process in a way that is easily understood by humans.
 
-With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
-
-.. code-block::
-
-    (otx) ...$ otx explain --help
-    usage: otx explain [-h] --input INPUT [--output OUTPUT] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-      {params}              sub-command help
-        params              Hyper parameters defined in template file.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -i INPUT, --input INPUT
-                            Comma-separated paths to explain data folders.
-      -o OUTPUT, --output OUTPUT
-                            Output path for explanation images.
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.
-      --explain-algorithm EXPLAIN_ALGORITHM
-                            Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
-      --process-saliency-maps PROCESS_SALIENCY_MAPS
-                            Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap. Depending on the number of targets to explain, this might take significant time.
-      --explain-all-classes EXPLAIN_ALL_CLASSES
-                            Provides explanations for all classes. Otherwise, explains only predicted classes. This feature is supported by algorithms that can generate explanations per each class.
-      --overlay-weight OVERLAY_WEIGHT
-                            Weight of the saliency map when overlaying the input image with saliency map.
-
 
 The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``output`` path:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
-                               --load-weights <path/to/model_weights> \
-                               --output <path/to/output/root> \
-                               --explain-algorithm classwisesaliencymap \
-                               --overlay-weight 0.5
+    (otx) ...$ otx explain --config <path/to/config> \
+                           --checkpoint <path/to/model_weights>
 
 .. note::
 
     It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
 
-By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model in ``otx explain``, please first export it with ``--dump-features`` parameter:
+By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model in ``otx explain``, please first export it with ``--explain`` parameter:
 
-.. code-block::
+.. code-block:: shell
 
-    (otx) ...$ otx export SSD --load-weights <path/to/trained/weights.pth> \
-                              --output outputs/openvino/with_features \
-                              --dump-features
-    (otx) ...$ otx explain SSD --input <path/to/explain/root> \
-                               --load-weights outputs/openvino/with_features \
-                               --output <path/to/output/root> \
-                               --explain-algorithm classwisesaliencymap \
-                               --overlay-weight 0.5
-
-
-
-*************
-Demonstration
-*************
-
-``otx demo`` runs model inference on images, videos, or webcam streams to show how it works with the user's data.
-
-.. note::
-
-  ``otx demo`` command requires GUI backend to your system for displaying inference results.
-
-  Only the OpenVINO™ IR model can be used for the ``otx demo`` command.
-
-.. code-block::
-
-    (otx) ...$ otx demo --help
-    usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [--output OUTPUT] [template] {params} ...
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-      {params}              sub-command help
-        params              Hyper parameters defined in template file.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -i INPUT, --input INPUT
-                            Source of input data: images folder, image, webcam and video.
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.It could be a trained/optimized model (with PTQ only) or exported model.
-      --fit-to-size FIT_TO_SIZE FIT_TO_SIZE
-                            Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
-      --loop                Enable reading the input in a loop.
-      --delay DELAY         Frame visualization time in ms.
-      --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-processing.
-      --output OUTPUT
-                            Output path to save input data with predictions.
-
-Command example of the demonstration:
-
-.. code-block::
-
-    (otx) ...$ otx demo SSD --input INPUT \
-                            --load-weights <path/to/openvino.xml> \
-                            --display-perf \
-                            --delay 1000
-
-
-Input can be a folder with images, a single image, a webcam ID or a video. The inference results of a model will be displayed to the GUI window with a 1-second interval.
-
-.. note::
-
-  If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth> \
+                              --explain True
+    (otx) ...$ otx explain ... --checkpoint outputs/openvino/with_features \
 
 
 ***********
-Deployment
+Workspace
 ***********
 
-``otx deploy`` creates ``openvino.zip`` with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the ``deploy`` can be used only with the OpenVINO™ IR model.
+If we run a typical Training example, will have a folder like the one below as output.
 
-With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
+.. code-block:: bash
 
-.. code-block::
-
-    (otx) ...$ otx deploy --help
-    usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [template]
-
-    positional arguments:
-      template              Enter the path or ID or name of the template file.
-                            This can be omitted if you have train-data-roots or run inside a workspace.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      --load-weights LOAD_WEIGHTS
-                            Load model weights from previously saved checkpoint.
-      -o OUTPUT, --output OUTPUT
-                            Location where openvino.zip will be stored.
+    otx-workspace/
+        .latest/                      # Gather the most recent information.
+            train/                    # Link to the output_dir where the most recent train was performed.
+            export/                   # Link to the output_dir where the most recent export was performed.
+            .../
+        20240000_000000/              # Deliverables from OTX CLI
+        20240000_000001/              # Deliverables from OTX CLI Second-Trial
 
 
-Command example:
+OTX considers the folder with ``.latest`` to be the root of the entire Workspace.
+``.latest`` soft-links to the most recently trained output folder.
 
-.. code-block::
+Case 1: If a user specifies an output ``work_dir`` (An already existing workspace)
 
-    (otx) ...$ otx deploy SSD --load-weights <path/to/openvino.xml> \
-                              --output outputs/deploy
+.. code-block:: shell
 
+    (otx) ...$ otx train --work_dir otx-workspace
+
+
+This will then use the ``.latest`` in the otx-workspace for training.
+
+Case 2: if a user executes a command from within the otx-workspace
+
+.. code-block:: shell
+
+    cd otx-workspace
+
+    (otx) ...$ otx train                         # Behave in the same way as the first training
+    (otx) ...$ otx test                          # Perform a test with the config and checkpoint from the last training baseline.
+    (otx) ...$ otx export                        # Perform a export with the config and checkpoint from the last training baseline.

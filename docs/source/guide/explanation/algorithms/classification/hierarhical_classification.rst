@@ -41,17 +41,6 @@ Dataset Format
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
 An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_h-label>`_.
 
-To use OpenVINO™ Training Extensions with this format, it is required to pass dataset root paths directly to the CLI command:
-
-.. code-block::
-
-    $ otx {train, optimize} --template <model_template> \
-                            --train-data-roots <path_to_train_data_root> \
-                            --val-data-roots <path_to_val_data_root>
-    $ otx eval --template <model_template> \
-               --test-data-roots <path_to_test_data_root> \
-               --load-weights <path_to_model_weights>
-
 .. note::
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classification models.
@@ -61,6 +50,12 @@ Models
 ******
 
 We use the same model templates as for Multi-class Classification. Please, refer: :ref:`Classification Models <classification_models>`.
+
+To see which models are available for the task, the following command can be executed:
+
+.. code-block:: shell
+
+        (otx) ...$ otx find --task H_LABEL_CLS
 
 .. ********************
 .. Incremental Learning

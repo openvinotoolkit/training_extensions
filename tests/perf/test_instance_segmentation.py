@@ -1,209 +1,190 @@
-"""OTX Instance Segmentation perfomance tests."""
-
-# Copyright (C) 2023-2024 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+"""OTX instance segmentation perfomance benchmark tests."""
+
+from __future__ import annotations
+
+from pathlib import Path
 
 import pytest
 
-from otx.cli.registry import Registry
-from typing import Callable
-from .benchmark import OTXBenchmark
+from .benchmark import Benchmark
+from .conftest import PerfTestBase
 
 
-MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="INSTANCE_SEGMENTATION").templates
-MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
+class TestPerfInstanceSegmentation(PerfTestBase):
+    """Benchmark instance segmentation."""
 
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b", category="speed"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50", category="accuracy"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint", category="other"),
+    ]
 
-class TestPerfInstanceSegmentation:
-    """Benchmark basic instance segmentation."""
-
-    BENCHMARK_CONFIGS = {
-        "small": {
-            "tags": {
-                "task": "instance_segmentation",
+    DATASET_TEST_CASES = [
+        Benchmark.Dataset(
+            name=f"wgisd_small_{idx}",
+            path=Path("instance_seg/wgisd_small") / f"{idx}",
+            size="small",
+            data_format="coco",
+            num_classes=5,
+            num_repeat=5,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
             },
-            "datasets": [
-                "instance_seg/wgisd_small/1",
-                "instance_seg/wgisd_small/2",
-                "instance_seg/wgisd_small/3",
-            ],
-            "num_repeat": 5,
-        },
-        "medium": {
-            "tags": {
-                "task": "instance_segmentation",
+        )
+        for idx in (1, 2, 3)
+    ] + [
+        Benchmark.Dataset(
+            name="coco_car_person_medium",
+            path=Path("instance_seg/coco_car_person_medium"),
+            size="medium",
+            data_format="coco",
+            num_classes=2,
+            num_repeat=5,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
             },
-            "datasets": [
-                "instance_seg/coco_car_person_medium",
-            ],
-            "num_repeat": 5,
-        },
-        # TODO: Refine large dataset
-        # "large": {
-        #     "tags": {
-        #         "task": "instance_segmentation",
-        #     },
-        #     "datasets": [
-        #         "instance_seg/bdd_large",
-        #     ],
-        #     "num_repeat": 5,
-        # },
-    }
+        ),
+        Benchmark.Dataset(
+            name="vitens_coliform",
+            path=Path("instance_seg/Vitens-Coliform-coco"),
+            size="large",
+            data_format="coco",
+            num_classes=1,
+            num_repeat=5,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        ),
+    ]
 
-    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark performance metrics."""
-        result = fxt_benchmark.run(model_id=fxt_model_id)
-        fxt_check_benchmark_result(
-            result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
-            checks=[
-                {
-                    "name": "f-measure(train)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "epoch",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "f-measure(export)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "f-measure(optimize)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "train_e2e_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_data_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_iter_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_time_per_image(export)",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_time_per_image(optimize)",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-            ],
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+    ]
+
+    @pytest.mark.parametrize(
+        "fxt_model",
+        MODEL_TEST_CASES,
+        ids=lambda model: model.name,
+        indirect=True,
+    )
+    @pytest.mark.parametrize(
+        "fxt_dataset",
+        DATASET_TEST_CASES,
+        ids=lambda dataset: dataset.name,
+        indirect=True,
+    )
+    def test_perf(
+        self,
+        fxt_model: Benchmark.Model,
+        fxt_dataset: Benchmark.Dataset,
+        fxt_benchmark: Benchmark,
+    ):
+        self._test_perf(
+            model=fxt_model,
+            dataset=fxt_dataset,
+            benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )
 
 
-class TestPerfTilingInstanceSegmentation:
+class TestPerfTilingInstanceSegmentation(PerfTestBase):
     """Benchmark tiling instance segmentation."""
 
-    TILING_PARAMS = {
-        "tiling_parameters.enable_tiling": 1,
-    }
-    BENCHMARK_CONFIGS = {
-        "small": {
-            "tags": {
-                "task": "tiling_instance_segmentation",
-            },
-            "datasets": [
-                "tiling_instance_seg/vitens_aeromonas_small/1",
-                "tiling_instance_seg/vitens_aeromonas_small/2",
-                "tiling_instance_seg/vitens_aeromonas_small/3",
-            ],
-            "num_repeat": 5,
-            "train_params": TILING_PARAMS,
-        },
-        "medium": {
-            "tags": {
-                "task": "tiling_instance_segmentation",
-            },
-            "datasets": [
-                "tiling_instance_seg/vitens_aeromonas_medium",
-            ],
-            "num_repeat": 5,
-            "train_params": TILING_PARAMS,
-        },
-        # TODO: Refine large dataset
-        # "large": {
-        #     "tags": {
-        #         "task": "tiling_instance_segmentation",
-        #     },
-        #     "datasets": [
-        #         "tiling_instance_seg/dota_large",
-        #     ],
-        #     "num_repeat": 5,
-        #     "train_params": TILING_PARAMS,
-        # },
-    }
+    MODEL_TEST_CASES = [  # noqa: RUF012
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
+    ]
 
-    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
-    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
-        """Benchmark performance metrics."""
-        result = fxt_benchmark.run(model_id=fxt_model_id)
-        fxt_check_benchmark_result(
-            result,
-            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
-            checks=[
-                {
-                    "name": "f-measure(train)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "epoch",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "f-measure(export)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "f-measure(optimize)",
-                    "op": ">",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "train_e2e_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_data_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_iter_time",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_time_per_image(export)",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-                {
-                    "name": "avg_time_per_image(optimize)",
-                    "op": "<",
-                    "margin": 0.1,
-                },
-            ],
+    DATASET_TEST_CASES = [
+        Benchmark.Dataset(
+            name=f"vitens_aeromonas_small_{idx}",
+            path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
+            size="small",
+            data_format="coco",
+            num_classes=1,
+            num_repeat=5,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        )
+        for idx in (1, 2, 3)
+    ] + [
+        Benchmark.Dataset(
+            name="vitens_aeromonas_medium",
+            path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
+            size="medium",
+            data_format="coco",
+            num_classes=1,
+            num_repeat=5,
+            extra_overrides={
+                "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        ),
+        # Add large dataset
+    ]
+
+    BENCHMARK_CRITERIA = [  # noqa: RUF012
+        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
+        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
+        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
+    ]
+
+    @pytest.mark.parametrize(
+        "fxt_model",
+        MODEL_TEST_CASES,
+        ids=lambda model: model.name,
+        indirect=True,
+    )
+    @pytest.mark.parametrize(
+        "fxt_dataset",
+        DATASET_TEST_CASES,
+        ids=lambda dataset: dataset.name,
+        indirect=True,
+    )
+    def test_perf(
+        self,
+        fxt_model: Benchmark.Model,
+        fxt_dataset: Benchmark.Dataset,
+        fxt_benchmark: Benchmark,
+    ):
+        self._test_perf(
+            model=fxt_model,
+            dataset=fxt_dataset,
+            benchmark=fxt_benchmark,
+            criteria=self.BENCHMARK_CRITERIA,
         )

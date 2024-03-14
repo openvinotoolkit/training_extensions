@@ -20,13 +20,6 @@ Dataset Format
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. Since current Datumaro does not support `AVA dataset <http://research.google.com/ava/>`_ format, therefore conversion to `CVAT dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ is needed. Currently, we offer conversion code from the AVA dataset format to the CVAT dataset format. Please refer
 `this script <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_
 
-If you have your dataset in those formats, then you can simply run using one line of code:
-
-.. code-block:: 
-
-    $ otx train src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml \
-                --train-data-roots <path_to_data_root/train> \
-                --val-data-roots <path_to_data_root/val>
 
 ******
 Models
@@ -37,8 +30,14 @@ We support the following ready-to-use model templates for transfer learning:
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------------+-------------------------+
 | Template ID                                                                                                                                                                             | Name          | Complexity (GFLOPs) | Model size (MB)         |
 +=========================================================================================================================================================================================+===============+=====================+=========================+
-| `Custom_Action_Detection_X3D_FAST_RCNN <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml>`_  | x3d_fast_rcnn | 13.04               | 8.32                    |
+| `Custom_Action_Detection_X3D_FAST_RCNN <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml>`_                | x3d_fast_rcnn | 13.04               | 8.32                    |
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------------+-------------------------+
+
+To see which models are available for the task, the following command can be executed:
+
+.. code-block:: shell
+
+        (otx) ...$ otx find --task ACTION_DETECTION
 
 In the table below the **mAP** on some academic datasets are presented. Each model is trained using `Kinetics-400 <https://www.deepmind.com/open-source/kinetics>`_ pre-trained weight with single Nvidia GeForce RTX3090.
 
