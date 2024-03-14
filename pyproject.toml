@@ -11,12 +11,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "otx"
 dynamic = ["version"]
-description = "OpenVINO™ Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™"
+description = "OpenVINO Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
-    { name = "OpenVINO™ Training Extensions Contributors" },
+    { name = "OpenVINO Training Extensions Contributors" },
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
