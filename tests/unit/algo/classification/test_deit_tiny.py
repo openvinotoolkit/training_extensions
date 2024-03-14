@@ -17,7 +17,7 @@ class TestDeitTiny:
         "model_cls",
         [DeitTinyForMulticlassCls, DeitTinyForMultilabelCls, DeitTinyForHLabelCls],
     )
-    def test_deit_tiny_for_mulitclass(self, model_cls, mocker):
+    def test_deit_tiny(self, model_cls, mocker):
         if model_cls == DeitTinyForHLabelCls:
             model = model_cls(num_classes=10, num_multiclass_heads=2, num_multilabel_classes=5)
         else:
