@@ -1,4 +1,0 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Anomaly Requirements.
-anomalib==0.5.1
-kornia==0.6.9

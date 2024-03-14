@@ -1,6 +1,0 @@
-# Hyperparameters.
-hyper_parameters:
-  parameter_overrides:
-    learning_parameters:
-      enable_supcon:
-        default_value: True

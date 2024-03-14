@@ -1,85 +1,246 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # SETUP CONFIGURATION.                                                        #
 [build-system]
-# FIXME: specified torch wheel to build torch cpp extension should be fixed in some
-# different way instead of using static link url
 requires = [
-    "setuptools>=42",
+    "setuptools>=61",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0"
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "otx"
+dynamic = ["version"]
+description = "OpenVINO Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    { name = "OpenVINO Training Extensions Contributors" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "datumaro==1.6.0rc1",
+    "omegaconf==2.3.0",
+    "rich==13.7.1",
+    "jsonargparse==4.27.1",
+    "psutil==5.9.8", # Mem cache needs system checks
+    "ftfy==6.1.3",
+    "regex==2023.12.25",
+    "importlib_resources==6.1.3",
+    "docstring_parser==0.15", # CLI help-formatter
+    "rich_argparse==1.4.0", # CLI help-formatter
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox==4.4.5",
+    "pre-commit==2.20.0",
+    "pylint",
+    "pytest",
+    "coverage",
+    "pytest-timeout",
+    "pytest-mock",
+    "pytest-csv",
+    "pytest-cov",
+    "mlflow==2.11.1",        # For regression test
+    "py-cpuinfo==9.0.0",    # For regression test
+]
+docs = [
+    "furo",
+    "myst-parser",
+    "sphinx==5.3.0",
+    "pydata-sphinx-theme==0.12.0",
+    "sphinx-tabs",
+    "sphinx-panels",
+    "sphinx-design",
+    "sphinx-copybutton==0.5.0",
+    "sphinx-autoapi",
+    "sphinxemoji",
+    "nbsphinx",
+]
+base = [
+    "torch==2.1.1",
+    "lightning==2.1.2",
+    "pytorchcv",
+    "timm",
+    "openvino==2023.3.0",
+    "openvino-dev==2023.3.0",
+    "openvino-model-api==0.1.9",
+    "onnx==1.15.0",
+    "onnxconverter-common==1.14.0",
+    "nncf==2.8.1",
+]
+mmlab = [
+    "mmdet==3.2.0",
+    "mmpretrain==1.1.1",
+    "mmsegmentation==1.2.1",
+    "mmaction2==1.2.0",
+    "mmdeploy==1.3.*",
+    # Without the pip cache, oss2 will sometimes install to a lower version. This is related to the installation of the mmlab library.
+    # This causes an error when training the mm model, so fix the version first.
+    "oss2==2.17.0",
+]
+anomaly = [
+    # [FIXME] @ashwinvaidya17: Install using a temporary hot-fix commit due to a torchmetrics version conflict.
+    "anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@e78091883a620229c277a79674a904d9f785f8d5",
+    # This is a dependency to avoid conflicts with installing the anomalib[core] option.
+    "av>=10.0.0",
+    "einops>=0.3.2",
+    "freia>=0.2",
+    "imgaug==0.4.0",
+    "kornia>=0.6.6,<0.6.10",
+    "matplotlib>=3.4.3",
+    "opencv-python>=4.5.3.56",
+    "pandas>=1.1.0",
+    "open-clip-torch>=2.23.0",
+]
+
+[project.scripts]
+otx = "otx.cli:main"
+
+[project.urls]
+Documentation = "https://openvinotoolkit.github.io/training_extensions/"
+Repository = "https://github.com/openvinotoolkit/training_extensions/"
+
+[tool.setuptools.dynamic]
+version = {attr = "otx.__version__"}
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["otx*"]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # CIBUILDWHEEL CONFIGURATION.                                                 #
 [tool.cibuildwheel]
-build = "cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+build = "cp39-manylinux_x86_64 cp310-manylinux_x86_64 cp311-manylinux_x86_64"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
-[tool.coverage.run]
+[tool.coverage.paths]
 source = [
-    "src/otx/",
+    "src",
 ]
-omit = [
-    "src/otx/algorithms/*/configs/**/*pipeline*.py",
-    "src/otx/algorithms/*/configs/**/model*.py",
-    "src/otx/algorithms/*/configs/**/deployment.py",
-    "src/otx/algorithms/**/configs/**/backbones/*",
-    "src/otx/algorithms/**/*sample*.py",
-    "**/__init__.py",
-    "src/otx/recipes/*",
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
 ]
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
 [tool.mypy]
-python_version = 3.8
+python_version = "3.10"
 ignore_missing_imports = true
 show_error_codes = true
 
-# TODO: Need to be edited
-follow_imports = "skip"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # RUFF CONFIGURATION                                                          #
 [tool.ruff]
 # Enable rules
-# pydocstyle (`D`)
-# pycodestyle error (`E`)
-# pycodestyle warning (`W`)
-# Pyflakes (`F`)
-# isort (`I`)
-# pylint (`PL`)
-select = ["D", "E", "F", "I", "W", "PL"]
+select = [
+    "F",    # Pyflakes (`F`)
+
+    # Enable all `pydocstyle` rules, limiting to those that adhere to the
+    # Google convention via `convention = "google"`, below.
+    "D",    # pydocstyle (`D`)
+    "E",    # pycodestyle error (`E`)
+    "W",    # pycodestyle warning (`W`)
+
+    "I",    # isort (`I`)
+    "PL",   # pylint (`PL`)
+
+    "C90",  # mccabe (`C90`)
+    "N",    # pep8-naming (`N`)
+    "UP",   # pyupgrade (`UP`)
+
+    "YTT",  # flake8-2020 (`YTT`)
+    "ANN",  # flake8-annotations (`ANN`)
+    "S",    # flake8-bandit (`S`)
+    # "BLE",  # flake8-blind-except (`BLE`)  -> Need to discuss new exception structure
+    "B",    # flake8-bugbear (`B`)
+    "A",    # flake8-builtins (`A`)
+    "COM",  # flake8-commas (`COM`)
+    # "CPY",  # flake8-copyright (`CPY`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "C4",   # flake8-comprehensions (`C4`)
+    "DTZ",  # flake8-datatimez (`DTZ`)
+    "T10",  # flake8-debugger (`T10`)
+    "EM",   # flake8-errmsg (`EM`)
+    "FA",   # flake8-future-annotations (`FA`)
+    "ISC",  # flake8-implicit-str-concat (`ISC`)
+    "ICN",  # flake8-import-conventions (`ICN`)
+    "PIE",  # flake8-pie (`PIE`)
+    "PT",   # flake8-pytest-style (`PT`)
+    "RSE",  # flake8-raise (`RSE`)
+    "RET",  # flake8-return (`RET`)
+    "SLF",  # flake8-self (`SLF`)
+    "SIM",  # flake8-simplify (`SIM`)
+    "TID",  # flake8-tidy-imports (`TID`)
+    "TCH",  # flake8-type-checking (`TCH`)
+    "INT",  # flake8-gettext (`INT`)
+    "ARG",  # flake8-unsused-arguments (`ARG`)
+    "PTH",  # flake8-use-pathlib (`PTH`)
+    "TD",   # flake8-todos (`TD`)
+    "FIX",  # flake8-fixme (`FIX`)
+    # "LOG",  # flake8-logging (`LOG`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+
+    "ERA",  # eradicate (`ERA`)
+    "PD",   # pandas-vet (`PD`)
+    "PGH",  # pygrep-hooks (`PGH`)
+    "TRY",  # tryceratos (`TRY`)
+    "FLY",  # flynt (`FLY`)
+    "NPY",  # NumPy-specific rules (`NPY`)
+    "PERF", # Perflint (`PERF`)
+    # "FURB", # refurb (`FURB`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "RUF",  # Ruff-specific rules (`RUF`)
+]
 
 ignore = [
     # pydocstyle
-    "D107", # Missing docstring in __init__
-    "D202", # No blank lines allowed after function docstring
-    "D203", # 1 blank line required before class docstring
-    "D213", # Multi-line docstring summary should start at the second line
-    "D401", # First line should be in imperative mood; try rephrasing
-    "D404", # First word of the docstring should not be This
-    "D406", # Section name should end with a newline
-    "D407", # Missing dashed underline after section
-    "D413", # Missing blank line after last section
-    "D418", # Methods decorated with @overload shouldn't contain a docstring
+    # On top of the Google convention, disable `D417`, which requires
+    # documentation for every function parameter.
+    "D417",     # Missing argument descriptions in the docstring
 
-    # pylint
-    "PLW2901" # Redefine loop name
+    "D107",     # Missing docstring in `__init__`
+    "D105",     # Missing docstring in magic method
+
+    # flake8-annotations
+    "ANN101",   # Missing-type-self
+    "ANN002",   # Missing type annotation for *args
+    "ANN003",   # Missing type annotation for **kwargs
+
+    "ANN102",   # Missing type annotation for `cls` in classmethod
+    "ANN204",   # Missing return type annotation for special method `__init__`
+
+    "ARG002",   # Unused method argument -> some function cannot use argument
+
+    # flake8-type-checking
+    "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
+    # flake8-fixme
+    "FIX002",   # line-contains-todo
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
-unfixable = [
-    "F401",     # disable autofix for unused imports
-]
+fixable = ["ALL"]
+# fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+# unfixable = [
+#     "F401",     # disable autofix for unused imports
+# ]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -103,11 +264,16 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
-]
+    "tests/assets",
+    "src/otx/algo/**/mmdeploy/",
 
-# Extended exclude for the project specific
-extend-exclude = [
-    "src/otx/api"
+    # it will be cleaned up later
+    "src/otx/algo/classification/backbones/*",
+    "for_developers/helpers.py",
+
+    # Ruff complains it but don't know how to fix since it literally showed no useful logs.
+    # https://github.com/openvinotoolkit/training_extensions/actions/runs/7176557723/job/19541622452?pr=2718#step:5:170
+    "tests/regression/*.py",
 ]
 
 # Same as Black.
@@ -119,15 +285,43 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # minimum target version
 target-version = "py38"
 
-format = "grouped"
-
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
+max-complexity = 20
 
 [tool.ruff.pylint]
 allow-magic-value-types = ["str", "bytes", "int", "float"]
 max-args = 20
-max-branches = 25
-max-statements = 120
+max-branches = 50
+max-statements = 150
 max-returns = 10
+
+[tool.ruff.per-file-ignores]
+# Declare an additional exclude rule for test code
+"tests/**/*.py" = [
+    "S101",     # pytest-style allows `assert` statements in tests.
+    "SLF001",   # We sometimes need to inspect private functions for testing.
+    "TCH003",   # It doesn't seem necessary to use TYPE_CHECKING in tests.
+    "PT004",    # fixture ignore type returning.
+    "E501",     # Test skips lines that are too long.
+    "ANN001",   # Skip annotation type hint in test codes
+    "ANN201",   # Skip return type hint in test codes
+    "D",     # Test skips missing docstring argument with magic (fixture) methods.
+]
+"src/otx/**/*.py" = [
+    "ERA001",
+]
+# See https://github.com/openvinotoolkit/training_extensions/actions/runs/7109500350/job/19354528819?pr=2700
+"src/otx/core/config/**/*.py" = [
+    "UP007"
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.pytest.ini_options]
+# TODO: Add cpu when OTX can run integration test parallelly for each task.
+markers = [
+    "gpu: mark tests which require NVIDIA GPU device",
+    # "cpu: mark tests which require CPU device",
+]

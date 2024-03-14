@@ -3,7 +3,7 @@
 #########################################################
 ARG ver_cuda="11.7.1"
 
-FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04 AS python_base_cuda
+FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04@sha256:f663a1cf01a46daa469c75bf246ac00098bd5179aff2c75367c44f475cd4c8f4 AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
 
 ARG HTTP_PROXY

@@ -41,12 +41,6 @@ Dataset Format
 **************
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. For instance segmentation we support `COCO <https://cocodataset.org/#format-data>`_ dataset format.
-If you have your dataset in those formats, then you can simply run using one line of code:
-
-.. code-block::
-
-    $ otx train  <model_template> --train-data-roots <path_to_data_root> \
-                                            --val-data-roots <path_to_data_root>
 
 .. note::
 
@@ -58,15 +52,19 @@ Models
 
 We support the following ready-to-use model templates:
 
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                                                                                                | Name                       | Complexity (GFLOPs) | Model size (MB) |
-+============================================================================================================================================================================================================================================+============================+=====================+=================+
-| `Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml>`_  | MaskRCNN-EfficientNetB2B   | 68.48               | 13.27           |
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
-| `Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml>`_                | MaskRCNN-ResNet50          | 533.80              | 177.90          |
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
-| `Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/convnext_maskrcnn/template.yaml>`_                | MaskRCNN-ConvNeXt          | 266.78              | 192.4           |
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                   | Name                       | Complexity (GFLOPs) | Model size (MB) |
++===============================================================================================================================================================================================================+============================+=====================+=================+
+| `Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml>`_    | MaskRCNN-EfficientNetB2B   | 68.48               | 13.27           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
+| `Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml>`_                       | MaskRCNN-ResNet50          | 533.80              | 177.90          |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
+
+Above table can be found using the following command
+
+.. code-block:: shell
+
+    (otx) ...$ otx find --task INSTANCE_SEGMENTATION
 
 MaskRCNN-ResNet50 utilizes the `ResNet-50 <https://arxiv.org/abs/1512.03385>`_ architecture as the backbone network for extracting image features. This choice of backbone network results in a higher number of parameters and FLOPs, which consequently requires more training time. However, the model offers superior performance in terms of accuracy.
 
@@ -74,79 +72,12 @@ On the other hand, MaskRCNN-EfficientNetB2B employs the `EfficientNet-B2 <https:
 
 Recently, we have made updates to MaskRCNN-ConvNeXt, incorporating the `ConvNeXt backbone <https://arxiv.org/abs/2201.03545>`_. Through our experiments, we have observed that this variant achieves better accuracy compared to MaskRCNN-ResNet50 while utilizing less GPU memory. However, it is important to note that the training time and inference duration may slightly increase. If minimizing training time is a significant concern, we recommend considering a switch to MaskRCNN-EfficientNetB2B.
 
-.. In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
-.. +---------------------------+--------------+------------+-----------------+
-.. | Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
-.. +===========================+==============+============+=================+
-.. | MaskRCNN-EfficientNetB2B  | N/A          | N/A        | N/A             |
-.. +---------------------------+--------------+------------+-----------------+
-.. | MaskRCNN-ResNet50         | N/A          | N/A        | N/A             |
-.. +---------------------------+--------------+------------+-----------------+
-.. | MaskRCNN-ConvNeXt         | N/A          | N/A        | N/A             |
-.. +---------------------------+--------------+------------+-----------------+
-
-.. *******************
-.. Tiling Pipeline
-.. *******************
-
-.. To be added soon
-
-************************
-Semi-supervised Learning
-************************
-
-We employ the modified `Unbiased Teacher framework <https://arxiv.org/abs/2102.09480>`_ to tackle the problem of :ref:`Semi-supervised learning <semi_sl_explanation>` in instance segmentation.
-This framework leverages two models during training: a "student" model, which serves as the primary model being trained, and a "teacher" model, which acts as a guiding reference for the student model.
-
-During training, the student model is updated using both ground truth annotations (for labeled data) and pseudo-labels (for unlabeled data).
-These pseudo-labels are generated by the teacher model's predictions. Notably, the teacher model's parameters are updated based on the moving average of the student model's parameters.
-This means that backward loss propagation is not utilized for updating the teacher model. Once training is complete, only the student model is used for making predictions in the instance segmentation task.
-
-We also use the warmup stage for the teacher model during the first epochs to avoid utilizing too misleading pseudo labeling. We use constant thresholding for pseudo bounding boxes and, unlike in Unbiased Teacher work, we utilize all unlabeled losses including regression one and mask loss.
-There are some key differences in the augmentation pipelines used for labeled and unlabeled data.
-Basic augmentations such as random flip, random rotate, and random crop are employed for the teacher model's input.
-On the other hand, stronger augmentations like color distortion, RGB to gray conversion, Gaussian blur and `Random Erasing <https://arxiv.org/abs/1708.04896>`_ are applied to the student model.
-This discrepancy helps improve generalization and prevents unnecessary overfitting on the pseudo-labels generated by the teacher model.
-In the same way as for the supervised pipeline we utilize EMA smoothing for the student model throughout the whole training process.
-
-.. note::
-
-    To obtain a better performance after fine-tuning on small labeled datasets used in Semi-SL tasks we adopt a repeat dataset which brings metric improvement in our experiments. However, the training time also increases noticeably.
-    If the training time is important or the Semi-SL dataset has a sufficient number of labeled images, dataset repetition times can be decreased or switched off
-    in the corresponding `data_pipeline.py <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/base/data/semisl/semisl_is_res_data_pipeline.py>`_ config.
-
-The table below presents the mAP metric achieved by our templates on various datasets.
-We provide these scores for comparison purposes, alongside the supervised baseline trained solely on labeled data.
-
-* `Cityscapes <https://www.cityscapes-dataset.com/>`_ : 8 classes, 267 labeled images, 2708 unlabeled and 500 images for validation
-* `TrashCan <https://conservancy.umn.edu/handle/11299/214865>`_ : 22 classes, 606 labeled images, 5459 unlabeled and 1147 images for validation
-* `WGISD <https://github.com/thsant/wgisd>`_ : 5 classes , 11 labeled images, 599 unlabeled and 27 images for validation
-* `Pascal-tiny <https://github.com/Yunyung/Instance-Segmentation-on-Tiny-PASCAL-VOC-Dataset/tree/main#Download-Official-Dataset>`_ : 20 classes,  337 labeled images, 709 unlabeled and 303 images for validation
-
-+-------------------------------------+------------+------------+-------+-------------+
-| Model name                          | Cityscapes | TrashCan   | WGISD | Pascal-tiny |
-+=====================================+============+============+=======+=============+
-| MaskRCNN-ResNet50-supervised        |  33.79     | 25.63      | 23.21 | 22.23       |
-+-------------------------------------+------------+------------+-------+-------------+
-| MaskRCNN-ResNet50-semisl            |  40.08     | 36.78      | 41.12 | 24.84       |
-+-------------------------------------+------------+------------+-------+-------------+
-| MaskRCNN-EfficientNetB2B-supervised |  25.81     |  23.12     | 32.6  | 15.00       |
-+-------------------------------------+------------+------------+-------+-------------+
-| MaskRCNN-EfficientNetB2B-semisl     |  28.73     |  26.45     | 33.5  | 16.24       |
-+-------------------------------------+------------+------------+-------+-------------+
-
-
-
-
-.. ************************
-.. Self-supervised Learning
-.. ************************
-
-.. To be added soon
-
-.. ********************
-.. Incremental Learning
-.. ********************
-
-.. To be added soon
++---------------------------+--------------+------------+-----------------+
+| Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
++===========================+==============+============+=================+
+| MaskRCNN-EfficientNetB2B  | N/A          | N/A        | N/A             |
++---------------------------+--------------+------------+-----------------+
+| MaskRCNN-ResNet50         | N/A          | N/A        | N/A             |
++---------------------------+--------------+------------+-----------------+

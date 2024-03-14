@@ -1,0 +1,721 @@
+{
+  "dm_format_version": "1.0",
+  "media_type": 2,
+  "infos": {
+    "ScExtractorVersion": "1.0",
+    "GetiProjectTask": "classification",
+    "GetiAnomalyLabels": [],
+    "GetiTaskTypeLabels": [
+      [
+        "classification",
+        [
+          "Rigid",
+          "Rectangle",
+          "Triangle",
+          "Non-Rigid",
+          "Circle",
+          "Lion",
+          "Panda"
+        ]
+      ]
+    ]
+  },
+  "categories": {
+    "label": {
+      "labels": [
+        {
+          "name": "Rigid",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "Rectangle",
+          "parent": "Rigid",
+          "attributes": []
+        },
+        {
+          "name": "Triangle",
+          "parent": "Rigid",
+          "attributes": []
+        },
+        {
+          "name": "Non-Rigid",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "Circle",
+          "parent": "Non-Rigid",
+          "attributes": []
+        },
+        {
+          "name": "Lion",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "Panda",
+          "parent": "",
+          "attributes": []
+        }
+      ],
+      "label_groups": [
+        {
+          "name": "Shape",
+          "group_type": "exclusive",
+          "labels": ["Non-Rigid", "Rigid"]
+        },
+        {
+          "name": "Object___Rigid Group",
+          "group_type": "exclusive",
+          "labels": ["Rectangle", "Triangle"]
+        },
+        {
+          "name": "Object___Non-Rigid Group",
+          "group_type": "exclusive",
+          "labels": ["Circle"]
+        },
+        {
+          "name": "Animal___Lion",
+          "group_type": "exclusive",
+          "labels": ["Lion"]
+        },
+        {
+          "name": "Animal___Panda",
+          "group_type": "exclusive",
+          "labels": ["Panda"]
+        }
+      ],
+      "attributes": []
+    },
+    "mask": {
+      "colormap": [
+        {
+          "label_id": 0,
+          "r": 241,
+          "g": 91,
+          "b": 133
+        },
+        {
+          "label_id": 1,
+          "r": 201,
+          "g": 230,
+          "b": 73
+        },
+        {
+          "label_id": 2,
+          "r": 7,
+          "g": 105,
+          "b": 132
+        },
+        {
+          "label_id": 3,
+          "r": 255,
+          "g": 125,
+          "b": 0
+        },
+        {
+          "label_id": 4,
+          "r": 255,
+          "g": 86,
+          "b": 98
+        },
+        {
+          "label_id": 5,
+          "r": 0,
+          "g": 245,
+          "b": 212
+        },
+        {
+          "label_id": 6,
+          "r": 233,
+          "g": 97,
+          "b": 21
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "id": "5",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 2
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "5.jpg",
+        "size": [1368, 1872]
+      }
+    },
+    {
+      "id": "4",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 2,
+          "label_id": 4
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 3
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "4.jpg",
+        "size": [1327, 1494]
+      }
+    },
+    {
+      "id": "3",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 1
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "3.jpg",
+        "size": [897, 1175]
+      }
+    },
+    {
+      "id": "6",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 1
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "6.jpg",
+        "size": [955, 3309]
+      }
+    },
+    {
+      "id": "8",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 2
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "8.jpg",
+        "size": [1368, 3523]
+      }
+    },
+    {
+      "id": "1",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "1.jpg",
+        "size": [358, 478]
+      }
+    },
+    {
+      "id": "7",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 1
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "7.jpg",
+        "size": [2200, 3995]
+      }
+    },
+    {
+      "id": "9",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 1,
+          "label_id": 2
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "9.jpg",
+        "size": [2265, 3933]
+      }
+    },
+    {
+      "id": "0",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "0.jpg",
+        "size": [272, 427]
+      }
+    },
+    {
+      "id": "2",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "2.jpg",
+        "size": [1231, 3561]
+      }
+    },
+    {
+      "id": "11",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 2,
+          "label_id": 4
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 3
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "11.jpg",
+        "size": [2265, 3667]
+      }
+    },
+    {
+      "id": "10",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 2,
+          "label_id": 4
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 3
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "10.jpg",
+        "size": [1466, 3424]
+      }
+    },
+    {
+      "id": "14",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "14.jpg",
+        "size": [1405, 1946]
+      }
+    },
+    {
+      "id": "13",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "13.jpg",
+        "size": [1555, 2000]
+      }
+    },
+    {
+      "id": "12",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "12.jpg",
+        "size": [1273, 1959]
+      }
+    },
+    {
+      "id": "17",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "17.jpg",
+        "size": [1314, 3582]
+      }
+    },
+    {
+      "id": "16",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "16.jpg",
+        "size": [1863, 2779]
+      }
+    },
+    {
+      "id": "18",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "18.jpg",
+        "size": [1035, 4232]
+      }
+    },
+    {
+      "id": "15",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 3,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "15.jpg",
+        "size": [2118, 4065]
+      }
+    },
+    {
+      "id": "19",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 3
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "19.jpg",
+        "size": [1158, 1427]
+      }
+    },
+    {
+      "id": "20",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 3
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 4,
+          "label_id": 6
+        }
+      ],
+      "attr": {
+        "has_empty_label": false
+      },
+      "image": {
+        "path": "20.jpg",
+        "size": [1158, 2935]
+      }
+    }
+  ]
+}

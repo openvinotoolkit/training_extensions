@@ -2,7 +2,6 @@ import sys
 
 import atheris
 from helper import FuzzingHelper
-
 from otx.cli.tools.cli import main as cli_main
 from otx.cli.utils.errors import CliException
 
