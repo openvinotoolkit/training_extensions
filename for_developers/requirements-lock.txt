@@ -67,7 +67,7 @@ pyRFC3339==1.1
 pytest==6.2.5
 pytest-cov==2.11.1
 pytest-html==3.2.0
-pytest-metadata==2.0.4
+pytest-metadata==3.1.1
 python-apt==2.3.0+ubuntu2.1
 python-dateutil==2.8.1
 python-debian===0.1.43ubuntu1
