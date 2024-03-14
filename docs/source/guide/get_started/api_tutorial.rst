@@ -178,7 +178,7 @@ Refer `lightning.Trainer <https://lightning.ai/docs/pytorch/stable/common/traine
 
     recipe = "src/otx/recipe/detection/atss_mobilenetv2.yaml"
     engine = Engine.from_config(
-        config_path=recipe,
+        config=recipe,
         data_root="data/wgisd",
         work_dir="./otx-workspace",
     )
@@ -207,7 +207,7 @@ Create an output model and start actual training:
 
     config = "src/otx/recipe/detection/atss_mobilenetv2.yaml"
 
-    engine = Engine.from_config(config_path=config, data_root="data/wgisd")
+    engine = Engine.from_config(config=config, data_root="data/wgisd")
     engine.train()
 
 .. note::
@@ -215,7 +215,7 @@ Create an output model and start actual training:
     This can use callbacks provided by OTX and several training techniques.
     However, in this case, no arguments are specified for train.
 
-3. If you want to specify the model, you can do so as shown below:
+1. If you want to specify the model, you can do so as shown below:
 
 The model used by the Engine is of type ``otx.core.model.entity.base.OTXModel``.
 

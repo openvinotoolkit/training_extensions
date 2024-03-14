@@ -230,7 +230,7 @@ Here are the main outputs can expect with CLI:
             recipe = "src/otx/recipe/detection/atss_mobilenetv2.yaml"
 
             engine = Engine.from_config(
-                      config_path=recipe,
+                      config=recipe,
                       data_root=data_root,
                       work_dir="otx-workspace",
                     )
@@ -254,7 +254,7 @@ Here are the main outputs can expect with CLI:
             engine.train(...)
 
 
-4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+1. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.

@@ -40,7 +40,7 @@ def test_engine_from_config(
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
-        config_path=DEFAULT_CONFIG_PER_TASK[task],
+        config=DEFAULT_CONFIG_PER_TASK[task],
         data_root=fxt_target_dataset_per_task[task.value.lower()],
         work_dir=tmp_path_train,
         device=fxt_accelerator,
@@ -134,7 +134,7 @@ def test_engine_from_tile_recipe(
     task = OTXTaskType.DETECTION if "detection" in recipe else OTXTaskType.INSTANCE_SEGMENTATION
 
     engine = Engine.from_config(
-        config_path=recipe,
+        config=recipe,
         data_root=fxt_target_dataset_per_task[task.value.lower()],
         work_dir=tmp_path / task,
         device=fxt_accelerator,

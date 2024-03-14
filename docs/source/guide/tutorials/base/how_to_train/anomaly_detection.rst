@@ -147,7 +147,7 @@ this example.
             recipe = "src/otx/recipe/anomaly_detection/padim.yaml"
 
             engine = Engine.from_config(
-                      config_path=recipe,
+                      config=recipe,
                       data_root=data_root,
                       work_dir="otx-workspace",
                     )
@@ -172,7 +172,7 @@ this example.
             engine.train(...)
 
 
-3. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs.
+1. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs.
 Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.

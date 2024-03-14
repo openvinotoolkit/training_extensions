@@ -27,7 +27,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .utils.auto_configurator import AutoConfigurator
+from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -634,22 +634,24 @@ class Engine:
     @classmethod
     def from_config(
         cls,
-        config_path: PathLike,
+        config: PathLike,
         data_root: PathLike | None = None,
         work_dir: PathLike | None = None,
+        task: OTXTaskType | None = None,
         **kwargs,
     ) -> Engine:
         """Builds the engine from a configuration file.
 
         Args:
-            config_path (PathLike): The configuration file path.
+            config (PathLike): The configuration file path or model name.
             data_root (PathLike | None): Root directory for the data.
                 Defaults to None. If data_root is None, use the data_root from the configuration file.
             work_dir (PathLike | None, optional): Working directory for the engine.
                 Defaults to None. If work_dir is None, use the work_dir from the configuration file.
+            task (OTXTaskType | None, optional): The type of OTX task. Defaults to None.
             kwargs: Arguments that can override the engine's arguments.
 
-        Returns:s
+        Returns:
             Engine: An instance of the Engine class.
 
         Example:
@@ -659,13 +661,22 @@ class Engine:
         """
         from otx.cli.utils.jsonargparse import get_instantiated_classes
 
+        # if config is model_name
+        if not Path(config).exists() and task is not None:
+            config_file = DEFAULT_CONFIG_PER_TASK.get(task)
+            model_path = str(config_file).split("/")
+            model_path[-1] = f"{config}.yaml"
+            config = Path("/".join(model_path))
+
         # For the Engine argument, prepend 'engine.' for CLI parser
-        filter_kwargs = ["device", "checkpoint", "task"]
+        if task is not None:
+            kwargs["engine.task"] = task
+        filter_kwargs = ["device", "checkpoint"]
         for key in filter_kwargs:
             if key in kwargs:
                 kwargs[f"engine.{key}"] = kwargs.pop(key)
         instantiated_config, train_kwargs = get_instantiated_classes(
-            config=config_path,
+            config=config,
             data_root=data_root,
             work_dir=work_dir,
             **kwargs,

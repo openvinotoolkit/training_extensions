@@ -44,7 +44,7 @@ def test_forward_explain(
         pytest.skip("DINO is not supported.")
 
     engine = Engine.from_config(
-        config_path=recipe,
+        config=recipe,
         data_root=fxt_target_dataset_per_task[task],
     )
 
@@ -86,7 +86,7 @@ def test_predict_with_explain(
 
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
-        config_path=recipe,
+        config=recipe,
         data_root=fxt_target_dataset_per_task[task],
         work_dir=tmp_path,
     )
