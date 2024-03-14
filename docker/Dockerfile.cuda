@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c AS base
+FROM pytorch/pytorch:2.2.1-cuda11.8-cudnn8-runtime@sha256:8803b92bae68b071f84f160d0d92ad69efb2e4290ec9848e78066b2f1a806165 AS base
 
 ARG http_proxy
 ARG https_proxy
