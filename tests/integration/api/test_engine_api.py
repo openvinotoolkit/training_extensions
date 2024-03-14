@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from openvino.model_api.tilers import Tiler
+
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
