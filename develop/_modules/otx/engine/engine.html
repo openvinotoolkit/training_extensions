@@ -268,7 +268,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.utils.cache</span> <span class="kn">import</span> <span class="n">TrainerArgumentsCache</span>
 
 <span class="kn">from</span> <span class="nn">.hpo</span> <span class="kn">import</span> <span class="n">execute_hpo</span><span class="p">,</span> <span class="n">update_hyper_parameter</span>
-<span class="kn">from</span> <span class="nn">.utils.auto_configurator</span> <span class="kn">import</span> <span class="n">AutoConfigurator</span>
+<span class="kn">from</span> <span class="nn">.utils.auto_configurator</span> <span class="kn">import</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="p">,</span> <span class="n">AutoConfigurator</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning</span> <span class="kn">import</span> <span class="n">Callback</span>
@@ -936,6 +936,68 @@
             <span class="n">optimizer</span><span class="o">=</span><span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;optimizer&quot;</span><span class="p">),</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scheduler&quot;</span><span class="p">),</span>
             <span class="o">**</span><span class="n">engine_kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Engine.from_model_name"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.engine.engine.html#otx.engine.Engine.from_model_name">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_model_name</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
+        <span class="n">data_root</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">work_dir</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Engine</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the engine from a model name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name (str): The model name.</span>
+<span class="sd">            task (OTXTaskType): The type of OTX task.</span>
+<span class="sd">            data_root (PathLike | None): Root directory for the data.</span>
+<span class="sd">                Defaults to None. If data_root is None, use the data_root from the configuration file.</span>
+<span class="sd">            work_dir (PathLike | None, optional): Working directory for the engine.</span>
+<span class="sd">                Defaults to None. If work_dir is None, use the work_dir from the configuration file.</span>
+<span class="sd">            kwargs: Arguments that can override the engine&#39;s arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Engine: An instance of the Engine class.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; engine = Engine.from_model_name(</span>
+<span class="sd">            ...     model_name=&quot;atss_mobilenetv2&quot;,</span>
+<span class="sd">            ...     task=&quot;DETECTION&quot;,</span>
+<span class="sd">            ...     data_root=&lt;dataset/path&gt;,</span>
+<span class="sd">            ... )</span>
+
+<span class="sd">            If you want to override configuration from default config</span>
+<span class="sd">            &gt;&gt;&gt; overriding = {</span>
+<span class="sd">            ...     &quot;data.config.train_subset.batch_size&quot;: 2,</span>
+<span class="sd">            ...     &quot;data.config.test_subset.subset_name&quot;: &quot;TESTING&quot;,</span>
+<span class="sd">            ... }</span>
+<span class="sd">            &gt;&gt;&gt; engine = Engine(</span>
+<span class="sd">            ...     model_name=&quot;atss_mobilenetv2&quot;,</span>
+<span class="sd">            ...     task=&quot;DETECTION&quot;,</span>
+<span class="sd">            ...     data_root=&lt;dataset/path&gt;,</span>
+<span class="sd">            ...     **overriding,</span>
+<span class="sd">            ... )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_config</span> <span class="o">=</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="n">model_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">default_config</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="n">model_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">.yaml&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_path</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">candidate_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Model config file not found: </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">, please check the model name. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Available models for </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2"> task are </span><span class="si">{</span><span class="n">candidate_list</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+            <span class="n">config_path</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+            <span class="n">work_dir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">,</span>
+            <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
     <span class="c1"># ------------------------------------------------------------------------ #</span>
