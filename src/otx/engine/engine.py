@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal
+from typing import TYPE_CHECKING, Any, Iterable, Literal, Union
 from warnings import warn
 
 import torch
@@ -138,14 +138,16 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        if self.task == OTXTaskType.DETECTION:
+        if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
             from mmcv.ops.nms import NMSop
             from mmcv.ops.roi_align import RoIAlign
             from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
             from mmengine.structures import instance_data
+            import numpy as np
 
-            instance_data.LongTypeTensor = [torch.LongTensor, torch.xpu.LongTensor]
-            instance_data.BoolTypeTensor = [torch.BoolTensor, torch.xpu.BoolTensor]
+            LongTypeTensor = Union[torch.LongTensor, torch.xpu.LongTensor]
+            BoolTypeTensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
+            instance_data.IndexType = Union[str, slice, int, list, LongTypeTensor, BoolTypeTensor, np.ndarray]
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
 

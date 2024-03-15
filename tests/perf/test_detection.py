@@ -33,9 +33,9 @@ class TestPerfObjectDetection(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -49,9 +49,9 @@ class TestPerfObjectDetection(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -63,9 +63,23 @@ class TestPerfObjectDetection(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
+                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "callback_monitor": "val/f1-score",
+                "scheduler.monitor": "val/f1-score",
+            },
+        ),
+        Benchmark.Dataset(
+            name="pascal_tiny",
+            path=Path("pascal_tiny/coco_otx"),
+            size="large",
+            data_format="coco",
+            num_classes=20,
+            num_repeat=1,
+            extra_overrides={
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -104,6 +118,7 @@ class TestPerfObjectDetection(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

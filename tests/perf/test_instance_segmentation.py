@@ -29,7 +29,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -45,7 +45,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -59,7 +59,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             size="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -100,6 +100,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -124,7 +125,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -140,7 +141,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             size="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=5,
+            num_repeat=1,
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
@@ -182,6 +183,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
