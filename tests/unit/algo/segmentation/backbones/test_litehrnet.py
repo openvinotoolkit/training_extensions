@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import pytest
 import torch
-from otx.algo.segmentation.model.backbones.litehrnet import LiteHRNet, NeighbourSupport, SpatialWeightingV2, StemV2
+from otx.algo.segmentation.backbones.litehrnet import LiteHRNet, NeighbourSupport, SpatialWeightingV2, StemV2
 
 
 class TestSpatialWeightingV2:
