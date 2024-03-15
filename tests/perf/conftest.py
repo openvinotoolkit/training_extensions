@@ -360,19 +360,32 @@ def fxt_benchmark_summary(
 ):
     """Summarize all results at the end of test session."""
     yield
-    all_results = Benchmark.load_result(fxt_output_root)
-    if all_results is not None:
-        print("=" * 20, "[Benchmark summary]")
-        print(all_results)
-        fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
-        all_results.to_csv(fxt_summary_csv)
-        print(f"  -> Saved to {fxt_summary_csv}.")
 
-        if fxt_mlflow_client:
-            try:
-                _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
-            except Exception as e:
-                print("MLFlow logging failed: ", e)
+    raw_results = Benchmark.load_result(fxt_output_root)
+    if raw_results is None:
+        print("No benchmark results loaded in ", fxt_output_root)
+        return
+
+    summary_results = [
+        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
+        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
+        Benchmark.average_result(raw_results, ["task", "model"]),
+        Benchmark.average_result(raw_results, ["task"]),
+    ]
+    summary_results = pd.concat(summary_results)
+
+    print("=" * 20, "[Benchmark summary]")
+    print(summary_results)
+    fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
+    summary_results.to_csv(fxt_summary_csv)
+    raw_results.to_csv(fxt_summary_csv.parent / "benchmark-raw.csv")
+    print(f"  -> Saved to {fxt_summary_csv}.")
+
+    if fxt_mlflow_client:
+        try:
+            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+        except Exception as e:
+            print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:

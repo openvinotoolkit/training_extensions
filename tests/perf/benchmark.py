@@ -256,7 +256,8 @@ class Benchmark:
             # Force memory clean up
             gc.collect()
 
-        return self.load_result(work_dir)
+        result = self.load_result(work_dir)
+        return self.average_result(result, keys=["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         if self.dry_run:
@@ -334,44 +335,35 @@ class Benchmark:
         if len(results) == 0:
             return None
 
-        # Merge data
-        data = pd.concat(results, ignore_index=True)
-        all_data = []
+        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
 
-        def average_result(data: pd.DataFrame, keys: list[str]):
-            # Average by keys
-            grouped = data.groupby(keys)
-            aggregated = grouped.mean(numeric_only=True)
-            # Merge tag columns (non-numeric & non-index)
-            tag_columns = set(data.columns) - set(aggregated.columns) - set(keys)
-            for col in tag_columns:
-                # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-                aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-            return aggregated.reset_index()
+    @staticmethod
+    def average_result(data: pd.DataFrame, keys: list[str]):
+        """Average result w.r.t. given keys
 
-        # Average by data group
-        averaged = average_result(data, ["task", "model", "data_group", "data"])
-        all_data.append(averaged)
-
-        # Average by data group
-        averaged = average_result(data, ["task", "model", "data_group"])
-        averaged["data"] = "all"
-        all_data.append(averaged)
-
-        # Average by model
-        averaged = average_result(data, ["task", "model"])
-        averaged["data"] = "all"
-        averaged["data_group"] = "all"
-        all_data.append(averaged)
-
-        # Average by task
-        averaged = average_result(data, ["task"])
-        averaged["data"] = "all"
-        averaged["data_group"] = "all"
-        averaged["model"] = "all"
-        all_data.append(averaged)
-
-        return pd.concat(all_data).set_index(["task", "model", "data_group", "data"])
+        Args:
+            result (pd.DataFrame): Result data frame
+            keys (list[str]): Keys to summarize whole data
+        """
+        # Flatten index
+        index_names = data.index.names
+        column_names = data.columns
+        data = data.reset_index()
+        # Average by keys
+        grouped = data.groupby(keys)
+        aggregated = grouped.mean(numeric_only=True)
+        # Merge index columns
+        idx_columns = set(index_names) - set(keys)
+        for col in idx_columns:
+            aggregated[col] = "all"
+        # Merge tag columns (non-numeric & non-index)
+        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
+        for col in tag_columns:
+            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+            agg = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+        # Recover index
+        return aggregated.reset_index().set_index(index_names)
 
     def check(self, result: pd.DataFrame, criteria: list[Criterion]):
         """Check result w.r.t. reference data.
