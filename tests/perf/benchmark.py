@@ -83,8 +83,6 @@ class Benchmark:
             elif self.compare == ">":
                 assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
 
-    RESULT_INDEX: list[str] = ["task", "model", "data_group", "data"]
-
     def __init__(
         self,
         data_root: Path = Path("data"),
@@ -259,7 +257,7 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
-        return self.average_result(result, keys=self.RESULT_INDEX)
+        return self.average_result(result, keys=["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         if self.dry_run:
@@ -337,15 +335,18 @@ class Benchmark:
         if len(results) == 0:
             return None
 
-        return pd.concat(results, ignore_index=True).set_index(Benchmark.RESULT_INDEX)
+        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
 
     @staticmethod
-    def average_result(data: pd.DataFrame, keys: list[str]):
+    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
         """Average result w.r.t. given keys
 
         Args:
             result (pd.DataFrame): Result data frame
             keys (list[str]): Keys to summarize whole data
+
+        Retruns:
+            pd.DataFrame: Averaged result table
         """
         # Flatten index
         index_names = data.index.names
@@ -362,7 +363,6 @@ class Benchmark:
         tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
         for col in tag_columns:
             # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-            agg = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
             aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
         # Recover index
         return aggregated.reset_index().set_index(index_names)
