@@ -1,6 +1,6 @@
-"""Tiling Pipeline for Instance-Seg Task."""
+"""Tiling Pipeline for Rotated-Detection Task."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
