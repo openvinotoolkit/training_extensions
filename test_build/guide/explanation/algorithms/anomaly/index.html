@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Anomaly Detection &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
@@ -26,25 +25,22 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../_static/copybutton.js"></script>
-    <script src="../../../../_static/design-tabs.js"></script>
+    <script src="../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/anomaly/index';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -298,17 +294,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.action_detection.html">otx.algo.action_detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.anomaly.html">otx.algo.anomaly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.callbacks.html">otx.algo.callbacks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.hooks.html">otx.algo.hooks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.samplers.html">otx.algo.samplers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.schedulers.html">otx.algo.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.utils.html">otx.algo.utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
@@ -328,35 +316,15 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.data.anomaly.html">otx.data.anomaly</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.engine.html">otx.engine.engine</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.hpo.html">otx.engine.hpo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.utils.html">otx.engine.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.data.html">otx.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.utils.signal.html">otx.utils.signal</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.utils.utils.html">otx.utils.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../reference/_autosummary/otx.utils.html">otx.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -364,7 +332,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -399,11 +367,11 @@
             <article class="bd-article" role="main">
               
   <section id="anomaly-detection">
-<h1>Anomaly Detection<a class="headerlink" href="#anomaly-detection" title="Permalink to this heading">#</a></h1>
+<h1>Anomaly Detection<a class="headerlink" href="#anomaly-detection" title="Link to this heading">#</a></h1>
 <p>The datasets from real-world applications such as industrial, medical, and security are extremely unbalanced, with an abundance of normal images and a severe lack of abnormal samples. A second issue is that the definition and type of abnormality are constantly evolving, making it difficult to train a supervised model once and use it permanently.  An alternative approach is to train a model using only normal samples to learn normality.  During the validation or testing phases, a deviation from this would indicate an anomaly. The process of identifying such deviations or anomalies in data is known as anomaly detection.</p>
 <p>This section examines the solutions for anomaly detection offered by the OpenVINO Training Extensions library.</p>
 <section id="task-types">
-<h2>Task Types<a class="headerlink" href="#task-types" title="Permalink to this heading">#</a></h2>
+<h2>Task Types<a class="headerlink" href="#task-types" title="Link to this heading">#</a></h2>
 <p>OpenVINO Training Extensions supports the following anomaly task types:</p>
 <ul class="simple">
 <li><p>Anomaly Classification - (Image-level detection)</p></li>
@@ -415,26 +383,26 @@
 <p>All anomaly task types are only trained on normal images. The different task types use the same models for generating the raw predictions, but differ in the post-processing that is applied to the raw predictions to localize the anomalous regions. Anomaly detection generates bounding-box predictions, while anomaly segmentation generates pixel-mask predictions. Anomaly classification does not perform localization of the anomalous regions within the image, but just outputs a normal vs. anomalous label for the entire image.</p>
 </div>
 <section id="anomaly-classification">
-<h3>Anomaly Classification<a class="headerlink" href="#anomaly-classification" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Classification<a class="headerlink" href="#anomaly-classification" title="Link to this heading">#</a></h3>
 <p>Anomaly classification is the task of predicting normal and abnormal images at the image level. As noted above, a model is trained on only normal images. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by the algo backend. An image is classified as abnormal if the anomaly score is above the threshold.</p>
 </section>
 <section id="id1">
-<h3>Anomaly Detection<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Detection<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Anomaly detection is the task of predicting normal and abnormal images at the box level. Similar to anomaly classification, a model is trained on normal images only. During the testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a bounding box around the anomaly.</p>
 </section>
 <section id="anomaly-segmentation">
-<h3>Anomaly Segmentation<a class="headerlink" href="#anomaly-segmentation" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Segmentation<a class="headerlink" href="#anomaly-segmentation" title="Link to this heading">#</a></h3>
 <p>The anomaly segmentation task locates anomalies at the pixel level. Similar to anomaly classification and detection, a model is trained on only normal images. During the validation and testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.</p>
 <figure class="align-center" id="id10">
 <span id="fig-anomaly-tasks"></span><a class="reference internal image-reference" href="../../../../_images/anomaly_tasks.png"><img alt="Anomaly Task Types" src="../../../../_images/anomaly_tasks.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id10" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id10" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
 </section>
 <section id="dataset-format">
-<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
+<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
 <p>At the moment, the anomaly tasks support the MVTec AD dataset format, which is one of the most popular formats for detecting anomalies.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MVTec/&lt;category&gt;
 ├── ground_truth
@@ -465,7 +433,7 @@
 <p>Future releases of OpenVINO Training Extensions will support other benchmark datasets, such as Amazon’s <a class="reference external" href="https://github.com/amazon-science/spot-diff#data-download">Visual Anomaly (VisA)</a> dataset. Meanwhile, you can use the <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad/">MVTec AD dataset</a> to train and test anomaly detection models, or use MVTec dataset structure to train and test anomaly detection models on your own dataset.</p>
 </section>
 <section id="models">
-<h2>Models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h2>
+<h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
 <p>As mentioned above, the goal of visual anomaly detection is to learn a representation of normal behaviour in the data and then identify instances that deviate from this normal behaviour. OpenVINO Training Extensions supports several deep learning approaches to this task, including the following:</p>
 <table class="table">
 <thead>
@@ -495,10 +463,10 @@
 </tbody>
 </table>
 <section id="clustering-based-models">
-<h3>Clustering-based Models<a class="headerlink" href="#clustering-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Clustering-based Models<a class="headerlink" href="#clustering-based-models" title="Link to this heading">#</a></h3>
 <p>These models initially extract features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2011.08785.pdf">PADIM</a>.</p>
 <section id="id7">
-<h4>PADIM<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h4>
+<h4>PADIM<a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/padim.png"><img alt="Anomaly Task Types" src="../../../../_images/padim.png" style="width: 600px;" /></a>
 </figure>
@@ -512,10 +480,10 @@
 </section>
 </section>
 <section id="knowledge-distillation-based-models">
-<h3>Knowledge Distillation-based Models<a class="headerlink" href="#knowledge-distillation-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Knowledge Distillation-based Models<a class="headerlink" href="#knowledge-distillation-based-models" title="Link to this heading">#</a></h3>
 <p>Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2103.04257.pdf">STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection</a>.</p>
 <section id="id8">
-<h4>STFPM<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h4>
+<h4>STFPM<a class="headerlink" href="#id8" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/stfpm.png"><img alt="Anomaly Task Types" src="../../../../_images/stfpm.png" style="width: 600px;" /></a>
 </figure>
@@ -523,7 +491,7 @@
 <p>Multiple-scale feature matching is utilized to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network’s feature pyramid is compared to the teacher network’s feature pyramid.</p>
 <p>The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.</p>
 <section id="training-parameters">
-<h5>Training Parameters<a class="headerlink" href="#training-parameters" title="Permalink to this heading">#</a></h5>
+<h5>Training Parameters<a class="headerlink" href="#training-parameters" title="Link to this heading">#</a></h5>
 <p>Since STFPM trains the student network, we use the following parameters for its training:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Backbone</span></code>: The default backbone is <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Wide</span> <span class="pre">ResNet50</span></code>.</p></li>
@@ -550,16 +518,16 @@
 </section>
 </section>
 <section id="reconstruction-based-models">
-<h3>Reconstruction-based Models<a class="headerlink" href="#reconstruction-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Reconstruction-based Models<a class="headerlink" href="#reconstruction-based-models" title="Link to this heading">#</a></h3>
 <p>These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2108.07610v2.pdf">DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection</a>.</p>
 <section id="draem">
-<h4>DRÆM<a class="headerlink" href="#draem" title="Permalink to this heading">#</a></h4>
+<h4>DRÆM<a class="headerlink" href="#draem" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/draem.png"><img alt="Anomaly Task Types" src="../../../../_images/draem.png" style="width: 600px;" /></a>
 </figure>
 <p>A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.</p>
 <section id="id9">
-<h5>Training Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h5>
+<h5>Training Parameters<a class="headerlink" href="#id9" title="Link to this heading">#</a></h5>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span></code>: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.</p></li>
@@ -768,7 +736,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>otx.core.model.entity.instance_segmentation &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
@@ -26,25 +25,22 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
-    <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.entity.instance_segmentation';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -298,17 +294,9 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="otx.html">otx</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.action_detection.html">otx.algo.action_detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.anomaly.html">otx.algo.anomaly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.callbacks.html">otx.algo.callbacks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.classification.html">otx.algo.classification</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.hooks.html">otx.algo.hooks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.samplers.html">otx.algo.samplers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.schedulers.html">otx.algo.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.segmentation.html">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.utils.html">otx.algo.utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
@@ -328,35 +316,15 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.data.anomaly.html">otx.data.anomaly</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.engine.engine.html">otx.engine.engine</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.engine.hpo.html">otx.engine.hpo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.engine.utils.html">otx.engine.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="otx.data.html">otx.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.utils.signal.html">otx.utils.signal</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -364,7 +332,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -399,7 +367,7 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.core.model.entity.instance_segmentation">
-<span id="otx-core-model-entity-instance-segmentation"></span><h1>otx.core.model.entity.instance_segmentation<a class="headerlink" href="#module-otx.core.model.entity.instance_segmentation" title="Permalink to this heading">#</a></h1>
+<span id="otx-core-model-entity-instance-segmentation"></span><h1>otx.core.model.entity.instance_segmentation<a class="headerlink" href="#module-otx.core.model.entity.instance_segmentation" title="Link to this heading">#</a></h1>
 <p>Class definition for instance segmentation model entity used in OTX.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
@@ -420,33 +388,27 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">ExplainableOTXInstanceSegModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">ExplainableOTXInstanceSegModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel" title="otx.core.model.entity.instance_segmentation.OTXInstanceSegModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXInstanceSegModel</span></code></a></p>
 <p>OTX Instance Segmentation model which can attach a XAI hook.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.register_explain_hook">
-<span class="sig-name descname"><span class="pre">register_explain_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel.register_explain_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.register_explain_hook" title="Permalink to this definition">#</a></dt>
-<dd><p>Register explain hook at the model backbone output.</p>
+<dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">
+<span class="sig-name descname"><span class="pre">forward_explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">InstanceSegBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InstanceSegBatchPredEntity</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">InstanceSegBatchPredEntityWithXAI</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OTXBatchLossEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel.forward_explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain" title="Link to this definition">#</a></dt>
+<dd><p>Model forward function.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.remove_explain_hook_handle">
-<span class="sig-name descname"><span class="pre">remove_explain_hook_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel.remove_explain_hook_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.remove_explain_hook_handle" title="Permalink to this definition">#</a></dt>
-<dd><p>Removes explain hook from the model.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.reset_explain_hook">
-<span class="sig-name descname"><span class="pre">reset_explain_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel.reset_explain_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.reset_explain_hook" title="Permalink to this definition">#</a></dt>
-<dd><p>Clear all history of explain records.</p>
+<dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn">
+<span class="sig-name descname"><span class="pre">get_explain_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#ExplainableOTXInstanceSegModel.get_explain_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn" title="Link to this definition">#</a></dt>
+<dd><p>Returns explain function.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.MMDetInstanceSegCompatibleModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">MMDetInstanceSegCompatibleModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#MMDetInstanceSegCompatibleModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.MMDetInstanceSegCompatibleModel" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">MMDetInstanceSegCompatibleModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#MMDetInstanceSegCompatibleModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.MMDetInstanceSegCompatibleModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel" title="otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExplainableOTXInstanceSegModel</span></code></a></p>
 <p>Instance Segmentation model compatible for MMDet.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
@@ -454,23 +416,23 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.OTXInstanceSegModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXInstanceSegModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OTXInstanceSegModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OTXModel" title="otx.core.model.entity.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchDataEntity</span></code></a>, <a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntity</span></code></a>, <a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntityWithXAI" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntityWithXAI"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntityWithXAI</span></code></a>, <a class="reference internal" href="otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity" title="otx.core.data.entity.tile.TileBatchInstSegDataEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">TileBatchInstSegDataEntity</span></code></a>]</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXInstanceSegModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OTXInstanceSegModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OTXModel" title="otx.core.model.entity.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntityWithXAI</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">TileBatchInstSegDataEntity</span></code>]</p>
 <p>Base class for the Instance Segmentation models used in OTX.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.OTXInstanceSegModel.forward_tiles">
-<span class="sig-name descname"><span class="pre">forward_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity" title="otx.core.data.entity.tile.TileBatchInstSegDataEntity"><span class="pre">TileBatchInstSegDataEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity"><span class="pre">InstanceSegBatchPredEntity</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OTXInstanceSegModel.forward_tiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel.forward_tiles" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TileBatchInstSegDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InstanceSegBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OTXInstanceSegModel.forward_tiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel.forward_tiles" title="Link to this definition">#</a></dt>
 <dd><p>Unpack instance segmentation tiles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>inputs</strong> (<a class="reference internal" href="otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity" title="otx.core.data.entity.tile.TileBatchInstSegDataEntity"><em>TileBatchInstSegDataEntity</em></a>) – Tile batch data entity.</p>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>TileBatchInstSegDataEntity</em>) – Tile batch data entity.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Merged instance segmentation prediction.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity">InstanceSegBatchPredEntity</a></p>
+<dd class="field-odd"><p>InstanceSegBatchPredEntity</p>
 </dd>
 </dl>
 </dd></dl>
@@ -479,8 +441,8 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OVInstanceSegmentationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'MaskRCNN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">async_inference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_throughput_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_api_configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OVInstanceSegmentationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OVModel" title="otx.core.model.entity.base.OVModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OVModel</span></code></a>[<a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchDataEntity</span></code></a>, <a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntity</span></code></a>, <a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntityWithXAI" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchPredEntityWithXAI"><code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntityWithXAI</span></code></a>]</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.entity.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OVInstanceSegmentationModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'MaskRCNN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">async_inference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_throughput_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_api_configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/entity/instance_segmentation.html#OVInstanceSegmentationModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OVModel" title="otx.core.model.entity.base.OVModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OVModel</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchDataEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">InstanceSegBatchPredEntityWithXAI</span></code>]</p>
 <p>Instance segmentation model compatible for OpenVINO IR inference.</p>
 <p>It can consume OpenVINO IR model path or model name from Intel OMZ repository
 and create the OTX detection model compatible for OTX testing pipeline.</p>
@@ -537,28 +499,19 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.register_explain_hook">
+    <a class="reference internal nav-link" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ExplainableOTXInstanceSegModel.register_explain_hook()
+       ExplainableOTXInstanceSegModel.forward_explain()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.remove_explain_hook_handle">
+    <a class="reference internal nav-link" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ExplainableOTXInstanceSegModel.remove_explain_hook_handle()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.reset_explain_hook">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ExplainableOTXInstanceSegModel.reset_explain_hook()
+       ExplainableOTXInstanceSegModel.get_explain_fn()
       </span>
      </code>
     </a>
@@ -672,7 +625,7 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

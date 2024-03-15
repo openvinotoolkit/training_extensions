@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
-    <script src="../../../_static/tabs.js"></script>
-    <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/cli/cli';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -280,7 +276,9 @@
     <span class="n">_ENGINE_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="OTXCLI"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI">[docs]</a><span class="k">class</span> <span class="nc">OTXCLI</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXCLI">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXCLI</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX CLI entrypoint.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -296,7 +294,9 @@
         <span class="k">if</span> <span class="n">run</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<div class="viewcode-block" id="OTXCLI.init_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.init_parser">[docs]</a>    <span class="k">def</span> <span class="nf">init_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXCLI.init_parser">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.init_parser">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the argument parser for the OTX CLI.</span>
 
 <span class="sd">        Returns:</span>
@@ -317,7 +317,10 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">parser</span></div>
 
-<div class="viewcode-block" id="OTXCLI.engine_subcommand_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommand_parser">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="OTXCLI.engine_subcommand_parser">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommand_parser">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">engine_subcommand_parser</span><span class="p">(</span><span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ArgumentParser</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates an ArgumentParser object for the engine subcommand.</span>
 
@@ -459,7 +462,10 @@
 
         <span class="k">return</span> <span class="n">parser</span><span class="p">,</span> <span class="n">added_arguments</span></div>
 
-<div class="viewcode-block" id="OTXCLI.engine_subcommands"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommands">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="OTXCLI.engine_subcommands">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.engine_subcommands">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">engine_subcommands</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns dictionary the subcommands of engine, and whose value is the argument to be skipped in the CLI.</span>
 
@@ -478,7 +484,10 @@
             <span class="s2">&quot;explain&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;datamodule&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">device_kwargs</span><span class="p">),</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="OTXCLI.add_subcommands"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.add_subcommands">[docs]</a>    <span class="k">def</span> <span class="nf">add_subcommands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.add_subcommands">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.add_subcommands">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_subcommands</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds subcommands to the CLI parser.</span>
 
 <span class="sd">        This method initializes and configures subcommands for the OTX CLI parser.</span>
@@ -510,6 +519,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_method_arguments</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span> <span class="o">=</span> <span class="n">added_arguments</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_parsers</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub_parser</span>
             <span class="n">parser_subcommands</span><span class="o">.</span><span class="n">add_subcommand</span><span class="p">(</span><span class="n">subcommand</span><span class="p">,</span> <span class="n">sub_parser</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">description</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_load_cache_ckpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;checkpoints&quot;</span>
@@ -572,7 +582,9 @@
             <span class="p">)</span>
             <span class="n">parser_subcommands</span><span class="o">.</span><span class="n">add_subcommand</span><span class="p">(</span><span class="s2">&quot;find&quot;</span><span class="p">,</span> <span class="n">find_parser</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;This shows the model provided by OTX.&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXCLI.instantiate_classes"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_classes">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instantiate_engine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXCLI.instantiate_classes">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instantiate_engine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the necessary classes based on the subcommand.</span>
 
 <span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
@@ -602,7 +614,10 @@
             <span class="k">if</span> <span class="n">instantiate_engine</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_engine</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="OTXCLI.instantiate_engine"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_engine">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Engine</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_engine">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_engine">[docs]</a>
+    <span class="k">def</span> <span class="nf">instantiate_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Engine</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate an Engine object with the specified parameters.</span>
 
 <span class="sd">        Returns:</span>
@@ -618,7 +633,10 @@
             <span class="o">**</span><span class="n">engine_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXCLI.instantiate_metric"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_metric">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_metric">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">instantiate_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the metric based on the metric_config.</span>
 
 <span class="sd">        It also pathces the num_classes according to the model classes information.</span>
@@ -637,7 +655,10 @@
         <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="OTXCLI.instantiate_model"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">[docs]</a>    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.instantiate_model">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">[docs]</a>
+    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the model based on the subcommand.</span>
 
 <span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
@@ -711,7 +732,10 @@
 
         <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">schedulers</span></div>
 
-<div class="viewcode-block" id="OTXCLI.get_config_value"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_config_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
+
+<div class="viewcode-block" id="OTXCLI.get_config_value">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_config_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieves the value of a configuration key from the given config object.</span>
 
 <span class="sd">        Args:</span>
@@ -726,7 +750,10 @@
         <span class="n">result</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">Namespace</span><span class="p">)</span> <span class="k">else</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="OTXCLI.get_subcommand_parser"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_subcommand_parser">[docs]</a>    <span class="k">def</span> <span class="nf">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.get_subcommand_parser">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.get_subcommand_parser">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the argument parser for the specified subcommand.</span>
 
 <span class="sd">        Args:</span>
@@ -740,13 +767,19 @@
         <span class="c1"># return the subcommand parser for the subcommand passed</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_parsers</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="OTXCLI.prepare_subcommand_kwargs"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.prepare_subcommand_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_subcommand_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="OTXCLI.prepare_subcommand_kwargs">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.prepare_subcommand_kwargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_subcommand_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepares the keyword arguments to pass to the subcommand to run.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subcommand_method_arguments</span><span class="p">[</span><span class="n">subcommand</span><span class="p">]</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="OTXCLI.save_config"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.save_config">[docs]</a>    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.save_config">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.save_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the configuration for the specified subcommand.</span>
 
 <span class="sd">        Args:</span>
@@ -765,7 +798,10 @@
         <span class="c1"># if train -&gt; Update `.latest` folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_latest</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXCLI.update_latest"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.update_latest">[docs]</a>    <span class="k">def</span> <span class="nf">update_latest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.update_latest">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.update_latest">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_latest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the latest cache directory with the latest configurations and checkpoint file.</span>
 
 <span class="sd">        Args:</span>
@@ -778,7 +814,10 @@
             <span class="n">cache_dir</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
         <span class="n">cache_dir</span><span class="o">.</span><span class="n">symlink_to</span><span class="p">(</span><span class="n">work_dir</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXCLI.set_seed"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.set_seed">[docs]</a>    <span class="k">def</span> <span class="nf">set_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.set_seed">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.set_seed">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the random seed for reproducibility.</span>
 
 <span class="sd">        This method retrieves the seed value from the argparser and uses it to set the random seed.</span>
@@ -791,7 +830,10 @@
 
             <span class="n">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXCLI.run"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXCLI.run">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Executes the specified subcommand.</span>
 
 <span class="sd">        Raises:</span>
@@ -818,7 +860,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">work_dir</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unrecognized subcommand: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             </article>
@@ -895,7 +939,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

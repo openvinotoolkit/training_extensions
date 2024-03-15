@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/model/entity/instance_segmentation';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -248,17 +244,22 @@
 
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
+<span class="kn">import</span> <span class="nn">types</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmengine.structures.instance_data</span> <span class="kn">import</span> <span class="n">InstanceData</span>
 <span class="kn">from</span> <span class="nn">openvino.model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">openvino.model_api.tilers</span> <span class="kn">import</span> <span class="n">InstanceSegmentationTiler</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
+<span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">MaskRCNNRecordingForwardHook</span><span class="p">,</span> <span class="n">feature_vector_fn</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
     <span class="n">InstanceSegBatchPredEntity</span><span class="p">,</span>
@@ -273,12 +274,16 @@
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="n">DetDataPreprocessor</span>
+    <span class="kn">from</span> <span class="nn">mmdet.models.detectors.base</span> <span class="kn">import</span> <span class="n">TwoStageDetector</span>
+    <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">OptSampleList</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">openvino.model_api.models.utils</span> <span class="kn">import</span> <span class="n">InstanceSegmentationResult</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 
-<div class="viewcode-block" id="OTXInstanceSegModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel">[docs]</a><span class="k">class</span> <span class="nc">OTXInstanceSegModel</span><span class="p">(</span>
+<div class="viewcode-block" id="OTXInstanceSegModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXInstanceSegModel</span><span class="p">(</span>
     <span class="n">OTXModel</span><span class="p">[</span>
         <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
         <span class="n">InstanceSegBatchPredEntity</span><span class="p">,</span>
@@ -293,7 +298,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_meta_info</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="OTXInstanceSegModel.forward_tiles"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel.forward_tiles">[docs]</a>    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TileBatchInstSegDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXInstanceSegModel.forward_tiles">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OTXInstanceSegModel.forward_tiles">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TileBatchInstSegDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack instance segmentation tiles.</span>
 
 <span class="sd">        Args:</span>
@@ -328,6 +335,7 @@
             <span class="n">masks</span><span class="o">=</span><span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">masks</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">],</span>
             <span class="n">polygons</span><span class="o">=</span><span class="p">[</span><span class="n">pred_entity</span><span class="o">.</span><span class="n">polygons</span> <span class="k">for</span> <span class="n">pred_entity</span> <span class="ow">in</span> <span class="n">pred_entities</span><span class="p">],</span>
         <span class="p">)</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -365,28 +373,121 @@
         <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="ExplainableOTXInstanceSegModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel">[docs]</a><span class="k">class</span> <span class="nc">ExplainableOTXInstanceSegModel</span><span class="p">(</span><span class="n">OTXInstanceSegModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ExplainableOTXInstanceSegModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel">[docs]</a>
+<span class="k">class</span> <span class="nc">ExplainableOTXInstanceSegModel</span><span class="p">(</span><span class="n">OTXInstanceSegModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX Instance Segmentation model which can attach a XAI hook.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.register_explain_hook"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.register_explain_hook">[docs]</a>    <span class="k">def</span> <span class="nf">register_explain_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register explain hook at the model backbone output.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">MaskRCNNRecordingForwardHook</span>
+<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.forward_explain">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span> <span class="o">|</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">explain_hook</span> <span class="o">=</span> <span class="n">MaskRCNNRecordingForwardHook</span><span class="o">.</span><span class="n">create_and_register_hook</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+        <span class="c1"># If customize_inputs is overridden</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_inst_seg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXInstanceSegModel</span><span class="o">.</span><span class="n">_customize_inputs</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_inst_seg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXInstanceSegModel</span><span class="o">.</span><span class="n">_customize_outputs</span>
+            <span class="k">else</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.remove_explain_hook_handle"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.remove_explain_hook_handle">[docs]</a>    <span class="k">def</span> <span class="nf">remove_explain_hook_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes explain hook from the model.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_hook</span><span class="o">.</span><span class="n">handle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">explain_hook</span><span class="o">.</span><span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.reset_explain_hook"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.reset_explain_hook">[docs]</a>    <span class="k">def</span> <span class="nf">reset_explain_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear all history of explain records.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">explain_hook</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div></div>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_forward_explain_inst_seg</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">TwoStageDetector</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>  <span class="c1"># noqa: ARG004</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward func of the BaseDetector instance, which located in is in ExplainableOTXInstanceSegModel().model.&quot;&quot;&quot;</span>
+        <span class="c1"># Workaround to remove grads for model parameters, since after class patching</span>
+        <span class="c1"># convolutions are failing since thay can&#39;t process gradients</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">rpn_results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rpn_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">results_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">roi_head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rpn_results_list</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>  <span class="c1"># rewrite</span>
+            <span class="c1"># Export case, consists of tensors</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="n">results_list</span>
+            <span class="c1"># For OV task saliency map are generated on MAPI side</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">results_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">InstanceData</span><span class="p">):</span>  <span class="c1"># rewrite</span>
+            <span class="c1"># Predict case, consists of InstanceData</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_pred_to_datasample</span><span class="p">(</span><span class="n">data_samples</span><span class="p">,</span> <span class="n">results_list</span><span class="p">)</span>
+
+            <span class="n">features_for_sal_map</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_sample</span><span class="o">.</span><span class="n">pred_instances</span> <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_samples</span><span class="p">]</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">features_for_sal_map</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;predictions&quot;</span><span class="p">:</span> <span class="n">predictions</span><span class="p">,</span>
+            <span class="s2">&quot;feature_vector&quot;</span><span class="p">:</span> <span class="n">feature_vector</span><span class="p">,</span>
+            <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="ExplainableOTXInstanceSegModel.get_explain_fn">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.ExplainableOTXInstanceSegModel.get_explain_fn">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
+        <span class="n">explainer</span> <span class="o">=</span> <span class="n">MaskRCNNRecordingForwardHook</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
 
 
-<div class="viewcode-block" id="MMDetInstanceSegCompatibleModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.MMDetInstanceSegCompatibleModel">[docs]</a><span class="k">class</span> <span class="nc">MMDetInstanceSegCompatibleModel</span><span class="p">(</span><span class="n">ExplainableOTXInstanceSegModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_reset_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
+        <span class="n">forward_with_explain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_inst_seg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span>
+
+        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
+        <span class="c1"># Patch class method</span>
+        <span class="n">model_class</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">model_class</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="n">forward_with_explain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_restore_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Original model forward was not saved.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines parameters required to export a particular model implementation.&quot;&quot;&quot;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;output_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">parameters</span></div>
+
+
+
+<div class="viewcode-block" id="MMDetInstanceSegCompatibleModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.MMDetInstanceSegCompatibleModel">[docs]</a>
+<span class="k">class</span> <span class="nc">MMDetInstanceSegCompatibleModel</span><span class="p">(</span><span class="n">ExplainableOTXInstanceSegModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Instance Segmentation model compatible for MMDet.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -483,7 +584,7 @@
 
     <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span> <span class="o">|</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">DetDataSample</span>
@@ -505,7 +606,8 @@
         <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">masks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">outputs</span>
+        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">DetDataSample</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
 
@@ -524,8 +626,37 @@
             <span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_masks</span><span class="p">)</span>
             <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model output should be a dict, but got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;feature_vector&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No feature vector in the model output.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;saliency_map&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span><span class="p">(</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
+                <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
+                <span class="n">bboxes</span><span class="o">=</span><span class="n">bboxes</span><span class="p">,</span>
+                <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
+                <span class="n">polygons</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                <span class="n">saliency_maps</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">),</span>
+                <span class="n">feature_vectors</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span>
+            <span class="p">)</span>
+
         <span class="k">return</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">(</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
             <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
             <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
             <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
@@ -543,7 +674,10 @@
         <span class="k">return</span> <span class="n">MMdeployExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OVInstanceSegmentationModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel">[docs]</a><span class="k">class</span> <span class="nc">OVInstanceSegmentationModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OVInstanceSegmentationModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.instance_segmentation.html#otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OVInstanceSegmentationModel</span><span class="p">(</span>
     <span class="n">OVModel</span><span class="p">[</span><span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Instance segmentation model compatible for OpenVINO IR inference.</span>
@@ -637,9 +771,13 @@
             <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">output</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">output_objects</span><span class="p">]))</span>
 
         <span class="k">if</span> <span class="n">outputs</span> <span class="ow">and</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">saliency_map</span><span class="p">:</span>
-            <span class="n">predicted_s_maps</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">saliency_map</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
-            <span class="n">predicted_f_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">feature_vector</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+            <span class="n">predicted_s_maps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">image_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s_map</span> <span class="k">for</span> <span class="n">s_map</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">saliency_map</span> <span class="k">if</span> <span class="n">s_map</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">predicted_s_maps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image_map</span><span class="p">)</span>
 
+            <span class="c1"># Squeeze dim 2D =&gt; 1D, (1, internal_dim) =&gt; (internal_dim)</span>
+            <span class="n">predicted_f_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">feature_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
                 <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
@@ -663,6 +801,7 @@
             <span class="n">polygons</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">)</span></div>
+
 </pre></div>
 
             </article>
@@ -739,7 +878,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/otx_efficientnet';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -262,7 +258,7 @@
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="conv1x1_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.conv1x1_block">[docs]</a><span class="k">def</span> <span class="nf">conv1x1_block</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">conv1x1_block</span><span class="p">(</span>
     <span class="n">in_channels</span><span class="p">,</span>
     <span class="n">out_channels</span><span class="p">,</span>
     <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -284,10 +280,10 @@
         <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
         <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="conv3x3_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.conv3x3_block">[docs]</a><span class="k">def</span> <span class="nf">conv3x3_block</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">conv3x3_block</span><span class="p">(</span>
     <span class="n">in_channels</span><span class="p">,</span>
     <span class="n">out_channels</span><span class="p">,</span>
     <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -312,10 +308,10 @@
         <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
         <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="dwconv3x3_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.dwconv3x3_block">[docs]</a><span class="k">def</span> <span class="nf">dwconv3x3_block</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">dwconv3x3_block</span><span class="p">(</span>
     <span class="n">in_channels</span><span class="p">,</span>
     <span class="n">out_channels</span><span class="p">,</span>
     <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -338,10 +334,10 @@
         <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
         <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="dwconv5x5_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.dwconv5x5_block">[docs]</a><span class="k">def</span> <span class="nf">dwconv5x5_block</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">dwconv5x5_block</span><span class="p">(</span>
     <span class="n">in_channels</span><span class="p">,</span>
     <span class="n">out_channels</span><span class="p">,</span>
     <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -364,10 +360,10 @@
         <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
         <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="round_channels"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.round_channels">[docs]</a><span class="k">def</span> <span class="nf">round_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">divisor</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">round_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">divisor</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Round weighted channel number (make divisible operation).</span>
 
 <span class="sd">    Args:</span>
@@ -377,10 +373,10 @@
     <span class="n">rounded_channels</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">channels</span> <span class="o">+</span> <span class="n">divisor</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">//</span> <span class="n">divisor</span> <span class="o">*</span> <span class="n">divisor</span><span class="p">,</span> <span class="n">divisor</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">rounded_channels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">channels</span><span class="p">:</span>
         <span class="n">rounded_channels</span> <span class="o">+=</span> <span class="n">divisor</span>
-    <span class="k">return</span> <span class="n">rounded_channels</span></div>
+    <span class="k">return</span> <span class="n">rounded_channels</span>
 
 
-<div class="viewcode-block" id="calc_tf_padding"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.calc_tf_padding">[docs]</a><span class="k">def</span> <span class="nf">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate TF-same like padding size.</span>
 
 <span class="sd">    Args:</span>
@@ -394,10 +390,10 @@
     <span class="n">ow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span>
     <span class="n">pad_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">oh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dilation</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">height</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">pad_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">ow</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dilation</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_h</span> <span class="o">-</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">-</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span></div>
+    <span class="k">return</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_h</span> <span class="o">-</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">-</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span>
 
 
-<div class="viewcode-block" id="SEBlock"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.SEBlock">[docs]</a><span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Squeeze-and-Excitation block from &#39;Squeeze-and-Excitation Networks,&#39;.</span>
 
 <span class="sd">    https://arxiv.org/abs/1709.01507.</span>
@@ -453,7 +449,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">channels</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span> <span class="o">=</span> <span class="n">build_activation_layer</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">out_activation</span><span class="p">))</span>
 
-<div class="viewcode-block" id="SEBlock.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.SEBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span><span class="p">:</span>
@@ -465,10 +461,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span><span class="p">:</span>
             <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">w</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="EffiDwsConvUnit"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiDwsConvUnit">[docs]</a><span class="k">class</span> <span class="nc">EffiDwsConvUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">EffiDwsConvUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet specific depthwise separable conv block/unit with BatchNorms and activations at each conv.</span>
 
 <span class="sd">    Args:</span>
@@ -500,7 +496,7 @@
             <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="EffiDwsConvUnit.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiDwsConvUnit.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
@@ -511,10 +507,10 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pw_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">identity</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="EffiInvResUnit"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInvResUnit">[docs]</a><span class="k">class</span> <span class="nc">EffiInvResUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">EffiInvResUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet inverted residual unit.</span>
 
 <span class="sd">    Args:</span>
@@ -577,7 +573,7 @@
             <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="EffiInvResUnit.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInvResUnit.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
@@ -593,10 +589,10 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">identity</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="EffiInitBlock"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInitBlock">[docs]</a><span class="k">class</span> <span class="nc">EffiInitBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">EffiInitBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet specific initial block.</span>
 
 <span class="sd">    Args:</span>
@@ -621,15 +617,15 @@
             <span class="n">IN_conv</span><span class="o">=</span><span class="n">IN_conv1</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="EffiInitBlock.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInitBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="EfficientNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EfficientNet">[docs]</a><span class="k">class</span> <span class="nc">EfficientNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">EfficientNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet.</span>
 
 <span class="sd">    Args:</span>
@@ -745,7 +741,7 @@
                 <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="EfficientNet.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EfficientNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -776,10 +772,12 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">enable</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">out_data</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_data</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_data</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="OTXEfficientNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet">[docs]</a><span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="OTXEfficientNet">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet">[docs]</a>
+<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OTXEfficientNet</span><span class="p">(</span><span class="n">EfficientNet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create EfficientNet model with specific parameters.</span>
 
@@ -887,18 +885,25 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXEfficientNet.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXEfficientNet.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXEfficientNet.init_weights"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OTXEfficientNet.init_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXEfficientNet.init_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pretrained</span><span class="p">):</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">download_model</span><span class="p">(</span><span class="n">net</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             </article>
@@ -975,7 +980,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>
