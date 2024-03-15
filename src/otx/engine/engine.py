@@ -726,13 +726,29 @@ class Engine:
             ...     task="DETECTION",
             ...     data_root=<dataset/path>,
             ... )
+
+            If you want to override configuration from default config
+            >>> overriding = {
+            ...     "data.config.train_subset.batch_size": 2,
+            ...     "data.config.test_subset.subset_name": "TESTING",
+            ... }
+            >>> engine = Engine(
+            ...     model_name="atss_mobilenetv2",
+            ...     task="DETECTION",
+            ...     data_root=<dataset/path>,
+            ...     **overriding,
+            ... )
         """
         default_config = DEFAULT_CONFIG_PER_TASK.get(task)
         model_path = str(default_config).split("/")
         model_path[-1] = f"{model_name}.yaml"
         config = Path("/".join(model_path))
         if not config.exists():
-            msg = f"Model config file not found: {config}"
+            candidate_list = [model.stem for model in config.parent.glob("*")]
+            msg = (
+                f"Model config file not found: {config}, please check the model name. "
+                f"Available models for {task} task are {candidate_list}"
+            )
             raise FileNotFoundError(msg)
 
         return cls.from_config(
