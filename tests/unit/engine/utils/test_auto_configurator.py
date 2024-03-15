@@ -149,15 +149,18 @@ class TestAutoConfigurator:
         datamodule = auto_configurator.get_datamodule()
 
         assert datamodule.config.test_subset.transforms == [
-            {'type': 'LoadImageFromFile'},
-            {'type': 'Resize', 'scale': [992, 736], 'keep_ratio': False},
-            {'type': 'LoadAnnotations', 'with_bbox': True},
-            {'type': 'PackDetInputs', 'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape']},
+            {"type": "LoadImageFromFile"},
+            {"type": "Resize", "scale": [992, 736], "keep_ratio": False},
+            {"type": "LoadAnnotations", "with_bbox": True},
+            {
+                "type": "PackDetInputs",
+                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+            },
         ]
 
         assert datamodule.config.test_subset.transform_lib_type == TransformLibType.MMDET
 
         updated_datamodule = auto_configurator.update_ov_test_pipeline(datamodule)
-        assert updated_datamodule.config.test_subset.transforms == [{'class_path': 'torchvision.transforms.v2.ToImage'}]
+        assert updated_datamodule.config.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
 
         assert updated_datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
