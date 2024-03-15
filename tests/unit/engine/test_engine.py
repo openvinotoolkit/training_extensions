@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
 from otx.engine import Engine
 
 
@@ -26,3 +27,12 @@ class TestEngine:
         assert engine is not None
         assert engine.datamodule.config.train_subset.batch_size == 2
         assert engine.datamodule.config.test_subset.subset_name == "TESTING"
+
+        with pytest.raises(FileNotFoundError):
+            engine = Engine.from_model_name(
+                model_name="wrong_model",
+                data_root=data_root,
+                task=task_type,
+                work_dir=tmp_path,
+                **overriding,
+            )
