@@ -183,8 +183,7 @@ def fxt_output_root(
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    #return Path(output_root) / fxt_current_date
-    return Path("/tmp/perf-v1")
+    return Path(output_root) / fxt_current_date
 
 
 @pytest.fixture
@@ -246,7 +245,7 @@ def fxt_benchmark(
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
-     for index, result in results.iterrows():
+    for index, result in results.iterrows():
         task, model, data_group, data = index
         exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
