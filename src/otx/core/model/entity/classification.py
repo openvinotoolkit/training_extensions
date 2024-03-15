@@ -87,13 +87,13 @@ class ExplainableOTXClsModel(
         outputs = (
             self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
             if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
-            else self.model(inputs)
+            else self._forward_explain_image_classifier(self.model, inputs)
         )
 
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXClsModel._customize_outputs
-            else outputs
+            else outputs["predictions"]
         )
 
     @staticmethod
@@ -102,8 +102,8 @@ class ExplainableOTXClsModel(
         inputs: torch.Tensor,
         data_samples: list[DataSample] | None = None,
         mode: str = "tensor",
-    ) -> dict:
-        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
+    ) -> dict[str, torch.Tensor]:
+        """Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model."""
         x = self.backbone(inputs)
         backbone_feat = x
 
@@ -246,7 +246,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: dict[str, Any],
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample

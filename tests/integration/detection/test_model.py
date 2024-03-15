@@ -24,6 +24,6 @@ class TestOTXModel:
     ) -> None:
         dataloader = fxt_datamodule.train_dataloader()
         for inputs in dataloader:
-            outputs = fxt_model(inputs)
+            outputs = fxt_model.forward(inputs)
             assert isinstance(outputs, dict)
             break
