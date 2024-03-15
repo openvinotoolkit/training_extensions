@@ -106,6 +106,8 @@ def init_mlflow_tracking():
 
 
 @pytest.fixture(scope="session")
-def fxt_mlflow_client():
+def fxt_mlflow_client(request: pytest.FixtureRequest):
     uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    if not uri:
+        uri = request.config.getoption("--mlflow-tracking-uri")
     return mlflow.MlflowClient(uri) if uri is not None else None

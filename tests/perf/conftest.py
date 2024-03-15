@@ -19,7 +19,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from .benchmark import OTXBenchmark
+from .benchmark import Benchmark
 
 
 def pytest_addoption(parser):
@@ -32,7 +32,7 @@ def pytest_addoption(parser):
         help="Choose default|all. Defaults to all.",
     )
     parser.addoption(
-        "--data-size",
+        "--data-group",
         action="store",
         default="all",
         choices=("small", "medium", "large", "all"),
@@ -42,7 +42,7 @@ def pytest_addoption(parser):
         "--num-repeat",
         action="store",
         default=0,
-        help="Overrides default per-data-size number of repeat setting. "
+        help="Overrides default per-data-group number of repeat setting. "
         "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
         "Defaults to 0 (small=3, medium=3, large=1).",
     )
@@ -205,20 +205,20 @@ def fxt_benchmark(
     fxt_output_root: Path,
     fxt_tags: dict[str, str],
     fxt_benchmark_reference: pd.DataFrame | None,
-) -> OTXBenchmark:
+) -> Benchmark:
     """Configure benchmark."""
-    # Skip by dataset size
-    data_size_option: str = request.config.getoption("--data-size")
-    data_size: str = request.param[0]
-    if data_size_option != "all":
-        if data_size_option != data_size:
-            pytest.skip(f"{data_size} datasets")
+    # Skip by data group
+    data_group_option: str = request.config.getoption("--data-group")
+    data_group: str = request.param[0]
+    if data_group_option != "all":
+        if data_group_option != data_group:
+            pytest.skip(f"{data_group} datasets")
 
     # Options
     cfg: dict = request.param[1].copy()
 
     tags = cfg.get("tags", {})
-    tags["data_size"] = data_size
+    tags["data_group"] = data_group
     tags.update(fxt_tags)
     cfg["tags"] = tags
 
@@ -232,36 +232,40 @@ def fxt_benchmark(
 
     cfg["eval_upto"] = request.config.getoption("--eval-upto")
     cfg["data_root"] = request.config.getoption("--data-root")
-    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_size)
+    cfg["output_root"] = str(fxt_output_root / tags["task"] / data_group)
     cfg["dry_run"] = request.config.getoption("--dry-run")
     cfg["reference_results"] = fxt_benchmark_reference
 
     # Create benchmark
-    benchmark = OTXBenchmark(
+    benchmark = Benchmark(
         **cfg,
     )
 
     return benchmark
 
 
-def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
-    for index, data in results.iterrows():
-        task, data_size, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+def _log_benchmark_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
+    for index, result in results.iterrows():
+        task, model, data_group, data = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
             "task": task,
             "model": model,
-            "data_size": data_size,
+            "data_group": data_group,
+            "data": data,
         }
         exp = client.get_experiment_by_name(exp_name)
-        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
-        if exp.lifecycle_stage != "active":
-            client.restore_experiment(exp_id)
+        if not exp:
+            exp_id = client.create_experiment(exp_name, tags=exp_tags)
+        else:
+            exp_id = exp.experiment_id
+            if exp.lifecycle_stage != "active":
+                client.restore_experiment(exp_id)
         run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
-        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
-        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        run_metrics = {k: v for k, v in result.items() if not isinstance(v, str)}
         for k, v in run_metrics.items():
             k = k.replace("(", "_")
             k = k.replace(")", "")
@@ -275,30 +279,47 @@ def fxt_benchmark_summary(
 ):
     """Summarize all results at the end of test session."""
     yield
-    all_results = OTXBenchmark.load_result(fxt_output_root)
-    if all_results is not None:
-        print("=" * 20, "[Benchmark summary]")
-        print(all_results)
-        output_path = request.config.getoption("--summary-csv")
-        if not output_path:
-            output_path = fxt_output_root / "benchmark-summary.csv"
-        all_results.to_csv(output_path)
-        print(f"  -> Saved to {output_path}.")
+    raw_results = Benchmark.load_result(fxt_output_root)
+    if raw_results is None:
+        print("No benchmark results loaded in ", fxt_output_root)
+        return
 
-        if fxt_mlflow_client is None:
-            print(
-                "Tracking server is not configured. for logging results, "
-                "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
-            )
-            return
+    print("=" * 20, "[Benchmark summary]")
+    summary_results = [
+        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
+        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
+        Benchmark.average_result(raw_results, ["task", "model"]),
+        Benchmark.average_result(raw_results, ["task"]),
+    ]
+    summary_results = pd.concat(summary_results)
 
-        # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-        test_branch = fxt_tags["test_branch"]
-        if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
-            try:
-                log_perf_results_to_mlflow(all_results, fxt_tags, fxt_mlflow_client)
-            except Exception as e:
-                print("MLFlow loging failed: ", e)
+    print("=" * 20, "[Benchmark summary]")
+    print(summary_results)
+
+    summary_csv = request.config.getoption("--summary-csv")
+    if not summary_csv:
+        summary_csv = fxt_output_root / "perf-benchmark-summary.csv"
+    else:
+        summary_csv = Path(summary_csv)
+    summary_csv.parent.mkdir(parents=True, exist_ok=True)
+    summary_results.to_csv(summary_csv)
+    raw_results.to_csv(summary_csv.parent / "perf-benchmark-raw.csv")
+    print(f"  -> Saved to {summary_csv}.")
+
+    if fxt_mlflow_client is None:
+        print(
+            "Tracking server is not configured. for logging results, "
+            "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
+        )
+        return
+
+    # NOTE: decide whether to enable mlflow logging only for 'develop' or 'releases/x.x.x' branch
+    # test_branch = fxt_tags["test_branch"]
+    # if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
+    try:
+        _log_benchmark_results_to_mlflow(summary_results, fxt_tags, fxt_mlflow_client)
+    except Exception as e:
+        print("MLFlow loging failed: ", e)
 
     if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
         shutil.rmtree(fxt_output_root)
@@ -309,5 +330,5 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref.set_index(["task", "data_size", "model"], inplace=True)
+        ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref

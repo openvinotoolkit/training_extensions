@@ -8,7 +8,7 @@ import pytest
 
 from otx.cli.registry import Registry
 from typing import Callable
-from .benchmark import OTXBenchmark
+from .benchmark import Benchmark
 
 
 class TestPerfAnomalyClassification:
@@ -51,7 +51,7 @@ class TestPerfAnomalyClassification:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: Benchmark):
         """Benchmark performance metrics."""
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
@@ -121,7 +121,7 @@ class TestPerfAnomalyDetection:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: Benchmark):
         """Benchmark performance metrics."""
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
@@ -191,7 +191,7 @@ class TestPerfAnomalySegmentation:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: Benchmark):
         """Benchmark performance metrics."""
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(

@@ -8,7 +8,7 @@ import pytest
 
 from otx.cli.registry import Registry
 from typing import Callable
-from .benchmark import OTXBenchmark
+from .benchmark import Benchmark
 
 
 MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="DETECTION").templates
@@ -52,7 +52,7 @@ class TestPerfDetection:
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
     @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
-    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark):
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: Benchmark):
         """Benchmark performance metrics."""
         result = fxt_benchmark.run(model_id=fxt_model_id)
         fxt_benchmark.check(
