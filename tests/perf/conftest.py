@@ -383,29 +383,33 @@ def fxt_benchmark_summary(
 
     if fxt_mlflow_client:
         try:
-            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+            _log_benchmark_results_to_mlflow(summary_results, fxt_mlflow_client, fxt_tags)
         except Exception as e:
             print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
-    for index, data in results.iterrows():
-        task, data_group, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_group}"
+    for index, result in results.iterrows():
+        task, data_group, model, data = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
             "task": task,
             "model": model,
             "data_group": data_group,
+            "data": data,
         }
         exp = client.get_experiment_by_name(exp_name)
-        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
-        if exp.lifecycle_stage != "active":
-            client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
-        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        if not exp:
+            exp_id = client.create_experiment(exp_name, tags=exp_tags)
+        else:
+            exp_id = exp.experiment_id
+            if exp.lifecycle_stage != "active":
+                client.restore_experiment(exp_id)
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
+        run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
-        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        run_metrics = {k: v for k, v in result.items() if not isinstance(v, str)}
         for k, v in run_metrics.items():
             client.log_metric(run.info.run_id, k, v)
 

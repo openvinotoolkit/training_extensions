@@ -83,6 +83,8 @@ class Benchmark:
             elif self.compare == ">":
                 assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
 
+    RESULT_INDEX: list[str] = ["task", "model", "data_group", "data"]
+
     def __init__(
         self,
         data_root: Path = Path("data"),
@@ -257,7 +259,7 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
-        return self.average_result(result, keys=["task", "model", "data_group", "data"])
+        return self.average_result(result, keys=self.RESULT_INDEX)
 
     def _run_command(self, command: list[str]) -> None:
         if self.dry_run:
@@ -335,7 +337,7 @@ class Benchmark:
         if len(results) == 0:
             return None
 
-        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
+        return pd.concat(results, ignore_index=True).set_index(Benchmark.RESULT_INDEX)
 
     @staticmethod
     def average_result(data: pd.DataFrame, keys: list[str]):
