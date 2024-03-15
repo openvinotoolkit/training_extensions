@@ -13,11 +13,11 @@ import yaml
 from pathlib import Path
 
 
-class OTXBenchmark:
+class Benchmark:
     """Benchmark runner based on tools/experiment.py in OTX1.x.
 
     Example:
-        >>> bm = OTXBenchmark(['random_sample1', 'random_sample2'], data_root='./data/coco')
+        >>> bm = Benchmark(['random_sample1', 'random_sample2'], data_root='./data/coco')
         >>> atss_result = bm.run('MobileNetV2-ATSS')
         >>> yolox_result = bm.run('YOLOX-TINY')
 
@@ -143,36 +143,35 @@ class OTXBenchmark:
         # Merge experiments
         data = pd.concat(results, ignore_index=True)
         data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
-        all_data = [data]
+        return data.set_index(["task", "model", "data_group", "data"])
 
-        def average_result(data: pd.DataFrame, keys: list[str]):
-            # Average by keys
-            grouped = data.groupby(keys)
-            aggregated = grouped.mean(numeric_only=True)
-            # Merge tag columns (non-numeric & non-index)
-            tag_columns = set(data.columns) - set(aggregated.columns) - set(keys)
-            for col in tag_columns:
-                # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-                aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-            return aggregated.reset_index()
-
-        # Average by data group
-        averaged = average_result(data, ["task", "model", "data_group"])
-        all_data.append(averaged)
-
-        # Average by model
-        averaged = average_result(data, ["task", "model"])
-        averaged["data_group"] = "all"
-        all_data.append(averaged)
-
-        # Average by task
-        averaged = average_result(data, ["task"])
-        averaged["data_group"] = "all"
-        averaged["model"] = "all"
-        all_data.append(averaged)
-
-        return pd.concat(all_data).set_index(["task", "model", "data_group", "data"])
-
+    @staticmethod
+    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
+        """Average result w.r.t. given keys
+        Args:
+            result (pd.DataFrame): Result data frame
+            keys (list[str]): Keys to summarize whole data
+        Retruns:
+            pd.DataFrame: Averaged result table
+        """
+        # Flatten index
+        index_names = data.index.names
+        column_names = data.columns
+        data = data.reset_index()
+        # Average by keys
+        grouped = data.groupby(keys)
+        aggregated = grouped.mean(numeric_only=True)
+        # Merge index columns
+        idx_columns = set(index_names) - set(keys)
+        for col in idx_columns:
+            aggregated[col] = "all"
+        # Merge tag columns (non-numeric & non-index)
+        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
+        for col in tag_columns:
+            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+        # Recover index
+        return aggregated.reset_index().set_index(index_names)
 
     def _build_config(
         self,
@@ -254,6 +253,8 @@ class OTXBenchmark:
                 print(f"No benchmark reference for {key} loaded. Skipping result checking.")
                 continue
             target_entry = self.reference_results.loc[key]
+            if isinstance(target_entry, pd.DataFrame):
+                target_entry = target_entry.iloc[0]  # 1-row pd.DataFrame to pd.Series
 
             def compare(name: str, op: str, margin: float):
                 if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):

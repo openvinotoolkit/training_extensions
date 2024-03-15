@@ -145,7 +145,7 @@ jobs:
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}
           --eval-upto ${{ inputs.eval-upto }}
-          --summary-csv .tox/perf-benchmark-${{ matrix.task-short }}.csv
+          --summary-csv .tox/perf-benchmark-summary.csv
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           --user-name ${{ github.triggering_actor }}
           --otx-ref ${{ inputs.otx-ref }}

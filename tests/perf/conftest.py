@@ -19,7 +19,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from .benchmark import OTXBenchmark
+from .benchmark import Benchmark
 
 
 def pytest_addoption(parser):
@@ -183,7 +183,8 @@ def fxt_output_root(
     output_root = request.config.getoption("--output-root")
     if output_root is None:
         output_root = tmp_path_factory.mktemp("otx-benchmark")
-    return Path(output_root) / fxt_current_date
+    #return Path(output_root) / fxt_current_date
+    return Path("/tmp/perf-v1")
 
 
 @pytest.fixture
@@ -205,7 +206,7 @@ def fxt_benchmark(
     fxt_output_root: Path,
     fxt_tags: dict[str, str],
     fxt_benchmark_reference: pd.DataFrame | None,
-) -> OTXBenchmark:
+) -> Benchmark:
     """Configure benchmark."""
     # Skip by data group
     data_group_option: str = request.config.getoption("--data-group")
@@ -237,31 +238,35 @@ def fxt_benchmark(
     cfg["reference_results"] = fxt_benchmark_reference
 
     # Create benchmark
-    benchmark = OTXBenchmark(
+    benchmark = Benchmark(
         **cfg,
     )
 
     return benchmark
 
 
-def log_perf_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
-    for index, data in results.iterrows():
-        task, data_group, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_group}"
+def _log_benchmark_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
+     for index, result in results.iterrows():
+        task, model, data_group, data = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
             "task": task,
             "model": model,
             "data_group": data_group,
+            "data": data,
         }
         exp = client.get_experiment_by_name(exp_name)
-        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
-        if exp.lifecycle_stage != "active":
-            client.restore_experiment(exp_id)
+        if not exp:
+            exp_id = client.create_experiment(exp_name, tags=exp_tags)
+        else:
+            exp_id = exp.experiment_id
+            if exp.lifecycle_stage != "active":
+                client.restore_experiment(exp_id)
         run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
-        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
-        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        run_metrics = {k: v for k, v in result.items() if not isinstance(v, str)}
         for k, v in run_metrics.items():
             k = k.replace("(", "_")
             k = k.replace(")", "")
@@ -275,30 +280,47 @@ def fxt_benchmark_summary(
 ):
     """Summarize all results at the end of test session."""
     yield
-    all_results = OTXBenchmark.load_result(fxt_output_root)
-    if all_results is not None:
-        print("=" * 20, "[Benchmark summary]")
-        print(all_results)
-        output_path = request.config.getoption("--summary-csv")
-        if not output_path:
-            output_path = fxt_output_root / "benchmark-summary.csv"
-        all_results.to_csv(output_path)
-        print(f"  -> Saved to {output_path}.")
+    raw_results = Benchmark.load_result(fxt_output_root)
+    if raw_results is None:
+        print("No benchmark results loaded in ", fxt_output_root)
+        return
 
-        if fxt_mlflow_client is None:
-            print(
-                "Tracking server is not configured. for logging results, "
-                "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
-            )
-            return
+    print("=" * 20, "[Benchmark summary]")
+    summary_results = [
+        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
+        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
+        Benchmark.average_result(raw_results, ["task", "model"]),
+        Benchmark.average_result(raw_results, ["task"]),
+    ]
+    summary_results = pd.concat(summary_results)
 
-        # logging to the mlflow for 'develop' or 'releases/x.x.x' branch
-        test_branch = fxt_tags["test_branch"]
-        if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
-            try:
-                log_perf_results_to_mlflow(all_results, fxt_tags, fxt_mlflow_client)
-            except Exception as e:
-                print("MLFlow loging failed: ", e)
+    print("=" * 20, "[Benchmark summary]")
+    print(summary_results)
+
+    summary_csv = request.config.getoption("--summary-csv")
+    if not summary_csv:
+        summary_csv = fxt_output_root / "perf-benchmark-summary.csv"
+    else:
+        summary_csv = Path(summary_csv)
+    summary_csv.parent.mkdir(parents=True, exist_ok=True)
+    summary_results.to_csv(summary_csv)
+    raw_results.to_csv(summary_csv.parent / "perf-benchmark-raw.csv")
+    print(f"  -> Saved to {summary_csv}.")
+
+    if fxt_mlflow_client is None:
+        print(
+            "Tracking server is not configured. for logging results, "
+            "set 'MLFLOW_TRACKING_SERVER_URI' environment variable to server URI ."
+        )
+        return
+
+    # NOTE: decide whether to enable mlflow logging only for 'develop' or 'releases/x.x.x' branch
+    # test_branch = fxt_tags["test_branch"]
+    # if test_branch == "develop" or bool(re.match("^releases/[0-9]+\.[0-9]+\.[0-9]+$", test_branch)):
+    try:
+        _log_benchmark_results_to_mlflow(summary_results, fxt_tags, fxt_mlflow_client)
+    except Exception as e:
+        print("MLFlow loging failed: ", e)
 
     if os.environ.get("BENCHMARK_RESULTS_CLEAR", False):
         shutil.rmtree(fxt_output_root)
