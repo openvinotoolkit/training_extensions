@@ -9,6 +9,7 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
@@ -330,22 +331,19 @@ class AutoConfigurator:
             num_classes=label_info.num_classes,
         )
 
-    def get_ov_datamodule(self) -> OTXDataModule:
-        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+    def update_ov_test_pipeline(self, datamodule: OTXDataModule) -> OTXDataModule:
+        """Returns an OTXDataModule object with OpenVINO test transforms applied.
+
+        Args:
+            datamodule (OTXDataModule): The original OTXDataModule object.
 
         Returns:
-            OTXDataModule: An instance of OTXDataModule.
+            OTXDataModule: The modified OTXDataModule object with OpenVINO test transforms applied.
         """
-        config = self._load_default_config(model_name="openvino_model")
-        config["data"]["config"]["data_root"] = self.data_root
-        data_config = config["data"]["config"].copy()
-        return OTXDataModule(
-            task=config["data"]["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TileConfig(**data_config.pop("tile_config", {})),
-                **data_config,
-            ),
-        )
+        data_configuration = datamodule.config
+        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"]["test_subset"]
+        data_configuration.test_subset.transform_lib_type = ov_test_config["transform_lib_type"]
+        data_configuration.test_subset.transforms = ov_test_config["transforms"]
+        msg = f"For OpenVINO IR models, Use the following test transforms: {data_configuration.test_subset.transforms}"
+        warn(msg, stacklevel=1)
+        return OTXDataModule(task=datamodule.task, config=data_configuration)
