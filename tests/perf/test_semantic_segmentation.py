@@ -9,11 +9,13 @@ import pytest
 from otx.cli.registry import Registry
 from typing import Callable
 from .benchmark import OTXBenchmark
+from otx.algorithms.common.utils import set_random_seed
 
 
 MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="SEGMENTATION").templates
 MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
+set_random_seed(42, deterministic=True)
 
 class TestPerfSemanticSegmentation:
     """Benchmark basic semantic segmentation."""
