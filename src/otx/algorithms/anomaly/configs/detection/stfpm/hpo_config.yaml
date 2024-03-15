@@ -1,0 +1,18 @@
+# default model.lr: 0.4, dataset.train_batch_size: 32
+metric: image_F1Score
+mode: max
+search_algorithm: asha
+early_stop: None
+hp_space:
+  learning_parameters.lr:
+    param_type: qloguniform
+    range:
+      - 0.04
+      - 0.8
+      - 0.01
+  learning_parameters.train_batch_size:
+    param_type: qloguniform
+    range:
+      - 16
+      - 64
+      - 2

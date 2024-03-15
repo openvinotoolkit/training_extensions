@@ -1,0 +1,3 @@
+001 # 0 # 1 # sky # sky # ""
+002 # 0 # 0 # person, individual, someone, somebody, mortal, soul # person # "walkin"
+001 # 1 # 0 # license plate # license plate # ""

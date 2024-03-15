@@ -2,28 +2,29 @@ Auto-configuration
 ==================
 
 Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
-Auto-configuration can help to save time, it eases the process of interaction with OpenVINO™ Training Extensions and gives a better baseline for the given dataset.
+Auto-configuration can help to save time, it eases the process of interaction with OpenVINO™ Training Extensions CLI and gives a better baseline for the given dataset.
 
 At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
 Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:
 
-.. tab-set::
+.. code-block::
 
-    .. tab-item:: API
+    $ otx train --train-data-roots <path_to_data_root>
 
-        .. code-block:: python
+.. note::
 
-            from otx.engine import Engine
+    OpenVINO™ Training Extensions supports also ``otx build`` mode with the auto-configuration feature. We can build OpenVINO™ Training Extensions workspace with the following CLI command:
 
-            engine = Engine(data_root="<path_to_data_root>")
-            engine.train()
+    .. code-block::
 
-    .. tab-item:: CLI
+        $ otx build --train-data-roots <path_to_data_root>
 
-        .. code-block:: bash
+Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OpenVINO™ Training Extensions will handle it on its own.
+It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, saving this split to the workspace. It could be used with ``otx optimize`` or ``otx train``.
 
-            (otx) ...$ otx train ... --data_root <path_to_data_root>
+.. note::
 
+    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (multi-class classification), `COCO <https://cocodataset.org/#format-data>`_ (detection) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/cityscapes.html>`_ (semantic segmentation).
 
 After dataset preparation, the training will be started with the middle-sized template to achieve competitive accuracy preserving fast inference.
 
@@ -40,26 +41,21 @@ Supported dataset formats for each task:
 - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
 - instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
 
-If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might not intend:
+If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type and use ``otx build`` first with an additional CLI option. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might not intend:
 
-.. tab-set::
+.. code-block::
 
-    .. tab-item:: API
+    $ otx build --train-data-roots <path_to_data_root>
+                --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
 
-        .. code-block:: python
+It will create a task-specific workspace folder with configured template and auto dataset split if supported.
 
-            from otx.engine import Engine
+Move to this folder and simply run without any options to start training:
 
-            engine = Engine(data_root="<path_to_data_root>", task="<TASK_TYPE>")
-            engine.train()
+.. code-block::
 
-    .. tab-item:: CLI
+    $ otx train
 
-        .. code-block:: bash
-
-            (otx) ...$ otx train --data_root <path_to_data_root>
-                                 --task {MULTI_CLASS_CLS, MULTI_LABEL_CLS, H_LABEL_CLS, DETECTION, INSTANCE_SEGMENTATION, SEMANTIC_SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ACTION_SEGMENTATION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, VISUAL_PROMPTING}
-                                 ...
 
 Auto-adapt batch size
 ---------------------
@@ -78,19 +74,9 @@ The learning rate is also adjusted based on the updated batch size accordingly.
 
 To use this feature, add the following parameter:
 
-.. tab-set::
+.. code-block::
 
-    .. tab-item:: API
-
-        .. code-block:: python
-
-            Need to update!
-
-    .. tab-item:: CLI
-
-        .. code-block:: bash
-
-            Need to update!
+    $ otx train params --learning_parameters.auto_adapt_batch_size Safe
 
 2. Find the maximum executable batch size (`Full` mode)
 
@@ -101,19 +87,9 @@ Similar to the previous method, the learning rate is adjusted according to the u
 
 To use this feature, add the following parameter:
 
-.. tab-set::
+.. code-block::
 
-    .. tab-item:: API
-
-        .. code-block:: python
-
-            Need to update!
-
-    .. tab-item:: CLI
-
-        .. code-block:: bash
-
-            Need to update!
+    $ otx train params --learning_parameters.auto_adapt_batch_size Full
 
 
 .. Warning::
@@ -132,20 +108,22 @@ To simplify the process of setting ``num_workers`` manually, this feature automa
 
 To use this feature, add the following parameter:
 
-.. tab-set::
+.. code-block::
 
-    .. tab-item:: API
+    $ otx train params --learning_parameters.auto_num_workers True
 
-        .. code-block:: python
+Auto-detect training type
+-------------------------
 
-            from otx.core.config.data import DataModuleConfig
-            from otx.core.data.module import OTXDataModule
+OpenVINO™ Training Extensions also support automatic detection of training types such as Semi-SL, Self-SL and Incremental. For Semi-SL usage only is a path to unlabeled data via `--unlabeled-data-roots` option needed for the command line. To use Self-SL learning just a folder with images in the `--train-data-roots` option without validation data is required to automatically start Self-SL pretraining.
+OpenVINO™ Training Extensions will automatically recognize these types of tasks and if the task supports this training type the training will be started.
 
-            data_config = DataModuleConfig(..., auto_num_workers=True)
-            datamodule = OTXDataModule(..., config=data_config)
+.. note::
+    To use auto template configuration with Self-SL training type `--task` option is required since it is impossible to recognize task type by folder with only images.
 
-    .. tab-item:: CLI
+Auto-adapt input size
+---------------------
 
-        .. code-block:: shell
-
-            (otx) ...$ otx train ... --data.config.auto_num_workers True
+"Auto" input size feature tries to automatically select the right model input size
+based on given dataset statictics.
+See :ref:`adaptive-input-size`.

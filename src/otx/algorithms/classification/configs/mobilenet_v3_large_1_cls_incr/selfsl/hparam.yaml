@@ -1,0 +1,29 @@
+# Hyperparameters.
+hyper_parameters:
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 64
+        auto_hpo_state: POSSIBLE
+      num_workers:
+        default_value: 0
+      learning_rate:
+        default_value: 0.45
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 50
+      num_iters:
+        default_value: 1000
+      enable_early_stopping:
+        default_value: false
+      use_adaptive_interval:
+        default_value: false
+    algo_backend:
+      train_type:
+        default_value: Selfsupervised
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU

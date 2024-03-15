@@ -1,0 +1,66 @@
+name: Code Scanning
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+  push:
+    branches:
+      - "releases/*"
+      - "v2"
+  schedule:
+    # every UTC 6PM from Mon to Fri
+    - cron: "0 18 * * 1-5"
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  Trivy-scan:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+      - name: Trivy Scanning
+        env:
+          TRIVY_DOWNLOAD_URL: ${{ vars.TRIVY_DOWNLOAD_URL }}
+        run: tox -vv -e trivy-scan
+      - name: Upload Trivy results artifact
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: trivy-results
+          path: |
+            .tox/trivy-spdx-otx.json
+            .tox/trivy-results-otx.txt
+            .tox/trivy-results-otx.csv
+  Bandit:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
+      - name: Bandit Scanning
+        run: tox -e bandit-scan
+      - name: Upload Bandit artifact
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: bandit-report
+          path: .tox/bandit-report.txt
+        # Use always() to always run this step to publish scan results when there are test failures
+        if: ${{ always() }}

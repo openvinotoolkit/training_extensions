@@ -1,501 +1,309 @@
-# Copyright (C) 2023 Intel Corporation
+"""Tests for OTX CLI commands"""
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
 
+import os
+import sys
+from unittest.mock import patch
 
-from pathlib import Path
-
-import numpy as np
 import pytest
-import yaml
-from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-from tests.integration.cli.utils import run_main
-
-
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
+from otx.cli.tools import cli
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
+    check_run,
+    otx_build_auto_config,
+    otx_build_backbone_testing,
+    otx_build_testing,
+    otx_find_testing,
+    otx_train_auto_config,
 )
-def test_otx_e2e(
-    recipe: str,
-    tmp_path: Path,
-    fxt_accelerator: str,
-    fxt_target_dataset_per_task: dict,
-    fxt_cli_override_command_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
 
-    - 'otx train' with 2 epochs training
-    - 'otx test' with output checkpoint from 'otx train'
-    - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported to ONNX/IR model
+otx_dir = os.getcwd()
 
-    Args:
-        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
-        tmp_path (Path): The temporary path for storing the training outputs.
 
-    Returns:
-        None
-    """
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
+build_backbone_args = [
+    ("CLASSIFICATION", "torchvision.mobilenet_v3_large"),
+    ("CLASSIFICATION", "mmcls.MMOVBackbone"),
+    ("DETECTION", "torchvision.mobilenet_v3_large"),
+    ("INSTANCE_SEGMENTATION", "torchvision.mobilenet_v3_large"),
+    ("SEGMENTATION", "torchvision.mobilenet_v3_large"),
+]
+build_backbone_args_ids = [f"{task}_{backbone}" for task, backbone in build_backbone_args]
 
-    # 1) otx train
-    tmp_path_train = tmp_path / f"otx_train_{model_name}"
-    command_cfg = [
-        "otx",
-        "train",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_train / "outputs"),
-        "--engine.device",
-        fxt_accelerator,
-        "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
-        *fxt_cli_override_command_per_task[task],
-    ]
+rebuild_args = {
+    "classification": {
+        "default": "EfficientNet-B0",
+        "--task": "classification",
+        "--model": "MobileNet-V3-large-1x",
+        "--train-type": "Semisupervised",
+    },
+    "detection": {
+        "default": "MobileNetV2-ATSS",
+        "--task": "detection",
+        "--model": "SSD",
+        "--train-type": "Semisupervised",
+    },
+}
 
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
-    outputs_dir = tmp_path_train / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    # Currently, a simple output check
-    assert latest_dir.exists()
-    assert (latest_dir / "configs.yaml").exists()
-    # Check Configs file
-    with (latest_dir / "configs.yaml").open() as file:
-        train_output_config = yaml.safe_load(file)
-    assert "model" in train_output_config
-    assert "data" in train_output_config
-    assert "engine" in train_output_config
-    assert (latest_dir / "csv").exists()
-    assert (latest_dir / "checkpoints").exists()
-    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
-    assert len(ckpt_files) > 0
+class TestToolsOTXCLI:
+    @e2e_pytest_component
+    def test_otx_find(self):
+        otx_find_testing()
 
-    # 2) otx test
-    tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        fxt_accelerator,
-        *fxt_cli_override_command_per_task[task],
-        "--checkpoint",
-        str(ckpt_files[-1]),
-    ]
+    @e2e_pytest_component
+    @pytest.mark.parametrize("build_backbone_args", build_backbone_args, ids=build_backbone_args_ids)
+    def test_otx_backbone_build(self, tmp_dir_path, build_backbone_args):
+        tmp_dir_path = tmp_dir_path / build_backbone_args[0] / build_backbone_args[1]
+        otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
+    @e2e_pytest_component
+    @pytest.mark.parametrize("case", rebuild_args.keys())
+    def test_otx_build_rebuild(self, tmp_dir_path, case):
+        tmp_dir_path = tmp_dir_path / "test_rebuild" / case
+        # 1. Only Task
+        build_arg = {"--task": rebuild_args[case]["--task"]}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
+        otx_build_testing(tmp_dir_path, build_arg, expected=expected)
+        # 2. Change Model
+        build_arg = {"--model": rebuild_args[case]["--model"]}
+        expected = {"model": rebuild_args[case]["--model"], "train_type": "Incremental"}
+        otx_build_testing(tmp_dir_path, build_arg, expected=expected)
+        # 3. Change Train-type
+        build_arg = {"--train-type": rebuild_args[case]["--train-type"]}
+        expected = {"model": rebuild_args[case]["--model"], "train_type": rebuild_args[case]["--train-type"]}
+        otx_build_testing(tmp_dir_path, build_arg, expected=expected)
+        # 4. Change to Default
+        build_arg = {"--model": rebuild_args[case]["default"], "--train-type": "Incremental"}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
+        otx_build_testing(tmp_dir_path, build_arg, expected=expected)
 
-    outputs_dir = tmp_path_test / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert latest_dir.exists()
-    assert (latest_dir / "csv").exists()
 
-    # 3) otx export
-    if any(
-        task_name in recipe
-        for task_name in [
-            "h_label_cls",
-            "detection",
-            "dino_v2",
-            "instance_segmentation",
-            "action",
-            "anomaly_classification",
-            "anomaly_detection",
-            "anomaly_segmentation",
+build_auto_config_args = {
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
+    "classification_with_task": {
+        "--task": "classification",
+        "--train-data-roots": "tests/assets/classification_dataset",
+    },
+    "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
+    "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/car_tree_bug"},
+}
+
+
+class TestToolsOTXBuildAutoConfig:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("case", build_auto_config_args.keys())
+    def test_otx_build_with_autosplit(self, case, tmp_dir_path):
+        otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / "test_build_auto_config" / case
+        otx_build_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=build_auto_config_args[case])
+
+
+train_auto_config_args = {
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
+    "classification_with_template": {
+        "template": "src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
+        "--train-data-roots": "tests/assets/classification_dataset",
+    },
+    "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
+    "detection_with_template": {
+        "template": "src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
+        "--train-data-roots": "tests/assets/car_tree_bug",
+    },
+}
+
+train_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "1",
+]
+
+
+class TestToolsOTXTrainAutoConfig:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("case", train_auto_config_args.keys())
+    def test_otx_train(self, case, tmp_dir_path):
+        otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config" / case
+        train_auto_config_args[case]["train_params"] = train_params
+        otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case])
+        # check output (use --workspace & --output)
+        output_path = os.path.join(tmp_dir_path, "otx-workspace")
+        assert os.path.exists(os.path.join(output_path, "outputs"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(
+            os.path.join(output_path, "outputs", "latest_trained_model", "models", "label_schema.json")
+        )
+        assert os.path.exists(os.path.join(output_path, "models"))
+        assert os.path.exists(os.path.join(output_path, "models", "weights.pth"))
+
+    @e2e_pytest_component
+    def test_otx_train_wo_output_args(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        train_auto_config_args[case]["train_params"] = train_params
+        otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case], use_output=False)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(tmp_dir_path, "otx-workspace", "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 2
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "label_schema.json"))
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "models"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "models", "weights.pth"))
+
+    @e2e_pytest_component
+    def test_otx_export_wo_output_args(self, tmp_dir_path):
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        workspace_path = os.path.join(tmp_dir_path, "otx-workspace")
+        command_line = [
+            "otx",
+            "export",
+            "--workspace",
+            os.path.join(tmp_dir_path, "otx-workspace"),
         ]
+        check_run(command_line)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(workspace_path, "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 3
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.xml"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.bin"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "label_schema.json"))
+
+    @e2e_pytest_component
+    def test_otx_optimize_wo_output_args(self, tmp_dir_path):
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        workspace_path = os.path.join(tmp_dir_path, "otx-workspace")
+        command_line = [
+            "otx",
+            "optimize",
+            "--workspace",
+            os.path.join(tmp_dir_path, "otx-workspace"),
+        ]
+        check_run(command_line)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(workspace_path, "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 4
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "label_schema.json"))
+
+    @e2e_pytest_component
+    def test_otx_train_wo_workspace_and_output_args(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_otx_train_wo_workspace_and_output_args"
+        tmp_dir_path.mkdir(exist_ok=True)
+        expected_workspace_path = os.path.join(tmp_dir_path, f"otx-workspace-{case.upper()}")
+        command_line = [
+            "otx",
+            "train",
+        ]
+        args = train_auto_config_args[case]
+        for option, value in args.items():
+            if option in ["--train-data-roots", "--val-data-roots"]:
+                command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+        command_line.extend(train_params)
+        check_run(command_line, cwd=tmp_dir_path)
+
+        # check output (without --output -> Default outputs)
+        assert os.path.exists(expected_workspace_path)
+        expected_output_path = os.path.join(expected_workspace_path, "outputs")
+        assert os.path.exists(expected_output_path)
+        file_list = sorted(os.listdir(expected_output_path))
+        assert len(file_list) == 2
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "label_schema.json"))
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "label_schema.json"))
+
+
+class TestTelemetryIntegration:
+    _CMDS = ["demo", "build", "deploy", "eval", "explain", "export", "find", "optimize", "train"]
+
+    @e2e_pytest_component
+    @patch("otx.cli.utils.telemetry.init_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.close_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_version", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_cmd_results", return_value=None)
+    def test_tm_integration_exit_0(
+        self,
+        mock_send_cmd,
+        mock_send_version,
+        mock_close_tm,
+        mock_init_tm,
     ):
-        return
+        backup_argv = sys.argv
+        for cmd in self._CMDS:
+            sys.argv = ["otx", cmd]
+            with patch(f"otx.cli.tools.cli.otx_{cmd}", return_value=None) as mock_cmd:
+                ret = cli.main()
 
-    if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        format_to_file = {
-            "ONNX": "exported_model_decoder.onnx",
-            "OPENVINO": "exported_model_decoder.xml",
-            # TODO (sungchul): EXPORTABLE_CODE will be supported # noqa: TD003
-        }
-    else:
-        format_to_file = {
-            "ONNX": "exported_model.onnx",
-            "OPENVINO": "exported_model.xml",
-            "EXPORTABLE_CODE": "exportable_code.zip",
-        }
+            assert ret == 0
+            mock_cmd.assert_called_once()
+            mock_init_tm.assert_called_once()
+            mock_close_tm.assert_called_once()
+            mock_send_cmd.assert_called_once_with(None, cmd, {"retcode": 0})
+            # reset mock state
+            mock_init_tm.reset_mock()
+            mock_close_tm.reset_mock()
+            mock_send_cmd.reset_mock()
+        sys.argv = backup_argv
 
-    tmp_path_test = tmp_path / f"otx_test_{model_name}"
-    for fmt in format_to_file:
-        command_cfg = [
-            "otx",
-            "export",
-            "--config",
-            recipe,
-            "--data_root",
-            fxt_target_dataset_per_task[task],
-            "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
-            *fxt_cli_override_command_per_task[task],
-            "--checkpoint",
-            str(ckpt_files[-1]),
-            "--export_format",
-            f"{fmt}",
-        ]
+    @e2e_pytest_component
+    @patch("otx.cli.utils.telemetry.init_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.close_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_version", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_cmd_results", return_value=None)
+    def test_tm_integration_exit_exception(
+        self,
+        mock_send_cmd,
+        mock_send_version,
+        mock_close_tm,
+        mock_init_tm,
+    ):
+        backup_argv = sys.argv
+        for cmd in self._CMDS:
+            with patch(f"otx.cli.tools.cli.otx_{cmd}", side_effect=Exception()):
+                sys.argv = ["otx", cmd]
+                with pytest.raises(Exception) as e:
+                    cli.main()
 
-        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-        outputs_dir = tmp_path_test / "outputs" / fmt
-        latest_dir = max(
-            (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-            key=lambda p: p.stat().st_mtime,
-        )
-        assert latest_dir.exists()
-        assert (latest_dir / f"{format_to_file[fmt]}").exists()
-
-    # 4) infer of the exported models
-    ov_output_dir = tmp_path_test / "outputs" / "OPENVINO"
-    ov_latest_dir = max(
-        (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    exported_model_path = str(ov_latest_dir / "exported_model.xml")
-
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        "cpu",
-        *fxt_cli_override_command_per_task[task],
-        "--checkpoint",
-        exported_model_path,
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    outputs_dir = tmp_path_test / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert latest_dir.exists()
-
-    # 5) otx export with XAI
-    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
-        return  # Supported only for classification, detection and instance segmentation task.
-
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        return  # DINO and Rtmdet_tiny are not supported.
-
-    format_to_file = {
-        "ONNX": "exported_model.onnx",
-        "OPENVINO": "exported_model.xml",
-        "EXPORTABLE_CODE": "exportable_code.zip",
-    }
-
-    tmp_path_test = tmp_path / f"otx_export_xai_{model_name}"
-    for fmt in format_to_file:
-        command_cfg = [
-            "otx",
-            "export",
-            "--config",
-            recipe,
-            "--data_root",
-            fxt_target_dataset_per_task[task],
-            "--work_dir",
-            str(tmp_path_test / "outputs" / fmt),
-            *fxt_cli_override_command_per_task[task],
-            "--checkpoint",
-            str(ckpt_files[-1]),
-            "--export_format",
-            f"{fmt}",
-            "--explain",
-            "True",
-        ]
-
-        run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-        fmt_dir = tmp_path_test / "outputs" / fmt
-        assert fmt_dir.exists()
-        fmt_latest_dir = max(
-            (p for p in fmt_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-            key=lambda p: p.stat().st_mtime,
-        )
-        assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
-
-
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
-)
-def test_otx_explain_e2e(
-    recipe: str,
-    tmp_path: Path,
-    fxt_accelerator: str,
-    fxt_target_dataset_per_task: dict,
-    fxt_cli_override_command_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI explain e2e command.
-
-    Args:
-        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
-        tmp_path (Path): The temporary path for storing the training outputs.
-
-    Returns:
-        None
-    """
-    if "tile" in recipe:
-        pytest.skip("Explain is not supported for tiling yet.")
-
-    import cv2
-
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
-
-    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
-        pytest.skip("Supported only for classification, detection and instance segmentation task.")
-
-    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
-        pytest.skip("DINO and Rtmdet_tiny are not supported.")
-
-    # otx explain
-    tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
-    command_cfg = [
-        "otx",
-        "explain",
-        "--config",
-        recipe,
-        "--model.num_classes",
-        "1000",
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_explain / "outputs"),
-        "--engine.device",
-        fxt_accelerator,
-        "--seed",
-        "0",
-        "--deterministic",
-        "True",
-        "--dump",
-        "True",
-        *fxt_cli_override_command_per_task[task],
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    outputs_dir = tmp_path_explain / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert (latest_dir / "saliency_maps").exists()
-    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
-    sal_map = cv2.imread(str(saliency_maps[0]))
-    assert sal_map.shape[0] > 0
-    assert sal_map.shape[1] > 0
-
-    sal_diff_thresh = 3
-    reference_sal_vals = {
-        # Classification
-        "multi_label_cls_efficientnet_v2_light": (
-            np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
-            "Slide6_class_0_saliency_map.png",
-        ),
-        "h_label_cls_efficientnet_v2_light": (
-            np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
-            "5_class_0_saliency_map.png",
-        ),
-        # Detection
-        "detection_yolox_tiny": (
-            np.array([111, 163, 141, 141, 146, 147, 158, 169, 184, 193], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        "detection_ssd_mobilenetv2": (
-            np.array([135, 80, 74, 34, 27, 32, 47, 42, 32, 34], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        "detection_atss_mobilenetv2": (
-            np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        # Instance Segmentation
-        "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([54, 54, 54, 54, 0, 0, 0, 54, 0, 0], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-    }
-    test_case_name = task + "_" + model_name
-    if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
-        if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
-            # Take corner values due to map sparsity of InstSeg
-            actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
-        else:
-            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
-        ref_sal_vals = reference_sal_vals[test_case_name][0]
-        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
-
-
-# @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
-@pytest.mark.parametrize(
-    "ov_recipe",
-    pytest.RECIPE_OV_LIST,
-)
-def test_otx_ov_test(
-    ov_recipe: str,
-    tmp_path: Path,
-    fxt_target_dataset_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx test' with OV model
-
-    Args:
-        recipe (str): The OV recipe to use for testing. (eg. 'classification/openvino_model.yaml')
-        tmp_path (Path): The temporary path for storing the testing outputs.
-
-    Returns:
-        None
-    """
-    task = ov_recipe.split("/")[-2]
-    model_name = ov_recipe.split("/")[-1].split(".")[0]
-
-    if task in [
-        "multi_label_cls",
-        "instance_segmentation",
-        "h_label_cls",
-        "visual_prompting",
-        "zero_shot_visual_prompting",
-        "anomaly_classification",
-        "anomaly_detection",
-        "anomaly_segmentation",
-    ]:
-        # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
-        pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    if task in ["action_classification"]:
-        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
-
-    # otx test
-    tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
-    command_cfg = [
-        "otx",
-        "test",
-        "--config",
-        ov_recipe,
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_test / "outputs"),
-        "--engine.device",
-        "cpu",
-        "--disable-infer-num-classes",
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    outputs_dir = tmp_path_test / "outputs"
-    latest_dir = max(
-        (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    assert latest_dir.exists()
-    assert (latest_dir / "csv").exists()
-    metric_result = list((latest_dir / "csv").glob(pattern="**/metrics.csv"))
-    assert len(metric_result) > 0
-
-
-@pytest.mark.parametrize("task", pytest.TASK_LIST)
-def test_otx_hpo_e2e(
-    task: str,
-    tmp_path: Path,
-    fxt_accelerator: str,
-    fxt_target_dataset_per_task: dict,
-    fxt_cli_override_command_per_task: dict,
-    fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test HPO e2e commands with default template of each task.
-
-    Args:
-        task (OTXTaskType): The task to run HPO with.
-        tmp_path (Path): The temporary path for storing the training outputs.
-
-    Returns:
-        None
-    """
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
-    if task not in DEFAULT_CONFIG_PER_TASK:
-        pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-
-    task = task.lower()
-    tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
-    tmp_path_hpo.mkdir(parents=True)
-
-    command_cfg = [
-        "otx",
-        "train",
-        "--task",
-        task.upper(),
-        "--data_root",
-        fxt_target_dataset_per_task[task],
-        "--work_dir",
-        str(tmp_path_hpo),
-        "--engine.device",
-        fxt_accelerator,
-        "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
-        "--run_hpo",
-        "true",
-        "--hpo_config.expected_time_ratio",
-        "2",
-        *fxt_cli_override_command_per_task[task],
-    ]
-
-    run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
-    if task in ("zero_shot_visual_prompting"):
-        return
-
-    latest_dir = max(
-        (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
-        key=lambda p: p.stat().st_mtime,
-    )
-    hpo_work_dor = latest_dir / "hpo"
-    assert hpo_work_dor.exists()
-    # Anomaly doesn't do validation. Check just there is no error.
-    if task.startswith("anomaly"):
-        return
-
-    assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2
+            assert e.type == Exception, f"{e}"
+            mock_init_tm.assert_called_once()
+            mock_close_tm.assert_called_once()
+            mock_send_cmd.assert_called_once_with(None, cmd, {"retcode": -1, "exception": repr(Exception())})
+            # reset mock state
+            mock_init_tm.reset_mock()
+            mock_close_tm.reset_mock()
+            mock_send_cmd.reset_mock()
+        sys.argv = backup_argv

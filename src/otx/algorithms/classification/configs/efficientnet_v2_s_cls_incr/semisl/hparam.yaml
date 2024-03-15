@@ -1,0 +1,25 @@
+# Hyperparameters.
+hyper_parameters:
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 16
+        auto_hpo_state: POSSIBLE
+      unlabeled_batch_size:
+        default_value: 48
+      learning_rate:
+        default_value: 0.00355
+        auto_hpo_state: POSSIBLE
+      early_stop_start:
+        default_value: 50
+      early_stop_patience:
+        default_value: 10
+      learning_rate_warmup_iters:
+        default_value: 0
+      num_iters:
+        default_value: 90
+      use_adaptive_interval:
+        default_value: true
+    algo_backend:
+      train_type:
+        default_value: Semisupervised

@@ -1,0 +1,30 @@
+# Description.
+model_template_id: Visual_Prompting_SAM_Tiny_ViT
+name: SAM_Tiny_ViT
+task_type: VISUAL_PROMPTING
+task_family: VISION
+instantiation: "CLASS"
+summary: Visual Prompting with TinyViT for the accurate predictions
+application: ~
+
+# Algo backend.
+framework: OTXVisualPrompting v0.1.0
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.visual_prompting.tasks.TrainingTask
+  openvino: otx.algorithms.visual_prompting.tasks.openvino.OpenVINOVisualPromptingTask
+
+# Hyper Parameters
+hyper_parameters:
+  base_path: ../configuration.yaml
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Computational Complexity
+gigaflops: 38.95
+size: 47

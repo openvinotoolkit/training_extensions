@@ -1,0 +1,52 @@
+_base_:
+  [
+    "./train.yaml",
+    "../_base_/models/classifiers/classifier.py",
+  ]
+
+runner:
+  max_epochs: 20
+
+optimizer:
+  type: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0001
+
+evaluation:
+  metric: ["accuracy", "class_accuracy"]
+
+lr_config:
+  policy: ReduceLROnPlateau
+  min_lr: 0.000001
+  interval: 1
+  metric: accuracy
+  factor: 0.5
+  patience: 1
+  iteration_patience: 0
+  warmup: linear
+  warmup_iters: 1
+  warmup_ratio: 0.333
+
+task_adapt:
+  type: "default_task_adapt"
+  op: "REPLACE"
+
+custom_hooks: [
+  {
+    type: LazyEarlyStoppingHook,
+    interval: 1,
+    metric: accuracy,
+    patience: 3,
+    iteration_patience: 0,
+    start: 3,
+    min_delta_ratio: 0.01,
+    priority: 75,
+  }
+]
+
+ignore: True
+adaptive_validation_interval:
+  max_interval: 5
+  enable_adaptive_interval_hook: True
+  enable_eval_before_run: True

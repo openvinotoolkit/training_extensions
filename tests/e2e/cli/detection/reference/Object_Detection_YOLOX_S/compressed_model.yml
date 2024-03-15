@@ -1,0 +1,10 @@
+TestToolsOTXDetection:
+  nncf:
+    number_of_fakequantizers: 108
+  ptq:
+    number_of_fakequantizers: 108
+TestToolsTilingDetection:
+  nncf:
+    number_of_fakequantizers: 108
+  ptq:
+    number_of_fakequantizers: 108

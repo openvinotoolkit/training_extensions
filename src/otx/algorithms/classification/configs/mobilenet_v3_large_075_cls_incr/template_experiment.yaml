@@ -1,0 +1,50 @@
+# Description.
+model_template_id: Custom_Image_Classification_MobileNet-V3-large-0.75x
+name: MobileNet-V3-large-0.75x
+task_type: CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
+application: ~
+
+# Algo backend.
+framework: OTXClassification v1.2.3
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask
+  openvino: otx.algorithms.classification.adapters.openvino.task.ClassificationOpenVINOTask
+  nncf: otx.algorithms.classification.adapters.mmcls.nncf.task.ClassificationNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 32
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.016
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 20
+    algo_backend:
+      train_type:
+        default_value: Incremental
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 0.32
+size: 2.76

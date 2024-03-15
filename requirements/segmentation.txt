@@ -1,0 +1,9 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Segmentation Requirements.
+mmcv-full==1.7.0
+mmsegmentation==0.30.0
+scikit-image # specifying different version w.r.t python_version is not effect
+mmdeploy==0.14.0
+timm==0.6.12
+pytorchcv==0.0.67
+einops==0.6.1

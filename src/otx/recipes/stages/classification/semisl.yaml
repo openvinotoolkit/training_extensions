@@ -1,0 +1,22 @@
+_base_: ["./train.yaml", "../_base_/models/cls_semisl.py"]
+
+runner:
+  max_epochs: 50
+
+optimizer:
+  lr: 0.001
+  momentum: 0.9
+  weight_decay: 0.0005
+
+optimizer_config:
+  type: SAMOptimizerHook
+
+custom_hooks:
+  - type: NoBiasDecayHook
+  - type: ModelEmaV2Hook
+    priority: ABOVE_NORMAL
+  - type: SemiSLClsHook
+
+task_adapt:
+  type: "default_task_adapt"
+  op: "REPLACE"

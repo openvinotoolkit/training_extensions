@@ -22,9 +22,9 @@ from otx import __version__
 
 # -- Project information ----------------------------------------------------- #
 
-project = "OpenVINO™ Training Extensions"
-copyright = "2024, OpenVINO™ Training Extensions Contributors"
-author = "OpenVINO™ Training Extensions Contributors"
+project = 'OpenVINO™ Training Extensions'
+copyright = '2023, OpenVINO™ Training Extensions Contributors'
+author = 'OpenVINO™ Training Extensions Contributors'
 release = __version__
 
 # -- General configuration --------------------------------------------------- #
@@ -34,19 +34,17 @@ release = __version__
 # ones.
 extensions = [
     "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
-    "sphinx.ext.autodoc",
-    "sphinx_copybutton",
+    'sphinx.ext.autodoc',
+    'sphinx_copybutton',
     "sphinx.ext.autosummary",  # Create neat summary tables
     "sphinx.ext.viewcode",  # Find the source files
     "sphinx.ext.autosectionlabel",  # Refer sections its title
     "sphinx.ext.intersphinx",  # Generate links to the documentation
-    "sphinx_tabs.tabs",
-    "sphinx_design",
 ]
 
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "markdown",
+     ".md": "markdown",
 }
 
 suppress_warnings = [
@@ -55,7 +53,7 @@ suppress_warnings = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -69,14 +67,14 @@ exclude_patterns = []
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_theme = "pydata_sphinx_theme"
-html_static_path = ["_static"]
+html_theme = 'pydata_sphinx_theme'
+html_static_path = ['_static']
 
 html_theme_options = {
-    "navbar_center": [],
-    "logo": {
-        "image_light": "logos/otx-logo.png",
-        "image_dark": "logos/otx-logo.png",
+   "navbar_center": [],
+   "logo": {
+      "image_light": 'logos/otx-logo.png',
+      "image_dark": 'logos/otx-logo.png',
     },
     "icon_links": [
         {
@@ -88,7 +86,7 @@ html_theme_options = {
     ],
 }
 html_css_files = [
-    "css/custom.css",
+    'css/custom.css',
 ]
 
 # -- Extension configuration -------------------------------------------------
@@ -109,6 +107,6 @@ autodoc_default_options = {
 
 autoclass_content = "both"
 
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
-autosummary_ignore_module_all = False  # Summary list in __all__ no others
+autosummary_generate = True     # Turn on sphinx.ext.autosummary
+autosummary_ignore_module_all = False   # Summary list in __all__ no others
 # autosummary_imported_members = True # document classes and functions imported in modules

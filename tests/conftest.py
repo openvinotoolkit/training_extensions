@@ -1,52 +1,111 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-from __future__ import annotations
+import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import Generator
 
 import pytest
-import torch
-from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegDataEntity
-from otx.core.data.mem_cache import MemCacheHandlerSingleton
-from torchvision.tv_tensors import Image, Mask
+
+from .test_suite.pytest_insertions import (
+    get_pytest_plugins_from_otx,
+    otx_conftest_insertion,
+    otx_pytest_addoption_insertion,
+)
+from .unit.api.fixtures.general import label_schema_example  # noqa: F401
+import mlflow
+
+pytest_plugins = get_pytest_plugins_from_otx()  # noqa: F405
+
+otx_conftest_insertion(default_repository_name="otx/training_extensions/")  # noqa: F405
+
+
+def pytest_addoption(parser):
+    otx_pytest_addoption_insertion(parser)  # noqa: F405
 
 
 @pytest.fixture(scope="session")
-def fxt_seg_data_entity() -> tuple[tuple, SegDataEntity, SegBatchDataEntity]:
-    img_size = (32, 32)
-    fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
-    fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
-    fake_masks = Mask(torch.randint(low=0, high=255, size=img_size, dtype=torch.uint8))
-    # define data entity
-    single_data_entity = SegDataEntity(fake_image, fake_image_info, fake_masks)
-    batch_data_entity = SegBatchDataEntity(
-        1,
-        [Image(data=torch.from_numpy(fake_image))],
-        [fake_image_info],
-        [fake_masks],
-    )
-    batch_pred_data_entity = SegBatchPredEntity(
-        1,
-        [Image(data=torch.from_numpy(fake_image))],
-        [fake_image_info],
-        [],
-        [fake_masks],
-    )
-
-    return single_data_entity, batch_pred_data_entity, batch_data_entity
+def tmp_dir_path(request) -> Generator[Path, None, None]:
+    prefix = request.config.getoption("--test-workspace")
+    with TemporaryDirectory(prefix=prefix) as tmp_dir:
+        yield Path(tmp_dir)
 
 
 @pytest.fixture(autouse=True)
-def fxt_clean_up_mem_cache() -> None:
-    """Clean up the mem-cache instance at the end of the test.
-
-    It is required for everyone who tests model training pipeline.
-    See https://github.com/openvinotoolkit/training_extensions/actions/runs/7326689283/job/19952721142?pr=2749#step:5:3098
-    """
+def set_default_tmp_path(tmp_dir_path: Path) -> Generator[None, None, None]:
+    origin_tmp_dir = os.environ.get("TMPDIR", None)
+    os.environ["TMPDIR"] = str(tmp_dir_path)
     yield
-    MemCacheHandlerSingleton.delete()
+    if origin_tmp_dir is None:
+        del os.environ["TMPDIR"]
+    else:
+        os.environ["TMPDIR"] = origin_tmp_dir
 
 
-# TODO(Jaeguk): Add cpu param when OTX can run integration test parallelly for each task. # noqa: TD003
-@pytest.fixture(params=[pytest.param("gpu", marks=pytest.mark.gpu)])
-def fxt_accelerator(request: pytest.FixtureRequest) -> str:
-    return request.param
+@pytest.fixture(autouse=True, scope="session")
+def manage_tm_config_for_testing():
+    # check file existance both 'isip' and 'openvino_telemetry' if not, create it.
+    # and backup contents if exist
+    cfg_dir = os.path.join(os.path.expanduser("~"), "intel")
+    isip_path = os.path.join(cfg_dir, "isip")
+    otm_path = os.path.join(cfg_dir, "openvino_telemetry")
+    isip_exist = os.path.exists(isip_path)
+    otm_exist = os.path.exists(otm_path)
+
+    created_cfg_dir = False
+
+    if not os.path.exists(cfg_dir):
+        created_cfg_dir = True
+        os.makedirs(cfg_dir)
+
+    isip_backup = None
+
+    if not isip_exist:
+        with open(isip_path, "w") as f:
+            f.write("0")
+    else:
+        with open(isip_path, "r") as f:
+            isip_backup = f.read()
+
+    otm_backup = None
+    if not otm_exist:
+        with open(otm_path, "w") as f:
+            f.write("0")
+    else:
+        with open(otm_path, "r") as f:
+            otm_backup = f.read()
+
+    yield
+
+    # restore or remove
+    if not isip_exist:
+        os.remove(isip_path)
+    else:
+        if isip_backup is not None:
+            with open(isip_path, "w") as f:
+                f.write(isip_backup)
+
+    if not otm_exist:
+        os.remove(otm_path)
+    else:
+        if otm_backup is not None:
+            with open(otm_path, "w") as f:
+                f.write(otm_backup)
+
+    if created_cfg_dir:
+        os.rmdir(cfg_dir)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def init_mlflow_tracking():
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    if uri is not None:
+        mlflow.set_tracking_uri(uri=uri)
+
+    yield
+
+
+@pytest.fixture(scope="session")
+def fxt_mlflow_client():
+    uri = os.environ.get("MLFLOW_TRACKING_SERVER_URI")
+    return mlflow.MlflowClient(uri) if uri is not None else None

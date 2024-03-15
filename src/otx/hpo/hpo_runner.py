@@ -1,30 +1,35 @@
-# Copyright (C) 2024 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
 """HPO runner and resource manager class."""
 
-from __future__ import annotations
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
-import logging
 import multiprocessing
 import os
 import queue
 import signal
+import sys
 import time
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Literal
+from typing import Any, Callable, Dict, Literal, Optional, Union
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
-from otx.utils import append_main_proc_signal_handler
+from otx.utils.logger import get_logger
 
-if TYPE_CHECKING:
-    from collections.abc import Hashable
-    from signal import Signals
-
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 @dataclass
@@ -42,44 +47,43 @@ class HpoLoop:
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use.
+        resource_type (Literal['gpu', 'cpu', 'xpu'], optional): Which type of resource to use.
                                                          If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (int | None, optional): How many trials to run in parallel.
-                                                   It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (int | None, optional): How many GPUs are used for a single trial.
-                                                         It's used for GPUResourceManager. Defaults to None.
-        available_gpu (str | None, optional): How many GPUs are available. It's used for GPUResourceManager.
-                                              Defaults to None.
+        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.
+                                                    It's used for CPUResourceManager. Defaults to None.
+        num_devices_per_trial (Optional[int], optional): Number of devices used for a single trial.
+                                                            It's used for GPUResourceManager and XPUResourceManager.
+                                                            Defaults to None.
+        available_devices (Optional[str], optional): Number of devices available.
+                                                    It's used for GPUResourceManager and XPUResourceManager.
+                                                    Defaults to None.
     """
 
     def __init__(
         self,
         hpo_algo: HpoBase,
         train_func: Callable,
-        resource_type: Literal["gpu", "cpu"] = "gpu",
-        num_parallel_trial: int | None = None,
-        num_gpu_for_single_trial: int | None = None,
-        available_gpu: str | None = None,
-    ) -> None:
+        resource_type: Literal["gpu", "cpu", "xpu"] = "gpu",
+        num_parallel_trial: Optional[int] = None,
+        num_devices_per_trial: Optional[int] = None,
+        available_devices: Optional[str] = None,
+    ):
         self._hpo_algo = hpo_algo
         self._train_func = train_func
-        self._running_trials: dict[int, RunningTrial] = {}
+        self._running_trials: Dict[int, RunningTrial] = {}
         self._mp = multiprocessing.get_context("spawn")
         self._report_queue = self._mp.Queue()
         self._uid_index = 0
         self._trial_fault_count = 0
         self._resource_manager = get_resource_manager(
-            resource_type,
-            num_parallel_trial,
-            num_gpu_for_single_trial,
-            available_gpu,
+            resource_type, num_parallel_trial, num_devices_per_trial, available_devices
         )
         self._main_pid = os.getpid()
 
-        append_main_proc_signal_handler(signal.SIGINT, self._terminate_signal_handler)
-        append_main_proc_signal_handler(signal.SIGTERM, self._terminate_signal_handler)
+        signal.signal(signal.SIGINT, self._terminate_signal_handler)
+        signal.signal(signal.SIGTERM, self._terminate_signal_handler)
 
-    def run(self) -> None:
+    def run(self):
         """Run a HPO loop."""
         logger.info("HPO loop starts.")
         try:
@@ -95,7 +99,7 @@ class HpoLoop:
                 time.sleep(1)
         except Exception as e:
             self._terminate_all_running_processes()
-            raise e  # noqa: TRY201
+            raise e
         logger.info("HPO loop is done.")
 
         if self._trial_fault_count >= 3:
@@ -104,7 +108,7 @@ class HpoLoop:
         self._get_reports()
         self._join_all_processes()
 
-    def _start_trial_process(self, trial: Trial) -> None:
+    def _start_trial_process(self, trial: Trial):
         logger.info(f"{trial.id} trial is now running.")
         logger.debug(f"{trial.id} hyper paramter => {trial.configuration}")
 
@@ -123,22 +127,14 @@ class HpoLoop:
             args=(
                 self._train_func,
                 trial.get_train_configuration(),
-                partial(
-                    _report_score,
-                    recv_queue=trial_queue,
-                    send_queue=self._report_queue,
-                    uid=uid,
-                    trial_id=trial.id,
-                ),
+                partial(_report_score, recv_queue=trial_queue, send_queue=self._report_queue, uid=uid),
             ),
         )
-        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore[arg-type]
+        os.environ = origin_env
+        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore
         process.start()
-        os.environ.clear()
-        for key, val in origin_env.items():
-            os.environ[key] = val
 
-    def _remove_finished_process(self) -> None:
+    def _remove_finished_process(self):
         trial_to_remove = []
         for uid, trial in self._running_trials.items():
             if not trial.process.is_alive():
@@ -153,21 +149,18 @@ class HpoLoop:
             self._resource_manager.release_resource(uid)
             del self._running_trials[uid]
 
-    def _get_reports(self) -> None:
+    def _get_reports(self):
         while not self._report_queue.empty():
             report = self._report_queue.get_nowait()
+            trial = self._running_trials[report["uid"]]
             trial_status = self._hpo_algo.report_score(
-                report["score"],
-                report["progress"],
-                report["trial_id"],
-                report["done"],
+                report["score"], report["progress"], trial.trial.id, report["done"]
             )
-            if report["uid"] in self._running_trials:
-                self._running_trials[report["uid"]].queue.put_nowait(trial_status)
+            trial.queue.put_nowait(trial_status)
 
         self._hpo_algo.save_results()
 
-    def _join_all_processes(self) -> None:
+    def _join_all_processes(self):
         for val in self._running_trials.values():
             val.queue.close()
 
@@ -181,51 +174,44 @@ class HpoLoop:
         self._uid_index += 1
         return uid
 
-    def _terminate_all_running_processes(self) -> None:
+    def _terminate_all_running_processes(self):
         for trial in self._running_trials.values():
             trial.queue.close()
             process = trial.process
             if process.is_alive():
                 logger.info(f"Kill child process {process.pid}")
-                process.terminate()
+                process.kill()
 
-    def _terminate_signal_handler(self, signum: Signals, frame_) -> None:  # noqa: ANN001
+    def _terminate_signal_handler(self, signum, _frame):
+        # This code prevents child processses from being killed unintentionally by proccesses forked from main process
+        if self._main_pid != os.getpid():
+            sys.exit()
+
         self._terminate_all_running_processes()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
         logger.warning(f"{singal_name[signum]} is sent. process exited.")
 
+        sys.exit(1)
 
-def _run_train(train_func: Callable, hp_config: dict, report_func: Callable) -> None:
+
+def _run_train(train_func: Callable, hp_config: Dict, report_func: Callable):
     # set multi process method as default
-    multiprocessing.set_start_method(None, True)
+    multiprocessing.set_start_method(None, True)  # type: ignore
     train_func(hp_config, report_func)
 
 
 def _report_score(
-    score: int | float,
-    progress: int | float,
+    score: Union[int, float],
+    progress: Union[int, float],
     recv_queue: multiprocessing.Queue,
     send_queue: multiprocessing.Queue,
-    uid: Hashable,
-    trial_id: Hashable,
+    uid: Any,
     done: bool = False,
-) -> TrialStatus:
-    logger.debug(
-        f"score : {score}, progress : {progress}, uid : {uid}, trial_id : {trial_id}, "
-        f"pid : {os.getpid()}, done : {done}",
-    )
+):
+    logger.debug(f"score : {score}, progress : {progress}, uid : {uid}, pid : {os.getpid()}, done : {done}")
     try:
-        send_queue.put_nowait(
-            {
-                "score": score,
-                "progress": progress,
-                "uid": uid,
-                "trial_id": trial_id,
-                "pid": os.getpid(),
-                "done": done,
-            },
-        )
+        send_queue.put_nowait({"score": score, "progress": progress, "uid": uid, "pid": os.getpid(), "done": done})
     except ValueError:
         return TrialStatus.STOP
 
@@ -244,24 +230,28 @@ def _report_score(
 def run_hpo_loop(
     hpo_algo: HpoBase,
     train_func: Callable,
-    resource_type: Literal["gpu", "cpu"] = "gpu",
-    num_parallel_trial: int | None = None,
-    num_gpu_for_single_trial: int | None = None,
-    available_gpu: str | None = None,
-) -> None:
+    resource_type: Literal["gpu", "cpu", "xpu"] = "gpu",
+    num_parallel_trial: Optional[int] = None,
+    num_devices_per_trial: Optional[int] = None,
+    available_devices: Optional[str] = None,
+):
     """Run the HPO loop.
 
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type ('gpu' | 'cpu', optional): Which type of resource to use.
+        resource_type (Literal['gpu', 'cpu', 'xpu'], optional): Which type of resource to use.
                                                          If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (int | None, optional): How many trials to run in parallel.
-                                                   It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (int | None, optional): How many GPUs are used for a single trial.
-                                                         It's used for GPUResourceManager. Defaults to None.
-        available_gpu (str | None, optional): How many GPUs are available. It's used for GPUResourceManager.
-                                              Defaults to None.
+        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.
+                                                      It's used for CPUResourceManager. Defaults to None.
+        num_devices_per_trial (Optional[int], optional): Number of devices used for a single trial.
+                                                            It's used for GPUResourceManager and XPUResourceManager.
+                                                            Defaults to None.
+        available_devices (Optional[str], optional): Number of devices available.
+                                                    It's used for GPUResourceManager and XPUResourceManager.
+                                                    Defaults to None.
     """
-    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu)
+    hpo_loop = HpoLoop(
+        hpo_algo, train_func, resource_type, num_parallel_trial, num_devices_per_trial, available_devices
+    )
     hpo_loop.run()

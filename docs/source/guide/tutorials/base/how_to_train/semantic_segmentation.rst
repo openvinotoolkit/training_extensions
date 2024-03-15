@@ -9,12 +9,16 @@ To learn more about Segmentation task, refer to :doc:`../../../explanation/algor
 .. note::
   To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
+  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+
+  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+
 The process has been tested on the following configuration.
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
-- Intel(R) Core(TM) i9-11900
-- CUDA Toolkit 11.8
+- Intel(R) Core(TM) i9-10980XE
+- CUDA Toolkit 11.1
 
 *************************
 Setup virtual environment
@@ -26,7 +30,7 @@ to create a universal virtual environment for OpenVINO™ Training Extensions.
 2. Activate your virtual
 environment:
 
-.. code-block:: shell
+.. code-block::
 
   .otx/bin/activate
   # or by this line, if you created an environment, using tox

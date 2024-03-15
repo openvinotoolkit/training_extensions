@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>0</id>
+      <name>v0</name>
+      <size>10</size>
+      <mode>interpolation</mode>
+      <overlap>2</overlap>
+      <bugtracker></bugtracker>
+      <created></created>
+      <updated></updated>
+      <start_frame>0</start_frame>
+      <stop_frame>9</stop_frame>
+      <frame_filter>1</frame_filter>
+      <z_order>True</z_order>
+      <labels>
+        <label>
+          <name>EmptyFrame</name>
+          <attributes></attributes>
+        </label>
+        <label>
+          <name>Right</name>
+          <attributes></attributes>
+        </label>
+      </labels>
+      <segments></segments>
+      <original_size>
+        <width>24</width>
+        <height>24</height>
+      </original_size>
+    </task>
+  </meta>
+  <track id="0" label="Right">
+    <box frame="00" outside="0" occluded="0" xtl="0.08" ytl="0.25" xbr="0.50" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="01" outside="0" occluded="0" xtl="0.12" ytl="0.25" xbr="0.54" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="02" outside="0" occluded="0" xtl="0.16" ytl="0.25" xbr="0.58" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="03" outside="0" occluded="0" xtl="0.20" ytl="0.25" xbr="0.62" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="04" outside="0" occluded="0" xtl="0.25" ytl="0.25" xbr="0.67" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="05" outside="0" occluded="0" xtl="0.29" ytl="0.25" xbr="0.71" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="06" outside="0" occluded="0" xtl="0.33" ytl="0.25" xbr="0.75" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="07" outside="0" occluded="0" xtl="0.37" ytl="0.25" xbr="0.79" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="08" outside="0" occluded="0" xtl="0.41" ytl="0.25" xbr="0.83" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+  <track id="0" label="Right">
+    <box frame="09" outside="0" occluded="0" xtl="0.45" ytl="0.25" xbr="0.87" ybr="0.75" z_order="0" label="Right"></box>
+  </track>
+</annotations>

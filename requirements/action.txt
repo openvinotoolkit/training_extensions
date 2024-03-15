@@ -1,0 +1,6 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Action Requirements.
+mmcv-full==1.7.0
+mmaction2==0.24.1
+mmdet==2.28.1
+mmdeploy==0.14.0
