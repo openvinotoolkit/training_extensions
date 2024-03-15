@@ -390,7 +390,7 @@ def fxt_benchmark_summary(
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
     for index, result in results.iterrows():
-        task, data_group, model, data = index
+        task, model, data_group, data = index
         exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
             "task": task,
@@ -419,7 +419,7 @@ def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
     ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
     if ref is not None:
-        ref = ref.set_index(["task", "data_group", "model"])
+        ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref
 
 
