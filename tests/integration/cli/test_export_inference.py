@@ -44,8 +44,8 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "h_label_cls": "test/accuracy",
     "detection": "test/map_50",
     "instance_segmentation": "test/map_50",
-    "visual_prompting": "test/Dice",
-    "zero_shot_visual_prompting": "test/F1",
+    "visual_prompting": "test/f1-score",
+    "zero_shot_visual_prompting": "test/f1-score",
 }
 
 
@@ -210,11 +210,6 @@ def test_otx_export_infer(
     assert (tmp_path_test / "outputs").exists()
 
     # 5) test optimize
-    if task in ("visual_prompting", "zero_shot_visual_prompting"):
-        pytest.xfail(
-            "Optimize for visual prompting and zero shot visual prompting yields segmentation fault after optimize.",
-        )
-
     command_cfg = [
         "otx",
         "optimize",
