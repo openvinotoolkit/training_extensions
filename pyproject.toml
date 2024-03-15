@@ -67,7 +67,7 @@ docs = [
     "nbsphinx",
 ]
 base = [
-    "torch==2.1.1",
+    "torch==2.2.1",
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
