@@ -1,0 +1,29 @@
+otx.core.model.module.anomaly.anomaly\_lightning
+================================================
+
+.. automodule:: otx.core.model.module.anomaly.anomaly_lightning
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXAnomaly
+   
+   
+
+   
+   
+   
+
+
+

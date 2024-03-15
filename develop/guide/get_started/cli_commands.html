@@ -1,15 +1,12 @@
 
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>OpenVINO™ Training Extensions CLI commands &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+    <title>OpenVINO™ Training Extensions CLI Usage &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -19,153 +16,128 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/get_started/cli_commands';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Base Tutorials" href="../tutorials/base/index.html" />
+    <link rel="next" title="OpenVINO™ Training Extensions API Quick-Start" href="api_tutorial.html" />
     <link rel="prev" title="Installation" href="installation.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>
-    <script>document.write(`<img src="../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +146,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,25 +206,28 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">OpenVINO™ Training Extensions CLI commands</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">OpenVINO™ Training Extensions CLI Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_tutorial.html">OpenVINO™ Training Extensions API Quick-Start</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -279,17 +242,11 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/base/demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/base/deploy.html">How to deploy the model and use demo in exportable code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/base/explain.html">How to explain the model behavior</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/self_sl.html">Use Self-Supervised Learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/backbones.html">Backbone Replacement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/configuration.html">How to write OTX Configuration (recipe)</a></li>
 </ul>
 </li>
 </ul>
@@ -330,10 +287,8 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/adaptive_training.html">Adaptive Training</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/noisy_label_detection.html">Noisy Label Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/fast_data_loading.html">Fast Data Loading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../explanation/additional_features/config_input_size.html">Configurable Input Size</a></li>
 </ul>
 </li>
 </ul>
@@ -341,46 +296,64 @@ document.write(`
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.html">otx.algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.action.html">otx.algorithms.action</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.anomaly.html">otx.algorithms.anomaly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.classification.html">otx.algorithms.classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.common.html">otx.algorithms.common</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.detection.html">otx.algorithms.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.segmentation.html">otx.algorithms.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algorithms.visual_prompting.html">otx.algorithms.visual_prompting</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_detection.html">otx.algo.action_detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.anomaly.html">otx.algo.anomaly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.callbacks.html">otx.algo.callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.hooks.html">otx.algo.hooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.samplers.html">otx.algo.samplers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.schedulers.html">otx.algo.schedulers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.utils.html">otx.algo.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.api.html">otx.api</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.api.configuration.html">otx.api.configuration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.api.entities.html">otx.api.entities</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.api.serialization.html">otx.api.serialization</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.api.usecases.html">otx.api.usecases</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.api.utils.html">otx.api.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.builder.html">otx.cli.builder</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.manager.html">otx.cli.manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.registry.html">otx.cli.registry</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.tools.html">otx.cli.tools</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.cli.html">otx.cli.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.install.html">otx.cli.install</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.utils.html">otx.cli.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.data.html">otx.core.data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.file.html">otx.core.file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.ov.html">otx.core.ov</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.patcher.html">otx.core.patcher</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.types.html">otx.core.types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.recipes.stages.html">otx.recipes.stages</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.data.anomaly.html">otx.data.anomaly</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.engine.html">otx.engine.engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.hpo.html">otx.engine.hpo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.utils.html">otx.engine.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.search_space.html">otx.hpo.search_space</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.utils.html">otx.hpo.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.utils.signal.html">otx.utils.signal</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
@@ -391,158 +364,273 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Guide</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">OpenVINO™...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
-  <section id="openvino-training-extensions-cli-commands">
-<h1>OpenVINO™ Training Extensions CLI commands<a class="headerlink" href="#openvino-training-extensions-cli-commands" title="Permalink to this heading">#</a></h1>
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="openvino-training-extensions-cli-usage">
+<h1>OpenVINO™ Training Extensions CLI Usage<a class="headerlink" href="#openvino-training-extensions-cli-usage" title="Permalink to this heading">#</a></h1>
 <p>All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are <a class="reference internal" href="../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> in our documentation with life-practical examples on specific datasets for each task.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to <a class="reference internal" href="../explanation/algorithms/index.html"><span class="doc">explanation section</span></a> in the documentation.</p>
+<p>To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to <a class="reference internal" href="../explanation/algorithms/index.html"><span class="doc">explanation section</span></a> in the documentation.
+Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or LightningCLI.
+<cite>Jsonargparse Documentation &lt;https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files&gt;_</cite></p>
 </div>
-<section id="find">
-<h2>Find<a class="headerlink" href="#find" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> lists model templates and backbones available for the given task. Specify the task name with <code class="docutils literal notranslate"><span class="pre">--task</span></code> option. Use <code class="docutils literal notranslate"><span class="pre">--backbone</span> <span class="pre">BACKBONE</span></code> to find the backbone from supported frameworks.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --help
-usage: otx find [-h] [--task TASK] [--template] [--backbone BACKBONE [BACKBONE ...]]
+<section id="help">
+<h2>Help<a class="headerlink" href="#help" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">--help</span></code> show available sub-commands.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>--help
+╭─<span class="w"> </span>Arguments<span class="w"> </span>─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│<span class="w"> </span>Usage:<span class="w"> </span>otx<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-v<span class="o">]</span><span class="w"> </span><span class="o">{</span>install,find,train,test,predict,export,optimize,explain<span class="o">}</span><span class="w"> </span>...<span class="w">                              </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w"> </span>OpenVINO<span class="w"> </span>Training-Extension<span class="w"> </span><span class="nb">command</span><span class="w"> </span>line<span class="w"> </span>tool<span class="w">                                                                   </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w"> </span>Options:<span class="w">                                                                                                        </span>│
+│<span class="w">   </span>-h,<span class="w"> </span>--help<span class="w">            </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.<span class="w">                                                        </span>│
+│<span class="w">   </span>-v,<span class="w"> </span>--version<span class="w">         </span>Display<span class="w"> </span>OTX<span class="w"> </span>version<span class="w"> </span>number.<span class="w">                                                             </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w"> </span>Subcommands:<span class="w">                                                                                                    </span>│
+│<span class="w">   </span>For<span class="w"> </span>more<span class="w"> </span>details<span class="w"> </span>of<span class="w"> </span>each<span class="w"> </span>subcommand,<span class="w"> </span>add<span class="w"> </span>it<span class="w"> </span>as<span class="w"> </span>an<span class="w"> </span>argument<span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span>--help.<span class="w">                                </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w">                                                                                                                 </span>│
+│<span class="w">   </span>Available<span class="w"> </span>subcommands:<span class="w">                                                                                        </span>│
+│<span class="w">     </span>install<span class="w">             </span>Install<span class="w"> </span>OTX<span class="w"> </span>requirements.<span class="w">                                                               </span>│
+│<span class="w">     </span>find<span class="w">                </span>This<span class="w"> </span>shows<span class="w"> </span>the<span class="w"> </span>model<span class="w"> </span>provided<span class="w"> </span>by<span class="w"> </span>OTX.<span class="w">                                                   </span>│
+│<span class="w">     </span>train<span class="w">               </span>Trains<span class="w"> </span>the<span class="w"> </span>model<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>provided<span class="w"> </span>LightningModule<span class="w"> </span>and<span class="w"> </span>OTXDataModule.<span class="w">                  </span>│
+│<span class="w">     </span><span class="nb">test</span><span class="w">                </span>Run<span class="w"> </span>the<span class="w"> </span>testing<span class="w"> </span>phase<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>engine.<span class="w">                                                    </span>│
+│<span class="w">     </span>predict<span class="w">             </span>Run<span class="w"> </span>predictions<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>specified<span class="w"> </span>model<span class="w"> </span>and<span class="w"> </span>data.<span class="w">                                     </span>│
+│<span class="w">     </span><span class="nb">export</span><span class="w">              </span>Export<span class="w"> </span>the<span class="w"> </span>trained<span class="w"> </span>model<span class="w"> </span>to<span class="w"> </span>OpenVINO<span class="w"> </span>Intermediate<span class="w"> </span>Representation<span class="w"> </span><span class="o">(</span>IR<span class="o">)</span><span class="w"> </span>or<span class="w"> </span>ONNX<span class="w"> </span>formats.<span class="w">  </span>│
+│<span class="w">     </span>optimize<span class="w">            </span>Applies<span class="w"> </span>NNCF.PTQ<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>underlying<span class="w"> </span>models<span class="w"> </span><span class="o">(</span>now<span class="w"> </span>works<span class="w"> </span>only<span class="w"> </span><span class="k">for</span><span class="w"> </span>OV<span class="w"> </span>models<span class="o">)</span>.<span class="w">               </span>│
+│<span class="w">     </span>explain<span class="w">             </span>Run<span class="w"> </span>XAI<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>specified<span class="w"> </span>model<span class="w"> </span>and<span class="w"> </span>data<span class="w"> </span><span class="o">(</span><span class="nb">test</span><span class="w"> </span>subset<span class="o">)</span>.<span class="w">                               </span>│
+│<span class="w">                                                                                                                 </span>│
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>After installing the package, if torch is not installed properly, this will only show the <code class="docutils literal notranslate"><span class="pre">install</span></code> subcommand. You can refer to this <a class="reference internal" href="installation.html"><span class="doc">installation section</span></a>.</p>
+</div>
+<p>The subcommand can get help output in the following way.
+For basic subcommand help, the Verbosity Level is 0. In this case, the CLI provides a Quick-Guide in markdown.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--help
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w">                </span>OpenVINO™<span class="w"> </span>Training<span class="w"> </span>Extensions<span class="w"> </span>CLI<span class="w"> </span>Guide<span class="w">                </span>┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --task TASK           The currently supported options: (&#39;CLASSIFICATION&#39;, &#39;DETECTION&#39;, &#39;ROTATED_DETECTION&#39;, &#39;INSTANCE_SEGMENTATION&#39;, &#39;SEGMENTATION&#39;, &#39;ACTION_CLASSIFICATION&#39;, &#39;ACTION_DETECTION&#39;,
-                        &#39;ANOMALY_CLASSIFICATION&#39;, &#39;ANOMALY_DETECTION&#39;, &#39;ANOMALY_SEGMENTATION&#39;).
-  --template            Shows a list of templates that can be used immediately.
-  --backbone BACKBONE [BACKBONE ...]
-                        The currently supported options: [&#39;otx&#39;, &#39;mmcls&#39;, &#39;mmdet&#39;, &#39;mmseg&#39;, &#39;torchvision&#39;, &#39;pytorchcv&#39;, &#39;omz.mmcls&#39;].
+Github<span class="w"> </span>Repository:
+https://github.com/openvinotoolkit/training_extensions.
+
+A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </span>is<span class="w"> </span>provided<span class="w"> </span>by<span class="w"> </span>the<span class="w"> </span>documentation.
+╭─<span class="w"> </span>Quick-Start<span class="w"> </span>─────────────────────────────────────────────────────────╮
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span><span class="m">1</span><span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>train<span class="w"> </span>with<span class="w"> </span>data_root<span class="w"> </span>only.<span class="w"> </span><span class="k">then</span><span class="w"> </span>OTX<span class="w"> </span>will<span class="w"> </span>provide<span class="w"> </span>default<span class="w">   </span>│
+│<span class="w">    </span>model.<span class="w">                                                             </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>&lt;DATASET_PATH&gt;<span class="w">                                 </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span><span class="m">2</span><span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>pick<span class="w"> </span>a<span class="w"> </span>model<span class="w"> </span>or<span class="w"> </span>datamodule<span class="w"> </span>as<span class="w"> </span>Config<span class="w"> </span>file<span class="w"> </span>or<span class="w"> </span>Class.<span class="w">        </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w">                                                            </span>│
+│<span class="w">  </span>--data_root<span class="w"> </span>&lt;DATASET_PATH&gt;<span class="w">                                           </span>│
+│<span class="w">  </span>--model<span class="w"> </span>&lt;CONFIG<span class="w"> </span><span class="p">|</span><span class="w"> </span>CLASS_PATH_OR_NAME&gt;<span class="w"> </span>--data<span class="w"> </span>&lt;CONFIG<span class="w"> </span><span class="p">|</span><span class="w">               </span>│
+│<span class="w">  </span>CLASS_PATH_OR_NAME&gt;<span class="w">                                                  </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span><span class="m">3</span><span class="w"> </span>Of<span class="w"> </span>course,<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>override<span class="w"> </span>the<span class="w"> </span>various<span class="w"> </span>values<span class="w"> </span>with<span class="w"> </span>commands.<span class="w">      </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w">                                                            </span>│
+│<span class="w">  </span>--data_root<span class="w"> </span>&lt;DATASET_PATH&gt;<span class="w">                                           </span>│
+│<span class="w">  </span>--max_epochs<span class="w"> </span>&lt;EPOCHS,<span class="w"> </span>int&gt;<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;CKPT_PATH,<span class="w"> </span>str&gt;<span class="w">             </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span><span class="m">4</span><span class="w"> </span>If<span class="w"> </span>you<span class="w"> </span>have<span class="w"> </span>a<span class="w"> </span><span class="nb">complete</span><span class="w"> </span>configuration<span class="w"> </span>file,<span class="w"> </span>run<span class="w"> </span>it<span class="w"> </span>like<span class="w"> </span>this.<span class="w">       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>&lt;DATASET_PATH&gt;<span class="w"> </span>--config<span class="w"> </span>&lt;CONFIG_PATH,<span class="w"> </span>str&gt;<span class="w">     </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w"> </span>To<span class="w"> </span>get<span class="w"> </span>more<span class="w"> </span>overridable<span class="w"> </span>argument<span class="w"> </span>information,<span class="w"> </span>run<span class="w"> </span>the<span class="w"> </span><span class="nb">command</span><span class="w"> </span>below.<span class="w">  </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">                                                                       </span>│
+│<span class="w">  </span><span class="c1"># Verbosity Level 1                                                  │</span>
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w"> </span><span class="o">[</span>optional_arguments<span class="o">]</span><span class="w"> </span>-h<span class="w"> </span>-v<span class="w">                                 </span>│
+│<span class="w">  </span><span class="c1"># Verbosity Level 2                                                  │</span>
+│<span class="w">  </span>otx<span class="w"> </span>train<span class="w"> </span><span class="o">[</span>optional_arguments<span class="o">]</span><span class="w"> </span>-h<span class="w"> </span>-vv<span class="w">                                </span>│
+│<span class="w">                                                                       </span>│
+╰───────────────────────────────────────────────────────────────────────╯
 </pre></div>
 </div>
-<p>Example to find ready-to-use templates for the detection task:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --task detection
-+-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
-|    TASK   |                 ID                |       NAME       |                                     BASE PATH                                      |
-+-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
-| DETECTION | Custom_Object_Detection_Gen3_ATSS | MobileNetV2-ATSS |   src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml    |
-| DETECTION |  Object_Detection_ResNeXt101_ATSS | ResNeXt101-ATSS  |    src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml    |
-| DETECTION |  Custom_Object_Detection_Gen3_SSD |       SSD        |    src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml    |
-| DETECTION |      Object_Detection_YOLOX_L     |     YOLOX-L      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml   |
-| DETECTION |      Object_Detection_YOLOX_S     |     YOLOX-S      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml   |
-| DETECTION |   Custom_Object_Detection_YOLOX   |    YOLOX-TINY    | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml |
-| DETECTION |      Object_Detection_YOLOX_X     |     YOLOX-X      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml   |
-+-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
-</pre></div>
-</div>
-<p>Example to find supported torchvision backbones for the detection task:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --task detection --backbone torchvision
-+-------+--------------------------------+---------------+---------+
-| Index |         Backbone Type          | Required-Args | Options |
-+-------+--------------------------------+---------------+---------+
-|   1   |      torchvision.alexnet       |               |         |
-|   2   |      torchvision.resnet18      |               |         |
-|   3   |      torchvision.resnet34      |               |         |
-|   4   |      torchvision.resnet50      |               |         |
+<p>For Verbosity Level 1, it shows Quick-Guide &amp; the essential arguments.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--help<span class="w"> </span>-v
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w">                </span>OpenVINO™<span class="w"> </span>Training<span class="w"> </span>Extensions<span class="w"> </span>CLI<span class="w"> </span>Guide<span class="w">                </span>┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+Github<span class="w"> </span>Repository:
+https://github.com/openvinotoolkit/training_extensions.
+
+A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </span>is<span class="w"> </span>provided<span class="w"> </span>by<span class="w"> </span>the<span class="w"> </span>documentation.
+╭─<span class="w"> </span>Quick-Start<span class="w"> </span>─────────────────────────────────────────────────────────╮
+│<span class="w">  </span>...<span class="w">                                                                  </span>│
+╰───────────────────────────────────────────────────────────────────────╯
+╭─<span class="w"> </span>Arguments<span class="w"> </span>─────────────────────────────────────────────────────────────────────────────────────╮
+│<span class="w"> </span>Usage:<span class="w"> </span>otx<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>train<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">[</span>-c<span class="w"> </span>CONFIG<span class="o">]</span><span class="w"> </span><span class="o">[</span>--print_config<span class="w"> </span><span class="o">[=</span>flags<span class="o">]]</span><span class="w">                           </span>│
+│<span class="w">                            </span><span class="o">[</span>--data_root<span class="w"> </span>DATA_ROOT<span class="o">]</span><span class="w"> </span><span class="o">[</span>--task<span class="w"> </span>TASK<span class="o">]</span><span class="w">                                </span>│
+│<span class="w">                            </span><span class="o">[</span>--engine<span class="w"> </span>CONFIG<span class="o">]</span><span class="w">                                                    </span>│
+│<span class="w">                            </span><span class="o">[</span>--work_dir<span class="w"> </span>WORK_DIR<span class="o">]</span><span class="w">                                                </span>│
+│<span class="w">                            </span><span class="o">[</span>--engine.checkpoint<span class="w"> </span>CHECKPOINT<span class="o">]</span><span class="w">                                     </span>│
+│<span class="w">                            </span><span class="o">[</span>--engine.device<span class="w"> </span><span class="o">{</span>auto,gpu,cpu,tpu,ipu,hpu,mps<span class="o">}]</span><span class="w">                     </span>│
+│<span class="w">                            </span><span class="o">[</span>--model.help<span class="w"> </span>CLASS_PATH_OR_NAME<span class="o">]</span><span class="w">                                    </span>│
+│<span class="w">                            </span><span class="o">[</span>--model<span class="w"> </span>CONFIG<span class="w"> </span><span class="p">|</span><span class="w"> </span>CLASS_PATH_OR_NAME<span class="w"> </span><span class="p">|</span><span class="w"> </span>.INIT_ARG_NAME<span class="w"> </span>VALUE<span class="o">]</span><span class="w">         </span>│
+│<span class="w">                            </span><span class="o">[</span>--data<span class="w"> </span>CONFIG<span class="o">]</span><span class="w">                                                      </span>│
+│<span class="w">                            </span><span class="o">[</span>--optimizer<span class="w"> </span>CONFIG<span class="w"> </span><span class="p">|</span><span class="w"> </span>CLASS_PATH_OR_NAME<span class="w"> </span><span class="p">|</span><span class="w"> </span>.INIT_ARG_NAME<span class="w"> </span>VALUE<span class="o">]</span><span class="w">     </span>│
+│<span class="w">                            </span><span class="o">[</span>--scheduler<span class="w"> </span>CONFIG<span class="w"> </span><span class="p">|</span><span class="w"> </span>CLASS_PATH_OR_NAME<span class="w"> </span><span class="p">|</span><span class="w"> </span>.INIT_ARG_NAME<span class="w"> </span>VALUE<span class="o">]</span><span class="w">     </span>│
+│<span class="w">                                                                                                 </span>│
 ...
-|   33  | torchvision.shufflenet_v2_x1_0 |               |         |
-|   34  | torchvision.shufflenet_v2_x1_5 |               |         |
-|   35  | torchvision.shufflenet_v2_x2_0 |               |         |
-+-------+--------------------------------+---------------+---------+
+</pre></div>
+</div>
+<p>For Verbosity Level 2, it shows all available arguments.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--help<span class="w"> </span>-vv
 </pre></div>
 </div>
 </section>
-<section id="building-workspace-folder">
-<h2>Building workspace folder<a class="headerlink" href="#building-workspace-folder" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for modifying the backbone of the model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --help
-usage: otx build [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
-                [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--workspace WORKSPACE] [--model MODEL] [--backbone BACKBONE]
-                [template]
-
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --train-data-roots TRAIN_DATA_ROOTS
-                        Comma-separated paths to training data folders.
-  --val-data-roots VAL_DATA_ROOTS
-                        Comma-separated paths to validation data folders.
-  --test-data-roots TEST_DATA_ROOTS
-                        Comma-separated paths to test data folders.
-  --unlabeled-data-roots UNLABELED_DATA_ROOTS
-                        Comma-separated paths to unlabeled data folders
-  --unlabeled-file-list UNLABELED_FILE_LIST
-                        Comma-separated paths to unlabeled file list
-  --task TASK           The currently supported options: (&#39;CLASSIFICATION&#39;, &#39;DETECTION&#39;, &#39;INSTANCE_SEGMENTATION&#39;, &#39;SEGMENTATION&#39;, &#39;ACTION_CLASSIFICATION&#39;, &#39;ACTION_DETECTION&#39;, &#39;ANOMALY_CLASSIFICATION&#39;, &#39;ANOMALY_DETECTION&#39;, &#39;ANOMALY_SEGMENTATION&#39;).
-  --train-type TRAIN_TYPE
-                        The currently supported options: dict_keys([&#39;Incremental&#39;, &#39;Semisupervised&#39;, &#39;Selfsupervised&#39;]).
-  --workspace WORKSPACE   Location where the workspace.
-  --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
-  --backbone BACKBONE   Available Backbone Type can be found using &#39;otx find --backbone {framework}&#39;.
-                        If there is an already created backbone configuration yaml file, enter the corresponding path.
-  --deterministic       Set deterministic to True, default=False.
-  --seed SEED           Set seed for configuration.
+<section id="print-config">
+<h2>print_config<a class="headerlink" href="#print-config" title="Permalink to this heading">#</a></h2>
+<p>Preview all configuration values that will be executed through that command line.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>&lt;config-file-path&gt;<span class="w"> </span>--print_config
 </pre></div>
 </div>
-<p>For example, the following command line will create an object detection <code class="docutils literal notranslate"><span class="pre">Custom_Object_Detection_Gen3_ATSS</span></code> model template with ResNet backbone from <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a>:
-To learn more about backbone replacement, please refer to the <a class="reference internal" href="../tutorials/advanced/backbones.html"><span class="doc">following advanced tutorial</span></a>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots &lt;path/to/train/root&gt; --val-data-roots &lt;path/to/val/root&gt;
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data_root</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tests/assets/car_tree_bug</span>
+<span class="nt">callback_monitor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">val/map_50</span>
+<span class="nt">engine</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">task</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DETECTION</span>
+<span class="w">  </span><span class="nt">work_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./otx-workspace</span>
+<span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
+<span class="nt">model</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">class_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">otx.algo.detection.atss.ATSS</span>
+<span class="w">  </span><span class="nt">init_args</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">num_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="w">    </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mobilenetv2</span>
+<span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">scheduler</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">task</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DETECTION</span>
+<span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">data_format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">coco_instances</span>
+<span class="w">    </span><span class="nt">train_subset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">val_subset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">test_subset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">mem_cache_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1GB</span>
+<span class="w">    </span><span class="nt">mem_cache_img_max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">    </span><span class="nt">image_color_channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RGB</span>
+<span class="w">    </span><span class="nt">include_polygons</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">max_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">deterministic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="nt">precision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="nt">callbacks</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">logger</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>Users can also pre-generate a config file with an example like the one below.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>&lt;config-file-path&gt;<span class="w"> </span>--print_config<span class="w"> </span>&gt;<span class="w"> </span>config.yaml
+</pre></div>
+</div>
+</section>
+<section id="find">
+<h2>Find<a class="headerlink" href="#find" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> lists model templates and backbones available for the given task. Specify the task name with <code class="docutils literal notranslate"><span class="pre">--task</span></code> option. Use <code class="docutils literal notranslate"><span class="pre">--pattern</span></code> to find the model name from OTX.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--help
+╭─<span class="w"> </span>Arguments<span class="w"> </span>───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│<span class="w"> </span>Usage:<span class="w"> </span>otx<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span>find<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w">                                                                                                                                                            </span>│
+│<span class="w">                           </span><span class="o">[</span>--task<span class="w"> </span><span class="o">{</span>ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETEC<span class="w"> </span>│
+│<span class="w">                           </span><span class="o">[</span>--pattern<span class="w"> </span>PATTERN<span class="o">]</span><span class="w">                                                                                                                                             </span>│
+│<span class="w">                                                                                                                                                                                           </span>│
+│<span class="w">                                                                                                                                                                                           </span>│
+│<span class="w"> </span>Options:<span class="w">                                                                                                                                                                                  </span>│
+│<span class="w">   </span>-h,<span class="w"> </span>--help<span class="w">            </span>Show<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.<span class="w">                                                                                                                                  </span>│
+│<span class="w">   </span>--task<span class="w"> </span><span class="o">{</span>ACTION_CLASSIFICATION,ACTION_DETECTION,ANOMALY_CLASSIFICATION,ANOMALY_DETECTION,ANOMALY_SEGMENTATION,MULTI_CLASS_CLS,MULTI_LABEL_CLS,H_LABEL_CLS,DETECTION,ROTATED_DETECTION,DE<span class="w"> </span>│
+│<span class="w">                         </span>Value<span class="w"> </span><span class="k">for</span><span class="w"> </span>filtering<span class="w"> </span>by<span class="w"> </span>task.<span class="w"> </span>Default<span class="w"> </span>is<span class="w"> </span>None,<span class="w"> </span>which<span class="w"> </span>shows<span class="w"> </span>all<span class="w"> </span>recipes.<span class="w"> </span><span class="o">(</span>type:<span class="w"> </span>None,<span class="w"> </span>default:<span class="w"> </span>None<span class="o">)</span><span class="w">                                                                </span>│
+│<span class="w">   </span>--pattern<span class="w"> </span>PATTERN<span class="w">     </span>This<span class="w"> </span>allows<span class="w"> </span>you<span class="w"> </span>to<span class="w"> </span>filter<span class="w"> </span>the<span class="w"> </span>model<span class="w"> </span>name<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>recipe.<span class="w"> </span>For<span class="w"> </span>example,<span class="w"> </span><span class="k">if</span><span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>find<span class="w"> </span>all<span class="w"> </span>models<span class="w"> </span>that<span class="w"> </span>contain<span class="w"> </span>the<span class="w"> </span>word<span class="w"> </span><span class="s1">&#39;efficient&#39;</span>,<span class="w"> </span>you<span class="w"> </span>can<span class="w"> </span>use<span class="w"> </span><span class="s1">&#39;--pattern     │</span>
+<span class="s1">│                         efficient&#39;</span><span class="w"> </span><span class="o">(</span>type:<span class="w"> </span>None,<span class="w"> </span>default:<span class="w"> </span>None<span class="o">)</span><span class="w">                                                                                                                            </span>│
+│<span class="w">                                                                                                                                                                                           </span>│
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+</pre></div>
+</div>
+<p>Example to find ready-to-use templates for the detection task:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>DETECTION
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w"> </span>Task<span class="w">      </span>┃<span class="w"> </span>Model<span class="w"> </span>Name<span class="w">            </span>┃<span class="w"> </span>Recipe<span class="w"> </span>Path<span class="w">                                 </span>┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_tiny<span class="w">            </span>│<span class="w"> </span>recipe/detection/yolox_tiny.yaml<span class="w">            </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>atss_mobilenetv2_tile<span class="w"> </span>│<span class="w"> </span>recipe/detection/atss_mobilenetv2_tile.yaml<span class="w"> </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>openvino_model<span class="w">        </span>│<span class="w"> </span>recipe/detection/openvino_model.yaml<span class="w">        </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>atss_mobilenetv2<span class="w">      </span>│<span class="w"> </span>recipe/detection/atss_mobilenetv2.yaml<span class="w">      </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>atss_resnext101<span class="w">       </span>│<span class="w"> </span>recipe/detection/atss_resnext101.yaml<span class="w">       </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_l_tile<span class="w">          </span>│<span class="w"> </span>recipe/detection/yolox_l_tile.yaml<span class="w">          </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>ssd_mobilenetv2_tile<span class="w">  </span>│<span class="w"> </span>recipe/detection/ssd_mobilenetv2_tile.yaml<span class="w">  </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>atss_r50_fpn<span class="w">          </span>│<span class="w"> </span>recipe/detection/atss_r50_fpn.yaml<span class="w">          </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_tiny_tile<span class="w">       </span>│<span class="w"> </span>recipe/detection/yolox_tiny_tile.yaml<span class="w">       </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_s<span class="w">               </span>│<span class="w"> </span>recipe/detection/yolox_s.yaml<span class="w">               </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_s_tile<span class="w">          </span>│<span class="w"> </span>recipe/detection/yolox_s_tile.yaml<span class="w">          </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>rtmdet_tiny<span class="w">           </span>│<span class="w"> </span>recipe/detection/rtmdet_tiny.yaml<span class="w">           </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_x<span class="w">               </span>│<span class="w"> </span>recipe/detection/yolox_x.yaml<span class="w">               </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_x_tile<span class="w">          </span>│<span class="w"> </span>recipe/detection/yolox_x_tile.yaml<span class="w">          </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>ssd_mobilenetv2<span class="w">       </span>│<span class="w"> </span>recipe/detection/ssd_mobilenetv2.yaml<span class="w">       </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_l<span class="w">               </span>│<span class="w"> </span>recipe/detection/yolox_l.yaml<span class="w">               </span>│
+└───────────┴───────────────────────┴─────────────────────────────────────────────┘
+</pre></div>
+</div>
+<p>Example to find yolo named model for the detection task:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>DETECTION<span class="w"> </span>--pattern<span class="w"> </span><span class="s1">&#39;yolo*&#39;</span>
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w"> </span>Task<span class="w">      </span>┃<span class="w"> </span>Model<span class="w"> </span>Name<span class="w">      </span>┃<span class="w"> </span>Recipe<span class="w"> </span>Path<span class="w">                           </span>┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_tiny<span class="w">      </span>│<span class="w"> </span>recipe/detection/yolox_tiny.yaml<span class="w">      </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_x<span class="w">         </span>│<span class="w"> </span>recipe/detection/yolox_x.yaml<span class="w">         </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_l_tile<span class="w">    </span>│<span class="w"> </span>recipe/detection/yolox_l_tile.yaml<span class="w">    </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_s<span class="w">         </span>│<span class="w"> </span>recipe/detection/yolox_s.yaml<span class="w">         </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_l<span class="w">         </span>│<span class="w"> </span>recipe/detection/yolox_l.yaml<span class="w">         </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_x_tile<span class="w">    </span>│<span class="w"> </span>recipe/detection/yolox_x_tile.yaml<span class="w">    </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_s_tile<span class="w">    </span>│<span class="w"> </span>recipe/detection/yolox_s_tile.yaml<span class="w">    </span>│
+│<span class="w"> </span>DETECTION<span class="w"> </span>│<span class="w"> </span>yolox_tiny_tile<span class="w"> </span>│<span class="w"> </span>recipe/detection/yolox_tiny_tile.yaml<span class="w"> </span>│
+└───────────┴─────────────────┴───────────────────────────────────────┘
 </pre></div>
 </div>
 <section id="dataset-handling">
@@ -562,510 +650,335 @@ To learn more about backbone replacement, please refer to the <a class="referenc
 </pre></div>
 </div>
 <p>Then pass the path to <code class="docutils literal notranslate"><span class="pre">coco_data_root</span></code> to both root options:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">coco_data_root</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">coco_data_root</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">data_root</span> <span class="n">coco_data_root</span>
 </pre></div>
-</div>
-<p>However, if you store your training set and validation separately - provide paths to both accordingly.
-OpenVINO™ Training Extensions supports also auto-split functionality. If you don’t have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to <code class="docutils literal notranslate"><span class="pre">splitted_dataset</span></code> folder inside the workspace folder. This split can be further used for training.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Not all of the tasks support the auto-split feature. If the task isn’t supported - unexpected behavior or errors may appear. Please, refer to <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> documentation.</p>
-</div>
-<p>If you have multiple annotation files like below, add additional argument (<code class="docutils literal notranslate"><span class="pre">--train-ann-files</span></code>). Then, you could use the annotation what you selected.
-OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (<code class="docutils literal notranslate"><span class="pre">--train-ann-files</span></code>)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coco_data_root</span>
-  <span class="o">|----</span> <span class="n">annotations</span>
-    <span class="o">|----</span> <span class="n">instances_train</span><span class="o">.</span><span class="n">json</span>
-    <span class="o">|----</span> <span class="n">instances_train_1percent</span><span class="o">.</span><span class="n">json</span>
-    <span class="o">|----</span> <span class="n">instances_train_10percent</span><span class="o">.</span><span class="n">json</span>
-    <span class="o">|----</span> <span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
-  <span class="o">|----</span> <span class="n">images</span>
-    <span class="o">|----</span> <span class="n">train</span>
-      <span class="o">|----</span> <span class="mf">000.</span><span class="n">jpg</span>
-      <span class="o">....</span>
-  <span class="o">|----</span> <span class="n">val</span>
-      <span class="o">|----</span> <span class="mf">000.</span><span class="n">jpg</span>
-      <span class="o">....</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">coco_data_root</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">ann</span><span class="o">-</span><span class="n">files</span> <span class="n">coco_data_root</span><span class="o">/</span><span class="n">annotations</span><span class="o">/</span><span class="n">instances_train_10percent</span><span class="o">.</span><span class="n">json</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For now, only COCO format data could be used for direct annotation input</p>
 </div>
 </section>
 </section>
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template) on a dataset and saves results in two files:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> - a model snapshot</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> - a label schema used in training, created from a dataset</p></li>
-</ul>
-<p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./outputs/</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--output</span></code> option. These files are used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> receives <code class="docutils literal notranslate"><span class="pre">template</span></code> as a positional argument. <code class="docutils literal notranslate"><span class="pre">template</span></code> can be a path to the specific <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.</p>
-<p>However, if you created a workspace with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, the training process can be started (in the workspace directory) just with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="o">--</span><span class="n">help</span>
-<span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">train</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">UNLABELED_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="nb">list</span> <span class="n">UNLABELED_FILE_LIST</span><span class="p">]</span>
-                <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">gpus</span> <span class="n">GPUS</span><span class="p">]</span>
-                <span class="p">[</span><span class="o">--</span><span class="n">rdzv</span><span class="o">-</span><span class="n">endpoint</span> <span class="n">RDZV_ENDPOINT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">base</span><span class="o">-</span><span class="n">rank</span> <span class="n">BASE_RANK</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">world</span><span class="o">-</span><span class="n">size</span> <span class="n">WORLD_SIZE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mem</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">size</span> <span class="n">PARAMS</span><span class="o">.</span><span class="n">ALGO_BACKEND</span><span class="o">.</span><span class="n">MEM_CACHE_SIZE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">data</span> <span class="n">DATA</span><span class="p">]</span>
-                <span class="p">[</span><span class="n">template</span><span class="p">]</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">...</span>
-
-<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="n">template</span>              <span class="n">Enter</span> <span class="n">the</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">ID</span> <span class="ow">or</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">template</span> <span class="n">file</span><span class="o">.</span>
-                        <span class="n">This</span> <span class="n">can</span> <span class="n">be</span> <span class="n">omitted</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="ow">or</span> <span class="n">run</span> <span class="n">inside</span> <span class="n">a</span> <span class="n">workspace</span><span class="o">.</span>
-  <span class="p">{</span><span class="n">params</span><span class="p">}</span>              <span class="n">sub</span><span class="o">-</span><span class="n">command</span> <span class="n">help</span>
-    <span class="n">params</span>              <span class="n">Hyper</span> <span class="n">parameters</span> <span class="n">defined</span> <span class="ow">in</span> <span class="n">template</span> <span class="n">file</span><span class="o">.</span>
-
-<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">training</span> <span class="n">data</span> <span class="n">folders</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">validation</span> <span class="n">data</span> <span class="n">folders</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">UNLABELED_DATA_ROOTS</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">unlabeled</span> <span class="n">data</span> <span class="n">folders</span>
-  <span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="nb">list</span> <span class="n">UNLABELED_FILE_LIST</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">unlabeled</span> <span class="n">file</span> <span class="nb">list</span>
-  <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="nb">type</span> <span class="n">TRAIN_TYPE</span>
-                        <span class="n">The</span> <span class="n">currently</span> <span class="n">supported</span> <span class="n">options</span><span class="p">:</span> <span class="n">dict_keys</span><span class="p">([</span><span class="s1">&#39;Incremental&#39;</span><span class="p">,</span> <span class="s1">&#39;Semisupervised&#39;</span><span class="p">,</span> <span class="s1">&#39;Selfsupervised&#39;</span><span class="p">])</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span>
-                        <span class="n">Load</span> <span class="n">model</span> <span class="n">weights</span> <span class="kn">from</span> <span class="nn">previously</span> <span class="n">saved</span> <span class="n">checkpoint</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span>
-                        <span class="n">Resume</span> <span class="n">training</span> <span class="kn">from</span> <span class="nn">previously</span> <span class="n">saved</span> <span class="n">checkpoint</span>
-  <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">,</span> <span class="o">--</span><span class="n">output</span> <span class="n">OUTPUT</span>
-                        <span class="n">Location</span> <span class="n">where</span> <span class="n">trained</span> <span class="n">model</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">training</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span>          <span class="n">Execute</span> <span class="n">hyper</span> <span class="n">parameters</span> <span class="n">optimization</span> <span class="p">(</span><span class="n">HPO</span><span class="p">)</span> <span class="n">before</span> <span class="n">training</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span>
-                        <span class="n">Expected</span> <span class="n">ratio</span> <span class="n">of</span> <span class="n">total</span> <span class="n">time</span> <span class="n">to</span> <span class="n">run</span> <span class="n">HPO</span> <span class="n">to</span> <span class="n">time</span> <span class="n">taken</span> <span class="k">for</span> <span class="n">full</span> <span class="n">fine</span><span class="o">-</span><span class="n">tuning</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">gpus</span> <span class="n">GPUS</span>           <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">indices</span> <span class="n">of</span> <span class="n">GPU</span><span class="o">.</span>               <span class="n">If</span> <span class="n">there</span> <span class="n">are</span> <span class="n">more</span> <span class="n">than</span> <span class="n">one</span> <span class="n">available</span> <span class="n">GPU</span><span class="p">,</span> <span class="n">then</span> <span class="n">model</span> <span class="ow">is</span> <span class="n">trained</span> <span class="k">with</span> <span class="n">multi</span> <span class="n">GPUs</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">rdzv</span><span class="o">-</span><span class="n">endpoint</span> <span class="n">RDZV_ENDPOINT</span>
-                        <span class="n">Rendezvous</span> <span class="n">endpoint</span> <span class="k">for</span> <span class="n">multi</span><span class="o">-</span><span class="n">node</span> <span class="n">training</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">base</span><span class="o">-</span><span class="n">rank</span> <span class="n">BASE_RANK</span>
-                        <span class="n">Base</span> <span class="n">rank</span> <span class="n">of</span> <span class="n">the</span> <span class="n">current</span> <span class="n">node</span> <span class="n">workers</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">world</span><span class="o">-</span><span class="n">size</span> <span class="n">WORLD_SIZE</span>
-                        <span class="n">Total</span> <span class="n">number</span> <span class="n">of</span> <span class="n">workers</span> <span class="ow">in</span> <span class="n">a</span> <span class="n">worker</span> <span class="n">group</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">mem</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">size</span> <span class="n">PARAMS</span><span class="o">.</span><span class="n">ALGO_BACKEND</span><span class="o">.</span><span class="n">MEM_CACHE_SIZE</span>
-                        <span class="n">Size</span> <span class="n">of</span> <span class="n">memory</span> <span class="n">pool</span> <span class="k">for</span> <span class="n">caching</span> <span class="n">decoded</span> <span class="n">data</span> <span class="n">to</span> <span class="n">load</span> <span class="n">data</span> <span class="n">faster</span><span class="o">.</span> <span class="n">For</span> <span class="n">example</span><span class="p">,</span> <span class="n">you</span> <span class="n">can</span> <span class="n">use</span> <span class="n">digits</span> <span class="k">for</span> <span class="nb">bytes</span> <span class="n">size</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="mi">1024</span><span class="p">)</span> <span class="ow">or</span> <span class="n">a</span> <span class="n">string</span> <span class="k">with</span> <span class="n">size</span> <span class="n">units</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="mi">7</span><span class="n">KiB</span> <span class="o">=</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">2</span><span class="o">^</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="n">MB</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">10</span><span class="o">^</span><span class="mi">6</span><span class="p">,</span> <span class="ow">and</span> <span class="mi">2</span><span class="n">G</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span><span class="o">^</span><span class="mi">30</span><span class="p">)</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">deterministic</span>       <span class="n">Set</span> <span class="n">deterministic</span> <span class="n">to</span> <span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">seed</span> <span class="n">SEED</span>           <span class="n">Change</span> <span class="n">seed</span> <span class="k">for</span> <span class="n">training</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">data</span> <span class="n">DATA</span>           <span class="n">The</span> <span class="n">data</span><span class="o">.</span><span class="n">yaml</span> <span class="n">path</span> <span class="n">want</span> <span class="n">to</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">train</span> <span class="n">task</span><span class="o">.</span>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template) on a dataset:</p>
+<p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./otx-workspace/</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--work_dir</span></code> option. These files are used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> receives <code class="docutils literal notranslate"><span class="pre">--config</span></code> as a argument. <code class="docutils literal notranslate"><span class="pre">config</span></code> can be a path to the specific <code class="docutils literal notranslate"><span class="pre">*.yaml</span></code> file. Also, the path to data root should be passed to the CLI to start training.</p>
+<p>Example of the command line to start training using Auto-Configuration:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>&lt;dataset-root&gt;<span class="w"> </span>--task<span class="w"> </span>&lt;TASK&gt;
 </pre></div>
 </div>
-<p>Example of the command line to start object detection training:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD  --train-data-roots &lt;path/to/train/root&gt; --val-data-roots &lt;path/to/val/root&gt;
+<p>You can use the recipe configuration provided by OTX. The corresponding configuration file can be found via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>&lt;config-file-path&gt;<span class="w"> </span>--data_root<span class="w"> </span>&lt;dataset-root&gt;
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">&lt;work_dir&gt;/tf_logs</span></code>.</p>
+<p>You also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">&lt;work_dir&gt;/tensorboard</span></code>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">--mem-cache-size</span></code> provides in-memory caching for decoded images in main memory.
+<p><code class="docutils literal notranslate"><span class="pre">--data.config.mem_cache_size</span></code> provides in-memory caching for decoded images in main memory.
 If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
 image decoding can account for a non-negligible overhead in data pre-processing.
 This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
 If your machine has enough main memory, we recommend increasing this value as much as possible.
-For example, you can cache approximately 10,000 of <code class="docutils literal notranslate"><span class="pre">500x375~500x439</span></code> sized images with <code class="docutils literal notranslate"><span class="pre">--mem-cache-size=8GB</span></code>.</p>
+For example, you can cache approximately 10,000 of <code class="docutils literal notranslate"><span class="pre">500x375~500x439</span></code> sized images with <code class="docutils literal notranslate"><span class="pre">--data.config.mem_cache_size</span> <span class="pre">8GB</span></code>.</p>
 </div>
 <p>It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.</p>
-<p>You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train TEMPLATE params --help
-</pre></div>
-</div>
-<p>For example, that is how you can change the learning rate and the batch size for the SSD model:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD --train-data-roots &lt;path/to/train/root&gt; \
-                         --val-data-roots &lt;path/to/val/root&gt; \
-                         params \
-                         --learning_parameters.batch_size 16 \
-                         --learning_parameters.learning_rate 0.001
-</pre></div>
-</div>
-<p>You could also enable storage caching to boost data loading at the expanse of storage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD --train-data-roots &lt;path/to/train/root&gt; \
-                         --val-data-roots &lt;path/to/val/root&gt; \
-                         params \
-                         --algo_backend.storage_cache_scheme JPEG/75
+<p>You can override the configurable arguments.
+For example, that is how you can change the max epochs and the batch size for the training:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span>&lt;batch-size&gt;<span class="w"> </span>--max_epochs<span class="w"> </span>&lt;max-epochs&gt;
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Not all templates support stroage cache. We are working on extending supported templates.</p>
-</div>
-<p>As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the <code class="docutils literal notranslate"><span class="pre">--gpus</span></code> argument. It will start the distributed data-parallel training with the GPUs you have specified.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Multi-GPU training is currently supported for all tasks except for action tasks. We’ll add support for them in the near future.</p>
+<p><code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code> works based on <code class="docutils literal notranslate"><span class="pre">lightning.Tranier</span></code>. You can change the Trainer component with the arguments of train and test. You can find more arguments in this documentation.
+<cite>Trainer &lt;https://lightning.ai/docs/pytorch/stable/common/trainer.html&gt;_</cite></p>
 </div>
 </section>
 <section id="exporting">
 <h2>Exporting<a class="headerlink" href="#exporting" title="Permalink to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.</p>
-<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --help
-usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
-
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.
-  -o OUTPUT, --output OUTPUT
-                        Location where exported model will be stored.
-  --workspace WORKSPACE   Location where the intermediate output of the export will be stored.
-  --dump-features       Whether to return feature vector and saliency map for explanation purposes.
-  --half-precision      This flag indicated if model is exported in half precision (FP16).
+<p>The command below performs exporting to the <code class="docutils literal notranslate"><span class="pre">{work_dir}/</span></code> path.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/trained/weights.pth&gt;
 </pre></div>
 </div>
-<p>The command below performs exporting to the <code class="docutils literal notranslate"><span class="pre">outputs/openvino</span></code> path.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --output outputs/openvino
-</pre></div>
-</div>
-<p>The command results in <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code></p>
-<p>To use the exported model as an input for <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please dump additional outputs with internal information, using <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --output outputs/openvino/with_features --dump-features
-</pre></div>
-</div>
-</section>
-<section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> or <a class="reference external" href="https://github.com/openvinotoolkit/nncf#post-training-quantization">PTQ</a> depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
-<ul class="simple">
-<li><p>NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch</p></li>
-<li><p>PTQ optimization used for models exported in the OpenVINO™ IR format</p></li>
-</ul>
-<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">optimize</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">]</span>
-                    <span class="p">[</span><span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span><span class="p">]</span>
-                    <span class="p">[</span><span class="n">template</span><span class="p">]</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">...</span>
-
-<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="n">template</span>              <span class="n">Enter</span> <span class="n">the</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">ID</span> <span class="ow">or</span> <span class="n">name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">template</span> <span class="n">file</span><span class="o">.</span>
-                        <span class="n">This</span> <span class="n">can</span> <span class="n">be</span> <span class="n">omitted</span> <span class="k">if</span> <span class="n">you</span> <span class="n">have</span> <span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="ow">or</span> <span class="n">run</span> <span class="n">inside</span> <span class="n">a</span> <span class="n">workspace</span><span class="o">.</span>
-  <span class="p">{</span><span class="n">params</span><span class="p">}</span>              <span class="n">sub</span><span class="o">-</span><span class="n">command</span> <span class="n">help</span>
-    <span class="n">params</span>              <span class="n">Hyper</span> <span class="n">parameters</span> <span class="n">defined</span> <span class="ow">in</span> <span class="n">template</span> <span class="n">file</span><span class="o">.</span>
-
-<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
-  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">training</span> <span class="n">data</span> <span class="n">folders</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span>
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">validation</span> <span class="n">data</span> <span class="n">folders</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span>
-                        <span class="n">Load</span> <span class="n">weights</span> <span class="n">of</span> <span class="n">trained</span> <span class="n">model</span>
-  <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">,</span> <span class="o">--</span><span class="n">output</span> <span class="n">OUTPUT</span>
-                        <span class="n">Location</span> <span class="n">where</span> <span class="n">optimized</span> <span class="n">model</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">task</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-</pre></div>
-</div>
-<p>Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize SSD --load-weights &lt;path/to/trained/weights.pth&gt; \
-                            --train-data-roots &lt;path/to/train/root&gt; \
-                            --val-data-roots &lt;path/to/val/root&gt; \
-                            --output outputs/nncf
-</pre></div>
-</div>
-<p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize SSD --load-weights &lt;path/to/openvino.xml&gt; \
-                            --val-data-roots &lt;path/to/val/root&gt; \
-                            --output outputs/ptq
-</pre></div>
-</div>
-<p>Thus, to use PTQ pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.</p>
-</section>
-<section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs the evaluation of a model on the specific dataset.</p>
-<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --help
-usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [template] {params} ...
-
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-  {params}              sub-command help
-    params              Hyper parameters defined in template file.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --test-data-roots TEST_DATA_ROOTS
-                        Comma-separated paths to test data folders.
-  --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint. It could be a trained/optimized model (with PTQ only) or exported model.
-  -o OUTPUT, --output OUTPUT
-                        Location where the intermediate output of the task will be stored.
-  --workspace WORKSPACE   Path to the workspace where the command will run.
-</pre></div>
-</div>
-<p>The command below will evaluate the trained model on the provided dataset:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval SSD --test-data-roots &lt;path/to/test/root&gt; \
-                        --load-weights &lt;path/to/model_weghts&gt; \
-                        --output &lt;path/to/outputs&gt;
+<p>The command results in <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">exported_model.bin</span></code>.</p>
+<p>To use the exported model as an input for <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please dump additional outputs with internal information, using <code class="docutils literal notranslate"><span class="pre">--explain</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/trained/weights.pth&gt;<span class="w"> </span>--explain<span class="w"> </span>True
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">.latest</span></code> exists in work_dir, you can omit checkpoint and config.
+You can also omit <code class="docutils literal notranslate"><span class="pre">--work_dir</span></code> if you run from the root of the workspace that contains <code class="docutils literal notranslate"><span class="pre">.latest</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--work_dir<span class="w"> </span>&lt;workspace-path&gt;
+
+<span class="c1"># OR if you are in the workspace root</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="optimization">
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf#post-training-quantization">PTQ</a> depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
+<ul class="simple">
+<li><p>PTQ optimization used for models exported in the OpenVINO™ IR format</p></li>
+</ul>
+<p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/openvino.xml&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                            </span>--data_root<span class="w"> </span>&lt;path/to/val/root&gt;<span class="w"> </span><span class="se">\</span>
+</pre></div>
+</div>
+<p>Thus, to use PTQ pass the path to exported IR (.xml) model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">.latest</span></code> exists in work_dir, you can omit checkpoint and config.
+You can also omit <code class="docutils literal notranslate"><span class="pre">--work_dir</span></code> if you run from the root of the workspace that contains <code class="docutils literal notranslate"><span class="pre">.latest</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize<span class="w"> </span>--work_dir<span class="w"> </span>&lt;workspace-path&gt;
+
+<span class="c1"># OR if you are in the workspace root</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize
+</pre></div>
+</div>
+</div>
+</section>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> runs the evaluation of a model on the specific dataset.</p>
+<p>The command below will evaluate the trained model on the provided dataset:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>...<span class="w"> </span>--data_root<span class="w"> </span>&lt;path/to/test/root&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                        </span>--checkpoint<span class="w"> </span>&lt;path/to/model_weghts&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--checkpoint</span></code> option.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">.latest</span></code> exists in work_dir, you can omit checkpoint and config.
+You can also omit <code class="docutils literal notranslate"><span class="pre">--work_dir</span></code> if you run from the root of the workspace that contains <code class="docutils literal notranslate"><span class="pre">.latest</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>&lt;workspace-path&gt;
+
+<span class="c1"># OR if you are in the workspace root</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span>
+</pre></div>
+</div>
 </div>
 </section>
 <section id="explanation">
 <h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
-<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain --help
-usage: otx explain [-h] --input INPUT [--output OUTPUT] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
-
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-  {params}              sub-command help
-    params              Hyper parameters defined in template file.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Comma-separated paths to explain data folders.
-  -o OUTPUT, --output OUTPUT
-                        Output path for explanation images.
-  --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.
-  --explain-algorithm EXPLAIN_ALGORITHM
-                        Explain algorithm name, currently support [&#39;activationmap&#39;, &#39;eigencam&#39;, &#39;classwisesaliencymap&#39;]. For Openvino task, default method will be selected.
-  --process-saliency-maps PROCESS_SALIENCY_MAPS
-                        Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap. Depending on the number of targets to explain, this might take significant time.
-  --explain-all-classes EXPLAIN_ALL_CLASSES
-                        Provides explanations for all classes. Otherwise, explains only predicted classes. This feature is supported by algorithms that can generate explanations per each class.
-  --overlay-weight OVERLAY_WEIGHT
-                        Weight of the saliency map when overlaying the input image with saliency map.
-</pre></div>
-</div>
 <p>The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to <code class="docutils literal notranslate"><span class="pre">output</span></code> path:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain SSD --input &lt;path/to/explain/root&gt; \
-                           --load-weights &lt;path/to/model_weights&gt; \
-                           --output &lt;path/to/output/root&gt; \
-                           --explain-algorithm classwisesaliencymap \
-                           --overlay-weight 0.5
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>--config<span class="w"> </span>&lt;path/to/config&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                       </span>--checkpoint<span class="w"> </span>&lt;path/to/model_weights&gt;
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
 </div>
-<p>By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the <code class="docutils literal notranslate"><span class="pre">explain</span></code> function. To use OpenVINO™ IR model in <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please first export it with <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code> parameter:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export SSD --load-weights &lt;path/to/trained/weights.pth&gt; \
-                          --output outputs/openvino/with_features \
-                          --dump-features
-(otx) ...$ otx explain SSD --input &lt;path/to/explain/root&gt; \
-                           --load-weights outputs/openvino/with_features \
-                           --output &lt;path/to/output/root&gt; \
-                           --explain-algorithm classwisesaliencymap \
-                           --overlay-weight 0.5
+<p>By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the <code class="docutils literal notranslate"><span class="pre">explain</span></code> function. To use OpenVINO™ IR model in <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please first export it with <code class="docutils literal notranslate"><span class="pre">--explain</span></code> parameter:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/trained/weights.pth&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">                          </span>--explain<span class="w"> </span>True
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>outputs/openvino/with_features<span class="w"> </span><span class="se">\</span>
 </pre></div>
 </div>
 </section>
-<section id="demonstration">
-<h2>Demonstration<a class="headerlink" href="#demonstration" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">demo</span></code> runs model inference on images, videos, or webcam streams to show how it works with the user’s data.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">demo</span></code> command requires GUI backend to your system for displaying inference results.</p>
-<p>Only the OpenVINO™ IR model can be used for the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">demo</span></code> command.</p>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx demo --help
-usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [--output OUTPUT] [template] {params} ...
-
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-  {params}              sub-command help
-    params              Hyper parameters defined in template file.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Source of input data: images folder, image, webcam and video.
-  --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.It could be a trained/optimized model (with PTQ only) or exported model.
-  --fit-to-size FIT_TO_SIZE FIT_TO_SIZE
-                        Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
-  --loop                Enable reading the input in a loop.
-  --delay DELAY         Frame visualization time in ms.
-  --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-processing.
-  --output OUTPUT
-                        Output path to save input data with predictions.
+<section id="workspace">
+<h2>Workspace<a class="headerlink" href="#workspace" title="Permalink to this heading">#</a></h2>
+<p>If we run a typical Training example, will have a folder like the one below as output.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx-workspace/
+<span class="w">    </span>.latest/<span class="w">                      </span><span class="c1"># Gather the most recent information.</span>
+<span class="w">        </span>train/<span class="w">                    </span><span class="c1"># Link to the output_dir where the most recent train was performed.</span>
+<span class="w">        </span>export/<span class="w">                   </span><span class="c1"># Link to the output_dir where the most recent export was performed.</span>
+<span class="w">        </span>.../
+<span class="w">    </span>20240000_000000/<span class="w">              </span><span class="c1"># Deliverables from OTX CLI</span>
+<span class="w">    </span>20240000_000001/<span class="w">              </span><span class="c1"># Deliverables from OTX CLI Second-Trial</span>
 </pre></div>
 </div>
-<p>Command example of the demonstration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx demo SSD --input INPUT \
-                        --load-weights &lt;path/to/openvino.xml&gt; \
-                        --display-perf \
-                        --delay 1000
+<p>OTX considers the folder with <code class="docutils literal notranslate"><span class="pre">.latest</span></code> to be the root of the entire Workspace.
+<code class="docutils literal notranslate"><span class="pre">.latest</span></code> soft-links to the most recently trained output folder.</p>
+<p>Case 1: If a user specifies an output <code class="docutils literal notranslate"><span class="pre">work_dir</span></code> (An already existing workspace)</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
 </pre></div>
 </div>
-<p>Input can be a folder with images, a single image, a webcam ID or a video. The inference results of a model will be displayed to the GUI window with a 1-second interval.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.</p>
-</div>
-</section>
-<section id="deployment">
-<h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">deploy</span></code> creates <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the <code class="docutils literal notranslate"><span class="pre">deploy</span></code> can be used only with the OpenVINO™ IR model.</p>
-<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx deploy --help
-usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [template]
+<p>This will then use the <code class="docutils literal notranslate"><span class="pre">.latest</span></code> in the otx-workspace for training.</p>
+<p>Case 2: if a user executes a command from within the otx-workspace</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>otx-workspace
 
-positional arguments:
-  template              Enter the path or ID or name of the template file.
-                        This can be omitted if you have train-data-roots or run inside a workspace.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --load-weights LOAD_WEIGHTS
-                        Load model weights from previously saved checkpoint.
-  -o OUTPUT, --output OUTPUT
-                        Location where openvino.zip will be stored.
-</pre></div>
-</div>
-<p>Command example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx deploy SSD --load-weights &lt;path/to/openvino.xml&gt; \
-                          --output outputs/deploy
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w">                         </span><span class="c1"># Behave in the same way as the first training</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w">                          </span><span class="c1"># Perform a test with the config and checkpoint from the last training baseline.</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w">                        </span><span class="c1"># Perform a export with the config and checkpoint from the last training baseline.</span>
 </pre></div>
 </div>
 </section>
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="installation.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="installation.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Installation</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Installation</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="../tutorials/base/index.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Base Tutorials</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="api_tutorial.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">OpenVINO™ Training Extensions API Quick-Start</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#find">Find</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-workspace-folder">Building workspace folder</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-handling">Dataset handling</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training">Training</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exporting">Exporting</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization">Optimization</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluation">Evaluation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explanation">Explanation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration">Demonstration</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deployment">Deployment</a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../_sources/guide/get_started/cli_commands.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#help">
+   Help
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#print-config">
+   print_config
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#find">
+   Find
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#dataset-handling">
+     Dataset handling
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training">
+   Training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#exporting">
+   Exporting
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#optimization">
+   Optimization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#evaluation">
+   Evaluation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#explanation">
+   Explanation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#workspace">
+   Workspace
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../_sources/guide/get_started/cli_commands.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

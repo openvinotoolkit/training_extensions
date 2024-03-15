@@ -1,15 +1,12 @@
 
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Improve Small Object Detection with Image Tiling &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+    <title>Improve Small Object Detection with Image Tiling &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -19,153 +16,128 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/tiling';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Configurable Input Size" href="config_input_size.html" />
+    <link rel="next" title="API reference" href="../../reference/index.html" />
     <link rel="prev" title="Fast Data Loading" href="fast_data_loading.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +146,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,25 +206,28 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../get_started/cli_commands.html">OpenVINO™ Training Extensions CLI commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/cli_commands.html">OpenVINO™ Training Extensions CLI Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../get_started/api_tutorial.html">OpenVINO™ Training Extensions API Quick-Start</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="nav bd-sidenav">
@@ -279,17 +242,11 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="../../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/deploy.html">How to deploy the model and use demo in exportable code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/explain.html">How to explain the model behavior</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/self_sl.html">Use Self-Supervised Learning</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/backbones.html">Backbone Replacement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/advanced/configuration.html">How to write OTX Configuration (recipe)</a></li>
 </ul>
 </li>
 </ul>
@@ -330,10 +287,8 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adaptive_training.html">Adaptive Training</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="noisy_label_detection.html">Noisy Label Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Improve Small Object Detection with Image Tiling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config_input_size.html">Configurable Input Size</a></li>
 </ul>
 </li>
 </ul>
@@ -341,46 +296,64 @@ document.write(`
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.html">otx.algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.action.html">otx.algorithms.action</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.anomaly.html">otx.algorithms.anomaly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.classification.html">otx.algorithms.classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.common.html">otx.algorithms.common</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.detection.html">otx.algorithms.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.segmentation.html">otx.algorithms.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algorithms.visual_prompting.html">otx.algorithms.visual_prompting</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.action_detection.html">otx.algo.action_detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.anomaly.html">otx.algo.anomaly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.callbacks.html">otx.algo.callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.hooks.html">otx.algo.hooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.samplers.html">otx.algo.samplers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.schedulers.html">otx.algo.schedulers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.utils.html">otx.algo.utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.api.html">otx.api</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.api.configuration.html">otx.api.configuration</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.api.entities.html">otx.api.entities</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.api.serialization.html">otx.api.serialization</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.api.usecases.html">otx.api.usecases</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.api.utils.html">otx.api.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.builder.html">otx.cli.builder</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.manager.html">otx.cli.manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.registry.html">otx.cli.registry</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.tools.html">otx.cli.tools</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.cli.html">otx.cli.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.install.html">otx.cli.install</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.utils.html">otx.cli.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.data.html">otx.core.data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.file.html">otx.core.file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.ov.html">otx.core.ov</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.patcher.html">otx.core.patcher</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.types.html">otx.core.types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.recipes.html">otx.recipes</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.recipes.stages.html">otx.recipes.stages</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.data.anomaly.html">otx.data.anomaly</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.utils.logger.html">otx.utils.logger</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.engine.engine.html">otx.engine.engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.engine.hpo.html">otx.engine.hpo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.engine.utils.html">otx.engine.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.search_space.html">otx.hpo.search_space</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.utils.html">otx.hpo.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.utils.signal.html">otx.utils.signal</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.utils.utils.html">otx.utils.utils</a></li>
 </ul>
 </li>
@@ -391,69 +364,40 @@ document.write(`
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Guide</a></li>
-    
-    
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Additional Features</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">Improve...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <section id="improve-small-object-detection-with-image-tiling">
 <h1>Improve Small Object Detection with Image Tiling<a class="headerlink" href="#improve-small-object-detection-with-image-tiling" title="Permalink to this heading">#</a></h1>
 <p>The OpenVINO Training Extensions introduces the concept of image tiling to enhance the accuracy of detection algorithms and instance segmentation algorithms, particularly for small and densely packed objects in high-resolution images.</p>
@@ -468,56 +412,51 @@ document.write(`
 <p>During evaluation in training, only the tiles with annotations are used for evaluation, and evaluation is performed at the tile level.</p>
 <p>During testing, each tile is processed and predicted separately. The tiles are then stitched back together to form the full image, and the tile predictions are merged to form the full image prediction.</p>
 <p>The tiling strategy is implemented in the OpenVINO Training Extensions through the following steps:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">Training</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Train</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Evaluate</span> <span class="n">on</span> <span class="n">annotated</span> <span class="n">tiles</span>
-<span class="o">*</span> <span class="n">Testing</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="n">including</span> <span class="nb">all</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Test</span> <span class="k">with</span> <span class="nb">all</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Stitching</span> <span class="o">-&gt;</span> <span class="n">Merge</span> <span class="n">tile</span><span class="o">-</span><span class="n">level</span> <span class="n">predictions</span> <span class="o">-&gt;</span> <span class="n">Full</span> <span class="n">Image</span> <span class="n">Prediction</span>
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>Training: Create an ImageTilingDataset with annotated tiles -&gt; Train with annotated tile images -&gt; Evaluate on annotated tiles</p></li>
+<li><p>Testing: Create an ImageTilingDataset including all tiles -&gt; Test with all tile images -&gt; Stitching -&gt; Merge tile-level predictions -&gt; Full Image Prediction</p></li>
+</ul>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>While running <cite>ote eval</cite> on models trained with tiling enabled, the evaluation will be performed on all tiles, this process includes merging all the tile-level prediction.
+<p>While running <cite>ote test</cite> on models trained with tiling enabled, the evaluation will be performed on all tiles, this process includes merging all the tile-level prediction.
 The below context will be provided during evaluation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span class="p">]</span> <span class="mi">650</span><span class="o">/</span><span class="mi">650</span><span class="p">,</span> <span class="mf">17.2</span> <span class="n">task</span><span class="o">/</span><span class="n">s</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="mi">38</span><span class="n">s</span><span class="p">,</span> <span class="n">ETA</span><span class="p">:</span>     <span class="mi">0</span><span class="n">s</span>
-<span class="o">====</span> <span class="n">merge</span><span class="p">:</span> <span class="mf">7.326097726821899</span> <span class="n">sec</span> <span class="o">====</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<span class="o">]</span><span class="w"> </span><span class="m">650</span>/650,<span class="w"> </span><span class="m">17</span>.2<span class="w"> </span>task/s,<span class="w"> </span>elapsed:<span class="w"> </span>38s,<span class="w"> </span>ETA:<span class="w">     </span><span class="nv">0s</span>
+<span class="o">====</span><span class="w"> </span>merge:<span class="w"> </span><span class="m">7</span>.326097726821899<span class="w"> </span><span class="nv">sec</span><span class="w"> </span><span class="o">====</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="enable-tiling-via-otx-training-cli">
-<h2>Enable Tiling via OTX Training CLI<a class="headerlink" href="#enable-tiling-via-otx-training-cli" title="Permalink to this heading">#</a></h2>
+<section id="enable-tiling-via-otx-training">
+<h2>Enable Tiling via OTX Training<a class="headerlink" href="#enable-tiling-via-otx-training" title="Permalink to this heading">#</a></h2>
 <p>Currently, tiling is supported for both detection and instance segmentation models. Please refer to <a class="reference internal" href="../algorithms/object_detection/object_detection.html"><span class="doc">Object Detection</span></a> and <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a> for more details.</p>
-<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code> parameter to 1. Here’s an example of enabling tiling for the SSD model template:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
+<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">data.config.tile_config.enable_tiler</span></code> parameter to 1. Here’s an example of enabling tiling:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
+</pre></div>
+</div>
+</div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To learn how to deploy the trained model and run the exported demo, refer to <a class="reference internal" href="../../tutorials/base/deploy.html"><span class="doc">How to deploy the model and use demo in exportable code</span></a>.</p>
-<p>To learn how to run the demo in CLI and visualize results, refer to <a class="reference internal" href="../../tutorials/base/demo.html"><span class="doc">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</span></a>.</p>
-</div>
-</section>
-<section id="enable-tiling-via-otx-build">
-<h2>Enable Tiling via OTX Build<a class="headerlink" href="#enable-tiling-via-otx-build" title="Permalink to this heading">#</a></h2>
-<p>Here’s another way of enabling tiling for the SSD model template using the workspace:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">build</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span>
-</pre></div>
-</div>
-<p>The above command will create a workspace folder with the necessary files for training under <code class="docutils literal notranslate"><span class="pre">otx-workspace-DETECTION</span></code>.</p>
-<p>You can then train the model with tiling enabled using the following command without specifying any data-related paths:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span>
-<span class="n">otx</span> <span class="n">train</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>Alternatively, you can update the <code class="docutils literal notranslate"><span class="pre">tiling_parameters</span></code> in <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> file under the workspace folder to configure tiling parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hyper_parameters</span><span class="p">:</span>
-  <span class="n">parameter_overrides</span><span class="p">:</span>
-    <span class="n">tiling_parameters</span><span class="p">:</span>
-      <span class="n">enable_tiling</span><span class="p">:</span>
-        <span class="n">default_value</span><span class="p">:</span> <span class="n">true</span>
-</pre></div>
-</div>
-<p>And then train the model with tiling enabled using the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span>
-</pre></div>
+<p>To learn how to deploy the trained model and run the exported demo, refer to <span class="xref std std-doc">../../tutorials/base/deploy</span>.</p>
+<p>To learn how to run the demo in CLI and visualize results, refer to <span class="xref std std-doc">../../tutorials/base/demo</span>.</p>
 </div>
 <section id="tile-size-and-tile-overlap-optimization">
 <h3>Tile Size and Tile Overlap Optimization<a class="headerlink" href="#tile-size-and-tile-overlap-optimization" title="Permalink to this heading">#</a></h3>
@@ -526,13 +465,28 @@ The below context will be provided during evaluation:</p>
 <p>Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels.</p>
 <p>This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code> parameter.</p>
 <p>Here’s an example of setting the object size ratio to 5%:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
-    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span> \  <span class="c1"># enable automatic tiling parameter optimization</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">object_tile_ratio</span> <span class="mf">0.05</span>   \  <span class="c1"># set the object size ratio to 5%</span>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+
+<span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">object_tile_ratio</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">            </span><span class="c1"># enable tiling</span>
+<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>True<span class="w"> </span><span class="se">\ </span><span class="w">  </span><span class="c1"># enable automatic tiling parameter optimization</span>
+<span class="w">                         </span>--data.config.tile_config.object_tile_ratio<span class="w"> </span><span class="m">0</span>.05<span class="w">          </span><span class="c1"># set the object size ratio to 5%</span>
+</pre></div>
+</div>
+</div>
 </div>
 <p>After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size.
 This calculation ensures that the largest object on the border of a tile is not split into two tiles and is covered by adjacent tiles.</p>
@@ -543,181 +497,261 @@ This calculation ensures that the largest object on the border of a tile is not 
 <p>To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training.</p>
 <p>Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.</p>
 <p>It’s important to note that sampling is applied to the training and validation datasets, not the test dataset.</p>
-<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code> parameter. Here’s an example of setting the tile sampling ratio to 50%:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
-    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>           \  <span class="c1"># enable tiling</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span>  \  <span class="c1"># enable automatic tiling parameter optimization</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span> <span class="mf">0.5</span>   \  <span class="c1"># set the tile sampling ratio to 50%</span>
+<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">data.config.tile_config.enable_adaptive_tiling</span></code> parameter. Here’s an example:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+
+<span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sampling_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-5">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
+<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>True
+<span class="w">                         </span>--data.config.tile_config.sampling_ratio<span class="w"> </span><span class="m">0</span>.5
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="manual-tiling-parameter-configuration">
 <h3>Manual Tiling Parameter Configuration<a class="headerlink" href="#manual-tiling-parameter-configuration" title="Permalink to this heading">#</a></h3>
 <p>Users can disable adaptive tiling and customize the tiling process by setting the following parameters:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
-    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
-    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">0</span> \  <span class="c1"># disable automatic tiling parameter optimization</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_size</span> <span class="mi">512</span>            \  <span class="c1"># tile size configured to 512x512</span>
-           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span> <span class="mf">0.1</span>         \  <span class="c1"># 10% overlap between tiles</span>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-6">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">TileConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+
+<span class="n">tile_config</span> <span class="o">=</span> <span class="n">TileConfig</span><span class="p">(</span><span class="n">enable_tiler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_adaptive_tiling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tile_size</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">),</span> <span class="n">tile_overlap</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">tile_config</span><span class="o">=</span><span class="n">tile_config</span><span class="p">)</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-7">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.tile_config.enable_tiler<span class="w"> </span>True
+<span class="w">                         </span>--data.config.tile_config.enable_adaptive_tiling<span class="w"> </span>False
+<span class="w">                         </span>--data.config.tile_config.tile_size<span class="w"> </span><span class="s1">&#39;[512,512]&#39;</span>
+<span class="w">                         </span>--data.config.tile_config.tile_overlap<span class="w"> </span><span class="m">0</span>.2
+</pre></div>
+</div>
+</div>
 </div>
 <p>By specifying these parameters, automatic tiling parameter optimization is disabled, and the tile size is configured to 512x512 pixels with a 10% overlap between tiles.</p>
 <p>The following parameters can be configured to customize the tiling process:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code>: Enable or disable tiling (0 or 1)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_adaptive_params</span></code>: Enable or disable adaptive tiling parameter optimization (0 or 1)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code>: Ratio of average object size to tile size (float between 0.0 and 1.0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_size</span></code>: Tile edge length in pixels (integer between 100 and 4096)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span></code>: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code>: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.enable_tiling</span></code>: Enable or disable tiling (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.enable_adaptive_params</span></code>: Enable or disable adaptive tiling parameter optimization (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.object_tile_ratio</span></code>: Ratio of average object size to tile size (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.tile_size</span></code>: Tile edge length in pixels (integer between 100 and 4096)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.overlap</span></code>: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tile_config.sampling_ratio</span></code>: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)</p></li>
 </ul>
 </section>
 </section>
 <section id="run-tiling-on-openvino-exported-model">
 <h2>Run Tiling on OpenVINO Exported Model<a class="headerlink" href="#run-tiling-on-openvino-exported-model" title="Permalink to this heading">#</a></h2>
 <p>After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_trained_model</span><span class="o">&gt;/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> <span class="o">--</span><span class="n">output</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;</span>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-8">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;Tiling-torch-model&gt;&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>After exporting the model, you can run inference on the exported model using the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ote</span> <span class="nb">eval</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">test</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span>
+</div>
+<input id="sd-tab-item-9" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-9">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;checkpoint-tiling-model&gt;
 </pre></div>
+</div>
+</div>
+</div>
+<p>After exporting the model, you can run inference on the exported model using the following command:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-10" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-10">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;Tiling-IR-model&gt;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-11">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;checkpoint-tiling-IR-model&gt;
+</pre></div>
+</div>
+</div>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>When tiling is enabled, there is a trade-off between speed and accuracy as it increases the number of images to be processed.
 As a result, longer training and inference times are expected. If you encounter GPU out of memory errors,
 you can mitigate the issue by reducing the number of batches through the command-line interface (CLI) or
-by adjusting the batch size value in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file located in the workspace.</p>
+by adjusting the batch size value.</p>
 </div>
 </section>
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="fast_data_loading.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="fast_data_loading.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Fast Data Loading</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Fast Data Loading</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="config_input_size.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Configurable Input Size</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="../../reference/index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">API reference</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiling-strategies">Tiling Strategies</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiling-via-otx-training-cli">Enable Tiling via OTX Training CLI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiling-via-otx-build">Enable Tiling via OTX Build</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">Tile Size and Tile Overlap Optimization</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tiling-sampling-strategy">Tiling Sampling Strategy</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">Manual Tiling Parameter Configuration</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">Run Tiling on OpenVINO Exported Model</a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#tiling-strategies">
+   Tiling Strategies
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-training">
+   Enable Tiling via OTX Training
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">
+     Tile Size and Tile Overlap Optimization
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tiling-sampling-strategy">
+     Tiling Sampling Strategy
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">
+     Manual Tiling Parameter Configuration
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">
+   Run Tiling on OpenVINO Exported Model
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.data.factory &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/data/factory';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.data.factory</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Factory classes for dataset and transforms.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.transformer_libs</span> <span class="kn">import</span> <span class="n">TransformLibType</span>
+
+<span class="kn">from</span> <span class="nn">.dataset.base</span> <span class="kn">import</span> <span class="n">OTXDataset</span><span class="p">,</span> <span class="n">Transforms</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">DatasetSubset</span>
+
+    <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
+    <span class="kn">from</span> <span class="nn">otx.core.data.mem_cache</span> <span class="kn">import</span> <span class="n">MemCacheHandlerBase</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransformLibFactory&quot;</span><span class="p">,</span> <span class="s2">&quot;OTXDatasetFactory&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="TransformLibFactory"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.factory.html#otx.core.data.TransformLibFactory">[docs]</a><span class="k">class</span> <span class="nc">TransformLibFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory class for transform.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TransformLibFactory.generate"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.factory.html#otx.core.data.TransformLibFactory.generate">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TransformLibFactory</span><span class="p">],</span> <span class="n">config</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Transforms</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create transforms from factory.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">TORCHVISION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.torchvision</span> <span class="kn">import</span> <span class="n">TorchVisionTransformLib</span>
+
+            <span class="k">return</span> <span class="n">TorchVisionTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">MMCV</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.mmcv</span> <span class="kn">import</span> <span class="n">MMCVTransformLib</span>
+
+            <span class="k">return</span> <span class="n">MMCVTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">MMPRETRAIN</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.mmpretrain</span> <span class="kn">import</span> <span class="n">MMPretrainTransformLib</span>
+
+            <span class="k">return</span> <span class="n">MMPretrainTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">MMDET</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.mmdet</span> <span class="kn">import</span> <span class="n">MMDetTransformLib</span>
+
+            <span class="k">return</span> <span class="n">MMDetTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">MMSEG</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.mmseg</span> <span class="kn">import</span> <span class="n">MMSegTransformLib</span>
+
+            <span class="k">return</span> <span class="n">MMSegTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span> <span class="o">==</span> <span class="n">TransformLibType</span><span class="o">.</span><span class="n">MMACTION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.transform_libs.mmaction</span> <span class="kn">import</span> <span class="n">MMActionTransformLib</span>
+
+            <span class="k">return</span> <span class="n">MMActionTransformLib</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">transform_lib_type</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OTXDatasetFactory"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.factory.html#otx.core.data.OTXDatasetFactory">[docs]</a><span class="k">class</span> <span class="nc">OTXDatasetFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory class for OTXDataset.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OTXDatasetFactory.create"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.factory.html#otx.core.data.OTXDatasetFactory.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>  <span class="c1"># noqa: PLR0911 # ignore too many return statements</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">OTXDatasetFactory</span><span class="p">],</span>
+        <span class="n">task</span><span class="p">:</span> <span class="n">OTXTaskType</span><span class="p">,</span>
+        <span class="n">dm_subset</span><span class="p">:</span> <span class="n">DatasetSubset</span><span class="p">,</span>
+        <span class="n">mem_cache_handler</span><span class="p">:</span> <span class="n">MemCacheHandlerBase</span><span class="p">,</span>
+        <span class="n">cfg_subset</span><span class="p">:</span> <span class="n">SubsetConfig</span><span class="p">,</span>
+        <span class="n">cfg_data_module</span><span class="p">:</span> <span class="n">DataModuleConfig</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXDataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create OTXDataset.&quot;&quot;&quot;</span>
+        <span class="n">transforms</span> <span class="o">=</span> <span class="n">TransformLibFactory</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">cfg_subset</span><span class="p">)</span>
+        <span class="n">common_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;dm_subset&quot;</span><span class="p">:</span> <span class="n">dm_subset</span><span class="p">,</span>
+            <span class="s2">&quot;transforms&quot;</span><span class="p">:</span> <span class="n">transforms</span><span class="p">,</span>
+            <span class="s2">&quot;mem_cache_handler&quot;</span><span class="p">:</span> <span class="n">mem_cache_handler</span><span class="p">,</span>
+            <span class="s2">&quot;mem_cache_img_max_size&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">mem_cache_img_max_size</span><span class="p">,</span>
+            <span class="s2">&quot;image_color_channel&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">image_color_channel</span><span class="p">,</span>
+            <span class="s2">&quot;stack_images&quot;</span><span class="p">:</span> <span class="n">cfg_data_module</span><span class="o">.</span><span class="n">stack_images</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">.dataset.anomaly</span> <span class="kn">import</span> <span class="n">AnomalyDataset</span>
+
+            <span class="k">return</span> <span class="n">AnomalyDataset</span><span class="p">(</span><span class="n">task_type</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_CLASS_CLS</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.classification</span> <span class="kn">import</span> <span class="n">OTXMulticlassClsDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXMulticlassClsDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">MULTI_LABEL_CLS</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.classification</span> <span class="kn">import</span> <span class="n">OTXMultilabelClsDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXMultilabelClsDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">H_LABEL_CLS</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.classification</span> <span class="kn">import</span> <span class="n">OTXHlabelClsDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXHlabelClsDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.detection</span> <span class="kn">import</span> <span class="n">OTXDetectionDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXDetectionDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">,</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">]:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.instance_segmentation</span> <span class="kn">import</span> <span class="n">OTXInstanceSegDataset</span>
+
+            <span class="c1"># NOTE: DataModuleConfig does not have include_polygons attribute</span>
+            <span class="n">include_polygons</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="p">,</span> <span class="s2">&quot;include_polygons&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OTXInstanceSegDataset</span><span class="p">(</span><span class="n">include_polygons</span><span class="o">=</span><span class="n">include_polygons</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.segmentation</span> <span class="kn">import</span> <span class="n">OTXSegmentationDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXSegmentationDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.action_classification</span> <span class="kn">import</span> <span class="n">OTXActionClsDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXActionClsDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ACTION_DETECTION</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.action_detection</span> <span class="kn">import</span> <span class="n">OTXActionDetDataset</span>
+
+            <span class="k">return</span> <span class="n">OTXActionDetDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.visual_prompting</span> <span class="kn">import</span> <span class="n">OTXVisualPromptingDataset</span>
+
+            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OTXVisualPromptingDataset</span><span class="p">(</span><span class="n">use_bbox</span><span class="o">=</span><span class="n">use_bbox</span><span class="p">,</span> <span class="n">use_point</span><span class="o">=</span><span class="n">use_point</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ZERO_SHOT_VISUAL_PROMPTING</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">.dataset.visual_prompting</span> <span class="kn">import</span> <span class="n">OTXZeroShotVisualPromptingDataset</span>
+
+            <span class="n">use_bbox</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_bbox&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">use_point</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">vpm_config</span><span class="p">,</span> <span class="s2">&quot;use_point&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OTXZeroShotVisualPromptingDataset</span><span class="p">(</span><span class="n">use_bbox</span><span class="o">=</span><span class="n">use_bbox</span><span class="p">,</span> <span class="n">use_point</span><span class="o">=</span><span class="n">use_point</span><span class="p">,</span> <span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

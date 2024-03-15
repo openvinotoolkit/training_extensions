@@ -8,14 +8,8 @@ Prerequisites
 The current version of OpenVINO™ Training Extensions was tested in the following environment:
 
 - Ubuntu 20.04
-- Python 3.8 ~ 3.10
-- (Optional) To use the NVidia GPU for the training: `CUDA Toolkit 11.7 <https://developer.nvidia.com/cuda-11-7-0-download-archive>`_
+- Python >= 3.10
 
-.. note::
-
-        If using CUDA, make sure you are using a proper driver version. To do so, use ``ls -la /usr/local | grep cuda``.
-
-        If necessary, `install CUDA 11.7 <https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ (requires 'sudo' permission) and select it with ``export CUDA_HOME=/usr/local/cuda-11.7``.
 
 ***********************************************
 Install OpenVINO™ Training Extensions for users
@@ -24,7 +18,7 @@ Install OpenVINO™ Training Extensions for users
 1. Clone the training_extensions
 repository with the following command:
 
-.. code-block::
+.. code-block:: shell
 
     git clone https://github.com/openvinotoolkit/training_extensions.git
     cd training_extensions
@@ -33,7 +27,7 @@ repository with the following command:
 2. Set up a
 virtual environment.
 
-.. code-block::
+.. code-block:: shell
 
     # Create virtual env.
     python -m venv .otx
@@ -41,38 +35,32 @@ virtual environment.
     # Activate virtual env.
     source .otx/bin/activate
 
-3. Install PyTorch according to your system environment.
-Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
-
-.. note::
-
-    Currently, only torch==1.13.1 ~ 2.0.1 have been fully validated.
-    (Older versions are not supported due to the security issues. Newer versions might not work correctly)
-
-.. code-block::
-
-    # Install command for torch==2.0.1 for CUDA 11.7:
-    pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu117
-
-    # Or, install command for torch==1.13.1 for CUDA 11.7:
-    pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu117
-
-    # On CPU only systems:
-    pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cpu
-
-4. Install OpenVINO™ Training Extensions package from either:
+3. Install OpenVINO™ Training Extensions package from either:
 
 * A local source in development mode
 
-.. code-block::
+.. code-block:: shell
 
-    pip install -e .[full]
+    pip install -e .
 
 * PyPI
 
-.. code-block::
+.. code-block:: shell
 
-    pip install otx[full]
+    pip install otx
+
+4. Install PyTorch & Requirements for training according to your system environment.
+
+.. code-block:: shell
+
+    otx install -v
+
+[Optional] Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+
+.. note::
+
+    Currently, only torch==2.1.1 was fully validated. (older versions are not supported due to security issues).
+
 
 5. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
@@ -83,11 +71,11 @@ Install OpenVINO™ Training Extensions for developers
 
 Install ``tox`` and create a development environment:
 
-.. code-block::
+.. code-block:: shell
 
     pip install tox
     # -- need to replace '310' below if another python version needed
-    tox devenv venv/otx -e tests-all-py310
+    tox devenv venv/otx -e unit-test-py310
     source venv/otx/bin/activate
 
 Then you may change code, and all fixes will be directly applied to the editable package.
@@ -96,46 +84,29 @@ Then you may change code, and all fixes will be directly applied to the editable
 Install OpenVINO™ Training Extensions by using Docker
 *****************************************************
 
-To build a docker image with Python 3.9, run a command below from the working copy of the OpenVINO training extensions.
+1. By executing the following commands, it will build two Docker images: ``otx:${OTX_VERSION}-cuda`` and ``otx:${OTX_VERSION}-cuda-pretrained-ready``.
 
-.. code-block::
+.. code-block:: shell
 
-    # build a docker image (otx/cpu/python3.9:latest) with Python 3.9 (default)
-    training_extensions$ ./docker/build.sh
-    # or, with other version of Python e.g., 3.10
-    training_extensions$ ./docker/build.sh --python 3.10
+    git clone https://github.com/openvinotoolkit/training_extensions.git
+    cd docker
+    ./build.sh
 
-.. note::
+2. After that, you can check whether the images are built correctly such as
 
-    When the docker image build script completed successfully, the image will be named and tagged as `otx/cpu/python<py-version-string>:latest`.
-    You can check it using the command `docker images` on the terminal.
+.. code-block:: shell
 
-To start the OpenVINO training extensions container using the image built in above, run a command below.
+    docker image ls | grep otx
 
-.. code-block::
+Example:
 
-    # start a container from `otx/cpu/python3.9:latest' image.
-    $ docker run \
-        -it \ # enter interactive terminal
-        --rm \ # remove container after use
-        -v "$(pwd):/mnt/shared:rw" \ # mount current folder on host machine to the container
-        --shm-size=4g \ # increase mounted shared memory
-        otx/cpu/python3.9:latest    # name of the docker image to be used to create container
+.. code-block:: shell
 
-Enjoy OpenVINO training extensions!
+    otx                                           2.0.0-cuda-pretrained-ready                    4f3b5f98f97c   3 minutes ago   14.5GB
+    otx                                           2.0.0-cuda                                     8d14caccb29a   8 minutes ago   10.4GB
 
-.. code-block::
 
-    # find all templates for the classification task
-    root@fc01132c3753:/training_extensions# otx find --task classification
-    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
-    |      TASK      |                         ID                        |          NAME         |                                       BASE PATH                                       |
-    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
-    | CLASSIFICATION |       Custom_Image_Classification_DeiT-Tiny       |       DeiT-Tiny       |           src/otx/algorithms/classification/configs/deit_tiny/template.yaml           |
-    | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
-    | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
-    | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
-    +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
+``otx:${OTX_VERSION}-cuda`` is a minimal Docker image where OTX is installed with CUDA supports. On the other hand, ``otx:${OTX_VERSION}-cuda-pretrained-ready`` includes all the model pre-trained weights that OTX provides in addition to ``otx:${OTX_VERSION}-cuda``.
 
 *********
 Run tests
@@ -144,9 +115,9 @@ Run tests
 To run some tests, need to have development environment on your host. The development requirements file (requirements/dev.txt)
 would be used to setup them.
 
-.. code-block::
+.. code-block:: shell
 
-    $ pip install -r requirements/dev.txt
+    $ otx install --option dev
     $ pytest tests/
 
 Another option to run the tests is using the testing automation tool `tox <https://tox.wiki/en/latest/index.html>`_. Following commands will install
@@ -155,7 +126,7 @@ the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder
 .. code-block::
 
     $ pip install tox
-    $ tox -e tests-all-py310-pt1 -- tests/
+    $ tox -e tests-all-py310 -- tests/
 
 .. note::
 
@@ -176,24 +147,11 @@ please update pip version by following command:
 
 2. If you're facing a problem with ``torch`` or ``mmcv`` installation, please check that your CUDA version is compatible with torch version.
 Consider updating CUDA and CUDA drivers if needed.
-Check the `command example <https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ to install CUDA 11.7 with drivers on Ubuntu 20.04.
+Check the `command example <https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ to install CUDA 11.8 with drivers on Ubuntu 20.04.
 
-3. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only.
-So to use these python versions, please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
-
-4. If you have access to the Internet through the proxy server only,
+3. If you have access to the Internet through the proxy server only,
 please use pip with proxy call as demonstrated by command below:
 
-.. code-block::
+.. code-block:: shell
 
     python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
-
-5. If you get ``mmcv`` kernel compilation error message, e.g. ModuleNotFoundEffor: no module named 'mmcv._ext',
-please try to delete the pre-compiled MMCV wheel from the cache directory, and then try again.
-Then the kernels would be compiled on your environment.
-
-.. code-block::
-
-    find ~/.cache/pip/wheels/ -name "mmcv*" -delete
-    pip uninstall mmcv-full
-    pip install otx[full]  # pip install -e .[full]

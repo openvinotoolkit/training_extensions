@@ -1,14 +1,11 @@
 
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Overview: module code &#8212; OpenVINO™ Training Extensions 1.6.0dev documentation</title>
+    <title>Overview: module code &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -18,151 +15,127 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/clipboard.min.js"></script>
     <script src="../_static/copybutton.js"></script>
+    <script src="../_static/tabs.js"></script>
+    <script src="../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/index';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>
-    <script>document.write(`<img src="../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0dev documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -171,68 +144,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-</div>
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
-        
-      
       <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -241,456 +204,296 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
+
   
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
   </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">Overview:...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="otx/algorithms/action/adapters/openvino/model_wrappers/openvino_models.html">otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models</a></li>
-<li><a href="otx/algorithms/action/configs/base/configuration.html">otx.algorithms.action.configs.base.configuration</a></li>
-<li><a href="otx/algorithms/action/task.html">otx.algorithms.action.task</a></li>
-<li><a href="otx/algorithms/action/tools/sample_classification.html">otx.algorithms.action.tools.sample_classification</a></li>
-<li><a href="otx/algorithms/action/tools/sample_detection.html">otx.algorithms.action.tools.sample_detection</a></li>
-<li><a href="otx/algorithms/action/utils/convert_public_data_to_cvat.html">otx.algorithms.action.utils.convert_public_data_to_cvat</a></li>
-<li><a href="otx/algorithms/action/utils/data.html">otx.algorithms.action.utils.data</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/accelerators/xpu.html">otx.algorithms.anomaly.adapters.anomalib.accelerators.xpu</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/callbacks/inference.html">otx.algorithms.anomaly.adapters.anomalib.callbacks.inference</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/callbacks/iteration_timer.html">otx.algorithms.anomaly.adapters.anomalib.callbacks.iteration_timer</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/callbacks/progress.html">otx.algorithms.anomaly.adapters.anomalib.callbacks.progress</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/config/anomalib_config.html">otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/data/data.html">otx.algorithms.anomaly.adapters.anomalib.data.data</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/plugins/xpu_precision.html">otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision</a></li>
-<li><a href="otx/algorithms/anomaly/adapters/anomalib/strategies/xpu_single.html">otx.algorithms.anomaly.adapters.anomalib.strategies.xpu_single</a></li>
-<li><a href="otx/algorithms/anomaly/configs/base/draem/configuration.html">otx.algorithms.anomaly.configs.base.draem.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/base/padim/configuration.html">otx.algorithms.anomaly.configs.base.padim.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/base/stfpm/configuration.html">otx.algorithms.anomaly.configs.base.stfpm.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/classification/draem/configuration.html">otx.algorithms.anomaly.configs.classification.draem.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/classification/padim/configuration.html">otx.algorithms.anomaly.configs.classification.padim.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/classification/stfpm/configuration.html">otx.algorithms.anomaly.configs.classification.stfpm.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/detection/draem/configuration.html">otx.algorithms.anomaly.configs.detection.draem.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/detection/padim/configuration.html">otx.algorithms.anomaly.configs.detection.padim.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/detection/stfpm/configuration.html">otx.algorithms.anomaly.configs.detection.stfpm.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/segmentation/draem/configuration.html">otx.algorithms.anomaly.configs.segmentation.draem.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/segmentation/padim/configuration.html">otx.algorithms.anomaly.configs.segmentation.padim.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/configs/segmentation/stfpm/configuration.html">otx.algorithms.anomaly.configs.segmentation.stfpm.configuration</a></li>
-<li><a href="otx/algorithms/anomaly/tasks/inference.html">otx.algorithms.anomaly.tasks.inference</a></li>
-<li><a href="otx/algorithms/anomaly/tasks/nncf.html">otx.algorithms.anomaly.tasks.nncf</a></li>
-<li><a href="otx/algorithms/anomaly/tasks/openvino.html">otx.algorithms.anomaly.tasks.openvino</a></li>
-<li><a href="otx/algorithms/anomaly/tasks/train.html">otx.algorithms.anomaly.tasks.train</a></li>
-<li><a href="otx/algorithms/anomaly/tools/sample.html">otx.algorithms.anomaly.tools.sample</a></li>
-<li><a href="otx/algorithms/classification/adapters/openvino/task.html">otx.algorithms.classification.adapters.openvino.task</a></li>
-<li><a href="otx/algorithms/classification/configs/base/configuration.html">otx.algorithms.classification.configs.base.configuration</a></li>
-<li><a href="otx/algorithms/classification/task.html">otx.algorithms.classification.task</a></li>
-<li><a href="otx/algorithms/classification/tools/classification_sample.html">otx.algorithms.classification.tools.classification_sample</a></li>
-<li><a href="otx/algorithms/classification/utils/cls_utils.html">otx.algorithms.classification.utils.cls_utils</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/cancel_hook.html">otx.algorithms.common.adapters.mmcv.hooks.cancel_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/checkpoint_hook.html">otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/custom_model_ema_hook.html">otx.algorithms.common.adapters.mmcv.hooks.custom_model_ema_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/early_stopping_hook.html">otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/eval_hook.html">otx.algorithms.common.adapters.mmcv.hooks.eval_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/fp16_sam_optimizer_hook.html">otx.algorithms.common.adapters.mmcv.hooks.fp16_sam_optimizer_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/ib_loss_hook.html">otx.algorithms.common.adapters.mmcv.hooks.ib_loss_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/logger_hook.html">otx.algorithms.common.adapters.mmcv.hooks.logger_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/loss_dynamics_tracking_hook.html">otx.algorithms.common.adapters.mmcv.hooks.loss_dynamics_tracking_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/mem_cache_hook.html">otx.algorithms.common.adapters.mmcv.hooks.mem_cache_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/no_bias_decay_hook.html">otx.algorithms.common.adapters.mmcv.hooks.no_bias_decay_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/progress_hook.html">otx.algorithms.common.adapters.mmcv.hooks.progress_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/sam_optimizer_hook.html">otx.algorithms.common.adapters.mmcv.hooks.sam_optimizer_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/semisl_cls_hook.html">otx.algorithms.common.adapters.mmcv.hooks.semisl_cls_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/hooks/two_crop_transform_hook.html">otx.algorithms.common.adapters.mmcv.hooks.two_crop_transform_hook</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/nncf/hooks.html">otx.algorithms.common.adapters.mmcv.nncf.hooks</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/nncf/runners.html">otx.algorithms.common.adapters.mmcv.nncf.runners</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/ops/multi_scale_deformable_attn_pytorch.html">otx.algorithms.common.adapters.mmcv.ops.multi_scale_deformable_attn_pytorch</a></li>
-<li><a href="otx/algorithms/common/adapters/mmcv/runner.html">otx.algorithms.common.adapters.mmcv.runner</a></li>
-<li><a href="otx/algorithms/common/adapters/mmdeploy/ops/custom_ops.html">otx.algorithms.common.adapters.mmdeploy.ops.custom_ops</a></li>
-<li><a href="otx/algorithms/common/adapters/mmdeploy/utils/mmdeploy.html">otx.algorithms.common.adapters.mmdeploy.utils.mmdeploy</a></li>
-<li><a href="otx/algorithms/common/adapters/nncf/compression.html">otx.algorithms.common.adapters.nncf.compression</a></li>
-<li><a href="otx/algorithms/common/adapters/nncf/patches.html">otx.algorithms.common.adapters.nncf.patches</a></li>
-<li><a href="otx/algorithms/common/adapters/nncf/utils/utils.html">otx.algorithms.common.adapters.nncf.utils.utils</a></li>
-<li><a href="otx/algorithms/common/adapters/torch/amp/xpu_grad_scaler.html">otx.algorithms.common.adapters.torch.amp.xpu_grad_scaler</a></li>
-<li><a href="otx/algorithms/common/adapters/torch/dataloaders/composed_dataloader.html">otx.algorithms.common.adapters.torch.dataloaders.composed_dataloader</a></li>
-<li><a href="otx/algorithms/common/adapters/torch/utils/bs_search_algo.html">otx.algorithms.common.adapters.torch.utils.bs_search_algo</a></li>
-<li><a href="otx/algorithms/common/adapters/torch/utils/utils.html">otx.algorithms.common.adapters.torch.utils.utils</a></li>
-<li><a href="otx/algorithms/common/configs/configuration_enums.html">otx.algorithms.common.configs.configuration_enums</a></li>
-<li><a href="otx/algorithms/common/configs/training_base.html">otx.algorithms.common.configs.training_base</a></li>
-<li><a href="otx/algorithms/common/tasks/base_task.html">otx.algorithms.common.tasks.base_task</a></li>
-<li><a href="otx/algorithms/common/tasks/nncf_task.html">otx.algorithms.common.tasks.nncf_task</a></li>
-<li><a href="otx/algorithms/common/utils/callback.html">otx.algorithms.common.utils.callback</a></li>
-<li><a href="otx/algorithms/common/utils/data.html">otx.algorithms.common.utils.data</a></li>
-<li><a href="otx/algorithms/common/utils/dist_utils.html">otx.algorithms.common.utils.dist_utils</a></li>
-<li><a href="otx/algorithms/common/utils/ir.html">otx.algorithms.common.utils.ir</a></li>
-<li><a href="otx/algorithms/common/utils/utils.html">otx.algorithms.common.utils.utils</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/datasets/dataset.html">otx.algorithms.detection.adapters.mmdet.datasets.dataset</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/assigners/custom_max_iou_assigner.html">otx.algorithms.detection.adapters.mmdet.models.assigners.custom_max_iou_assigner</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/backbones/imgclsmob.html">otx.algorithms.detection.adapters.mmdet.models.backbones.imgclsmob</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/backbones/mmov_backbone.html">otx.algorithms.detection.adapters.mmdet.models.backbones.mmov_backbone</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/dense_heads/mmov_rpn_head.html">otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_rpn_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/dense_heads/mmov_ssd_head.html">otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_ssd_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/dense_heads/mmov_yolov3_head.html">otx.algorithms.detection.adapters.mmdet.models.dense_heads.mmov_yolov3_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_atss_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_deformable_detr_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_dino_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_lite_dino.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_lite_dino</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_maskrcnn_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_maskrcnn_tile_optimized.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_single_stage_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_single_stage_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_two_stage_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_two_stage_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_vfnet_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_vfnet_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/custom_yolox_detector.html">otx.algorithms.detection.adapters.mmdet.models.detectors.custom_yolox_detector</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/l2sp_detector_mixin.html">otx.algorithms.detection.adapters.mmdet.models.detectors.l2sp_detector_mixin</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/mean_teacher.html">otx.algorithms.detection.adapters.mmdet.models.detectors.mean_teacher</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/detectors/sam_detector_mixin.html">otx.algorithms.detection.adapters.mmdet.models.detectors.sam_detector_mixin</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/cross_dataset_detector_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_anchor_generator.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_anchor_generator</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_atss_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_dino_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_dino_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_fcn_mask_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_fcn_mask_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_retina_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_retina_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_roi_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_roi_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_rpn_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_rpn_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_ssd_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_ssd_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_vfnet_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/custom_yolox_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/heads/detr_head.html">otx.algorithms.detection.adapters.mmdet.models.heads.detr_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/layers/dino.html">otx.algorithms.detection.adapters.mmdet.models.layers.dino</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/layers/dino_layers.html">otx.algorithms.detection.adapters.mmdet.models.layers.dino_layers</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/layers/lite_detr_layers.html">otx.algorithms.detection.adapters.mmdet.models.layers.lite_detr_layers</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/losses/cross_focal_loss.html">otx.algorithms.detection.adapters.mmdet.models.losses.cross_focal_loss</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/losses/l2sp_loss.html">otx.algorithms.detection.adapters.mmdet.models.losses.l2sp_loss</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/necks/mmov_fpn.html">otx.algorithms.detection.adapters.mmdet.models.necks.mmov_fpn</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/necks/mmov_ssd_neck.html">otx.algorithms.detection.adapters.mmdet.models.necks.mmov_ssd_neck</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/necks/mmov_yolov3_neck.html">otx.algorithms.detection.adapters.mmdet.models.necks.mmov_yolov3_neck</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/roi_heads/bbox_heads/mmov_bbox_head.html">otx.algorithms.detection.adapters.mmdet.models.roi_heads.bbox_heads.mmov_bbox_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/roi_heads/mask_heads/mmov_mask_head.html">otx.algorithms.detection.adapters.mmdet.models.roi_heads.mask_heads.mmov_mask_head</a></li>
-<li><a href="otx/algorithms/detection/adapters/mmdet/models/roi_heads/roi_extractors/single_level_roi_extractor.html">otx.algorithms.detection.adapters.mmdet.models.roi_heads.roi_extractors.single_level_roi_extractor</a></li>
-<li><a href="otx/algorithms/detection/adapters/openvino/task.html">otx.algorithms.detection.adapters.openvino.task</a></li>
-<li><a href="otx/algorithms/detection/configs/base/configuration.html">otx.algorithms.detection.configs.base.configuration</a></li>
-<li><a href="otx/algorithms/detection/task.html">otx.algorithms.detection.task</a></li>
-<li><a href="otx/algorithms/detection/tools/detection_sample.html">otx.algorithms.detection.tools.detection_sample</a></li>
-<li><a href="otx/algorithms/detection/tools/detection_semisl_sample.html">otx.algorithms.detection.tools.detection_semisl_sample</a></li>
-<li><a href="otx/algorithms/detection/tools/instance_segmentation_sample.html">otx.algorithms.detection.tools.instance_segmentation_sample</a></li>
-<li><a href="otx/algorithms/detection/utils/data.html">otx.algorithms.detection.utils.data</a></li>
-<li><a href="otx/algorithms/detection/utils/utils.html">otx.algorithms.detection.utils.utils</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/datasets/dataset.html">otx.algorithms.segmentation.adapters.mmseg.datasets.dataset</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/backbones/litehrnet.html">otx.algorithms.segmentation.adapters.mmseg.models.backbones.litehrnet</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/backbones/mmov_backbone.html">otx.algorithms.segmentation.adapters.mmseg.models.backbones.mmov_backbone</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/heads/mmov_decode_head.html">otx.algorithms.segmentation.adapters.mmseg.models.heads.mmov_decode_head</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/losses/cross_entropy_loss_with_ignore.html">otx.algorithms.segmentation.adapters.mmseg.models.losses.cross_entropy_loss_with_ignore</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/losses/detcon_loss.html">otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/necks/selfsl_mlp.html">otx.algorithms.segmentation.adapters.mmseg.models.necks.selfsl_mlp</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/schedulers/constant.html">otx.algorithms.segmentation.adapters.mmseg.models.schedulers.constant</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/schedulers/poly.html">otx.algorithms.segmentation.adapters.mmseg.models.schedulers.poly</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/schedulers/step.html">otx.algorithms.segmentation.adapters.mmseg.models.schedulers.step</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/segmentors/detcon.html">otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/mmseg/models/segmentors/mean_teacher_segmentor.html">otx.algorithms.segmentation.adapters.mmseg.models.segmentors.mean_teacher_segmentor</a></li>
-<li><a href="otx/algorithms/segmentation/adapters/openvino/task.html">otx.algorithms.segmentation.adapters.openvino.task</a></li>
-<li><a href="otx/algorithms/segmentation/configs/base/configuration.html">otx.algorithms.segmentation.configs.base.configuration</a></li>
-<li><a href="otx/algorithms/segmentation/task.html">otx.algorithms.segmentation.task</a></li>
-<li><a href="otx/algorithms/segmentation/tools/segmentation_sample.html">otx.algorithms.segmentation.tools.segmentation_sample</a></li>
-<li><a href="otx/algorithms/segmentation/utils/metadata.html">otx.algorithms.segmentation.utils.metadata</a></li>
-<li><a href="otx/algorithms/segmentation/utils/processing.html">otx.algorithms.segmentation.utils.processing</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/openvino/model_wrappers/openvino_models.html">otx.algorithms.visual_prompting.adapters.openvino.model_wrappers.openvino_models</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/callbacks/inference.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/config/visual_prompting_config.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.config.visual_prompting_config</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/dataset.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/pipelines/sam_transforms.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/datasets/pipelines/transforms.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.transforms</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/backbones/tiny_vit.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.tiny_vit</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/backbones/vit.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.vit</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/decoders/sam_mask_decoder.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders.sam_mask_decoder</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/encoders/sam_image_encoder.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_image_encoder</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/encoders/sam_prompt_encoder.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders.sam_prompt_encoder</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/utils/layer_norm.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.layer_norm</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/utils/mlp_block.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils.mlp_block</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/visual_prompters/segment_anything.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything</a></li>
-<li><a href="otx/algorithms/visual_prompting/adapters/pytorch_lightning/models/visual_prompters/zero_shot_segment_anything.html">otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.zero_shot_segment_anything</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/base/configuration.html">otx.algorithms.visual_prompting.configs.base.configuration</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/base/configuration_enums.html">otx.algorithms.visual_prompting.configs.base.configuration_enums</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/sam_tiny_vit/configuration.html">otx.algorithms.visual_prompting.configs.sam_tiny_vit.configuration</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/sam_vit_b/configuration.html">otx.algorithms.visual_prompting.configs.sam_vit_b.configuration</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/zero_shot_sam_tiny_vit/configuration.html">otx.algorithms.visual_prompting.configs.zero_shot_sam_tiny_vit.configuration</a></li>
-<li><a href="otx/algorithms/visual_prompting/configs/zero_shot_sam_vit_b/configuration.html">otx.algorithms.visual_prompting.configs.zero_shot_sam_vit_b.configuration</a></li>
-<li><a href="otx/algorithms/visual_prompting/tasks/inference.html">otx.algorithms.visual_prompting.tasks.inference</a></li>
-<li><a href="otx/algorithms/visual_prompting/tasks/openvino.html">otx.algorithms.visual_prompting.tasks.openvino</a></li>
-<li><a href="otx/algorithms/visual_prompting/tasks/train.html">otx.algorithms.visual_prompting.tasks.train</a></li>
-<li><a href="otx/algorithms/visual_prompting/utils/visual_prompting_utils.html">otx.algorithms.visual_prompting.utils.visual_prompting_utils</a></li>
-<li><a href="otx/api/configuration/configurable_parameters.html">otx.api.configuration.configurable_parameters</a></li>
-<li><a href="otx/api/configuration/default_model_parameters.html">otx.api.configuration.default_model_parameters</a></li>
-<li><a href="otx/api/configuration/elements/configurable_enum.html">otx.api.configuration.elements.configurable_enum</a></li>
-<li><a href="otx/api/configuration/enums/model_lifecycle.html">otx.api.configuration.enums.model_lifecycle</a></li>
-<li><a href="otx/api/configuration/ui_rules/rules.html">otx.api.configuration.ui_rules.rules</a></li>
-<li><a href="otx/api/configuration/ui_rules/types.html">otx.api.configuration.ui_rules.types</a></li>
-<li><a href="otx/api/entities/annotation.html">otx.api.entities.annotation</a></li>
-<li><a href="otx/api/entities/color.html">otx.api.entities.color</a></li>
-<li><a href="otx/api/entities/coordinate.html">otx.api.entities.coordinate</a></li>
-<li><a href="otx/api/entities/dataset_item.html">otx.api.entities.dataset_item</a></li>
-<li><a href="otx/api/entities/datasets.html">otx.api.entities.datasets</a></li>
-<li><a href="otx/api/entities/explain_parameters.html">otx.api.entities.explain_parameters</a></li>
-<li><a href="otx/api/entities/graph.html">otx.api.entities.graph</a></li>
-<li><a href="otx/api/entities/id.html">otx.api.entities.id</a></li>
-<li><a href="otx/api/entities/image.html">otx.api.entities.image</a></li>
-<li><a href="otx/api/entities/inference_parameters.html">otx.api.entities.inference_parameters</a></li>
-<li><a href="otx/api/entities/interfaces/graph_interface.html">otx.api.entities.interfaces.graph_interface</a></li>
-<li><a href="otx/api/entities/label.html">otx.api.entities.label</a></li>
-<li><a href="otx/api/entities/label_schema.html">otx.api.entities.label_schema</a></li>
-<li><a href="otx/api/entities/media.html">otx.api.entities.media</a></li>
-<li><a href="otx/api/entities/metadata.html">otx.api.entities.metadata</a></li>
-<li><a href="otx/api/entities/metrics.html">otx.api.entities.metrics</a></li>
-<li><a href="otx/api/entities/model.html">otx.api.entities.model</a></li>
-<li><a href="otx/api/entities/model_template.html">otx.api.entities.model_template</a></li>
-<li><a href="otx/api/entities/optimization_parameters.html">otx.api.entities.optimization_parameters</a></li>
-<li><a href="otx/api/entities/result_media.html">otx.api.entities.result_media</a></li>
-<li><a href="otx/api/entities/resultset.html">otx.api.entities.resultset</a></li>
-<li><a href="otx/api/entities/scored_label.html">otx.api.entities.scored_label</a></li>
-<li><a href="otx/api/entities/shapes/ellipse.html">otx.api.entities.shapes.ellipse</a></li>
-<li><a href="otx/api/entities/shapes/polygon.html">otx.api.entities.shapes.polygon</a></li>
-<li><a href="otx/api/entities/shapes/rectangle.html">otx.api.entities.shapes.rectangle</a></li>
-<li><a href="otx/api/entities/shapes/shape.html">otx.api.entities.shapes.shape</a></li>
-<li><a href="otx/api/entities/subset.html">otx.api.entities.subset</a></li>
-<li><a href="otx/api/entities/task_environment.html">otx.api.entities.task_environment</a></li>
-<li><a href="otx/api/entities/tensor.html">otx.api.entities.tensor</a></li>
-<li><a href="otx/api/entities/train_parameters.html">otx.api.entities.train_parameters</a></li>
-<li><a href="otx/api/serialization/datetime_mapper.html">otx.api.serialization.datetime_mapper</a></li>
-<li><a href="otx/api/serialization/id_mapper.html">otx.api.serialization.id_mapper</a></li>
-<li><a href="otx/api/serialization/label_mapper.html">otx.api.serialization.label_mapper</a></li>
-<li><a href="otx/api/usecases/adapters/model_adapter.html">otx.api.usecases.adapters.model_adapter</a></li>
-<li><a href="otx/api/usecases/evaluation/accuracy.html">otx.api.usecases.evaluation.accuracy</a></li>
-<li><a href="otx/api/usecases/evaluation/averaging.html">otx.api.usecases.evaluation.averaging</a></li>
-<li><a href="otx/api/usecases/evaluation/basic_operations.html">otx.api.usecases.evaluation.basic_operations</a></li>
-<li><a href="otx/api/usecases/evaluation/dice.html">otx.api.usecases.evaluation.dice</a></li>
-<li><a href="otx/api/usecases/evaluation/f_measure.html">otx.api.usecases.evaluation.f_measure</a></li>
-<li><a href="otx/api/usecases/evaluation/metrics_helper.html">otx.api.usecases.evaluation.metrics_helper</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo.html">otx.api.usecases.exportable_code.demo.demo</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo_package/executors/asynchronous.html">otx.api.usecases.exportable_code.demo.demo_package.executors.asynchronous</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo_package/executors/sync_pipeline.html">otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo_package/executors/synchronous.html">otx.api.usecases.exportable_code.demo.demo_package.executors.synchronous</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo_package/model_container.html">otx.api.usecases.exportable_code.demo.demo_package.model_container</a></li>
-<li><a href="otx/api/usecases/exportable_code/demo/demo_package/utils.html">otx.api.usecases.exportable_code.demo.demo_package.utils</a></li>
-<li><a href="otx/api/usecases/exportable_code/inference/inference.html">otx.api.usecases.exportable_code.inference.inference</a></li>
-<li><a href="otx/api/usecases/exportable_code/prediction_to_annotation_converter.html">otx.api.usecases.exportable_code.prediction_to_annotation_converter</a></li>
-<li><a href="otx/api/usecases/exportable_code/streamer/streamer.html">otx.api.usecases.exportable_code.streamer.streamer</a></li>
-<li><a href="otx/api/usecases/exportable_code/visualizers/anomaly_visualizer.html">otx.api.usecases.exportable_code.visualizers.anomaly_visualizer</a></li>
-<li><a href="otx/api/usecases/exportable_code/visualizers/visualizer.html">otx.api.usecases.exportable_code.visualizers.visualizer</a></li>
-<li><a href="otx/api/usecases/reporting/callback.html">otx.api.usecases.reporting.callback</a></li>
-<li><a href="otx/api/usecases/reporting/time_monitor_callback.html">otx.api.usecases.reporting.time_monitor_callback</a></li>
-<li><a href="otx/api/usecases/tasks/exceptions.html">otx.api.usecases.tasks.exceptions</a></li>
-<li><a href="otx/api/usecases/tasks/image_computer_vision.html">otx.api.usecases.tasks.image_computer_vision</a></li>
-<li><a href="otx/api/usecases/tasks/image_deep_learning_task.html">otx.api.usecases.tasks.image_deep_learning_task</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/deployment_interface.html">otx.api.usecases.tasks.interfaces.deployment_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/evaluate_interface.html">otx.api.usecases.tasks.interfaces.evaluate_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/explain_interface.html">otx.api.usecases.tasks.interfaces.explain_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/export_interface.html">otx.api.usecases.tasks.interfaces.export_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/inference_interface.html">otx.api.usecases.tasks.interfaces.inference_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/optimization_interface.html">otx.api.usecases.tasks.interfaces.optimization_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/training_interface.html">otx.api.usecases.tasks.interfaces.training_interface</a></li>
-<li><a href="otx/api/usecases/tasks/interfaces/unload_interface.html">otx.api.usecases.tasks.interfaces.unload_interface</a></li>
-<li><a href="otx/api/utils/anomaly_utils.html">otx.api.utils.anomaly_utils</a></li>
-<li><a href="otx/api/utils/argument_checks.html">otx.api.utils.argument_checks</a></li>
-<li><a href="otx/api/utils/async_pipeline.html">otx.api.utils.async_pipeline</a></li>
-<li><a href="otx/api/utils/dataset_utils.html">otx.api.utils.dataset_utils</a></li>
-<li><a href="otx/api/utils/detection_utils.html">otx.api.utils.detection_utils</a></li>
-<li><a href="otx/api/utils/importing.html">otx.api.utils.importing</a></li>
-<li><a href="otx/api/utils/labels_utils.html">otx.api.utils.labels_utils</a></li>
-<li><a href="otx/api/utils/nms.html">otx.api.utils.nms</a></li>
-<li><a href="otx/api/utils/segmentation_utils.html">otx.api.utils.segmentation_utils</a></li>
-<li><a href="otx/api/utils/shape_drawer.html">otx.api.utils.shape_drawer</a></li>
-<li><a href="otx/api/utils/shape_factory.html">otx.api.utils.shape_factory</a></li>
-<li><a href="otx/api/utils/tiler.html">otx.api.utils.tiler</a></li>
-<li><a href="otx/api/utils/time_utils.html">otx.api.utils.time_utils</a></li>
-<li><a href="otx/api/utils/vis_utils.html">otx.api.utils.vis_utils</a></li>
-<li><a href="otx/cli/builder/builder.html">otx.cli.builder.builder</a></li>
-<li><a href="otx/cli/manager/config_manager.html">otx.cli.manager.config_manager</a></li>
-<li><a href="otx/cli/registry/registry.html">otx.cli.registry.registry</a></li>
-<li><a href="otx/cli/tools/build.html">otx.cli.tools.build</a></li>
-<li><a href="otx/cli/tools/demo.html">otx.cli.tools.demo</a></li>
-<li><a href="otx/cli/tools/deploy.html">otx.cli.tools.deploy</a></li>
-<li><a href="otx/cli/tools/eval.html">otx.cli.tools.eval</a></li>
-<li><a href="otx/cli/tools/explain.html">otx.cli.tools.explain</a></li>
-<li><a href="otx/cli/tools/export.html">otx.cli.tools.export</a></li>
-<li><a href="otx/cli/tools/find.html">otx.cli.tools.find</a></li>
-<li><a href="otx/cli/tools/optimize.html">otx.cli.tools.optimize</a></li>
-<li><a href="otx/cli/tools/train.html">otx.cli.tools.train</a></li>
-<li><a href="otx/cli/tools/utils/demo/images_capture.html">otx.cli.tools.utils.demo.images_capture</a></li>
-<li><a href="otx/cli/tools/utils/demo/visualization.html">otx.cli.tools.utils.demo.visualization</a></li>
-<li><a href="otx/cli/utils/config.html">otx.cli.utils.config</a></li>
-<li><a href="otx/cli/utils/errors.html">otx.cli.utils.errors</a></li>
-<li><a href="otx/cli/utils/experiment.html">otx.cli.utils.experiment</a></li>
-<li><a href="otx/cli/utils/hpo.html">otx.cli.utils.hpo</a></li>
-<li><a href="otx/cli/utils/importing.html">otx.cli.utils.importing</a></li>
-<li><a href="otx/cli/utils/io.html">otx.cli.utils.io</a></li>
-<li><a href="otx/cli/utils/multi_gpu.html">otx.cli.utils.multi_gpu</a></li>
-<li><a href="otx/cli/utils/nncf.html">otx.cli.utils.nncf</a></li>
-<li><a href="otx/cli/utils/parser.html">otx.cli.utils.parser</a></li>
-<li><a href="otx/cli/utils/report.html">otx.cli.utils.report</a></li>
-<li><a href="otx/cli/utils/telemetry.html">otx.cli.utils.telemetry</a></li>
-<li><a href="otx/core/data/adapter.html">otx.core.data.adapter</a></li>
-<ul><li><a href="otx/core/data/adapter/action_dataset_adapter.html">otx.core.data.adapter.action_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/anomaly_dataset_adapter.html">otx.core.data.adapter.anomaly_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/base_dataset_adapter.html">otx.core.data.adapter.base_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/classification_dataset_adapter.html">otx.core.data.adapter.classification_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/detection_dataset_adapter.html">otx.core.data.adapter.detection_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/segmentation_dataset_adapter.html">otx.core.data.adapter.segmentation_dataset_adapter</a></li>
-<li><a href="otx/core/data/adapter/visual_prompting_dataset_adapter.html">otx.core.data.adapter.visual_prompting_dataset_adapter</a></li>
-</ul><li><a href="otx/core/data/caching/mem_cache_handler.html">otx.core.data.caching.mem_cache_handler</a></li>
-<li><a href="otx/core/data/caching/storage_cache.html">otx.core.data.caching.storage_cache</a></li>
-<li><a href="otx/core/data/manager/dataset_manager.html">otx.core.data.manager.dataset_manager</a></li>
-<li><a href="otx/core/data/noisy_label_detection/base.html">otx.core.data.noisy_label_detection.base</a></li>
-<li><a href="otx/core/ov/graph/graph.html">otx.core.ov.graph.graph</a></li>
-<li><a href="otx/core/ov/models/mmov_model.html">otx.core.ov.models.mmov_model</a></li>
-<li><a href="otx/core/ov/models/ov_model.html">otx.core.ov.models.ov_model</a></li>
-<li><a href="otx/core/ov/models/parser_mixin.html">otx.core.ov.models.parser_mixin</a></li>
-<li><a href="otx/core/ov/omz_wrapper.html">otx.core.ov.omz_wrapper</a></li>
-<li><a href="otx/core/ov/ops/activations.html">otx.core.ov.ops.activations</a></li>
-<li><a href="otx/core/ov/ops/arithmetics.html">otx.core.ov.ops.arithmetics</a></li>
-<li><a href="otx/core/ov/ops/builder.html">otx.core.ov.ops.builder</a></li>
-<li><a href="otx/core/ov/ops/convolutions.html">otx.core.ov.ops.convolutions</a></li>
-<li><a href="otx/core/ov/ops/generation.html">otx.core.ov.ops.generation</a></li>
-<li><a href="otx/core/ov/ops/image_processings.html">otx.core.ov.ops.image_processings</a></li>
-<li><a href="otx/core/ov/ops/infrastructures.html">otx.core.ov.ops.infrastructures</a></li>
-<li><a href="otx/core/ov/ops/matmuls.html">otx.core.ov.ops.matmuls</a></li>
-<li><a href="otx/core/ov/ops/movements.html">otx.core.ov.ops.movements</a></li>
-<li><a href="otx/core/ov/ops/normalizations.html">otx.core.ov.ops.normalizations</a></li>
-<li><a href="otx/core/ov/ops/object_detections.html">otx.core.ov.ops.object_detections</a></li>
-<li><a href="otx/core/ov/ops/op.html">otx.core.ov.ops.op</a></li>
-<li><a href="otx/core/ov/ops/poolings.html">otx.core.ov.ops.poolings</a></li>
-<li><a href="otx/core/ov/ops/reductions.html">otx.core.ov.ops.reductions</a></li>
-<li><a href="otx/core/ov/ops/shape_manipulations.html">otx.core.ov.ops.shape_manipulations</a></li>
-<li><a href="otx/core/ov/ops/sorting_maximization.html">otx.core.ov.ops.sorting_maximization</a></li>
-<li><a href="otx/core/ov/ops/type_conversions.html">otx.core.ov.ops.type_conversions</a></li>
-<li><a href="otx/core/ov/registry.html">otx.core.ov.registry</a></li>
-<li><a href="otx/core/ov/utils.html">otx.core.ov.utils</a></li>
-<li><a href="otx/core/patcher.html">otx.core.patcher</a></li>
-<li><a href="otx/hpo/hpo_base.html">otx.hpo.hpo_base</a></li>
-<li><a href="otx/hpo/hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li><a href="otx/hpo/hyperband.html">otx.hpo.hyperband</a></li>
-<li><a href="otx/utils/logger.html">otx.utils.logger</a></li>
-<li><a href="otx/utils/utils.html">otx.utils.utils</a></li>
-</ul>
-
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-</div>
-                </footer>
-              
             </div>
             
             
+            <article class="bd-article" role="main">
               
-                <div class="bd-sidebar-secondary bd-toc"></div>
-              
+  <h1>All modules for which code is available</h1>
+<ul><li><a href="otx/algo/action_classification/backbones/movinet.html">otx.algo.action_classification.backbones.movinet</a></li>
+<li><a href="otx/algo/action_classification/heads/movinet_head.html">otx.algo.action_classification.heads.movinet_head</a></li>
+<li><a href="otx/algo/action_classification/movinet.html">otx.algo.action_classification.movinet</a></li>
+<li><a href="otx/algo/action_classification/openvino_model.html">otx.algo.action_classification.openvino_model</a></li>
+<li><a href="otx/algo/action_classification/recognizers/movinet_recognizer.html">otx.algo.action_classification.recognizers.movinet_recognizer</a></li>
+<li><a href="otx/algo/action_classification/recognizers/recognizer.html">otx.algo.action_classification.recognizers.recognizer</a></li>
+<li><a href="otx/algo/action_classification/x3d.html">otx.algo.action_classification.x3d</a></li>
+<li><a href="otx/algo/action_detection/x3d_fastrcnn.html">otx.algo.action_detection.x3d_fastrcnn</a></li>
+<li><a href="otx/algo/anomaly/padim.html">otx.algo.anomaly.padim</a></li>
+<li><a href="otx/algo/anomaly/stfpm.html">otx.algo.anomaly.stfpm</a></li>
+<li><a href="otx/algo/callbacks/adaptive_train_scheduling.html">otx.algo.callbacks.adaptive_train_scheduling</a></li>
+<li><a href="otx/algo/callbacks/iteration_timer.html">otx.algo.callbacks.iteration_timer</a></li>
+<li><a href="otx/algo/classification/backbones/otx_efficientnet.html">otx.algo.classification.backbones.otx_efficientnet</a></li>
+<li><a href="otx/algo/classification/backbones/otx_efficientnet_v2.html">otx.algo.classification.backbones.otx_efficientnet_v2</a></li>
+<li><a href="otx/algo/classification/backbones/otx_mobilenet_v3.html">otx.algo.classification.backbones.otx_mobilenet_v3</a></li>
+<li><a href="otx/algo/classification/deit_tiny.html">otx.algo.classification.deit_tiny</a></li>
+<li><a href="otx/algo/classification/efficientnet_b0.html">otx.algo.classification.efficientnet_b0</a></li>
+<li><a href="otx/algo/classification/efficientnet_v2.html">otx.algo.classification.efficientnet_v2</a></li>
+<li><a href="otx/algo/classification/heads/custom_hlabel_linear_cls_head.html">otx.algo.classification.heads.custom_hlabel_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_hlabel_non_linear_cls_head.html">otx.algo.classification.heads.custom_hlabel_non_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_multilabel_linear_cls_head.html">otx.algo.classification.heads.custom_multilabel_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/heads/custom_multilabel_non_linear_cls_head.html">otx.algo.classification.heads.custom_multilabel_non_linear_cls_head</a></li>
+<li><a href="otx/algo/classification/losses/asymmetric_angular_loss_with_ignore.html">otx.algo.classification.losses.asymmetric_angular_loss_with_ignore</a></li>
+<li><a href="otx/algo/classification/mobilenet_v3_large.html">otx.algo.classification.mobilenet_v3_large</a></li>
+<li><a href="otx/algo/classification/otx_dino_v2.html">otx.algo.classification.otx_dino_v2</a></li>
+<li><a href="otx/algo/classification/torchvision_model.html">otx.algo.classification.torchvision_model</a></li>
+<li><a href="otx/algo/detection/atss.html">otx.algo.detection.atss</a></li>
+<li><a href="otx/algo/detection/backbones/pytorchcv_backbones.html">otx.algo.detection.backbones.pytorchcv_backbones</a></li>
+<li><a href="otx/algo/detection/heads/class_incremental_mixin.html">otx.algo.detection.heads.class_incremental_mixin</a></li>
+<li><a href="otx/algo/detection/heads/custom_anchor_generator.html">otx.algo.detection.heads.custom_anchor_generator</a></li>
+<li><a href="otx/algo/detection/heads/custom_atss_head.html">otx.algo.detection.heads.custom_atss_head</a></li>
+<li><a href="otx/algo/detection/heads/custom_ssd_head.html">otx.algo.detection.heads.custom_ssd_head</a></li>
+<li><a href="otx/algo/detection/losses/cross_focal_loss.html">otx.algo.detection.losses.cross_focal_loss</a></li>
+<li><a href="otx/algo/detection/rtmdet.html">otx.algo.detection.rtmdet</a></li>
+<li><a href="otx/algo/detection/ssd.html">otx.algo.detection.ssd</a></li>
+<li><a href="otx/algo/detection/yolox.html">otx.algo.detection.yolox</a></li>
+<li><a href="otx/algo/hooks/recording_forward_hook.html">otx.algo.hooks.recording_forward_hook</a></li>
+<li><a href="otx/algo/instance_segmentation/heads/custom_roi_head.html">otx.algo.instance_segmentation.heads.custom_roi_head</a></li>
+<li><a href="otx/algo/instance_segmentation/maskrcnn.html">otx.algo.instance_segmentation.maskrcnn</a></li>
+<li><a href="otx/algo/instance_segmentation/otx_instseg_evaluation.html">otx.algo.instance_segmentation.otx_instseg_evaluation</a></li>
+<li><a href="otx/algo/instance_segmentation/rtmdet_inst.html">otx.algo.instance_segmentation.rtmdet_inst</a></li>
+<li><a href="otx/algo/samplers/balanced_sampler.html">otx.algo.samplers.balanced_sampler</a></li>
+<li><a href="otx/algo/samplers/class_incremental_sampler.html">otx.algo.samplers.class_incremental_sampler</a></li>
+<li><a href="otx/algo/schedulers/warmup_schedulers.html">otx.algo.schedulers.warmup_schedulers</a></li>
+<li><a href="otx/algo/segmentation/backbones/dinov2.html">otx.algo.segmentation.backbones.dinov2</a></li>
+<li><a href="otx/algo/segmentation/backbones/litehrnet.html">otx.algo.segmentation.backbones.litehrnet</a></li>
+<li><a href="otx/algo/segmentation/dino_v2_seg.html">otx.algo.segmentation.dino_v2_seg</a></li>
+<li><a href="otx/algo/segmentation/heads/custom_fcn_head.html">otx.algo.segmentation.heads.custom_fcn_head</a></li>
+<li><a href="otx/algo/segmentation/heads/custom_ham_head.html">otx.algo.segmentation.heads.custom_ham_head</a></li>
+<li><a href="otx/algo/segmentation/litehrnet.html">otx.algo.segmentation.litehrnet</a></li>
+<li><a href="otx/algo/segmentation/losses/cross_entropy_loss_with_ignore.html">otx.algo.segmentation.losses.cross_entropy_loss_with_ignore</a></li>
+<li><a href="otx/algo/segmentation/segnext.html">otx.algo.segmentation.segnext</a></li>
+<li><a href="otx/algo/utils/mmconfig.html">otx.algo.utils.mmconfig</a></li>
+<li><a href="otx/algo/utils/segmentation.html">otx.algo.utils.segmentation</a></li>
+<li><a href="otx/algo/utils/support_otx_v1.html">otx.algo.utils.support_otx_v1</a></li>
+<li><a href="otx/algo/utils/xai_utils.html">otx.algo.utils.xai_utils</a></li>
+<li><a href="otx/algo/visual_prompting/backbones/tiny_vit.html">otx.algo.visual_prompting.backbones.tiny_vit</a></li>
+<li><a href="otx/algo/visual_prompting/backbones/vit.html">otx.algo.visual_prompting.backbones.vit</a></li>
+<li><a href="otx/algo/visual_prompting/decoders/sam_mask_decoder.html">otx.algo.visual_prompting.decoders.sam_mask_decoder</a></li>
+<li><a href="otx/algo/visual_prompting/encoders/sam_image_encoder.html">otx.algo.visual_prompting.encoders.sam_image_encoder</a></li>
+<li><a href="otx/algo/visual_prompting/encoders/sam_prompt_encoder.html">otx.algo.visual_prompting.encoders.sam_prompt_encoder</a></li>
+<li><a href="otx/algo/visual_prompting/openvino_models.html">otx.algo.visual_prompting.openvino_models</a></li>
+<li><a href="otx/algo/visual_prompting/segment_anything.html">otx.algo.visual_prompting.segment_anything</a></li>
+<li><a href="otx/algo/visual_prompting/utils/layer_norm_2d.html">otx.algo.visual_prompting.utils.layer_norm_2d</a></li>
+<li><a href="otx/algo/visual_prompting/utils/mlp_block.html">otx.algo.visual_prompting.utils.mlp_block</a></li>
+<li><a href="otx/algo/visual_prompting/zero_shot_segment_anything.html">otx.algo.visual_prompting.zero_shot_segment_anything</a></li>
+<li><a href="otx/cli.html">otx.cli</a></li>
+<ul><li><a href="otx/cli/cli.html">otx.cli.cli</a></li>
+<li><a href="otx/cli/install.html">otx.cli.install</a></li>
+<li><a href="otx/cli/utils.html">otx.cli.utils</a></li>
+<ul><li><a href="otx/cli/utils/help_formatter.html">otx.cli.utils.help_formatter</a></li>
+<li><a href="otx/cli/utils/installation.html">otx.cli.utils.installation</a></li>
+<li><a href="otx/cli/utils/jsonargparse.html">otx.cli.utils.jsonargparse</a></li>
+<li><a href="otx/cli/utils/workspace.html">otx.cli.utils.workspace</a></li>
+</ul></ul><li><a href="otx/core/config.html">otx.core.config</a></li>
+<ul><li><a href="otx/core/config/data.html">otx.core.config.data</a></li>
+<li><a href="otx/core/config/device.html">otx.core.config.device</a></li>
+<li><a href="otx/core/config/explain.html">otx.core.config.explain</a></li>
+<li><a href="otx/core/config/hpo.html">otx.core.config.hpo</a></li>
+</ul><li><a href="otx/core/data/dataset/action_classification.html">otx.core.data.dataset.action_classification</a></li>
+<li><a href="otx/core/data/dataset/action_detection.html">otx.core.data.dataset.action_detection</a></li>
+<li><a href="otx/core/data/dataset/anomaly/dataset.html">otx.core.data.dataset.anomaly.dataset</a></li>
+<li><a href="otx/core/data/dataset/base.html">otx.core.data.dataset.base</a></li>
+<li><a href="otx/core/data/dataset/classification.html">otx.core.data.dataset.classification</a></li>
+<li><a href="otx/core/data/dataset/detection.html">otx.core.data.dataset.detection</a></li>
+<li><a href="otx/core/data/dataset/instance_segmentation.html">otx.core.data.dataset.instance_segmentation</a></li>
+<li><a href="otx/core/data/dataset/segmentation.html">otx.core.data.dataset.segmentation</a></li>
+<li><a href="otx/core/data/dataset/tile.html">otx.core.data.dataset.tile</a></li>
+<li><a href="otx/core/data/dataset/visual_prompting.html">otx.core.data.dataset.visual_prompting</a></li>
+<li><a href="otx/core/data/entity/action_classification.html">otx.core.data.entity.action_classification</a></li>
+<li><a href="otx/core/data/entity/action_detection.html">otx.core.data.entity.action_detection</a></li>
+<li><a href="otx/core/data/entity/anomaly/classification.html">otx.core.data.entity.anomaly.classification</a></li>
+<li><a href="otx/core/data/entity/anomaly/detection.html">otx.core.data.entity.anomaly.detection</a></li>
+<li><a href="otx/core/data/entity/anomaly/segmentation.html">otx.core.data.entity.anomaly.segmentation</a></li>
+<li><a href="otx/core/data/entity/base.html">otx.core.data.entity.base</a></li>
+<li><a href="otx/core/data/entity/classification.html">otx.core.data.entity.classification</a></li>
+<li><a href="otx/core/data/entity/detection.html">otx.core.data.entity.detection</a></li>
+<li><a href="otx/core/data/entity/instance_segmentation.html">otx.core.data.entity.instance_segmentation</a></li>
+<li><a href="otx/core/data/entity/segmentation.html">otx.core.data.entity.segmentation</a></li>
+<li><a href="otx/core/data/entity/tile.html">otx.core.data.entity.tile</a></li>
+<li><a href="otx/core/data/entity/utils.html">otx.core.data.entity.utils</a></li>
+<li><a href="otx/core/data/entity/visual_prompting.html">otx.core.data.entity.visual_prompting</a></li>
+<li><a href="otx/core/data/factory.html">otx.core.data.factory</a></li>
+<li><a href="otx/core/data/mem_cache.html">otx.core.data.mem_cache</a></li>
+<li><a href="otx/core/data/module.html">otx.core.data.module</a></li>
+<li><a href="otx/core/data/pre_filtering.html">otx.core.data.pre_filtering</a></li>
+<li><a href="otx/core/data/tile_adaptor.html">otx.core.data.tile_adaptor</a></li>
+<li><a href="otx/core/data/transform_libs/mmaction.html">otx.core.data.transform_libs.mmaction</a></li>
+<li><a href="otx/core/data/transform_libs/mmcv.html">otx.core.data.transform_libs.mmcv</a></li>
+<li><a href="otx/core/data/transform_libs/mmdet.html">otx.core.data.transform_libs.mmdet</a></li>
+<li><a href="otx/core/data/transform_libs/mmpretrain.html">otx.core.data.transform_libs.mmpretrain</a></li>
+<li><a href="otx/core/data/transform_libs/mmseg.html">otx.core.data.transform_libs.mmseg</a></li>
+<li><a href="otx/core/data/transform_libs/torchvision.html">otx.core.data.transform_libs.torchvision</a></li>
+<li><a href="otx/core/exporter/base.html">otx.core.exporter.base</a></li>
+<li><a href="otx/core/exporter/mmdeploy.html">otx.core.exporter.mmdeploy</a></li>
+<li><a href="otx/core/exporter/native.html">otx.core.exporter.native</a></li>
+<li><a href="otx/core/exporter/visual_prompting.html">otx.core.exporter.visual_prompting</a></li>
+<li><a href="otx/core/metrics/accuracy.html">otx.core.metrics.accuracy</a></li>
+<li><a href="otx/core/metrics/fmeasure.html">otx.core.metrics.fmeasure</a></li>
+<li><a href="otx/core/model/entity/action_classification.html">otx.core.model.entity.action_classification</a></li>
+<li><a href="otx/core/model/entity/action_detection.html">otx.core.model.entity.action_detection</a></li>
+<li><a href="otx/core/model/entity/base.html">otx.core.model.entity.base</a></li>
+<li><a href="otx/core/model/entity/classification.html">otx.core.model.entity.classification</a></li>
+<li><a href="otx/core/model/entity/detection.html">otx.core.model.entity.detection</a></li>
+<li><a href="otx/core/model/entity/instance_segmentation.html">otx.core.model.entity.instance_segmentation</a></li>
+<li><a href="otx/core/model/entity/rotated_detection.html">otx.core.model.entity.rotated_detection</a></li>
+<li><a href="otx/core/model/entity/segmentation.html">otx.core.model.entity.segmentation</a></li>
+<li><a href="otx/core/model/entity/utils/mmaction.html">otx.core.model.entity.utils.mmaction</a></li>
+<li><a href="otx/core/model/entity/utils/mmdet.html">otx.core.model.entity.utils.mmdet</a></li>
+<li><a href="otx/core/model/entity/utils/mmpretrain.html">otx.core.model.entity.utils.mmpretrain</a></li>
+<li><a href="otx/core/model/entity/utils/mmseg.html">otx.core.model.entity.utils.mmseg</a></li>
+<li><a href="otx/core/model/entity/visual_prompting.html">otx.core.model.entity.visual_prompting</a></li>
+<li><a href="otx/core/model/module/action_classification.html">otx.core.model.module.action_classification</a></li>
+<li><a href="otx/core/model/module/action_detection.html">otx.core.model.module.action_detection</a></li>
+<li><a href="otx/core/model/module/anomaly/anomaly_lightning.html">otx.core.model.module.anomaly.anomaly_lightning</a></li>
+<li><a href="otx/core/model/module/base.html">otx.core.model.module.base</a></li>
+<li><a href="otx/core/model/module/classification.html">otx.core.model.module.classification</a></li>
+<li><a href="otx/core/model/module/detection.html">otx.core.model.module.detection</a></li>
+<li><a href="otx/core/model/module/instance_segmentation.html">otx.core.model.module.instance_segmentation</a></li>
+<li><a href="otx/core/model/module/rotated_detection.html">otx.core.model.module.rotated_detection</a></li>
+<li><a href="otx/core/model/module/segmentation.html">otx.core.model.module.segmentation</a></li>
+<li><a href="otx/core/model/module/visual_prompting.html">otx.core.model.module.visual_prompting</a></li>
+<li><a href="otx/core/types/device.html">otx.core.types.device</a></li>
+<li><a href="otx/core/types/explain.html">otx.core.types.explain</a></li>
+<li><a href="otx/core/types/export.html">otx.core.types.export</a></li>
+<li><a href="otx/core/types/image.html">otx.core.types.image</a></li>
+<li><a href="otx/core/types/precision.html">otx.core.types.precision</a></li>
+<li><a href="otx/core/types/task.html">otx.core.types.task</a></li>
+<li><a href="otx/core/types/transformer_libs.html">otx.core.types.transformer_libs</a></li>
+<li><a href="otx/core/utils/build.html">otx.core.utils.build</a></li>
+<li><a href="otx/core/utils/cache.html">otx.core.utils.cache</a></li>
+<li><a href="otx/core/utils/config.html">otx.core.utils.config</a></li>
+<li><a href="otx/core/utils/imports.html">otx.core.utils.imports</a></li>
+<li><a href="otx/core/utils/instantiators.html">otx.core.utils.instantiators</a></li>
+<li><a href="otx/core/utils/mask_util.html">otx.core.utils.mask_util</a></li>
+<li><a href="otx/core/utils/pylogger.html">otx.core.utils.pylogger</a></li>
+<li><a href="otx/core/utils/tile_merge.html">otx.core.utils.tile_merge</a></li>
+<li><a href="otx/core/utils/utils.html">otx.core.utils.utils</a></li>
+<li><a href="otx/data/anomaly/anomaly.html">otx.data.anomaly.anomaly</a></li>
+<li><a href="otx/engine/engine.html">otx.engine.engine</a></li>
+<li><a href="otx/engine/hpo/hpo_api.html">otx.engine.hpo.hpo_api</a></li>
+<li><a href="otx/engine/hpo/hpo_trial.html">otx.engine.hpo.hpo_trial</a></li>
+<li><a href="otx/engine/hpo/utils.html">otx.engine.hpo.utils</a></li>
+<li><a href="otx/engine/utils/api.html">otx.engine.utils.api</a></li>
+<li><a href="otx/engine/utils/auto_configurator.html">otx.engine.utils.auto_configurator</a></li>
+<li><a href="otx/hpo/hpo_base.html">otx.hpo.hpo_base</a></li>
+<li><a href="otx/hpo/hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li><a href="otx/hpo/hyperband.html">otx.hpo.hyperband</a></li>
+<li><a href="otx/hpo/resource_manager.html">otx.hpo.resource_manager</a></li>
+<li><a href="otx/hpo/search_space.html">otx.hpo.search_space</a></li>
+<li><a href="otx/hpo/utils.html">otx.hpo.utils</a></li>
+<li><a href="otx/utils/signal.html">otx.utils.signal</a></li>
+<li><a href="otx/utils/utils.html">otx.utils.utils</a></li>
+</ul>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

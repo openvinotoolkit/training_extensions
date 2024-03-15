@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.algo.classification.backbones.otx_efficientnet &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/tabs.js"></script>
+    <script src="../../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/otx_efficientnet';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.algo.classification.backbones.otx_efficientnet</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;EfficientNet Module.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn</span> <span class="kn">import</span> <span class="n">build_activation_layer</span>
+<span class="kn">from</span> <span class="nn">mmcv.cnn.bricks</span> <span class="kn">import</span> <span class="n">ConvModule</span>
+<span class="kn">from</span> <span class="nn">mmengine.runner</span> <span class="kn">import</span> <span class="n">load_checkpoint</span>
+<span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
+<span class="kn">from</span> <span class="nn">pytorchcv.models.model_store</span> <span class="kn">import</span> <span class="n">download_model</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">init</span>
+
+<span class="n">PRETRAINED_ROOT</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/osmr/imgclsmob/releases/download/v0.0.364/&quot;</span>
+<span class="n">pretrained_urls</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;efficientnet_b0&quot;</span><span class="p">:</span> <span class="n">PRETRAINED_ROOT</span> <span class="o">+</span> <span class="s2">&quot;efficientnet_b0-0752-0e386130.pth.zip&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="conv1x1_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.conv1x1_block">[docs]</a><span class="k">def</span> <span class="nf">conv1x1_block</span><span class="p">(</span>
+    <span class="n">in_channels</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">,</span>
+    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="conv3x3_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.conv3x3_block">[docs]</a><span class="k">def</span> <span class="nf">conv3x3_block</span><span class="p">(</span>
+    <span class="n">in_channels</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">,</span>
+    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+    <span class="n">IN_conv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+        <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dwconv3x3_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.dwconv3x3_block">[docs]</a><span class="k">def</span> <span class="nf">dwconv3x3_block</span><span class="p">(</span>
+    <span class="n">in_channels</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">,</span>
+    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+        <span class="n">groups</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dwconv5x5_block"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.dwconv5x5_block">[docs]</a><span class="k">def</span> <span class="nf">dwconv5x5_block</span><span class="p">(</span>
+    <span class="n">in_channels</span><span class="p">,</span>
+    <span class="n">out_channels</span><span class="p">,</span>
+    <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv block.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConvModule</span><span class="p">(</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+        <span class="n">groups</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;BN&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">act_cfg</span><span class="o">=</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="round_channels"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.round_channels">[docs]</a><span class="k">def</span> <span class="nf">round_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">divisor</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round weighted channel number (make divisible operation).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        channels : int or float. Original number of channels.</span>
+<span class="sd">        divisor : int, default 8. Alignment value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rounded_channels</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">channels</span> <span class="o">+</span> <span class="n">divisor</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">//</span> <span class="n">divisor</span> <span class="o">*</span> <span class="n">divisor</span><span class="p">,</span> <span class="n">divisor</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">rounded_channels</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">channels</span><span class="p">:</span>
+        <span class="n">rounded_channels</span> <span class="o">+=</span> <span class="n">divisor</span>
+    <span class="k">return</span> <span class="n">rounded_channels</span></div>
+
+
+<div class="viewcode-block" id="calc_tf_padding"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.calc_tf_padding">[docs]</a><span class="k">def</span> <span class="nf">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate TF-same like padding size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x : tensor. Input tensor.</span>
+<span class="sd">        kernel_size : int. Convolution window size.</span>
+<span class="sd">        stride : int, default 1. Strides of the convolution.</span>
+<span class="sd">        dilation : int, default 1. Dilation value for convolution layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">oh</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">height</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="n">ow</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span>
+    <span class="n">pad_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">oh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dilation</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">height</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">pad_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">ow</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dilation</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_h</span> <span class="o">-</span> <span class="n">pad_h</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pad_w</span> <span class="o">-</span> <span class="n">pad_w</span> <span class="o">//</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="SEBlock"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.SEBlock">[docs]</a><span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Squeeze-and-Excitation block from &#39;Squeeze-and-Excitation Networks,&#39;.</span>
+
+<span class="sd">    https://arxiv.org/abs/1709.01507.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        channels : int. Number of channels.</span>
+<span class="sd">        reduction : int, default 16. Squeeze reduction value.</span>
+<span class="sd">        mid_channels : int or None, default None. Number of middle channels.</span>
+<span class="sd">        round_mid : bool, default False. Whether to round middle channel number (make divisible by 8).</span>
+<span class="sd">        use_conv : bool, default True. Whether to convolutional layers instead of fully-connected ones.</span>
+<span class="sd">        activation : function, or str, or nn.Module, default &#39;relu&#39;. Activation function after the first convolution.</span>
+<span class="sd">        out_activation : function, or str, or nn.Module, Activation function after the last convolution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">channels</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+        <span class="n">mid_channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">round_mid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_conv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">mid_activation</span><span class="o">=</span><span class="s2">&quot;ReLU&quot;</span><span class="p">,</span>
+        <span class="n">out_activation</span><span class="o">=</span><span class="s2">&quot;Sigmoid&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span> <span class="o">=</span> <span class="n">use_conv</span>
+        <span class="k">if</span> <span class="n">mid_channels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mid_channels</span> <span class="o">=</span> <span class="n">channels</span> <span class="o">//</span> <span class="n">reduction</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">round_mid</span> <span class="k">else</span> <span class="n">round_channels</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span> <span class="o">/</span> <span class="n">reduction</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_conv</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activ</span> <span class="o">=</span> <span class="n">build_activation_layer</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">mid_activation</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">use_conv</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span> <span class="o">=</span> <span class="n">build_activation_layer</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">out_activation</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SEBlock.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.SEBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activ</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_conv</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">w</span>
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="EffiDwsConvUnit"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiDwsConvUnit">[docs]</a><span class="k">class</span> <span class="nc">EffiDwsConvUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet specific depthwise separable conv block/unit with BatchNorms and activations at each conv.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels : int. Number of input channels.</span>
+<span class="sd">        out_channels : int. Number of output channels.</span>
+<span class="sd">        stride : int or tuple/list of 2 int. Strides of the second convolution layer.</span>
+<span class="sd">        bn_eps : float. Small float added to variance in Batch norm.</span>
+<span class="sd">        activation : str. Name of activation function.</span>
+<span class="sd">        tf_mode : bool. Whether to use TF-like mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span> <span class="o">=</span> <span class="n">tf_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_channels</span> <span class="o">==</span> <span class="n">out_channels</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dw_conv</span> <span class="o">=</span> <span class="n">dwconv3x3_block</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">tf_mode</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">se</span> <span class="o">=</span> <span class="n">SEBlock</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mid_activation</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pw_conv</span> <span class="o">=</span> <span class="n">conv1x1_block</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="EffiDwsConvUnit.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiDwsConvUnit.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dw_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pw_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">identity</span>
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="EffiInvResUnit"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInvResUnit">[docs]</a><span class="k">class</span> <span class="nc">EffiInvResUnit</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet inverted residual unit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels : int. Number of input channels.</span>
+<span class="sd">        out_channels : int. Number of output channels.</span>
+<span class="sd">        kernel_size : int or tuple/list of 2 int. Convolution window size.</span>
+<span class="sd">        stride : int or tuple/list of 2 int. Strides of the second convolution layer.</span>
+<span class="sd">        exp_factor : int. Factor for expansion of channels.</span>
+<span class="sd">        se_factor : int. SE reduction factor for each unit.</span>
+<span class="sd">        bn_eps : float. Small float added to variance in Batch norm.</span>
+<span class="sd">        activation : str. Name of activation function.</span>
+<span class="sd">        tf_mode : bool. Whether to use TF-like mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">,</span>
+        <span class="n">exp_factor</span><span class="p">,</span>
+        <span class="n">se_factor</span><span class="p">,</span>
+        <span class="n">bn_eps</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">,</span>
+        <span class="n">tf_mode</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span> <span class="o">=</span> <span class="n">tf_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_channels</span> <span class="o">==</span> <span class="n">out_channels</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_se</span> <span class="o">=</span> <span class="n">se_factor</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">mid_channels</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">*</span> <span class="n">exp_factor</span>
+        <span class="n">dwconv_block_fn</span> <span class="o">=</span> <span class="n">dwconv3x3_block</span> <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="p">(</span><span class="n">dwconv5x5_block</span> <span class="k">if</span> <span class="n">kernel_size</span> <span class="o">==</span> <span class="mi">5</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">conv1x1_block</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">dwconv_block_fn</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">tf_mode</span> <span class="k">else</span> <span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_se</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">se</span> <span class="o">=</span> <span class="n">SEBlock</span><span class="p">(</span>
+                <span class="n">channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+                <span class="n">reduction</span><span class="o">=</span><span class="p">(</span><span class="n">exp_factor</span> <span class="o">*</span> <span class="n">se_factor</span><span class="p">),</span>
+                <span class="n">mid_activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">conv1x1_block</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">mid_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="EffiInvResUnit.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInvResUnit.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
+            <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">pad</span><span class="o">=</span><span class="n">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_se</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">identity</span>
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="EffiInitBlock"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInitBlock">[docs]</a><span class="k">class</span> <span class="nc">EffiInitBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet specific initial block.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_channels : int. Number of input channels.</span>
+<span class="sd">        out_channels : int. Number of output channels.</span>
+<span class="sd">        bn_eps : float. Small float added to variance in Batch norm.</span>
+<span class="sd">        activation : str. Name of activation function.</span>
+<span class="sd">        tf_mode : bool. Whether to use TF-like mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="n">tf_mode</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span> <span class="o">=</span> <span class="n">tf_mode</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">conv3x3_block</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">tf_mode</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+            <span class="n">IN_conv</span><span class="o">=</span><span class="n">IN_conv1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="EffiInitBlock.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EffiInitBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_mode</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="n">calc_tf_padding</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="EfficientNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EfficientNet">[docs]</a><span class="k">class</span> <span class="nc">EfficientNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;EfficientNet.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        channels : list of list of int. Number of output channels for each unit.</span>
+<span class="sd">        init_block_channels : int. Number of output channels for initial unit.</span>
+<span class="sd">        final_block_channels : int. Number of output channels for the final block of the feature extractor.</span>
+<span class="sd">        kernel_sizes : list of list of int. Number of kernel sizes for each unit.</span>
+<span class="sd">        strides_per_stage : list int. Stride value for the first unit of each stage.</span>
+<span class="sd">        expansion_factors : list of list of int. Number of expansion factors for each unit.</span>
+<span class="sd">        dropout_rate : float, default 0.2. Fraction of the input units to drop. Must be a number between 0 and 1.</span>
+<span class="sd">        tf_mode : bool, default False. Whether to use TF-like mode.</span>
+<span class="sd">        bn_eps : float, default 1e-5. Small float added to variance in Batch norm.</span>
+<span class="sd">        in_channels : int, default 3. Number of input channels.</span>
+<span class="sd">        in_size : tuple of two ints, default (224, 224). Spatial size of the expected input image.</span>
+<span class="sd">        num_classes : int, default 1000. Number of classification classes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">channels</span><span class="p">,</span>
+        <span class="n">init_block_channels</span><span class="p">,</span>
+        <span class="n">final_block_channels</span><span class="p">,</span>
+        <span class="n">kernel_sizes</span><span class="p">,</span>
+        <span class="n">strides_per_stage</span><span class="p">,</span>
+        <span class="n">expansion_factors</span><span class="p">,</span>
+        <span class="n">tf_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">in_size</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span>
+        <span class="n">dropout_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pooling_type</span><span class="o">=</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+        <span class="n">bn_eval</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">bn_frozen</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">IN_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">IN_conv1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span> <span class="o">=</span> <span class="n">pretrained</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_size</span> <span class="o">=</span> <span class="n">in_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">IN_first</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn_eval</span> <span class="o">=</span> <span class="n">bn_eval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn_frozen</span> <span class="o">=</span> <span class="n">bn_frozen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pooling_type</span> <span class="o">=</span> <span class="n">pooling_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_head_features</span> <span class="o">=</span> <span class="n">final_block_channels</span>
+        <span class="n">activation</span> <span class="o">=</span> <span class="s2">&quot;Swish&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
+            <span class="s2">&quot;init_block&quot;</span><span class="p">,</span>
+            <span class="n">EffiInitBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">init_block_channels</span><span class="p">,</span>
+                <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+                <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+                <span class="n">tf_mode</span><span class="o">=</span><span class="n">tf_mode</span><span class="p">,</span>
+                <span class="n">IN_conv1</span><span class="o">=</span><span class="n">IN_conv1</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">in_channels</span> <span class="o">=</span> <span class="n">init_block_channels</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">channels_per_stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channels</span><span class="p">):</span>
+            <span class="n">kernel_sizes_per_stage</span> <span class="o">=</span> <span class="n">kernel_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">expansion_factors_per_stage</span> <span class="o">=</span> <span class="n">expansion_factors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">stage</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">out_channels</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channels_per_stage</span><span class="p">):</span>
+                <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_sizes_per_stage</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">expansion_factor</span> <span class="o">=</span> <span class="n">expansion_factors_per_stage</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">stride</span> <span class="o">=</span> <span class="n">strides_per_stage</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">stage</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;unit</span><span class="si">{</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">EffiDwsConvUnit</span><span class="p">(</span>
+                            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                            <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+                            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+                            <span class="n">tf_mode</span><span class="o">=</span><span class="n">tf_mode</span><span class="p">,</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">stage</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;unit</span><span class="si">{</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">EffiInvResUnit</span><span class="p">(</span>
+                            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+                            <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                            <span class="n">exp_factor</span><span class="o">=</span><span class="n">expansion_factor</span><span class="p">,</span>
+                            <span class="n">se_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                            <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span>
+                            <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+                            <span class="n">tf_mode</span><span class="o">=</span><span class="n">tf_mode</span><span class="p">,</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="n">in_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stage</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
+            <span class="c1"># activation = activation if self.loss == &#39;softmax&#39;: else lambda: nn.PReLU(init=0.25)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
+            <span class="s2">&quot;final_block&quot;</span><span class="p">,</span>
+            <span class="n">conv1x1_block</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">final_block_channels</span><span class="p">,</span> <span class="n">bn_eps</span><span class="o">=</span><span class="n">bn_eps</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">):</span>
+                <span class="n">init</span><span class="o">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">module</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EfficientNet.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.EfficientNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_featuremaps</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,)</span>
+
+        <span class="n">glob_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_feature_vector</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pooling_type</span><span class="p">,</span> <span class="n">reduce_dims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">glob_features</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">classification</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">logits</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">get_embeddings</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">logits</span><span class="p">,</span> <span class="n">glob_features</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;softmax&quot;</span><span class="p">,</span> <span class="s2">&quot;am_softmax&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">enable</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
+                <span class="n">out_data</span> <span class="o">=</span> <span class="n">logits</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">logits</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;triplet&quot;</span><span class="p">]:</span>
+            <span class="n">out_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">logits</span><span class="p">,</span> <span class="n">glob_features</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported loss: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">enable</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out_data</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">out_data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OTXEfficientNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet">[docs]</a><span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">OTXEfficientNet</span><span class="p">(</span><span class="n">EfficientNet</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create EfficientNet model with specific parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        version : str. Version of EfficientNet (&#39;b0&#39;...&#39;b8&#39;).</span>
+<span class="sd">        in_size : tuple of two ints. Spatial size of the expected input image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;efficientnet_&quot;</span> <span class="o">+</span> <span class="n">version</span>
+
+        <span class="k">if</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b0&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b1&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">240</span><span class="p">,</span> <span class="mi">240</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">1.1</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b2&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">260</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">1.2</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.1</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b3&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">1.4</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.2</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b4&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">380</span><span class="p">,</span> <span class="mi">380</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">1.8</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.4</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b5&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">456</span><span class="p">,</span> <span class="mi">456</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">2.2</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.6</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b6&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">528</span><span class="p">,</span> <span class="mi">528</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">2.6</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">1.8</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b7&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">3.1</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="k">elif</span> <span class="n">version</span> <span class="o">==</span> <span class="s2">&quot;b8&quot;</span><span class="p">:</span>
+            <span class="n">in_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">672</span><span class="p">,</span> <span class="mi">672</span><span class="p">)</span>
+            <span class="n">depth_factor</span> <span class="o">=</span> <span class="mf">3.6</span>
+            <span class="n">width_factor</span> <span class="o">=</span> <span class="mf">2.2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported EfficientNet version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">init_block_channels</span> <span class="o">=</span> <span class="mi">32</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">downsample</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">channels_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">320</span><span class="p">]</span>
+        <span class="n">expansion_factors_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+        <span class="n">kernel_sizes_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">final_block_channels</span> <span class="o">=</span> <span class="mi">1280</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">li</span> <span class="o">*</span> <span class="n">depth_factor</span><span class="p">))</span> <span class="k">for</span> <span class="n">li</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">]</span>
+        <span class="n">channels_per_layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">round_channels</span><span class="p">(</span><span class="n">ci</span> <span class="o">*</span> <span class="n">width_factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="n">channels_per_layers</span><span class="p">]</span>
+
+        <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+        <span class="n">channels</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">channels_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
+            <span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="n">kernel_sizes</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">kernel_sizes_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
+            <span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="n">expansion_factors</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">expansion_factors_per_layers</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
+            <span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="p">[[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">strides_per_stage</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">downsample</span><span class="p">),</span>
+            <span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="n">strides_per_stage</span> <span class="o">=</span> <span class="p">[</span><span class="n">si</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">si</span> <span class="ow">in</span> <span class="n">strides_per_stage</span><span class="p">]</span>
+
+        <span class="n">init_block_channels</span> <span class="o">=</span> <span class="n">round_channels</span><span class="p">(</span><span class="n">init_block_channels</span> <span class="o">*</span> <span class="n">width_factor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">width_factor</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">int</span><span class="p">(</span><span class="n">final_block_channels</span> <span class="o">*</span> <span class="n">width_factor</span><span class="p">)</span> <span class="o">==</span> <span class="n">round_channels</span><span class="p">(</span><span class="n">final_block_channels</span> <span class="o">*</span> <span class="n">width_factor</span><span class="p">)</span>
+            <span class="n">final_block_channels</span> <span class="o">=</span> <span class="n">round_channels</span><span class="p">(</span><span class="n">final_block_channels</span> <span class="o">*</span> <span class="n">width_factor</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">channels</span><span class="o">=</span><span class="n">channels</span><span class="p">,</span>
+            <span class="n">init_block_channels</span><span class="o">=</span><span class="n">init_block_channels</span><span class="p">,</span>
+            <span class="n">final_block_channels</span><span class="o">=</span><span class="n">final_block_channels</span><span class="p">,</span>
+            <span class="n">kernel_sizes</span><span class="o">=</span><span class="n">kernel_sizes</span><span class="p">,</span>
+            <span class="n">strides_per_stage</span><span class="o">=</span><span class="n">strides_per_stage</span><span class="p">,</span>
+            <span class="n">expansion_factors</span><span class="o">=</span><span class="n">expansion_factors</span><span class="p">,</span>
+            <span class="n">dropout_cls</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">dist</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">),</span>
+            <span class="n">tf_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">bn_eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+            <span class="n">in_size</span><span class="o">=</span><span class="n">in_size</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXEfficientNet.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OTXEfficientNet.init_weights"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_efficientnet.html#otx.algo.classification.backbones.OTXEfficientNet.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pretrained</span><span class="p">):</span>
+            <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">download_model</span><span class="p">(</span><span class="n">net</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

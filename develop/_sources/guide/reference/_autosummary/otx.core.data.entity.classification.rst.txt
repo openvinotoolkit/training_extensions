@@ -1,0 +1,46 @@
+otx.core.data.entity.classification
+===================================
+
+.. automodule:: otx.core.data.entity.classification
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HlabelClsBatchDataEntity
+      HlabelClsBatchPredEntity
+      HlabelClsBatchPredEntityWithXAI
+      HlabelClsDataEntity
+      HlabelClsPredEntity
+      HlabelClsPredEntityWithXAI
+      MulticlassClsBatchDataEntity
+      MulticlassClsBatchPredEntity
+      MulticlassClsBatchPredEntityWithXAI
+      MulticlassClsDataEntity
+      MulticlassClsPredEntity
+      MulticlassClsPredEntityWithXAI
+      MultilabelClsBatchDataEntity
+      MultilabelClsBatchPredEntity
+      MultilabelClsBatchPredEntityWithXAI
+      MultilabelClsDataEntity
+      MultilabelClsPredEntity
+      MultilabelClsPredEntityWithXAI
+   
+   
+
+   
+   
+   
+
+
+

@@ -27,6 +27,6 @@ otx.utils
    :toctree:
    :recursive:
 
-   otx.utils.logger
+   otx.utils.signal
    otx.utils.utils
 

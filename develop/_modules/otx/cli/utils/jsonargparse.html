@@ -1,0 +1,748 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.cli.utils.jsonargparse &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/cli/utils/jsonargparse';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.cli.utils.jsonargparse</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Functions related to jsonargparse.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">docstring_parser</span>
+<span class="kn">from</span> <span class="nn">jsonargparse</span> <span class="kn">import</span> <span class="n">ActionConfigFile</span><span class="p">,</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">dict_to_namespace</span><span class="p">,</span> <span class="n">namespace_to_dict</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.types</span> <span class="kn">import</span> <span class="n">PathLike</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="get_short_docstring"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_short_docstring">[docs]</a><span class="k">def</span> <span class="nf">get_short_docstring</span><span class="p">(</span><span class="n">component</span><span class="p">:</span> <span class="n">TypeVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the short description from the docstring.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        component (TypeVar): The component to get the docstring from</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The short description</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">component</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">docstring</span> <span class="o">=</span> <span class="n">docstring_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">component</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">docstring</span><span class="o">.</span><span class="n">short_description</span></div>
+
+
+<div class="viewcode-block" id="flatten_dict"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.flatten_dict">[docs]</a><span class="k">def</span> <span class="nf">flatten_dict</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Flatten a nested dictionary into a single-level dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        d (dict): The dictionary to be flattened.</span>
+<span class="sd">        parent_key (str): The parent key to be used for nested keys.</span>
+<span class="sd">        sep (str): The separator to be used between parent and child keys.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The flattened dictionary.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_key</span><span class="si">}{</span><span class="n">sep</span><span class="si">}{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">parent_key</span> <span class="k">else</span> <span class="n">k</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">flatten_dict</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">new_key</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">new_key</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">items</span><span class="p">)</span></div>
+
+
+<span class="c1"># [FIXME]: Overriding Namespce.update to match mmengine.Config (DictConfig | dict)</span>
+<span class="c1"># and prevent int, float types from being converted to str</span>
+<span class="c1"># https://github.com/omni-us/jsonargparse/issues/236</span>
+<div class="viewcode-block" id="update"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.update">[docs]</a><span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">only_unset</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Namespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets or replaces all items from the given nested namespace.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value: A namespace to update multiple values or other type to set in a single key.</span>
+<span class="sd">        key: Branch key where to set the value. Required if value is not namespace.</span>
+<span class="sd">        only_unset: Whether to only set the value if not set in namespace.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">is_value_dict</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="c1"># Dict -&gt; Nested Namespace for overriding</span>
+        <span class="n">is_value_dict</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">dict_to_namespace</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Namespace</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Key is required if value not a Namespace.&quot;</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">only_unset</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span> <span class="ow">or</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">()</span> <span class="ow">or</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)):</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="k">if</span> <span class="n">key</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">only_unset</span> <span class="ow">or</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">_key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_value_dict</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Dict or Namespace -&gt; Dict</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_to_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+    <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<span class="c1"># To provide overriding of the Config file</span>
+<div class="viewcode-block" id="apply_config"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.apply_config">[docs]</a><span class="k">def</span> <span class="nf">apply_config</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">ActionConfigFile</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: ARG001</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies the configuration to the parser.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parser: The parser object.</span>
+<span class="sd">        cfg: The configuration object.</span>
+<span class="sd">        dest: The destination attribute.</span>
+<span class="sd">        value: The value to be applied.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._actions</span> <span class="kn">import</span> <span class="n">_ActionSubCommands</span><span class="p">,</span> <span class="n">previous_config_context</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._link_arguments</span> <span class="kn">import</span> <span class="n">skip_apply_links</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._loaders_dumpers</span> <span class="kn">import</span> <span class="n">get_loader_exceptions</span><span class="p">,</span> <span class="n">load_value</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._optionals</span> <span class="kn">import</span> <span class="n">get_config_read_mode</span>
+
+    <span class="k">with</span> <span class="n">_ActionSubCommands</span><span class="o">.</span><span class="n">not_single_subcommand</span><span class="p">(),</span> <span class="n">previous_config_context</span><span class="p">(</span><span class="n">cfg</span><span class="p">),</span> <span class="n">skip_apply_links</span><span class="p">():</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;defaults&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;_skip_check&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;_fail_no_subcommand&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cfg_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">get_config_read_mode</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">load_value</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">raise</span>
+                <span class="n">cfg_path</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">cfg_file</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_string</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="o">*</span><span class="n">get_loader_exceptions</span><span class="p">())</span> <span class="k">as</span> <span class="n">ex_str</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Parser key &quot;</span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="n">ex_str</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">ex_str</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cfg_file</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_path</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">cfg_merged</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">merge_config</span><span class="p">(</span><span class="n">cfg_file</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cfg_merged</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="n">overrides</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overrides&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overrides</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># This is a feature to handle the callbacks &amp; logger override for user-convinience</span>
+            <span class="n">list_override</span><span class="p">(</span><span class="n">configs</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="n">list_override</span><span class="p">(</span><span class="n">configs</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="n">dest</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cfg</span><span class="p">[</span><span class="n">dest</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cfg_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="list_override"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.list_override">[docs]</a><span class="k">def</span> <span class="nf">list_override</span><span class="p">(</span><span class="n">configs</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">overrides</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Overrides the nested list type in the given configs with the provided override_list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configs (Namespace): The configuration object containing the key.</span>
+<span class="sd">        key (str): key of the configs want to override.</span>
+<span class="sd">        overrides (list): The list of dictionary item to override the existing ones.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; configs = [</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ...     Namespace(</span>
+<span class="sd">        ...         class_path=&#39;lightning.pytorch.callbacks.EarlyStopping&#39;,</span>
+<span class="sd">        ...         init_args=Namespace(patience=10, ...),</span>
+<span class="sd">        ...     ),</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; override_callbacks = [</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ...     {</span>
+<span class="sd">        ...         &#39;class_path&#39;: &#39;lightning.pytorch.callbacks.EarlyStopping&#39;,</span>
+<span class="sd">        ...         &#39;init_args&#39;: {&#39;patience&#39;: 3},</span>
+<span class="sd">        ...     },</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; list_override(configs=configs, key=&quot;callbacks&quot;, overrides=override_callbacks)</span>
+<span class="sd">        &gt;&gt;&gt; configs = [</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ...     Namespace(</span>
+<span class="sd">        ...         class_path=&#39;lightning.pytorch.callbacks.EarlyStopping&#39;,</span>
+<span class="sd">        ...         init_args=Namespace(patience=3, ...),</span>
+<span class="sd">        ...     ),</span>
+<span class="sd">        ...     ...</span>
+<span class="sd">        ... ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">configs</span> <span class="ow">or</span> <span class="n">configs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">:</span>
+        <span class="n">class_path</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;class_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">class_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;class_path is required in the override list.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;class_path&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">class_path</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Namespace</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">configs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dict_to_namespace</span><span class="p">(</span><span class="n">target</span><span class="p">))</span></div>
+
+
+<span class="c1"># [FIXME] harimkang: have to see if there&#39;s a better way to do it. (For now, Added 2 lines to existing function)</span>
+<span class="c1"># The thing called `overrides` is only available in OTXCLI via `apply_config`.</span>
+<span class="c1"># Currently, default_config_files in jsonargparse is loading the default config file without using the ActionConfigFile,</span>
+<span class="c1"># and it&#39;s not updating the overrides properly in the process.</span>
+<span class="c1"># So this function patches to allow configs to come in via `default_config_files` with `overrides` applied.</span>
+<div class="viewcode-block" id="get_defaults_with_overrides"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_defaults_with_overrides">[docs]</a><span class="k">def</span> <span class="nf">get_defaults_with_overrides</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">skip_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Namespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a namespace with all default values.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        skip_check: Whether to skip check if configuration is valid.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An object with all default values as attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">argparse</span>
+
+    <span class="kn">from</span> <span class="nn">jsonargparse._actions</span> <span class="kn">import</span> <span class="n">_ActionPrintConfig</span><span class="p">,</span> <span class="n">filter_default_actions</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._common</span> <span class="kn">import</span> <span class="n">parser_context</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._namespace</span> <span class="kn">import</span> <span class="n">recreate_branches</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._parameter_resolvers</span> <span class="kn">import</span> <span class="n">UnknownDefault</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._typehints</span> <span class="kn">import</span> <span class="n">ActionTypeHint</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._util</span> <span class="kn">import</span> <span class="n">argument_error</span><span class="p">,</span> <span class="n">change_to_path_dir</span>
+
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">Namespace</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">filter_default_actions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_actions</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">action</span><span class="o">.</span><span class="n">default</span> <span class="o">!=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
+            <span class="ow">and</span> <span class="n">action</span><span class="o">.</span><span class="n">dest</span> <span class="o">!=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">default</span><span class="p">,</span> <span class="n">UnknownDefault</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="n">action</span><span class="o">.</span><span class="n">dest</span><span class="p">]</span> <span class="o">=</span> <span class="n">recreate_branches</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Loaded parser defaults: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+
+    <span class="n">default_config_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_config_files</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">default_config_file</span> <span class="ow">in</span> <span class="n">default_config_files</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">change_to_path_dir</span><span class="p">(</span><span class="n">default_config_file</span><span class="p">),</span> <span class="n">parser_context</span><span class="p">(</span><span class="n">parent_parser</span><span class="o">=</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">cfg_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_parser_mode</span><span class="p">(</span><span class="n">default_config_file</span><span class="o">.</span><span class="n">get_content</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_config</span><span class="p">(</span><span class="n">cfg_file</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+            <span class="n">overrides</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overrides&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">list_override</span><span class="p">(</span><span class="n">configs</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;callbacks&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="n">list_override</span><span class="p">(</span><span class="n">configs</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="k">if</span> <span class="n">overrides</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">_ActionPrintConfig</span><span class="o">.</span><span class="n">skip_print_config</span><span class="p">():</span>
+                    <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_common</span><span class="p">(</span>
+                        <span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
+                        <span class="n">env</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">defaults</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">with_meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">skip_check</span><span class="o">=</span><span class="n">skip_check</span><span class="p">,</span>
+                        <span class="n">skip_required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Problem in default config file &quot;</span><span class="si">{</span><span class="n">default_config_file</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="n">ex</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="k">raise</span> <span class="n">argument_error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">ex</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__default_config__&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">meta</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">default_config_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;__default_config__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">meta</span><span class="p">,</span> <span class="n">default_config_file</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;__default_config__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_config_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Parsed default configuration from path: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">default_config_file</span><span class="p">)</span>
+
+    <span class="n">ActionTypeHint</span><span class="o">.</span><span class="n">add_sub_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cfg</span></div>
+
+
+<span class="c1"># Workaround for https://github.com/omni-us/jsonargparse/issues/456</span>
+<div class="viewcode-block" id="add_list_type_arguments"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.add_list_type_arguments">[docs]</a><span class="k">def</span> <span class="nf">add_list_type_arguments</span><span class="p">(</span>
+    <span class="n">parser</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">,</span>
+    <span class="n">baseclass</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="n">nested_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">skip</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add list type arguments to the given ArgumentParser.</span>
+
+<span class="sd">    From python &gt;= 3.11, add_subclass_arguments no longer allows adding arguments of the form list[Class].</span>
+<span class="sd">    Modify it to bypass class checking, allowing you to use the list argument.</span>
+<span class="sd">    Copy from jsonargparse._signatures.SignatureArguments.add_subclass_arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parser (ArgumentParser): The ArgumentParser to add the arguments to.</span>
+<span class="sd">        baseclass (tuple[type, ...]): A tuple of base classes for the subclasses.</span>
+<span class="sd">        nested_key (str): The nested key for the arguments.</span>
+<span class="sd">        skip (set[str] | None, optional): A set of arguments to skip. Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">SUPPRESS</span>
+
+    <span class="kn">from</span> <span class="nn">jsonargparse._parameter_resolvers</span> <span class="kn">import</span> <span class="n">ParamData</span>
+    <span class="kn">from</span> <span class="nn">jsonargparse._util</span> <span class="kn">import</span> <span class="n">get_import_path</span><span class="p">,</span> <span class="n">iter_to_set_str</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">_create_group_if_requested</span><span class="p">(</span>  <span class="c1"># noqa: SLF001</span>
+        <span class="n">baseclass</span><span class="p">,</span>
+        <span class="n">nested_key</span><span class="p">,</span>
+        <span class="kc">True</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config_load</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">instantiate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">added_args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">skip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">skip</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nested_key</span><span class="si">}</span><span class="s2">.init_args.&quot;</span> <span class="o">+</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">skip</span><span class="p">}</span>
+    <span class="n">param</span> <span class="o">=</span> <span class="n">ParamData</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">nested_key</span><span class="p">,</span> <span class="n">annotation</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">baseclass</span><span class="p">],</span> <span class="n">component</span><span class="o">=</span><span class="n">baseclass</span><span class="p">)</span>
+    <span class="n">str_baseclass</span> <span class="o">=</span> <span class="n">iter_to_set_str</span><span class="p">(</span><span class="n">get_import_path</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">baseclass</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;metavar&quot;</span><span class="p">:</span> <span class="s2">&quot;CONFIG | CLASS_PATH_OR_NAME | .INIT_ARG_NAME VALUE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;help&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;One or more arguments specifying &#39;class_path&#39; and &#39;init_args&#39; for any subclass of </span><span class="si">{</span><span class="n">str_baseclass</span><span class="si">}</span><span class="s2">s.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">SUPPRESS</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">_add_signature_parameter</span><span class="p">(</span>  <span class="c1"># noqa: SLF001</span>
+        <span class="n">group</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="n">param</span><span class="p">,</span>
+        <span class="n">added_args</span><span class="p">,</span>
+        <span class="n">skip</span><span class="p">,</span>
+        <span class="n">sub_configs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">instantiate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="patch_update_configs"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.patch_update_configs">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">patch_update_configs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Patch the update and apply_config methods of the given namespace and action_config_file objects.&quot;&quot;&quot;</span>
+    <span class="n">original_update</span> <span class="o">=</span> <span class="n">Namespace</span><span class="o">.</span><span class="n">update</span>
+    <span class="n">original_apply_config</span> <span class="o">=</span> <span class="n">ActionConfigFile</span><span class="o">.</span><span class="n">apply_config</span>
+    <span class="n">original_get_defaults</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="o">.</span><span class="n">get_defaults</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">Namespace</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span>
+        <span class="n">ActionConfigFile</span><span class="o">.</span><span class="n">apply_config</span> <span class="o">=</span> <span class="n">apply_config</span>
+        <span class="n">ArgumentParser</span><span class="o">.</span><span class="n">get_defaults</span> <span class="o">=</span> <span class="n">get_defaults_with_overrides</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">Namespace</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="n">original_update</span>
+        <span class="n">ActionConfigFile</span><span class="o">.</span><span class="n">apply_config</span> <span class="o">=</span> <span class="n">original_apply_config</span>
+        <span class="n">ArgumentParser</span><span class="o">.</span><span class="n">get_defaults</span> <span class="o">=</span> <span class="n">original_get_defaults</span></div>
+
+
+<div class="viewcode-block" id="get_configuration"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_configuration">[docs]</a><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">subcommand</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the configuration from the given path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config_path (str | Path): The path to the configuration file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The configuration dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">otx.cli.cli</span> <span class="kn">import</span> <span class="n">OTXCLI</span>
+
+    <span class="k">with</span> <span class="n">patch_update_configs</span><span class="p">():</span>
+        <span class="n">parser</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">OTXCLI</span><span class="o">.</span><span class="n">engine_subcommand_parser</span><span class="p">(</span><span class="n">subcommand</span><span class="o">=</span><span class="n">subcommand</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;--config&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">config_path</span><span class="p">)],</span> <span class="n">_skip_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2"> is loaded.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Remove unnecessary cli arguments for API usage</span>
+    <span class="n">cli_args</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;verbose&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data_root&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;task&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;seed&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;callback_monitor&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;resume&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;workspace&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The corresponding keys in config are not used.: </span><span class="si">{</span><span class="n">cli_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">cli_args</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="get_instantiated_classes"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.cli.utils.jsonargparse.html#otx.cli.utils.jsonargparse.get_instantiated_classes">[docs]</a><span class="k">def</span> <span class="nf">get_instantiated_classes</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">PathLike</span><span class="p">,</span>
+    <span class="n">work_dir</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">data_root</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the instantiated classes for training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (PathLike): Path to the configuration file.</span>
+<span class="sd">        work_dir (PathLike): Path to the working directory.</span>
+<span class="sd">        data_root (PathLike): Path to the data root directory.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The instantiated classes for training.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">otx.cli</span> <span class="kn">import</span> <span class="n">OTXCLI</span>
+
+    <span class="n">cli_args</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--config&quot;</span><span class="p">,</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">),</span>
+        <span class="s2">&quot;--workspace.use_sub_dir&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;false&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="n">work_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cli_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--work_dir&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">work_dir</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="n">data_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cli_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--data_root&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_root</span><span class="p">)])</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">cli_args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;--</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)])</span>
+    <span class="n">otx_cli</span> <span class="o">=</span> <span class="n">OTXCLI</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">cli_args</span><span class="p">,</span>
+        <span class="n">run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">otx_cli</span><span class="o">.</span><span class="n">set_seed</span><span class="p">()</span>
+    <span class="n">otx_cli</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="n">instantiate_engine</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">instantiated_config</span> <span class="o">=</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">otx_cli</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">instantiated_config</span><span class="p">,</span> <span class="n">otx_cli</span><span class="o">.</span><span class="n">prepare_subcommand_kwargs</span><span class="p">(</span><span class="s2">&quot;train&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

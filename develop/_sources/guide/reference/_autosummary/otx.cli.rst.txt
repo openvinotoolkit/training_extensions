@@ -9,6 +9,12 @@ otx.cli
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      main
+   
    
 
    
@@ -27,9 +33,7 @@ otx.cli
    :toctree:
    :recursive:
 
-   otx.cli.builder
-   otx.cli.manager
-   otx.cli.registry
-   otx.cli.tools
+   otx.cli.cli
+   otx.cli.install
    otx.cli.utils
 

@@ -27,9 +27,12 @@ otx.core.data
    :toctree:
    :recursive:
 
-   otx.core.data.adapter
-   otx.core.data.caching
-   otx.core.data.manager
-   otx.core.data.noisy_label_detection
-   otx.core.data.pipelines
+   otx.core.data.dataset
+   otx.core.data.entity
+   otx.core.data.factory
+   otx.core.data.mem_cache
+   otx.core.data.module
+   otx.core.data.pre_filtering
+   otx.core.data.tile_adaptor
+   otx.core.data.transform_libs
 

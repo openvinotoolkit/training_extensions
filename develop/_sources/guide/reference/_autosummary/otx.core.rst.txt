@@ -27,8 +27,11 @@ otx.core
    :toctree:
    :recursive:
 
+   otx.core.config
    otx.core.data
-   otx.core.file
-   otx.core.ov
-   otx.core.patcher
+   otx.core.exporter
+   otx.core.metrics
+   otx.core.model
+   otx.core.types
+   otx.core.utils
 

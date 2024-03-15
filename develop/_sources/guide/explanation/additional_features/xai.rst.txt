@@ -93,3 +93,18 @@ Below we show the comparison of described algorithms. ``Access to the model inte
 +-------------------------------------------+----------------------------+--------------------------------------------+
 | Execution speed                           | Fast                       | Fast                                       |           
 +-------------------------------------------+----------------------------+--------------------------------------------+
+
+
+.. tab-set::
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.explain(checkpoint="<checkpoint-path>")
+
+    .. tab-item:: CLI
+
+        .. code-block:: bash
+
+            (otx) ...$ otx explain ... --checkpoint <checkpoint-path>

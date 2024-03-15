@@ -17,11 +17,23 @@ Key features of OpenVINO™ Training Extensions include:
 
 You can run HPO by just adding **--enable-hpo** argument as below:
 
-.. code-block::
+.. tab-set::
 
-    $ otx train \
-          ... \
-          --enable-hpo
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            engine = Engine(data_root="<path_to_data_root>")
+            engine.train(run_hpo=True)
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --run_hpo True
+
 
 =========
 Algorithm
@@ -47,21 +59,7 @@ You can configure HPO by modifying the ``hpo_config.yaml`` file. This file conta
 
 .. code-block::
 
-    metric: accuracy
-    search_algorithm: asha
-    hp_space:
-      learning_parameters.learning_rate:
-        param_type: qloguniform
-        range:
-          - 0.0007
-          - 0.07
-          - 0.0001
-      learning_parameters.batch_size:
-        param_type: qloguniform
-        range:
-          - 32
-          - 128
-          - 2
+    Need to Update!
 
 As you can see, there are a few attributes required to run HPO.
 Fortunately, there are not many attributes, so it's not difficult to write your own ``hpo_config.yaml`` file. The more detailed description is as follows:
