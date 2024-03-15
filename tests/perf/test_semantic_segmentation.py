@@ -29,7 +29,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_small/3",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "medium": {
             "tags": {
@@ -39,7 +39,7 @@ class TestPerfSemanticSegmentation:
                 "semantic_seg/kvasir_medium",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
-            "num_repeat": 3,
+            "num_repeat": 1,
         },
         "large": {
             "tags": {
@@ -47,6 +47,26 @@ class TestPerfSemanticSegmentation:
             },
             "datasets": [
                 "semantic_seg/kvasir_large",
+            ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
+            "num_repeat": 1,
+        },
+        "kitti_full": {
+            "tags": {
+                "task": "semantic_segmentation",
+            },
+            "datasets": [
+                "kitti_full",
+            ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
+            "num_repeat": 1,
+        },
+        "VOC_cut": {
+            "tags": {
+                "task": "semantic_segmentation",
+            },
+            "datasets": [
+                "VOC_2012_OTX",
             ],
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
             "num_repeat": 1,
