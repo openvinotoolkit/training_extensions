@@ -1,5 +1,5 @@
 Visual Prompting (Fine-tuning)
-=================
+==================================
 
 Visual prompting is a computer vision task that uses a combination of an image and prompts, such as texts, bounding boxes, points, and so on to troubleshoot problems.
 Using these useful prompts, the main purpose of this task is to obtain labels from unlabeled datasets, and to use generated label information on particular domains or to develop a new model with the generated information.
@@ -47,20 +47,11 @@ We support three dataset formats for visual prompting:
 
 - `Pascal VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
 
-
-If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
-
-.. code-block::
-
-    $ otx train <model_template> \
-        --train-data-roots <path_to_data_root> \
-        --val-data-roots <path_to_data_root>
-
 .. note::
 
     During training, mDice for binary mask without label information is used for train/validation metric.
-    After training, if using ``otx eval`` to evaluate performance, mDice for binary or multi-class masks with label information will be used.
-    As you can expect, performance will be different between ``otx train`` and ``otx eval``, but if unlabeled mask performance is high, labeld mask performance is high as well.
+    After training, if using ``otx test`` to evaluate performance, mDice for binary or multi-class masks with label information will be used.
+    As you can expect, performance will be different between ``otx train`` and ``otx test``, but if unlabeled mask performance is high, labeld mask performance is high as well.
 
 
 ******
@@ -70,13 +61,13 @@ Models
 
 We support the following model templates in experimental phase:
 
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
-|                                                                                        Template ID                                                                                         |     Name     | Complexity (GFLOPs) | Model size (MB) |
-+============================================================================================================================================================================================+==============+=====================+=================+
-| `Visual_Prompting_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_tiny_vit/template_experimental.yaml>`_ | SAM_Tiny_ViT | 38.95               | 47              |
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
-| `Visual_Prompting_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_vit_b/template_experimental.yaml>`_       | SAM_ViT_B    | 483.71              | 362             |
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
++------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
+|                                                                                        Template ID                                                         |     Name     | Complexity (GFLOPs) | Model size (MB) |
++============================================================================================================================================================+==============+=====================+=================+
+| `Visual_Prompting_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_tiny_vit.yaml>`_   | SAM_Tiny_ViT | 38.95               | 47              |
++------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
+| `Visual_Prompting_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_vit_b.yaml>`_         | SAM_ViT_B    | 483.71              | 362             |
++------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
 
 To check feasibility of `SAM <https://arxiv.org/abs/2304.02643>`_, we did experiments using three public datasets with each other domains: `WGISD <https://github.com/thsant/wgisd>`_, `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_, and `FLARE22 <https://flare22.grand-challenge.org/>`_, and checked `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_.
 We used sampled training data from `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ and `FLARE22 <https://flare22.grand-challenge.org/>`_, and full training data (=110) from `WGISD <https://github.com/thsant/wgisd>`_.
@@ -103,11 +94,9 @@ The below table shows performance improvement after fine-tuning.
 
 According to datasets, ``learning rate`` and ``batch size`` can be adjusted like below:
 
-.. code-block::
+.. code-block:: shell
 
-    $ otx train <model_template> \
-        --train-data-roots <path_to_data_root> \
-        --val-data-roots <path_to_data_root> \
-        params \
-        --learning_parameters.dataset.train_batch_size <batch_size_to_be_updated> \
-        --learning_parameters.optimizer.lr <learning_rate_to_be_updated>
+    (otx) ...$ otx train --config <model_config_path> \
+                         --data_root <path_to_data_root> \
+                         --data.config.train_subset.batch_size <batch_size_to_be_updated> \
+                         --optimizer.lr <learning_rate_to_be_updated>

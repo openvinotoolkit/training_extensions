@@ -1,15 +1,23 @@
-"""OTX CLI."""
-
-# Copyright (C) 2021-2023 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import os
+"""CLI entrypoints."""
+from datetime import timedelta
+from time import time
 
-# This must be called before the first TaskType is imported to take effect.
-# How to make an Action Template invisible in Geti
-# Check FEATURE_FLAGS_OTX_ACTION_TASKS in the API to determine whether to use the Action
-# Always 1 in the OTX CLI
-os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
+from otx.cli.cli import OTXCLI
 
-# Same logic is applied to visual prompting task to be invisible in Geti
-os.environ["FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS"] = "1"
+
+def main() -> None:
+    """Entry point for OTX CLI.
+
+    This function is a single entry point for all OTX CLI related operations:
+    """
+    start = time()
+    OTXCLI()
+    dt = timedelta(seconds=time() - start)
+    print(f"Elapsed time: {dt}")
+
+
+if __name__ == "__main__":
+    main()

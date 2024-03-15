@@ -1,7 +1,7 @@
 import atheris
 
 
-class FuzzingHelper(object):
+class FuzzingHelper:
     """Helper to make required data from input_bytes for the fuzzing tests"""
 
     def __init__(self, input_bytes):

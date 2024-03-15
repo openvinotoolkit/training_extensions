@@ -1,0 +1,38 @@
+model:
+  class_path: otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel
+  init_args:
+    num_classes: 80
+    model_name: openvino.xml
+    model_type: MaskRCNN
+    async_inference: True
+    use_throughput_mode: True
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.01
+
+scheduler:
+  class_path: lightning.pytorch.cli.ReduceLROnPlateau
+  init_args:
+    mode: min
+    factor: 0.1
+    patience: 9
+    monitor: train/loss
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: cpu
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/torchvision_base.yaml
+overrides:
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      include_polygons: true
+      image_color_channel: RGB
+      data_format: coco_instances
+      test_subset:
+        batch_size: 2
