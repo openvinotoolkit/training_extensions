@@ -6,5 +6,5 @@ sphinx-tabs==3.4.*
 sphinx-panels==0.4.*
 sphinx-copybutton==0.5.0
 sphinx-autoapi==2.1.*
-sphinxemoji==0.2.*
+sphinxemoji==0.3.*
 nbsphinx==0.9.*
