@@ -16,19 +16,21 @@ When you used the VSCode + watchdog, you can easily check the docs output.
 import os
 import sys
 import time
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+
 class SphinxBuilder(FileSystemEventHandler):
     """Build sphinx docs."""
 
-    def on_modified(self, event: Any) -> None:
+    def on_modified(self, event: Any) -> None:  # noqa:ANN401
         """When the file is modified."""
         print(f"Changes detected: {event.src_path}")
-        os.system("sphinx-build -b html ../source ../build")
+        os.system("sphinx-build -b html ../source ../build")  # noqa:S605, S607
+
 
 def main(path: str) -> None:
     """Main function."""
@@ -43,14 +45,15 @@ def main(path: str) -> None:
         observer.stop()
     observer.join()
 
+
 if __name__ == "__main__":
     print("Auto sphinx builder is ON. It automatically builds the source when the change is detected.")
     script_location = Path(__file__).resolve().parent
     parent_dir = script_location.parent
     source_folder = parent_dir / "source"
     print(f"The location of source folder: {source_folder}")
-    print(f"Initial build...")
+    print("Initial build...")
     time.sleep(10)
-    os.system("sphinx-build -b html ../source ../build")
+    os.system("sphinx-build -b html ../source ../build")  # noqa:S605, S607
     path: str = sys.argv[1] if len(sys.argv) > 1 else str(source_folder)
     main(path)
