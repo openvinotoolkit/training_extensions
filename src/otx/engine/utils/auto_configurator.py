@@ -344,6 +344,11 @@ class AutoConfigurator:
         ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"]["test_subset"]
         data_configuration.test_subset.transform_lib_type = ov_test_config["transform_lib_type"]
         data_configuration.test_subset.transforms = ov_test_config["transforms"]
-        msg = f"For OpenVINO IR models, Use the following test transforms: {data_configuration.test_subset.transforms}"
+        data_configuration.tile_config.enable_tiler = False
+        msg = (
+            f"For OpenVINO IR models, Update the following test transforms: {data_configuration.test_subset.transforms}"
+            f"and transform_lib_type: {data_configuration.test_subset.transform_lib_type}"
+            "And the tiler is disabled."
+        )
         warn(msg, stacklevel=1)
         return OTXDataModule(task=datamodule.task, config=data_configuration)
