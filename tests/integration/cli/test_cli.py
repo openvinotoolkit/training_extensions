@@ -328,8 +328,8 @@ def test_otx_explain_e2e(
             "Slide6_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
-            "5_class_0_saliency_map.png",
+            np.array([152, 193, 144, 132, 149, 204, 217], dtype=np.uint8),
+            "092_class_5_saliency_map.png",
         ),
         # Detection
         "detection_yolox_tiny": (
