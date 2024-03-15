@@ -33,6 +33,7 @@ def monkey_patched_nms(ctx, bboxes, scores, iou_threshold, offset, score_thresho
         inds = inds[:max_num]
     if is_filtering_by_score:
         inds = valid_inds[inds]
+    print(inds)
     return inds
 
 
