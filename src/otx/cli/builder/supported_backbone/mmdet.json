@@ -1,0 +1,227 @@
+{
+  "version": "2.28.1",
+  "backbones": {
+    "mmdet.CSPDarknet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["P5", "P6"]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.Darknet": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.DetectoRS_ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.DetectoRS_ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.EfficientNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "b0",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "es",
+          "em",
+          "el"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmdet.HourglassNet": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.HRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.PyramidVisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+    },
+    "mmdet.PyramidVisionTransformerV2": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+    },
+    "mmdet.RegNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "regnetx_400mf",
+          "regnetx_800mf",
+          "regnetx_1.6gf",
+          "regnetx_3.2gf",
+          "regnetx_4.0gf",
+          "regnetx_6.4gf",
+          "regnetx_8.0gf",
+          "regnetx_12gf"
+        ]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.Res2Net": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.ResNeSt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.SSDVGG": {
+      "required": ["input_size", "depth"],
+      "options": {
+        "input_size": [300, 512],
+        "depth": [11, 16, 19]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.SwinTransformer": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+    },
+    "mmdet.TridentResNet": {
+      "required": [
+        "depth",
+        "num_branch",
+        "test_branch_idx",
+        "trident_dilations"
+      ],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    }
+  }
+}

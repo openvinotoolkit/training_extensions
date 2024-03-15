@@ -1,0 +1,5 @@
+TestToolsAnomalyClassification:
+  nncf:
+    number_of_fakequantizers: 55
+  ptq:
+    number_of_fakequantizers: 71

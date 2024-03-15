@@ -1,0 +1,14 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Development Requirements.                                                   #
+pre-commit==2.20.0
+pylint==3.0.*
+pytest==7.4.*
+coverage==7.4.*
+pytest-timeout==2.2.*
+pytest-mock==3.12.*
+onnx==1.15.0
+onnxruntime==1.14.1
+pytest-csv==3.0.*
+tox==4.11.*
+mlflow==2.10.2
+py-cpuinfo==9.0.0

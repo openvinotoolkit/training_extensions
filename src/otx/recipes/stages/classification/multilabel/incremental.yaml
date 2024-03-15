@@ -1,0 +1,59 @@
+_base_:
+  [
+    "./train.yaml",
+    "../../_base_/models/classifiers/classifier.py",
+  ]
+
+runner:
+  max_epochs: 50
+
+optimizer_config:
+  type: SAMOptimizerHook
+
+optimizer:
+  type: SGD
+  lr: 0.007
+  momentum: 0.9
+  weight_decay: 0.0005
+
+evaluation:
+  metric: ["accuracy", "class_accuracy"]
+
+lr_config:
+  _delete_: True
+  policy: ReduceLROnPlateau
+  min_lr: 0.000001
+  interval: 1
+  metric: accuracy
+  factor: 0.5
+  patience: 1
+  iteration_patience: 0
+  warmup: linear
+  warmup_iters: 1
+  warmup_ratio: 0.333
+
+task_adapt:
+  type: "default_task_adapt"
+  op: "REPLACE"
+
+ignore: True
+
+custom_hooks: [
+  {
+    type: ModelEmaV2Hook
+  },
+  {
+    type: LazyEarlyStoppingHook,
+    interval: 1,
+    metric: accuracy,
+    patience: 3,
+    iteration_patience: 0,
+    start: 3,
+    min_delta_ratio: 0.01,
+    priority: 75,
+  },
+  {
+    type: AdaptiveRepeatDataHook, 
+    priority: ABOVE_NORMAL
+  }
+]

@@ -1,0 +1,347 @@
+{
+  "version": "0.25.0",
+  "backbones": {
+    "mmcls.AlexNet": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.Conformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ConvMixer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["768/32", "1024/20", "1536/20"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ConvNeXt": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large", "xlarge"]
+      },
+      "available": []
+    },
+    "mmcls.CSPDarkNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [53]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.CSPResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.CSPResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.DistilledVisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.DenseNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["121", "169", "201", "161"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.EfficientFormer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["l1", "l3", "l7"]
+      },
+      "available": []
+    },
+    "mmcls.EfficientNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "b0",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "es",
+          "em",
+          "el"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.HorNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "tiny",
+          "tiny-gf",
+          "small",
+          "small-gf",
+          "base",
+          "base-gf",
+          "base-gf384",
+          "large",
+          "large-gf",
+          "large-gf384"
+        ]
+      },
+      "available": []
+    },
+    "mmcls.HRNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["w32", "w18", "w30", "w40", "w44", "w48", "w64"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.LeNet5": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.MlpMixer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.MobileNetV3": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["small", "large"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.MViT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "tiny", "small", "large"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.PoolFormer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["s12", "s24", "s36", "m36", "m48"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.RegNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "regnetx_400mf",
+          "regnetx_800mf",
+          "regnetx_1.6gf",
+          "regnetx_3.2gf",
+          "regnetx_4.0gf",
+          "regnetx_6.4gf",
+          "regnetx_8.0gf",
+          "regnetx_12gf"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.RepMLPNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.RepVGG": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "A0",
+          "A1",
+          "A2",
+          "B0",
+          "B1",
+          "B1g2",
+          "B1g4",
+          "B2",
+          "B2g2",
+          "B2g4",
+          "B3",
+          "B3g2",
+          "B3g4",
+          "D2se",
+          "yolox-pai-small"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.Res2Net": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNeSt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200, 269]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNetV1c": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNet_CIFAR": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.SEResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.SEResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ShuffleNetV1": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.ShuffleNetV2": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.SwinTransformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.SwinTransformerV2": {
+      "required": ["arch", "pad_small_map"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large", "huge", "giant"],
+        "pad_small_map": [true, false]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.T2T_ViT": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.TIMMBackbone": {
+      "required": ["model_name"],
+      "options": {},
+      "available": []
+    },
+    "mmcls.TNT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small"]
+      },
+      "available": []
+    },
+    "mmcls.PCPVT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.SVT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.VAN": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["b0", "b1", "b2", "b3", "b4", "b5", "b6"]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.VGG": {
+      "required": ["depth"],
+      "options": {
+        "depth": [11, 13, 16, 19]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmcls.VisionTransformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "base",
+          "small",
+          "large",
+          "deit-tiny",
+          "deit-small",
+          "deit-base"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    }
+  }
+}

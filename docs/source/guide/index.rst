@@ -10,7 +10,6 @@ Guide
   get_started/introduction
   get_started/installation
   get_started/cli_commands
-  get_started/api_tutorial
 
 
 .. toctree::

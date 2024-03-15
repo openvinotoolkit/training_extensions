@@ -1,0 +1,65 @@
+# Description.
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+name: MaskRCNN-EfficientNetB2B
+task_type: ROTATED_DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Rotated object detection for MaskRCNN-EfficientNetB2B
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
+  openvino: otx.algorithms.detection.adapters.openvino.task.OpenVINODetectionTask
+  nncf: otx.algorithms.detection.adapters.mmdet.nncf.task.DetectionNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+        auto_hpo_state: POSSIBLE
+      learning_rate:
+        default_value: 0.015
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 100
+      num_iters:
+        default_value: 100
+    pot_parameters:
+      stat_requests_number:
+        default_value: 1
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: false
+      maximal_accuracy_degradation:
+        default_value: 1.0
+    algo_backend:
+      train_type:
+        default_value: Incremental
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 68.48
+size: 13.27
+
+# Model spec
+model_category: SPEED

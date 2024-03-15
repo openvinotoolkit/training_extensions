@@ -1,0 +1,4 @@
+001 # 0 # 0 # sky # sky # ""
+002 # 0 # 0 # person, individual, someone, somebody, mortal, soul # person # ""
+001 # 1 # 0 # license plate # license plate # ""
+001 # 2 # 0 # rim # rim # ""

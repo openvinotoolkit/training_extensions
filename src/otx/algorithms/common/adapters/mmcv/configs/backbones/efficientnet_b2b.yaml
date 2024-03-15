@@ -1,0 +1,11 @@
+model:
+  backbone:
+    type: efficientnet_b2b
+    out_indices: !!python/tuple [2, 3, 4, 5]
+    frozen_stages: -1
+    pretrained: True
+    activation_cfg:
+      type: torch_swish
+    norm_cfg:
+      type: BN
+      requires_grad: True

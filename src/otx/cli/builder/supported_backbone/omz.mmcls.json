@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "backbones": {
+    "mmcls.MMOVBackbone": {
+      "required": ["model_path_or_model"],
+      "options": {
+        "model_path_or_model": [
+          "omz://alexnet",
+          "omz://caffenet",
+          "omz://densenet-121",
+          "omz://densenet-121-tf",
+          "omz://dla-34",
+          "omz://efficientnet-b0",
+          "omz://efficientnet-b0-pytorch",
+          "omz://efficientnet-v2-b0",
+          "omz://efficientnet-v2-s",
+          "omz://hbonet-1.0",
+          "omz://hbonet-0.25",
+          "omz://googlenet-v1",
+          "omz://googlenet-v1-tf",
+          "omz://googlenet-v2",
+          "omz://googlenet-v2-tf",
+          "omz://googlenet-v3",
+          "omz://googlenet-v3-pytorch",
+          "omz://googlenet-v4-tf",
+          "omz://inception-resnet-v2-tf",
+          "omz://mixnet-l",
+          "omz://mobilenet-v1-0.25-128",
+          "omz://mobilenet-v1-1.0-224",
+          "omz://mobilenet-v1-1.0-224-tf",
+          "omz://mobilenet-v2",
+          "omz://mobilenet-v2-1.0-224",
+          "omz://mobilenet-v2-pytorch",
+          "omz://mobilenet-v2-1.4-224",
+          "omz://mobilenet-v3-small-1.0-224-tf",
+          "omz://mobilenet-v3-large-1.0-224-tf",
+          "omz://octave-resnet-26-0.25",
+          "omz://resnet-18-pytorch",
+          "omz://resnet-34-pytorch",
+          "omz://resnet-50-pytorch",
+          "omz://resnet-50-tf",
+          "omz://se-inception",
+          "omz://se-resnet-50",
+          "omz://se-resnext-50",
+          "omz://shufflenet-v2-x0.5",
+          "omz://squeezenet1.0",
+          "omz://squeezenet1.1",
+          "omz://vgg16",
+          "omz://vgg19"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    }
+  }
+}

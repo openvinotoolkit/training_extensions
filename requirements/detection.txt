@@ -1,0 +1,10 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Detection Requirements.
+mmcv-full==1.7.0
+mmdet==2.28.1
+pytorchcv==0.0.67
+mmcls==0.25.0
+timm==0.6.12
+mmdeploy==0.14.0
+mmengine==0.7.4
+scikit-image # specifying different version w.r.t python_version is not effect

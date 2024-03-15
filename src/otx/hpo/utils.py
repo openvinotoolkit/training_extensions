@@ -1,14 +1,23 @@
-# Copyright (C) 2024 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
 """Collections of Utils for HPO."""
 
-from __future__ import annotations
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
-from typing import Literal
+from typing import Literal, Optional
 
 
-def left_vlaue_is_better(val1: int | float, val2: int | float, mode: Literal["max", "min"]) -> bool:
+def left_vlaue_is_better(val1, val2, mode: Literal["max", "min"]) -> bool:
     """Check left value is better than right value.
 
     Whether check it's greather or lesser is changed depending on 'model'.
@@ -27,13 +36,13 @@ def left_vlaue_is_better(val1: int | float, val2: int | float, mode: Literal["ma
     return val1 < val2
 
 
-def check_positive(value: int | float, variable_name: str | None = None, error_message: str | None = None) -> None:
+def check_positive(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
     """Validate that value is positivle.
 
     Args:
-        value (int | float): value to validate.
-        variable_name (str | None, optional): name of value. It's used for error message. Defaults to None.
-        error_message (str | None, optional): Error message to use when type is different. Defaults to None.
+        value (Any): value to validate.
+        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
+        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
 
     Raises:
         ValueError: If value isn't positive, the error is raised.
@@ -42,19 +51,19 @@ def check_positive(value: int | float, variable_name: str | None = None, error_m
         if error_message is not None:
             message = error_message
         elif variable_name:
-            message = f"{variable_name} should be positive.\nyour value : {value}"
+            message = f"{variable_name} should be positive.\n" f"your value : {value}"
         else:
             raise ValueError
         raise ValueError(message)
 
 
-def check_not_negative(value: int | float, variable_name: str | None = None, error_message: str | None = None) -> None:
+def check_not_negative(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
     """Validate that value isn't negative.
 
     Args:
-        value (int | float): value to validate.
-        variable_name (str | None, optional): name of value. It's used for error message. Defaults to None.
-        error_message (str | None, optional): Error message to use when type is different. Defaults to None.
+        value (Any): value to validate.
+        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
+        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
 
     Raises:
         ValueError: If value is negative, the error is raised.
@@ -63,13 +72,13 @@ def check_not_negative(value: int | float, variable_name: str | None = None, err
         if error_message is not None:
             message = error_message
         elif variable_name:
-            message = f"{variable_name} should be positive.\nyour value : {value}"
+            message = f"{variable_name} should be positive.\n" f"your value : {value}"
         else:
             raise ValueError
         raise ValueError(message)
 
 
-def check_mode_input(mode: str) -> None:
+def check_mode_input(mode: str):
     """Validate that mode is 'max' or 'min'.
 
     Args:
@@ -79,5 +88,4 @@ def check_mode_input(mode: str) -> None:
         ValueError: If 'mode' is not both 'max' and 'min', the error is raised.
     """
     if mode not in ["max", "min"]:
-        error_msg = f"mode should be max or min.\nYour value : {mode}"
-        raise ValueError(error_msg)
+        raise ValueError("mode should be max or min.\n" f"Your value : {mode}")

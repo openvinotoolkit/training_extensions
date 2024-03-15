@@ -1,0 +1,75 @@
+{
+  "base": {
+    "find_unused_parameters": true,
+    "nncf_config": {
+      "compression": [],
+      "log_dir": "/tmp"
+    }
+  },
+  "nncf_quantization": {
+    "nncf_config": {
+      "compression": [
+        {
+          "algorithm": "quantization",
+          "preset": "mixed",
+          "initializer": {
+            "range": {
+              "num_init_samples": 8192
+            },
+            "batchnorm_adaptation": {
+              "num_bn_adaptation_samples": 8192
+            }
+          }
+        }
+      ],
+      "accuracy_aware_training": {
+        "mode": "early_exit",
+        "params": {
+          "maximal_absolute_accuracy_degradation": 0.01,
+          "maximal_total_epochs": 100
+        }
+      }
+    }
+  },
+  "nncf_quantization_pruning": {
+    "nncf": {
+      "coeff_decrease_lr_for_nncf": 1.0
+    },
+    "nncf_config": {
+      "compression": [
+        {
+          "algorithm": "filter_pruning",
+          "pruning_init": 0.1,
+          "params": {
+            "schedule": "baseline",
+            "pruning_flops_target": 0.1,
+            "filter_importance": "geometric_median",
+            "prune_downsample_convs": true
+          }
+        },
+        {
+          "algorithm": "quantization",
+          "preset": "mixed",
+          "initializer": {
+            "range": {
+              "num_init_samples": 8192
+            },
+            "batchnorm_adaptation": {
+              "num_bn_adaptation_samples": 8192
+            }
+          }
+        }
+      ],
+      "accuracy_aware_training": {
+        "mode": "adaptive_compression_level",
+        "params": {
+          "maximal_absolute_accuracy_degradation": 0.01,
+          "initial_training_phase_epochs": 100,
+          "patience_epochs": 100,
+          "maximal_total_epochs": 200
+        }
+      }
+    }
+  },
+  "order_of_parts": ["nncf_quantization", "nncf_quantization_pruning"]
+}

@@ -1,255 +1,294 @@
-# Copyright (C) 2024 Intel Corporation
+"""OTX Classification perfomance tests."""
+
+# Copyright (C) 2023-2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""OTX classification perfomance benchmark tests."""
-
-from __future__ import annotations
-
-from pathlib import Path
 
 import pytest
 
-from .benchmark import Benchmark
-from .conftest import PerfTestBase
+from otx.cli.registry import Registry
+from typing import Callable
+from .benchmark import OTXBenchmark
 
 
-class TestPerfSingleLabelClassification(PerfTestBase):
+MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
+MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
+
+
+class TestPerfSingleLabelClassification:
     """Benchmark single-label classification."""
 
-    MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_b0_light", category="speed"),
-        Benchmark.Model(task="classification/multi_class_cls", name="efficientnet_v2_light", category="balance"),
-        Benchmark.Model(task="classification/multi_class_cls", name="mobilenet_v3_large_light", category="accuracy"),
-        Benchmark.Model(task="classification/multi_class_cls", name="otx_deit_tiny", category="other"),
-        Benchmark.Model(task="classification/multi_class_cls", name="otx_dino_v2", category="other"),
-    ]
+    BENCHMARK_CONFIGS = {
+        "small": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "classification/single_label/multiclass_CUB_small/1",
+                "classification/single_label/multiclass_CUB_small/2",
+                "classification/single_label/multiclass_CUB_small/3",
+            ],
+            "num_repeat": 5,
+        },
+        "medium": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "classification/single_label/multiclass_CUB_medium",
+            ],
+            "num_repeat": 5,
+        },
+        "large": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "classification/single_label/multiclass_food101_large",
+            ],
+            "num_repeat": 5,
+        },
+    }
 
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"multiclass_CUB_small_{idx}",
-            path=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
-            size="small",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=2,
-            num_repeat=5,
-            extra_overrides={},
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
+        fxt_check_benchmark_result(
+            result,
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            checks=[
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="multiclass_CUB_medium",
-            path=Path("multiclass_classification/multiclass_CUB_medium"),
-            size="medium",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=67,
-            num_repeat=5,
-            extra_overrides={},
-        ),
-        Benchmark.Dataset(
-            name="multiclass_food101_large",
-            path=Path("multiclass_classification/multiclass_food101_large"),
-            size="large",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=20,
-            num_repeat=5,
-            extra_overrides={},
-        ),
-    ]
-
-    BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-    ]
-
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_perf(
-        self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_perf(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            benchmark=fxt_benchmark,
-            criteria=self.BENCHMARK_CRITERIA,
-        )
 
 
-class TestPerfMultiLabelClassification(PerfTestBase):
+class TestPerfMultiLabelClassification:
     """Benchmark multi-label classification."""
 
-    MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_b0_light", category="speed"),
-        Benchmark.Model(task="classification/multi_label_cls", name="efficientnet_v2_light", category="balance"),
-        Benchmark.Model(task="classification/multi_label_cls", name="mobilenet_v3_large_light", category="accuracy"),
-        Benchmark.Model(task="classification/multi_label_cls", name="otx_deit_tiny", category="other"),
-    ]
-
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"multilabel_CUB_small_{idx}",
-            path=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
-            size="small",
-            data_format="datumaro",
-            num_classes=3,
-            num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="multilabel_CUB_medium",
-            path=Path("multilabel_classification/multilabel_CUB_medium"),
-            size="medium",
-            data_format="datumaro",
-            num_classes=68,
-            num_repeat=5,
-            extra_overrides={},
-        ),
-        Benchmark.Dataset(
-            name="multilabel_food101_large",
-            path=Path("multilabel_classification/multilabel_food101_large"),
-            size="large",
-            data_format="datumaro",
-            num_classes=21,
-            num_repeat=5,
-            extra_overrides={},
-        ),
-    ]
-
-    BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-    ]
-
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_perf(
-        self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_perf(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            benchmark=fxt_benchmark,
-            criteria=self.BENCHMARK_CRITERIA,
-        )
-
-
-class TestPerfHierarchicalLabelClassification(PerfTestBase):
-    """Benchmark hierarchical-label classification."""
-
-    MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_b0_light", category="speed"),
-        Benchmark.Model(task="classification/h_label_cls", name="efficientnet_v2_light", category="balance"),
-        Benchmark.Model(task="classification/h_label_cls", name="mobilenet_v3_large_light", category="accuracy"),
-        Benchmark.Model(task="classification/h_label_cls", name="otx_deit_tiny", category="other"),
-    ]
-
-    DATASET_TEST_CASES = [
-        Benchmark.Dataset(
-            name=f"hlabel_CUB_small_{idx}",
-            path=Path("hlabel_classification/hlabel_CUB_small") / f"{idx}",
-            size="small",
-            data_format="datumaro",
-            num_classes=6,
-            num_repeat=5,
-            extra_overrides={
-                "model.num_multiclass_heads": "3",
-                "model.num_multilabel_classes": "0",
+    BENCHMARK_CONFIGS = {
+        "small": {
+            "tags": {
+                "task": "multi_label_classification",
             },
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="hlabel_CUB_medium",
-            path=Path("hlabel_classification/hlabel_CUB_medium"),
-            size="medium",
-            data_format="datumaro",
-            num_classes=102,
-            num_repeat=5,
-            extra_overrides={
-                "model.num_multiclass_heads": "23",
-                "model.num_multilabel_classes": "0",
+            "datasets": [
+                "classification/multi_label/multilabel_CUB_small/1",
+                "classification/multi_label/multilabel_CUB_small/2",
+                "classification/multi_label/multilabel_CUB_small/3",
+            ],
+            "num_repeat": 5,
+        },
+        "medium": {
+            "tags": {
+                "task": "multi_label_classification",
             },
-        ),
-        # Add large dataset
-    ]
+            "datasets": [
+                "classification/multi_label/multilabel_CUB_medium",
+            ],
+            "num_repeat": 5,
+        },
+        "large": {
+            "tags": {
+                "task": "multi_label_classification",
+            },
+            "datasets": [
+                "classification/multi_label/multilabel_food101_large",
+            ],
+            "num_repeat": 5,
+        },
+    }
 
-    BENCHMARK_CRITERIA = [  # noqa: RUF012
-        Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
-        Benchmark.Criterion(name="optimize/iter_time", summary="mean", compare="<", margin=0.1),
-    ]
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
+        fxt_check_benchmark_result(
+            result,
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            checks=[
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
+        )
 
-    @pytest.mark.parametrize(
-        "fxt_model",
-        MODEL_TEST_CASES,
-        ids=lambda model: model.name,
-        indirect=True,
-    )
-    @pytest.mark.parametrize(
-        "fxt_dataset",
-        DATASET_TEST_CASES,
-        ids=lambda dataset: dataset.name,
-        indirect=True,
-    )
-    def test_perf(
-        self,
-        fxt_model: Benchmark.Model,
-        fxt_dataset: Benchmark.Dataset,
-        fxt_benchmark: Benchmark,
-    ):
-        self._test_perf(
-            model=fxt_model,
-            dataset=fxt_dataset,
-            benchmark=fxt_benchmark,
-            criteria=self.BENCHMARK_CRITERIA,
+
+class TestPerfHierarchicalLabelClassification:
+    """Benchmark hierarchcial-label classification."""
+
+    BENCHMARK_CONFIGS = {
+        "small": {
+            "tags": {
+                "task": "hierarchical_label_classification",
+            },
+            "datasets": [
+                "classification/h_label/h_label_CUB_small/1",
+                "classification/h_label/h_label_CUB_small/2",
+                "classification/h_label/h_label_CUB_small/3",
+            ],
+            "num_repeat": 5,
+        },
+        "medium": {
+            "tags": {
+                "task": "hierarchical_label_classification",
+            },
+            "datasets": [
+                "classification/h_label/h_label_CUB_medium",
+            ],
+            "num_repeat": 5,
+        },
+        # TODO: Add large dataset
+        # "large": {
+        #     "tags": {
+        #         "task": "hierarchical_label_classification",
+        #     },
+        #     "datasets": [
+        #     ],
+        #     "num_repeat": 5,
+        # },
+    }
+
+    @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
+    @pytest.mark.parametrize("fxt_benchmark", BENCHMARK_CONFIGS.items(), ids=BENCHMARK_CONFIGS.keys(), indirect=True)
+    def test_perf(self, fxt_model_id: str, fxt_benchmark: OTXBenchmark, fxt_check_benchmark_result: Callable):
+        """Benchmark performance metrics."""
+        result = fxt_benchmark.run(model_id=fxt_model_id)
+        fxt_check_benchmark_result(
+            result,
+            key=(fxt_benchmark.tags["task"], fxt_benchmark.tags["data_size"], fxt_model_id),
+            checks=[
+                {
+                    "name": "Accuracy(train)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(export)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "Accuracy(optimize)",
+                    "op": ">",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "epoch",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "train_e2e_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_data_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_iter_time",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(export)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+                {
+                    "name": "avg_time_per_image(optimize)",
+                    "op": "<",
+                    "margin": 0.1,
+                },
+            ],
         )

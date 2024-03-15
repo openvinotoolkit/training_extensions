@@ -1,0 +1,4 @@
+classes = 10
+train = yolo_dataset/train.txt
+names = yolo_dataset/obj.names
+backup = backup/

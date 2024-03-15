@@ -1,0 +1,41 @@
+{
+  "image_path": {
+    "0": "test/good/25.jpg",
+    "1": "test/good/05.jpg",
+    "2": "test/good/28.jpg",
+    "3": "test/colour/06.jpg",
+    "4": "test/colour/03.jpg",
+    "5": "test/colour/07.jpg",
+    "6": "test/colour/14.jpg",
+    "7": "test/colour/01.jpg",
+    "8": "test/colour/12.jpg",
+    "9": "test/colour/11.jpg",
+    "10": "test/colour/09.jpg",
+    "11": "test/colour/08.jpg"
+  },
+  "label": {
+    "0": "good",
+    "1": "good",
+    "2": "good",
+    "3": "abnormal",
+    "4": "abnormal",
+    "5": "abnormal",
+    "6": "abnormal",
+    "7": "abnormal",
+    "8": "abnormal",
+    "9": "abnormal",
+    "10": "abnormal",
+    "11": "abnormal"
+  },
+  "masks": {
+    "3": "mask/colour/06.png",
+    "4": "mask/colour/03.png",
+    "5": "mask/colour/07.png",
+    "6": "mask/colour/14.png",
+    "7": "mask/colour/01.png",
+    "8": "mask/colour/12.png",
+    "9": "mask/colour/11.png",
+    "10": "mask/colour/09.png",
+    "11": "mask/colour/08.png"
+  }
+}

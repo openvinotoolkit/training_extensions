@@ -1,0 +1,645 @@
+{
+  "version": "0.14.1",
+  "backbones": {
+    "torchvision.alexnet": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "INSTANCE_SEGMENTATION", "SEGMENTATION"]
+    },
+    "torchvision.convnext_tiny": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.convnext_small": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.convnext_large": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.densenet121": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.densenet161": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.densenet169": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.densenet201": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b0": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b1": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b3": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b4": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b5": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b6": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_b7": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_v2_s": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_v2_m": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.efficientnet_v2_l": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.googlenet": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.inception_v3": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.mnasnet0_5": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mnasnet0_75": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mnasnet1_0": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mnasnet1_3": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mobilenet_v2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mobilenet_v3_large": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.mobilenet_v3_small": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.regnet_y_400mf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_800mf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_1_6gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_3_2gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_8gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_16gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_32gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_y_128gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_400mf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_800mf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_1_6gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_3_2gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_8gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_16gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.regnet_x_32gf": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.resnet18": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnet34": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnet50": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnet101": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnet152": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnext50_32x4d": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnext101_32x8d": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.resnext101_64x4d": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.wide_resnet50_2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.wide_resnet101_2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.shufflenet_v2_x0_5": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.shufflenet_v2_x1_0": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.shufflenet_v2_x1_5": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.shufflenet_v2_x2_0": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.squeezenet1_0": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.squeezenet1_1": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg11": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg11_bn": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg13": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg13_bn": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg16": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg16_bn": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg19": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vgg19_bn": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "torchvision.vit_b_16": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.vit_b_32": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.vit_l_16": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.vit_l_32": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.vit_h_14": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "torchvision.swin_t": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.swin_s": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.swin_b": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.swin_v2_t": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.swin_v2_s": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.swin_v2_b": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION"]
+    },
+    "torchvision.maxvit_t": {
+      "required": [],
+      "options": {},
+      "available": []
+    }
+  }
+}

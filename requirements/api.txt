@@ -1,0 +1,12 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# API Requirements.                                                          #
+attrs==23.1.*
+networkx>=2.6,<=2.8.0
+numpy>=1.21.0,<=1.23.4  # np.bool was removed in 1.24.0 which was used in openvino runtime
+omegaconf>=2.1.1
+opencv-python>=4.5
+pymongo==4.6.*
+scikit-learn==1.3.*
+Shapely>=1.7.1,<=1.8.0
+imagesize==1.4.1
+dill==0.3.*

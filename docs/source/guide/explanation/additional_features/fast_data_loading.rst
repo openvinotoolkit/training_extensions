@@ -5,6 +5,21 @@ OpenVINO™ Training Extensions provides several ways to boost model training sp
 one of which is fast data loading.
 
 
+===================
+Faster Augmentation
+===================
+
+
+******
+AugMix
+******
+AugMix [1]_ is a simple yet powerful augmentation technique
+to improve robustness and uncertainty estimates of image classification task.
+OpenVINO™ Training Extensions implemented it in `Cython <https://cython.org/>`_ for faster augmentation.
+Users do not need to configure anything as cythonized AugMix is used by default.
+
+
+
 =======
 Caching
 =======
@@ -21,20 +36,38 @@ One can enable in-memory caching for maximizing GPU utilization and reducing mod
 training time in those cases.
 
 
-.. tab-set::
+.. code-block::
 
-   .. tab-item:: API
+   $ otx train --mem-cache-size=8GB ..
 
-      .. code-block:: python
 
-         from otx.core.config.data import DataModuleConfig
-         from otx.core.data.module import OTXDataModule
 
-         data_config = DataModuleConfig(..., mem_cache_size="8GB")
-         datamodule = OTXDataModule(..., config=data_config)
+***************
+Storage Caching
+***************
 
-   .. tab-item:: CLI
+OpenVINO™ Training Extensions uses `Datumaro <https://github.com/openvinotoolkit/datumaro>`_
+under the hood for dataset managements.
+Since Datumaro `supports <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html>`_
+`Apache Arrow <https://arrow.apache.org/overview/>`_, OpenVINO™ Training Extensions
+can exploit fast data loading using memory-mapped arrow file at the expanse of storage consumtion.
 
-      .. code-block:: shell
 
-         (otx) ...$ otx train ... --data.config.mem_cache_size 8GB
+.. code-block::
+
+   $ otx train .. params --algo_backend.storage_cache_scheme JPEG/75
+
+
+The cache would be saved in ``$HOME/.cache/otx`` by default.
+One could change it by modifying ``OTX_CACHE`` environment variable.
+
+
+.. code-block::
+
+   $ OTX_CACHE=/path/to/cache otx train .. params --algo_backend.storage_cache_scheme JPEG/75
+
+
+Please refere `Datumaro document <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html#export-to-arrow>`_
+for available schemes to choose but we recommend ``JPEG/75`` for fast data loaidng.
+
+.. [1] Dan Hendrycks, Norman Mu, Ekin D. Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. "AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty" International Conference on Learning Representations. 2020.

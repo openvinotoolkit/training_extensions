@@ -1,0 +1,1724 @@
+{
+  "data_path": {
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--input": "classification/multiclass_CUB/test/Acadian_Flycatcher"
+        },
+        "multi_label": {
+          "--train-data-roots": "classification/multi_label_coco_subset_cls_decr",
+          "--val-data-roots": "classification/multi_label_coco_subset_cls_decr",
+          "--test-data-roots": "classification/multi_label_coco_subset_cls_decr",
+          "--input": "classification/multi_label_coco_subset/images/test"
+        },
+        "h_label": {
+          "--train-data-roots": "classification/h_label_cifar10_subset",
+          "--val-data-roots": "classification/h_label_cifar10_subset",
+          "--test-data-roots": "classification/h_label_cifar10_subset",
+          "--input": "classification/h_label_cifar10_subset/images/test/airplane"
+        },
+        "supcon": {
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test"
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "--train-data-roots": "classification/multiclass_CUB/train",
+          "--val-data-roots": "classification/multiclass_CUB/test",
+          "--test-data-roots": "classification/multiclass_CUB/test"
+        },
+        "multi_label": {
+          "--train-data-roots": "classification/multi_label_coco_subset",
+          "--val-data-roots": "classification/multi_label_coco_subset",
+          "--test-data-roots": "classification/multi_label_coco_subset"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--unlabeled-data-roots": "classification/CUB_unlabeled"
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train"
+        }
+      }
+    },
+    "detection": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset_cls_decr",
+          "--val-data-roots": "detection/coco_subset_cls_decr",
+          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--input": "detection/coco_subset_cls_decr/images/test"
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset_cls_decr",
+          "--val-data-roots": "detection/coco_subset_cls_decr",
+          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--unlabeled-data-roots": "detection/coco_subset/images/unlabeled"
+        }
+      },
+      "tiling": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset",
+          "--input": "detection/coco_subset/images/test"
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test",
+          "--input": "segmentation/regression_voc_cls_decr/test/images"
+        },
+        "supcon": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test"
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "--train-data-roots": "segmentation/regression_voc_sl/train",
+          "--val-data-roots": "segmentation/regression_voc_sl/val",
+          "--test-data-roots": "segmentation/regression_voc_sl/test"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test",
+          "--unlabeled-data-roots": "segmentation/regression_voc_semisl/unlabeled"
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train"
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset_cls_decr",
+          "--val-data-roots": "detection/coco_subset_cls_decr",
+          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--input": "detection/coco_subset_cls_decr/images/test"
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset"
+        }
+      },
+      "tiling": {
+        "multi_class": {
+          "--train-data-roots": "detection/coco_subset_cls_decr",
+          "--val-data-roots": "detection/coco_subset_cls_decr",
+          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--input": "detection/coco_subset/images/test"
+        }
+      }
+    },
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "action/classification/HMDB51_30percent/train",
+          "--val-data-roots": "action/classification/HMDB51_30percent/val",
+          "--test-data-roots": "action/classification/HMDB51_30percent/val"
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "action/detection/JHMDB_5percent/train",
+          "--val-data-roots": "action/detection/JHMDB_5percent/test",
+          "--test-data-roots": "action/detection/JHMDB_5percent/test"
+        }
+      }
+    },
+    "anomaly_classification": {
+      "--train-data-roots": "anomaly/mvtec",
+      "--val-data-roots": "anomaly/mvtec",
+      "--test-data-roots": "anomaly/mvtec",
+      "--input": "anomaly/mvtec/bottle/test/contamination",
+      "train_params": []
+    },
+    "anomaly_detection": {
+      "--train-data-roots": "anomaly/mvtec",
+      "--val-data-roots": "anomaly/mvtec",
+      "--test-data-roots": "anomaly/mvtec",
+      "--input": "anomaly/mvtec/bottle/test/contamination",
+      "train_params": []
+    },
+    "anomaly_segmentation": {
+      "--train-data-roots": "anomaly/mvtec",
+      "--val-data-roots": "anomaly/mvtec",
+      "--test-data-roots": "anomaly/mvtec",
+      "--input": "anomaly/mvtec/bottle/test/contamination",
+      "train_params": []
+    }
+  },
+
+  "regression_criteria": {
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MoViNet": 0.519,
+            "X3D": 0.613
+          },
+          "export": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "deploy": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "nncf": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          },
+          "ptq": {
+            "MoViNet": 0.0,
+            "X3D": 0.0
+          }
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "X3D_FAST_RCNN": 0.613
+          },
+          "export": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "deploy": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "nncf": {
+            "X3D_FAST_RCNN": 0.0
+          },
+          "ptq": {
+            "X3D_FAST_RCNN": 0.0
+          }
+        }
+      }
+    },
+    "anomaly_segmentation": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.322,
+          "PADIM": 0.313
+        },
+        "wood": {
+          "STFPM": 0.31,
+          "PADIM": 0.355
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.205
+        },
+        "wood": {
+          "STFPM": 0.129,
+          "PADIM": 0.208
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.205
+        },
+        "wood": {
+          "STFPM": 0.129,
+          "PADIM": 0.208
+        },
+        "zipper": {
+          "STFPM": 0.357,
+          "PADIM": 0.232
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.43,
+          "PADIM": 0.374
+        },
+        "wood": {
+          "STFPM": 0.448,
+          "PADIM": 0.312
+        },
+        "zipper": {
+          "STFPM": 0.483,
+          "PADIM": 0.305
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.034,
+          "PADIM": 0.225
+        },
+        "wood": {
+          "STFPM": 0.127,
+          "PADIM": 0.227
+        },
+        "zipper": {
+          "STFPM": 0.354,
+          "PADIM": 0.195
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.167,
+          "PADIM": 0.267
+        },
+        "wood": {
+          "STFPM": 0.103,
+          "PADIM": 0.159
+        },
+        "zipper": {
+          "STFPM": 0.108,
+          "PADIM": 0.063
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.045,
+          "PADIM": 0.226
+        },
+        "wood": {
+          "STFPM": 0.063,
+          "PADIM": 0.153
+        },
+        "zipper": {
+          "STFPM": 0.101,
+          "PADIM": 0.062
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.045,
+          "PADIM": 0.226
+        },
+        "wood": {
+          "STFPM": 0.063,
+          "PADIM": 0.153
+        },
+        "zipper": {
+          "STFPM": 0.101,
+          "PADIM": 0.062
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.145,
+          "PADIM": 0.164
+        },
+        "wood": {
+          "STFPM": 0.09,
+          "PADIM": 0.223
+        },
+        "zipper": {
+          "STFPM": 0.166,
+          "PADIM": 0.067
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.037,
+          "PADIM": 0.208
+        },
+        "wood": {
+          "STFPM": 0.053,
+          "PADIM": 0.159
+        },
+        "zipper": {
+          "STFPM": 0.125,
+          "PADIM": 0.043
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.886,
+          "PADIM": 0.924
+        },
+        "zipper": {
+          "STFPM": 0.788,
+          "PADIM": 0.821
+        }
+      },
+      "export": {
+        "carpet": {
+          "STFPM": 0.784,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.82
+        },
+        "zipper": {
+          "STFPM": 0.781,
+          "PADIM": 0.815
+        }
+      },
+      "deploy": {
+        "carpet": {
+          "STFPM": 0.784,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.82
+        },
+        "zipper": {
+          "STFPM": 0.781,
+          "PADIM": 0.815
+        }
+      },
+      "nncf": {
+        "carpet": {
+          "STFPM": 0.88,
+          "PADIM": 0.761
+        },
+        "wood": {
+          "STFPM": 0.886,
+          "PADIM": 0.937
+        },
+        "zipper": {
+          "STFPM": 0.821,
+          "PADIM": 0.808
+        }
+      },
+      "ptq": {
+        "carpet": {
+          "STFPM": 0.796,
+          "PADIM": 0.739
+        },
+        "wood": {
+          "STFPM": 0.8,
+          "PADIM": 0.826
+        },
+        "zipper": {
+          "STFPM": 0.788,
+          "PADIM": 0.768
+        }
+      }
+    },
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.699,
+            "MobileNet-V3-large-1x": 0.687,
+            "DeiT-Tiny": 0.596
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.698,
+            "MobileNet-V3-large-1x": 0.686,
+            "DeiT-Tiny": 0.597
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.778,
+            "EfficientNet-B0": 0.698,
+            "MobileNet-V3-large-1x": 0.686,
+            "DeiT-Tiny": 0.597
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.776,
+            "EfficientNet-B0": 0.691,
+            "MobileNet-V3-large-1x": 0.677,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.768,
+            "EfficientNet-B0": 0.681,
+            "MobileNet-V3-large-1x": 0.624,
+            "DeiT-Tiny": 0.594
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 0.968,
+            "EfficientNet-B0": 0.958,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.952
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.968,
+            "EfficientNet-B0": 0.958,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.952
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.968,
+            "EfficientNet-B0": 0.958,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.952
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.971,
+            "EfficientNet-B0": 0.961,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.971,
+            "EfficientNet-B0": 0.96,
+            "MobileNet-V3-large-1x": 0.965,
+            "DeiT-Tiny": 0.952
+          }
+        },
+        "h_label": {
+          "train": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.761,
+            "EfficientNet-B0": 0.737,
+            "MobileNet-V3-large-1x": 0.736,
+            "DeiT-Tiny": 0.768
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.761,
+            "EfficientNet-B0": 0.737,
+            "MobileNet-V3-large-1x": 0.736,
+            "DeiT-Tiny": 0.768
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.757,
+            "EfficientNet-B0": 0.727,
+            "MobileNet-V3-large-1x": 0.691,
+            "DeiT-Tiny": 0.768
+          }
+        },
+        "supcon": {
+          "train": {
+            "EfficientNet-V2-S": 0.773,
+            "EfficientNet-B0": 0.675,
+            "MobileNet-V3-large-1x": 0.677
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.758,
+            "EfficientNet-B0": 0.674,
+            "MobileNet-V3-large-1x": 0.658,
+            "DeiT-Tiny": 0.656
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.776,
+            "EfficientNet-B0": 0.687,
+            "MobileNet-V3-large-1x": 0.662
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 0.783,
+            "EfficientNet-B0": 0.702,
+            "MobileNet-V3-large-1x": 0.687
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 0.97,
+            "EfficientNet-B0": 0.954,
+            "MobileNet-V3-large-1x": 0.96,
+            "DeiT-Tiny": 0.954
+          },
+          "export": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "deploy": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "nncf": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          },
+          "ptq": {
+            "EfficientNet-V2-S": 0.0,
+            "EfficientNet-B0": 0.0,
+            "MobileNet-V3-large-1x": 0.0,
+            "DeiT-Tiny": 0.0
+          }
+        }
+      }
+    },
+    "detection": {
+      "tiling": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 0.662,
+            "YOLOX-S": 0.389,
+            "MobileNetV2-ATSS": 0.474,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.655,
+            "YOLOX-X": 0.675
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.663,
+            "YOLOX-S": 0.386,
+            "MobileNetV2-ATSS": 0.475,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.654,
+            "YOLOX-X": 0.674
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.663,
+            "YOLOX-S": 0.386,
+            "MobileNetV2-ATSS": 0.475,
+            "SSD": 0.228,
+            "YOLOX-TINY": 0.549,
+            "YOLOX-L": 0.654,
+            "YOLOX-X": 0.674
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.655,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.651,
+            "YOLOX-S": 0.423,
+            "MobileNetV2-ATSS": 0.465,
+            "SSD": 0.229,
+            "YOLOX-TINY": 0.54,
+            "YOLOX-L": 0.677,
+            "YOLOX-X": 0.691
+          }
+        }
+      },
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.467,
+            "SSD": 0.221,
+            "YOLOX-TINY": 0.577,
+            "YOLOX-L": 0.684,
+            "YOLOX-X": 0.696
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.466,
+            "SSD": 0.222,
+            "YOLOX-TINY": 0.575,
+            "YOLOX-L": 0.681,
+            "YOLOX-X": 0.69
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.466,
+            "SSD": 0.222,
+            "YOLOX-TINY": 0.575,
+            "YOLOX-L": 0.681,
+            "YOLOX-X": 0.69
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.63,
+            "YOLOX-S": 0.429,
+            "MobileNetV2-ATSS": 0.462,
+            "SSD": 0.217,
+            "YOLOX-TINY": 0.571,
+            "YOLOX-L": 0.68,
+            "YOLOX-X": 0.691
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.632,
+            "YOLOX-S": 0.424,
+            "MobileNetV2-ATSS": 0.461,
+            "SSD": 0.219,
+            "YOLOX-TINY": 0.568,
+            "YOLOX-L": 0.675,
+            "YOLOX-X": 0.689
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 0.635,
+            "YOLOX-S": 0.074,
+            "MobileNetV2-ATSS": 0.374,
+            "SSD": 0.158,
+            "YOLOX-TINY": 0.453,
+            "YOLOX-L": 0.652,
+            "YOLOX-X": 0.673
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 0.631,
+            "YOLOX-S": 0.425,
+            "MobileNetV2-ATSS": 0.463,
+            "SSD": 0.23,
+            "YOLOX-TINY": 0.572,
+            "YOLOX-L": 0.679,
+            "YOLOX-X": 0.691
+          },
+          "export": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "deploy": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "nncf": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          },
+          "ptq": {
+            "ResNeXt101-ATSS": 0.0,
+            "YOLOX-S": 0.0,
+            "MobileNetV2-ATSS": 0.0,
+            "SSD": 0.0,
+            "YOLOX-TINY": 0.0,
+            "YOLOX-L": 0.0,
+            "YOLOX-X": 0.0
+          }
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 0.477,
+            "MaskRCNN-EfficientNetB2B": 0.333,
+            "MaskRCNN-ResNet50": 0.448
+          },
+          "export": {
+            "MaskRCNN-SwinT-FP16": 0.482,
+            "MaskRCNN-EfficientNetB2B": 0.347,
+            "MaskRCNN-ResNet50": 0.47
+          },
+          "deploy": {
+            "MaskRCNN-SwinT-FP16": 0.482,
+            "MaskRCNN-EfficientNetB2B": 0.347,
+            "MaskRCNN-ResNet50": 0.47
+          },
+          "nncf": {
+            "MaskRCNN-SwinT-FP16": 0.457,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
+          },
+          "ptq": {
+            "MaskRCNN-SwinT-FP16": 0.453,
+            "MaskRCNN-EfficientNetB2B": 0.337,
+            "MaskRCNN-ResNet50": 0.467
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 0.476,
+            "MaskRCNN-EfficientNetB2B": 0.306,
+            "MaskRCNN-ResNet50": 0.487
+          },
+          "export": {
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
+          },
+          "deploy": {
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
+          },
+          "nncf": {
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
+          },
+          "ptq": {
+            "MaskRCNN-SwinT-FP16": 0.0,
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-ResNet50": 0.0
+          }
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.706,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.796,
+            "Lite-HRNet-18-mod2": 0.709,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
+          },
+          "export": {
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.705,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.795,
+            "Lite-HRNet-18-mod2": 0.708,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
+          },
+          "deploy": {
+            "SegNext-B": 0.823,
+            "Lite-HRNet-18": 0.705,
+            "SegNext-t": 0.769,
+            "SegNext-s": 0.795,
+            "Lite-HRNet-18-mod2": 0.708,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.678
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "SegNext-B": 0.821,
+            "Lite-HRNet-18": 0.121,
+            "SegNext-t": 0.756,
+            "SegNext-s": 0.794,
+            "Lite-HRNet-18-mod2": 0.706,
+            "Lite-HRNet-s-mod2": 0.619,
+            "Lite-HRNet-x-mod3": 0.623
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 0.551,
+            "Lite-HRNet-18-mod2": 0.539,
+            "Lite-HRNet-s-mod2": 0.466,
+            "Lite-HRNet-x-mod3": 0.551
+          },
+          "export": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 0.825,
+            "Lite-HRNet-18": 0.665,
+            "SegNext-t": 0.73,
+            "SegNext-s": 0.746,
+            "Lite-HRNet-18-mod2": 0.677,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-x-mod3": 0.658
+          },
+          "export": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 0.797,
+            "Lite-HRNet-18": 0.657,
+            "SegNext-t": 0.653,
+            "SegNext-s": 0.759,
+            "Lite-HRNet-18-mod2": 0.647,
+            "Lite-HRNet-s-mod2": 0.633,
+            "Lite-HRNet-x-mod3": 0.658
+          },
+          "export": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "SegNext-B": 0.0,
+            "Lite-HRNet-18": 0.0,
+            "SegNext-t": 0.0,
+            "SegNext-s": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 0.635,
+            "Lite-HRNet-18-mod2": 0.656,
+            "Lite-HRNet-s-mod2": 0.639,
+            "Lite-HRNet-x-mod3": 0.565
+          },
+          "export": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "deploy": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "nncf": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          },
+          "ptq": {
+            "Lite-HRNet-18": 0.0,
+            "Lite-HRNet-18-mod2": 0.0,
+            "Lite-HRNet-s-mod2": 0.0,
+            "Lite-HRNet-x-mod3": 0.0
+          }
+        }
+      }
+    }
+  },
+  "kpi_e2e_train_time_criteria": {
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MoViNet": 261.901,
+            "X3D": 293.573
+          }
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "X3D_FAST_RCNN": 1324.578
+          }
+        }
+      }
+    },
+    "anomaly_segmentation": {
+      "train": {
+        "carpet": {
+          "STFPM": 606.461,
+          "PADIM": 51.744
+        },
+        "wood": {
+          "STFPM": 843.012,
+          "PADIM": 54.485
+        },
+        "zipper": {
+          "STFPM": 570.453,
+          "PADIM": 52.987
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 380.418,
+          "PADIM": 35.742
+        },
+        "wood": {
+          "STFPM": 233.758,
+          "PADIM": 35.502
+        },
+        "zipper": {
+          "STFPM": 389.025,
+          "PADIM": 36.59
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 483.17,
+          "PADIM": 33.738
+        },
+        "wood": {
+          "STFPM": 391.582,
+          "PADIM": 33.527
+        },
+        "zipper": {
+          "STFPM": 284.238,
+          "PADIM": 33.347
+        }
+      }
+    },
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 218.197,
+            "EfficientNet-B0": 178.446,
+            "MobileNet-V3-large-1x": 166.941,
+            "DeiT-Tiny": 164.726
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 184.384,
+            "EfficientNet-B0": 126.295,
+            "MobileNet-V3-large-1x": 102.924,
+            "DeiT-Tiny": 123.242
+          }
+        },
+        "h_label": {
+          "train": {
+            "EfficientNet-V2-S": 110.326,
+            "EfficientNet-B0": 130.742,
+            "MobileNet-V3-large-1x": 115.362,
+            "DeiT-Tiny": 117.818
+          }
+        },
+        "supcon": {
+          "train": {
+            "EfficientNet-V2-S": 262.529,
+            "EfficientNet-B0": 218.38,
+            "MobileNet-V3-large-1x": 201.337
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 1114.203,
+            "EfficientNet-B0": 659.838,
+            "MobileNet-V3-large-1x": 545.86,
+            "DeiT-Tiny": 403.769
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 19.834,
+            "EfficientNet-B0": 16.462,
+            "MobileNet-V3-large-1x": 15.144
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 202.416,
+            "EfficientNet-B0": 229.533,
+            "MobileNet-V3-large-1x": 144.591
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 175.599,
+            "EfficientNet-B0": 180.583,
+            "MobileNet-V3-large-1x": 118.757,
+            "DeiT-Tiny": 139.84
+          }
+        }
+      }
+    },
+    "detection": {
+      "tiling": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 1252.666,
+            "YOLOX-S": 280.936,
+            "MobileNetV2-ATSS": 354.523,
+            "SSD": 298.68,
+            "YOLOX-TINY": 212.431,
+            "YOLOX-L": 395.392,
+            "YOLOX-X": 800.653
+          }
+        }
+      },
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2121.852,
+            "YOLOX-S": 620.867,
+            "MobileNetV2-ATSS": 316.917,
+            "SSD": 271.298,
+            "YOLOX-TINY": 464.486,
+            "YOLOX-L": 816.651,
+            "YOLOX-X": 1672.582
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2666.141,
+            "YOLOX-S": 443.316,
+            "MobileNetV2-ATSS": 536.618,
+            "SSD": 429.656,
+            "YOLOX-TINY": 406.971,
+            "YOLOX-L": 728.398,
+            "YOLOX-X": 1814.394
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 2098.555,
+            "YOLOX-S": 626.248,
+            "MobileNetV2-ATSS": 518.843,
+            "SSD": 401.059,
+            "YOLOX-TINY": 471.214,
+            "YOLOX-L": 848.263,
+            "YOLOX-X": 1671.449
+          }
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 1364.765,
+            "MaskRCNN-EfficientNetB2B": 605.386,
+            "MaskRCNN-ResNet50": 1284.017
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 1369.209,
+            "MaskRCNN-EfficientNetB2B": 984.011,
+            "MaskRCNN-ResNet50": 1285.941
+          }
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 125.655,
+            "Lite-HRNet-18": 100.721,
+            "SegNext-t": 75.879,
+            "SegNext-s": 84.361,
+            "Lite-HRNet-18-mod2": 99.325,
+            "Lite-HRNet-s-mod2": 87.493,
+            "Lite-HRNet-x-mod3": 152.836
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 130.635,
+            "Lite-HRNet-18-mod2": 129.879,
+            "Lite-HRNet-s-mod2": 117.903,
+            "Lite-HRNet-x-mod3": 181.323
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 159.307,
+            "Lite-HRNet-18": 147.132,
+            "SegNext-t": 106.195,
+            "SegNext-s": 114.734,
+            "Lite-HRNet-18-mod2": 143.903,
+            "Lite-HRNet-s-mod2": 122.088,
+            "Lite-HRNet-x-mod3": 236.362
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 185.828,
+            "Lite-HRNet-18": 158.973,
+            "SegNext-t": 143.487,
+            "SegNext-s": 149.674,
+            "Lite-HRNet-18-mod2": 161.458,
+            "Lite-HRNet-s-mod2": 150.652,
+            "Lite-HRNet-x-mod3": 205.917
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 148.859,
+            "Lite-HRNet-18-mod2": 148.226,
+            "Lite-HRNet-s-mod2": 125.109,
+            "Lite-HRNet-x-mod3": 255.65
+          }
+        }
+      }
+    }
+  },
+  "kpi_e2e_eval_time_criteria": {
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MoViNet": 39.944,
+            "X3D": 42.252
+          }
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "X3D_FAST_RCNN": 94.44
+          }
+        }
+      }
+    },
+    "anomaly_segmentation": {
+      "train": {
+        "carpet": {
+          "STFPM": 11.986,
+          "PADIM": 10.973
+        },
+        "wood": {
+          "STFPM": 14.704,
+          "PADIM": 13.279
+        },
+        "zipper": {
+          "STFPM": 14.002,
+          "PADIM": 13.41
+        }
+      }
+    },
+    "anomaly_detection": {
+      "train": {
+        "carpet": {
+          "STFPM": 8.138,
+          "PADIM": 8.243
+        },
+        "wood": {
+          "STFPM": 7.5,
+          "PADIM": 7.6
+        },
+        "zipper": {
+          "STFPM": 8.728,
+          "PADIM": 8.825
+        }
+      }
+    },
+    "anomaly_classification": {
+      "train": {
+        "carpet": {
+          "STFPM": 5.954,
+          "PADIM": 6.075
+        },
+        "wood": {
+          "STFPM": 5.839,
+          "PADIM": 5.853
+        },
+        "zipper": {
+          "STFPM": 5.778,
+          "PADIM": 5.972
+        }
+      }
+    },
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 15.683,
+            "EfficientNet-B0": 14.97,
+            "MobileNet-V3-large-1x": 15.073,
+            "DeiT-Tiny": 55.993
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 6.952,
+            "EfficientNet-B0": 6.299,
+            "MobileNet-V3-large-1x": 6.105,
+            "DeiT-Tiny": 8.112
+          }
+        },
+        "h_label": {
+          "train": {
+            "EfficientNet-V2-S": 10.636,
+            "EfficientNet-B0": 9.836,
+            "MobileNet-V3-large-1x": 9.835,
+            "DeiT-Tiny": 26.898
+          }
+        },
+        "supcon": {
+          "train": {
+            "EfficientNet-V2-S": 15.597,
+            "EfficientNet-B0": 14.843,
+            "MobileNet-V3-large-1x": 14.996
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 16.646,
+            "EfficientNet-B0": 16.055,
+            "MobileNet-V3-large-1x": 15.865,
+            "DeiT-Tiny": 66.312
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 15.71,
+            "EfficientNet-B0": 15.043,
+            "MobileNet-V3-large-1x": 15.007
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "EfficientNet-V2-S": 16.179,
+            "EfficientNet-B0": 15.279,
+            "MobileNet-V3-large-1x": 15.256
+          }
+        },
+        "multi_label": {
+          "train": {
+            "EfficientNet-V2-S": 6.893,
+            "EfficientNet-B0": 6.312,
+            "MobileNet-V3-large-1x": 6.107,
+            "DeiT-Tiny": 8.018
+          }
+        }
+      }
+    },
+    "detection": {
+      "tiling": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 104.089,
+            "YOLOX-S": 105.713,
+            "MobileNetV2-ATSS": 59.865,
+            "SSD": 135.033,
+            "YOLOX-TINY": 58.541,
+            "YOLOX-L": 110.035,
+            "YOLOX-X": 124.0
+          }
+        }
+      },
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 44.526,
+            "YOLOX-S": 14.622,
+            "MobileNetV2-ATSS": 14.839,
+            "SSD": 13.216,
+            "YOLOX-TINY": 13.123,
+            "YOLOX-L": 27.983,
+            "YOLOX-X": 30.28
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 41.62,
+            "YOLOX-S": 12.791,
+            "MobileNetV2-ATSS": 14.857,
+            "SSD": 13.156,
+            "YOLOX-TINY": 16.424,
+            "YOLOX-L": 22.869,
+            "YOLOX-X": 37.766
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "ResNeXt101-ATSS": 44.94,
+            "YOLOX-S": 26.482,
+            "MobileNetV2-ATSS": 24.495,
+            "SSD": 16.785,
+            "YOLOX-TINY": 22.293,
+            "YOLOX-L": 30.249,
+            "YOLOX-X": 35.993
+          }
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 47.091,
+            "MaskRCNN-EfficientNetB2B": 30.544,
+            "MaskRCNN-ResNet50": 40.727
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "MaskRCNN-SwinT-FP16": 47.186,
+            "MaskRCNN-EfficientNetB2B": 30.885,
+            "MaskRCNN-ResNet50": 39.559
+          }
+        }
+      }
+    },
+    "segmentation": {
+      "supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 12.568,
+            "Lite-HRNet-18": 14.135,
+            "SegNext-t": 10.923,
+            "SegNext-s": 10.89,
+            "Lite-HRNet-18-mod2": 14.046,
+            "Lite-HRNet-s-mod2": 12.14,
+            "Lite-HRNet-x-mod3": 21.656
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-18": 15.703,
+            "Lite-HRNet-18-mod2": 16.187,
+            "Lite-HRNet-s-mod2": 12.206,
+            "Lite-HRNet-x-mod3": 27.72
+          }
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 13.182,
+            "Lite-HRNet-18": 14.826,
+            "SegNext-t": 11.236,
+            "SegNext-s": 11.108,
+            "Lite-HRNet-18-mod2": 14.542,
+            "Lite-HRNet-s-mod2": 12.768,
+            "Lite-HRNet-x-mod3": 21.772
+          }
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "train": {
+            "SegNext-B": 12.84,
+            "Lite-HRNet-18": 12.651,
+            "SegNext-t": 10.582,
+            "SegNext-s": 12.587,
+            "Lite-HRNet-18-mod2": 18.138,
+            "Lite-HRNet-s-mod2": 13.276,
+            "Lite-HRNet-x-mod3": 20.736
+          }
+        }
+      },
+      "class_incr": {
+        "multi_class": {
+          "train": {
+            "Lite-HRNet-18": 17.608,
+            "Lite-HRNet-18-mod2": 14.745,
+            "Lite-HRNet-s-mod2": 13.395,
+            "Lite-HRNet-x-mod3": 23.336
+          }
+        }
+      }
+    }
+  }
+}
