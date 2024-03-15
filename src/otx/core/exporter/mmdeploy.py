@@ -12,14 +12,18 @@ from copy import copy
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, Literal
 
+import mmdeploy.apis.openvino as mm_openvino_api
 import numpy as np
 import onnx
 import openvino
 import torch
 from mmdeploy.apis import build_task_processor, torch2onnx
+from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
 from mmdeploy.utils import get_partition_config
 from mmengine.config import Config as MMConfig
 from mmengine.registry.default_scope import DefaultScope
+from openvino.runtime import Core
+from subprocess import CalledProcessError
 
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.precision import OTXPrecisionType
@@ -101,14 +105,31 @@ class MMdeployExporter(OTXModelExporter):
             Path: path to the exported model.
         """
         onnx_path = self._cvt2onnx(model, output_dir, base_model_name)
-        exported_model = openvino.convert_model(
+
+        # TODO: remove hard-coded output names, input shapes, etc.
+        mm_openvino_api.from_onnx(
             str(onnx_path),
-            input=(openvino.runtime.PartialShape(self.input_size),),
+            str(output_dir),
+            {"image": [-1, 3, 640, 640]},
+            ["boxes", "labels", "masks"],
+            ModelOptimizerOptions(
+                {
+                    "args": {
+                        "--model_name": "model",
+                    },
+                    "flags": [],
+                },
+            ),
+        )
+
+        core = Core()
+        exported_model = core.read_model(
+            str(output_dir / "model.xml"),
         )
         exported_model = self._postprocess_openvino_model(exported_model)
 
-        save_path = output_dir / (base_model_name + ".xml")
-        openvino.save_model(exported_model, save_path, compress_to_fp16=(precision == OTXPrecisionType.FP16))
+        save_path = str(output_dir / (base_model_name + ".xml"))
+        openvino.save_model(exported_model, save_path, compress_to_fp16=True)
         onnx_path.unlink()
         log.info("Converting to OpenVINO is done.")
 
