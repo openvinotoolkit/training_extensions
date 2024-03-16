@@ -31,7 +31,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_classes=5,
             num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -47,21 +47,21 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             num_classes=2,
             num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
         ),
         Benchmark.Dataset(
-            name="vitens_coliform",
-            path=Path("instance_seg/Vitens-Coliform-coco"),
+            name="bdd_large",
+            path=Path("instance_seg/bdd_large"),
             size="large",
             data_format="coco",
             num_classes=1,
             num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -127,7 +127,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_classes=1,
             num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -143,7 +143,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             num_classes=1,
             num_repeat=1,
             extra_overrides={
-                "deterministic": "True",
+                # "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
