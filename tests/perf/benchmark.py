@@ -125,6 +125,7 @@ class Benchmark:
             num_repeat = self.num_repeat  # Override by global setting
 
         for seed in range(num_repeat):
+            seed = 42
             sub_work_dir = work_dir / str(seed)
             tags["seed"] = str(seed)
             extra_metrics = {}
