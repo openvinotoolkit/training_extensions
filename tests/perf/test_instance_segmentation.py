@@ -100,7 +100,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "gpu"
+        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -183,7 +183,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "gpu"
+        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
