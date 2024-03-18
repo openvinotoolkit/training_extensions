@@ -292,6 +292,6 @@ class OTXTVModel(OTXMulticlassClsModel):
         if (head := getattr(self.model, "head", None)) is None:
             raise ValueError
 
-        if len(x.shape) == 4 and not self.use_layer_norm_2d:
+        if len(x.shape) == 4 and not self.model.use_layer_norm_2d:
             x = x.view(x.size(0), -1)
         return head(x)
