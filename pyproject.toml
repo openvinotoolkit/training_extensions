@@ -76,7 +76,7 @@ base = [
     "openvino-model-api==0.1.9",
     "onnx==1.15.0",
     "onnxconverter-common==1.14.0",
-    "nncf==2.8.1",
+    "nncf==2.9.0",
 ]
 mmlab = [
     "mmdet==3.2.0",
