@@ -48,7 +48,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="multiclass_food101_large",
             path=Path("classification/single_label/multiclass_food101_large"),
-            size="large",
+            size="large_0",
             data_format="imagenet_with_subset_dirs",
             num_classes=20,
             num_repeat=1,
@@ -57,7 +57,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="cars",
             path=Path("car_data/car_data"),
-            size="large",
+            size="large_1",
             data_format="imagenet_with_subset_dirs",
             num_classes=196,
             num_repeat=1,
@@ -66,7 +66,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="flowers",
             path=Path("flowers"),
-            size="large",
+            size="large_2",
             data_format="imagenet_with_subset_dirs",
             num_classes=102,
             num_repeat=1,
@@ -75,7 +75,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="skin",
             path=Path("skin"),
-            size="large",
+            size="large_3",
             data_format="imagenet_with_subset_dirs",
             num_classes=14,
             num_repeat=1,
@@ -114,7 +114,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -196,7 +196,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -276,7 +276,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

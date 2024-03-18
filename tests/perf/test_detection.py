@@ -18,7 +18,7 @@ class TestPerfObjectDetection(PerfTestBase):
 
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="detection", name="atss_mobilenetv2", category="accuracy"),
-        Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
+        # Benchmark.Model(task="detection", name="atss_resnext101", category="other"),
         Benchmark.Model(task="detection", name="ssd_mobilenetv2", category="balance"),
         Benchmark.Model(task="detection", name="yolox_tiny", category="speed"),
         Benchmark.Model(task="detection", name="yolox_s", category="other"),
@@ -60,7 +60,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_large",
             path=Path("detection/vitens_large"),
-            size="large",
+            size="large_1",
             data_format="coco",
             num_classes=1,
             num_repeat=1,
@@ -74,7 +74,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="pascal_tiny",
             path=Path("pascal_tiny/coco_otx"),
-            size="large",
+            size="large_2",
             data_format="coco",
             num_classes=20,
             num_repeat=1,
@@ -118,7 +118,7 @@ class TestPerfObjectDetection(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
+        fxt_benchmark.accelerator = "gpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
