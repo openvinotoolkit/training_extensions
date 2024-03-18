@@ -5,7 +5,6 @@
 from typing import ClassVar
 
 import torch
-
 from otx.algo.segmentation.litehrnet import LiteHRNet
 
 

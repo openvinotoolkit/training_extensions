@@ -8,9 +8,6 @@ from typing import Any, Callable
 
 import pytest
 import torch
-from torch import Tensor
-from torchvision import tv_tensors
-
 from otx.algo.visual_prompting.zero_shot_segment_anything import (
     OTXZeroShotSegmentAnything,
     PromptGetter,
@@ -18,6 +15,8 @@ from otx.algo.visual_prompting.zero_shot_segment_anything import (
 )
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import ZeroShotVisualPromptingBatchPredEntity
+from torch import Tensor
+from torchvision import tv_tensors
 
 
 class TestPromptGetter:

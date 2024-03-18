@@ -1,5 +1,4 @@
 import pytest
-
 from otx.core.utils import utils as target_file
 from otx.core.utils.utils import get_adaptive_num_workers
 

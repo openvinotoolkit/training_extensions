@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
-
 from otx.algo.visual_prompting.encoders.sam_image_encoder import SAMImageEncoder
 
 

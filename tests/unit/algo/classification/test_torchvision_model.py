@@ -1,6 +1,5 @@
 import pytest
 import torch
-
 from otx.algo.classification.torchvision_model import OTXTVModel, TVModelWithLossComputation
 from otx.core.data.entity.base import ImageInfo, OTXBatchLossEntity
 from otx.core.data.entity.classification import (

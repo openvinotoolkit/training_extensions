@@ -5,7 +5,6 @@ import pytest
 from datumaro.components.annotation import Label
 from datumaro.components.dataset import Dataset as DmDataset
 from datumaro.components.dataset_base import DatasetItem
-
 from otx.core.data.pre_filtering import pre_filtering
 
 

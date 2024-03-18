@@ -4,7 +4,6 @@
 
 import pytest
 import torch
-
 from otx.algo.action_classification.backbones.movinet import OTXMoViNet
 
 

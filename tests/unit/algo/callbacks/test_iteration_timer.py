@@ -4,7 +4,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from otx.algo.callbacks.iteration_timer import IterationTimer
 
 

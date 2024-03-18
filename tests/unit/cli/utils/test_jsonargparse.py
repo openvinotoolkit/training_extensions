@@ -3,7 +3,6 @@
 
 import pytest
 from jsonargparse import Namespace
-
 from otx.cli.utils.jsonargparse import (
     flatten_dict,
     get_configuration,

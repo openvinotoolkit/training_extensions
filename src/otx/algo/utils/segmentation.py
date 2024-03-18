@@ -9,9 +9,10 @@ from typing import Callable, ClassVar
 
 import torch
 import torch.nn.functional as f
-from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from torch import nn
 from torch.nn import AdaptiveAvgPool2d, AdaptiveMaxPool2d
+
+from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 
 
 def channel_shuffle(x: torch.Tensor, groups: int) -> torch.Tensor:

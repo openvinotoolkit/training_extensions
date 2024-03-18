@@ -10,7 +10,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
-import mmcv
 import numpy as np
 from mmaction.datasets.transforms import PackActionInputs as MMPackActionInputs
 from mmaction.datasets.transforms import RawFrameDecode as MMRawFrameDecode
@@ -18,6 +17,7 @@ from mmaction.registry import TRANSFORMS
 from mmengine.fileio import FileClient
 from torchvision import tv_tensors
 
+import mmcv
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.action_detection import ActionDetDataEntity
 from otx.core.utils.config import convert_conf_to_mmconfig_dict

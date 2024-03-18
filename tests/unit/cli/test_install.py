@@ -4,10 +4,9 @@
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from jsonargparse import ArgumentParser
+from otx.cli.install import add_install_parser, otx_install
 from pkg_resources import Requirement
 from pytest_mock.plugin import MockerFixture
-
-from otx.cli.install import add_install_parser, otx_install
 
 
 class TestInstall:

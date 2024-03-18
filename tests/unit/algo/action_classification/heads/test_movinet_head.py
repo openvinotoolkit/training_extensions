@@ -5,7 +5,6 @@
 
 import pytest
 import torch
-
 from otx.algo.action_classification.heads.movinet_head import MoViNetHead
 
 

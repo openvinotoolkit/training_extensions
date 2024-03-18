@@ -9,9 +9,6 @@ import pytest
 import torch
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
-from torchvision import tv_tensors
-from torchvision.transforms import v2
-
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.base import Points
 from otx.core.data.transform_libs.torchvision import (
@@ -21,6 +18,8 @@ from otx.core.data.transform_libs.torchvision import (
     TorchVisionTransformLib,
 )
 from otx.core.types.image import ImageColorChannel
+from torchvision import tv_tensors
+from torchvision.transforms import v2
 
 
 class TestPerturbBoundingBoxes:

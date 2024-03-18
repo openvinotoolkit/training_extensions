@@ -5,7 +5,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-
 from otx.algo.utils.xai_utils import dump_saliency_maps
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.entity.base import ImageInfo

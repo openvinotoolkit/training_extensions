@@ -7,9 +7,6 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import torch
-from torch import LongTensor
-from torchvision import tv_tensors
-
 from otx.core.config.data import SubsetConfig
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
@@ -17,6 +14,8 @@ from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 from otx.core.data.transform_libs.mmcv import LoadImageFromFile
 from otx.core.data.transform_libs.mmdet import LoadAnnotations, MMDetTransformLib, PackDetInputs, PerturbBoundingBoxes
 from otx.core.types.transformer_libs import TransformLibType
+from torch import LongTensor
+from torchvision import tv_tensors
 
 
 class TestLoadAnnotations:

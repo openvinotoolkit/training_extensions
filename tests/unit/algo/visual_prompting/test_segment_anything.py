@@ -5,12 +5,11 @@ from __future__ import annotations
 
 import pytest
 import torch
-from torch import Tensor
-from torchvision import tv_tensors
-
 from otx.algo.visual_prompting.segment_anything import OTXSegmentAnything, SegmentAnything
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
+from torch import Tensor
+from torchvision import tv_tensors
 
 
 class TestSegmentAnything:

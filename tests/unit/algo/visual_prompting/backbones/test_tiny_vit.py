@@ -5,8 +5,6 @@ from __future__ import annotations
 
 import pytest
 import torch
-from torch import nn
-
 from otx.algo.visual_prompting.backbones.tiny_vit import (
     Attention,
     BasicLayer,
@@ -19,6 +17,7 @@ from otx.algo.visual_prompting.backbones.tiny_vit import (
     TinyViT,
     TinyViTBlock,
 )
+from torch import nn
 
 
 class TestConv2d_BN:  # noqa: N801

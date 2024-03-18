@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 import torch
 from openvino.model_api.models.utils import ClassificationResult
-
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.entity.base import OTXModel, OVModel
 

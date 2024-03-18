@@ -8,7 +8,6 @@ import string
 import numpy as np
 import psutil
 import pytest
-
 from otx.core.data.mem_cache import (
     MemCacheHandlerSingleton,
     parse_mem_cache_size_to_int,

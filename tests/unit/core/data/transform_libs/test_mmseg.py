@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import pytest
-
 from otx.core.data.entity.segmentation import SegDataEntity
 from otx.core.data.transform_libs.mmcv import LoadImageFromFile
 from otx.core.data.transform_libs.mmseg import LoadAnnotations, PackSegInputs

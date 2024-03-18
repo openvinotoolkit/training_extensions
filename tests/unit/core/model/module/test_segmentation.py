@@ -9,11 +9,10 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from torchmetrics.metric import Metric
-
 from otx.core.data.entity.segmentation import SegBatchPredEntity
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 from otx.core.model.module.segmentation import OTXSegmentationLitModule
+from torchmetrics.metric import Metric
 
 
 class MockMetric(torch.nn.Module):

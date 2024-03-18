@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-
 from otx.algo.classification.backbones.otx_efficientnet_v2 import OTXEfficientNetV2
 
 

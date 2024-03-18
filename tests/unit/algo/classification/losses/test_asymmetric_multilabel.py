@@ -4,7 +4,6 @@
 
 import pytest
 import torch
-
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 
 

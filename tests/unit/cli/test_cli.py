@@ -6,7 +6,6 @@ import sys
 
 import pytest
 import yaml
-
 from otx.cli import OTXCLI, main
 
 

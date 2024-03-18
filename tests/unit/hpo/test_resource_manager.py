@@ -1,5 +1,4 @@
 import pytest
-
 from otx.hpo.resource_manager import (
     CPUResourceManager,
     GPUResourceManager,

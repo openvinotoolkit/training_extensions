@@ -5,8 +5,6 @@ from __future__ import annotations
 
 import pytest
 import torch
-from torch import nn
-
 from otx.algo.visual_prompting.decoders.sam_mask_decoder import (
     MLP,
     Attention,
@@ -15,6 +13,7 @@ from otx.algo.visual_prompting.decoders.sam_mask_decoder import (
     TwoWayTransformer,
 )
 from otx.algo.visual_prompting.utils.mlp_block import MLPBlock
+from torch import nn
 
 
 class TestSAMMaskDecoder:

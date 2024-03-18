@@ -12,7 +12,6 @@ from datumaro.components.annotation import Bbox, Label, Mask
 from datumaro.components.dataset import DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
-
 from otx.core.data.dataset.classification import (
     MulticlassClsDataEntity,
     OTXMulticlassClsDataset,
@@ -28,10 +27,9 @@ from otx.core.data.dataset.segmentation import (
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
-
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity
     from otx.core.data.mem_cache import MemCacheHandlerBase
+    from pytest_mock import MockerFixture
 
 
 @pytest.fixture()

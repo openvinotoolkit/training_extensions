@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from otx.utils.utils import (
     find_file_recursively,
     get_decimal_point,

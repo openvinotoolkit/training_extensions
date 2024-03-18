@@ -3,7 +3,6 @@
 
 
 import torch
-
 from otx.algo.visual_prompting.utils.layer_norm_2d import LayerNorm2d
 
 

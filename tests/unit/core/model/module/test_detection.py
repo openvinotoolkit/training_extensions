@@ -10,13 +10,12 @@ from unittest.mock import create_autospec
 
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
-from torch.optim import Optimizer
-
 from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.metrics.fmeasure import FMeasure
 from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.model.module.base import OTXLitModule
 from otx.core.model.module.detection import OTXDetectionLitModule
+from torch.optim import Optimizer
 
 
 class TestOTXLitModule:

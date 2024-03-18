@@ -11,8 +11,6 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 import torch
-from torchvision import tv_tensors
-
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.model.entity.visual_prompting import (
@@ -20,6 +18,7 @@ from otx.core.model.entity.visual_prompting import (
     OVVisualPromptingModel,
     OVZeroShotVisualPromptingModel,
 )
+from torchvision import tv_tensors
 
 
 class TestOTXVisualPromptingModel:

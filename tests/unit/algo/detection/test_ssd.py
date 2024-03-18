@@ -3,7 +3,6 @@
 """Test of OTX SSD architecture."""
 
 import pytest
-
 from otx.algo.detection.ssd import SSD
 
 
