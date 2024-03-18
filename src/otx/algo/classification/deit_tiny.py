@@ -13,7 +13,9 @@ from mmpretrain.models.utils import resize_pos_embed
 from otx.algo.hooks.recording_forward_hook import ViTReciproCAMHook
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.classification import (
+from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.classification import (
     ExplainableOTXClsModel,
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
@@ -21,8 +23,11 @@ from otx.core.model.entity.classification import (
 )
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmpretrain.models import ImageClassifier
     from mmpretrain.structures import DataSample
+
+    from otx.core.metrics import MetricCallable
 
 
 class ExplainableDeit(ExplainableOTXClsModel):
@@ -141,14 +146,31 @@ class ExplainableDeit(ExplainableOTXClsModel):
 class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
     """DeitTiny Model for hierarchical label classification task."""
 
-    def __init__(self, num_classes: int, num_multiclass_heads: int, num_multilabel_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        torch_compile: bool = False,
+    ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
 
-        config = read_mmconfig(model_name="deit_tiny", subdir_name="hlabel_classification")
+        config = read_mmconfig("deit_tiny", subdir_name="hlabel_classification")
         config.head.num_multiclass_heads = num_multiclass_heads
         config.head.num_multilabel_classes = num_multilabel_classes
-        super().__init__(num_classes=num_classes, config=config)
+
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
@@ -158,9 +180,23 @@ class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
 class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
     """DeitTiny Model for multi-label classification task."""
 
-    def __init__(self, num_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = read_mmconfig("deit_tiny", subdir_name="multiclass_classification")
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""
@@ -170,9 +206,23 @@ class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
 class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
 
-    def __init__(self, num_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiLabelClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = read_mmconfig("deit_tiny", subdir_name="multilabel_classification")
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

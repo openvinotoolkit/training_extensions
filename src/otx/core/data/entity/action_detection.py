@@ -13,6 +13,7 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
 )
@@ -57,7 +58,7 @@ class ActionDetBatchDataEntity(OTXBatchDataEntity[ActionDetDataEntity]):
 
     Args:
         bboxes(list[tv_tensors.BoundingBoxes]): A list of bounding boxes of videos.
-        labels(list[LongTensor]): A list of labels of videos.
+        labels(list[LongTensor]): A list of labels (one-hot vector) of videos.
     """
 
     bboxes: list[tv_tensors.BoundingBoxes]
@@ -98,3 +99,8 @@ class ActionDetBatchDataEntity(OTXBatchDataEntity[ActionDetDataEntity]):
 @dataclass
 class ActionDetBatchPredEntity(ActionDetBatchDataEntity, OTXBatchPredEntity):
     """Data entity to represent model output predictions for action classification task."""
+
+
+@dataclass
+class ActionDetBatchPredEntityWithXAI(ActionDetBatchDataEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for multi-class classification task with explanations."""

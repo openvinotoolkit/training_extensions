@@ -98,7 +98,7 @@ class TestOTXCLI:
         assert mock_run.call_count == 1
         cli.instantiate_classes()
 
-        from otx.core.model.entity.base import OTXModel
+        from otx.core.model.base import OTXModel
 
         assert isinstance(cli.model, OTXModel)
 

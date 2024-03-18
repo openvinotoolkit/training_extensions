@@ -12,11 +12,15 @@ from torch import nn
 from torchmetrics import ConfusionMatrix, Metric
 from torchmetrics.classification.accuracy import Accuracy as TorchmetricAcc
 from torchmetrics.classification.accuracy import MultilabelAccuracy as TorchmetricMultilabelAcc
+from torchmetrics.collections import MetricCollection
+
+from otx.core.metrics.types import MetricCallable
 
 if TYPE_CHECKING:
     from torch import Tensor
 
     from otx.core.data.dataset.base import LabelInfo
+    from otx.core.data.dataset.classification import HLabelInfo
 
 
 class NamedConfusionMatrix(ConfusionMatrix):
@@ -285,7 +289,13 @@ class MixedHLabelAccuracy(Metric):
             )
 
     def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> nn.Module:
-        self.multiclass_head_accuracy = [acc._apply(fn, exclude_state) for acc in self.multiclass_head_accuracy]  # noqa: SLF001
+        self.multiclass_head_accuracy = [
+            acc._apply(  # noqa: SLF001
+                fn,
+                exclude_state,
+            )
+            for acc in self.multiclass_head_accuracy
+        ]
         if self.num_multilabel_classes > 0:
             self.multilabel_accuracy = self.multilabel_accuracy._apply(fn, exclude_state)  # noqa: SLF001
         return self
@@ -326,3 +336,27 @@ class MixedHLabelAccuracy(Metric):
             return (multiclass_accs + multilabel_acc) / 2
 
         return multiclass_accs
+
+
+MultiClassClsMetricCallable: MetricCallable = lambda label_info: MetricCollection(
+    {"accuracy": TorchmetricAcc(task="multiclass", num_classes=label_info.num_classes)},
+)
+
+MultiLabelClsMetricCallable: MetricCallable = lambda label_info: MetricCollection(
+    {"accuracy": TorchmetricAcc(task="multilabel", num_labels=label_info.num_classes)},
+)
+
+
+def _mixed_hlabel_accuracy(label_info: HLabelInfo) -> MetricCollection:
+    return MetricCollection(
+        {
+            "accuracy": MixedHLabelAccuracy(
+                num_multiclass_heads=label_info.num_multiclass_heads,
+                num_multilabel_classes=label_info.num_multilabel_classes,
+                head_logits_info=label_info.head_idx_to_logits_range,
+            ),
+        },
+    )
+
+
+HLabelClsMetricCallble: MetricCallable = _mixed_hlabel_accuracy  # type: ignore[assignment]

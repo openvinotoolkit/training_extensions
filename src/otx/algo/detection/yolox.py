@@ -5,20 +5,42 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.detection import MMDetCompatibleModel
+from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.detection import MMDetCompatibleModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class YoloX(MMDetCompatibleModel):
     """YoloX Model."""
 
-    def __init__(self, num_classes: int, variant: Literal["l", "s", "tiny", "x"]) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        variant: Literal["l", "s", "x"],
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
         model_name = f"yolox_{variant}"
         config = read_mmconfig(model_name=model_name)
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
         self.image_size = (1, 3, 640, 640)
         self.tile_image_size = self.image_size
 
@@ -39,11 +61,27 @@ class YoloX(MMDetCompatibleModel):
         return OTXv1Helper.load_det_ckpt(state_dict, add_prefix)
 
 
-class YoloXTiny(YoloX):
+class YoloXTiny(MMDetCompatibleModel):
     """YoloX tiny Model."""
 
-    def __init__(self, num_classes: int) -> None:
-        super().__init__(num_classes=num_classes, variant="tiny")
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        model_name = "yolox_tiny"
+        config = read_mmconfig(model_name=model_name)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
         self.image_size = (1, 3, 416, 416)
         self.tile_image_size = self.image_size
 

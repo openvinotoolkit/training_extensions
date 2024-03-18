@@ -14,18 +14,21 @@ from datumaro.components.annotation import Bbox
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.detection import MMDetCompatibleModel
+from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.utils.build import build_mm_model, modify_num_classes
 
 if TYPE_CHECKING:
     import torch
-    from lightning import Trainer
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.task_modules.prior_generators.anchor_generator import AnchorGenerator
     from mmengine.registry import Registry
     from omegaconf import DictConfig
     from torch import device, nn
 
     from otx.core.data.dataset.base import OTXDataset
+    from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
@@ -34,10 +37,25 @@ logger = logging.getLogger()
 class SSD(MMDetCompatibleModel):
     """Detecion model class for SSD."""
 
-    def __init__(self, num_classes: int, variant: Literal["mobilenetv2"]) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        variant: Literal["mobilenetv2"],
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
         model_name = f"ssd_{variant}"
         config = read_mmconfig(model_name=model_name)
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
         self._register_load_state_dict_pre_hook(self._set_anchors_hook)
@@ -65,8 +83,8 @@ class SSD(MMDetCompatibleModel):
         self.classification_layers = self.get_classification_layers(self.config, MODELS, "model.")
         return build_mm_model(self.config, MODELS, self.load_from)
 
-    def setup_callback(self, trainer: Trainer) -> None:
-        """Callback for setup OTX Model.
+    def setup(self, stage: str) -> None:
+        """Callback for setup OTX SSD Model.
 
         OTXSSD requires auto anchor generating w.r.t. training dataset for better accuracy.
         This callback will provide training dataset to model's anchor generator.
@@ -74,9 +92,11 @@ class SSD(MMDetCompatibleModel):
         Args:
             trainer(Trainer): Lightning trainer contains OTXLitModule and OTXDatamodule.
         """
-        if trainer.training:
+        super().setup(stage=stage)
+
+        if stage == "fit":
             anchor_generator = self.model.bbox_head.anchor_generator
-            dataset = trainer.datamodule.train_dataloader().dataset
+            dataset = self.trainer.datamodule.train_dataloader().dataset
             new_anchors = self._get_new_anchors(dataset, anchor_generator)
             if new_anchors is not None:
                 logger.warning("Anchor will be updated by Dataset's statistics")

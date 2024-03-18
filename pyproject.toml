@@ -241,6 +241,9 @@ ignore = [
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
     # flake8-fixme
     "FIX002",   # line-contains-todo
+
+    "E731",     # Do not assign a `lambda` expression, use a `def`
+    "TD003",    # Missing issue link on the line following this TODO
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.

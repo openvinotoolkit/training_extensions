@@ -17,11 +17,16 @@ from otx.core.data.entity.classification import (
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.entity.classification import OTXMulticlassClsModel
+from otx.core.metrics.accuracy import MultiClassClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.classification import OTXMulticlassClsModel
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from omegaconf import DictConfig
+
+    from otx.core.metrics import MetricCallable
 
 
 class DINOv2(nn.Module):
@@ -68,10 +73,24 @@ class DINOv2(nn.Module):
 class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     """DINO-v2 Classification Model with register."""
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
-        super().__init__(num_classes=num_classes)  # create the model
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         """Create the model."""

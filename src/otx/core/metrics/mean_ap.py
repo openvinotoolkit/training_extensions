@@ -12,7 +12,7 @@ import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
-class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
+class MaskRLEMeanAveragePrecision(MeanAveragePrecision):
     """Customised MAP metric for instance segmentation.
 
     This metric computes RLE directly to accelerate the computation.
@@ -65,3 +65,11 @@ class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
                     rle["counts"] = mask_utils.frPyObjects(rle, *rle["size"])["counts"]
                 masks.append((tuple(rle["size"]), rle["counts"]))
         return None, tuple(masks)
+
+
+MeanAPCallable = lambda label_info: MeanAveragePrecision(box_format="xyxy", iou_type="bbox")  # noqa: ARG005
+
+MaskRLEMeanAPCallable = lambda label_info: MaskRLEMeanAveragePrecision(  # noqa: ARG005
+    box_format="xyxy",
+    iou_type="segm",
+)

@@ -15,21 +15,42 @@ from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEn
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.dice import DiceCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmseg.models.data_preprocessor import SegDataPreProcessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ImageResultWithSoftPrediction
     from torch import nn
+
+    from otx.core.metrics import MetricCallable
 
 
 class OTXSegmentationModel(
     OTXModel[SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
 ):
     """Base class for the detection models used in OTX."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = DiceCallable,
+        torch_compile: bool = False,
+    ):
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -50,6 +71,19 @@ class OTXSegmentationModel(
         )
         return parameters
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: SegBatchPredEntity | SegBatchPredEntityWithXAI,
+        inputs: SegBatchDataEntity,
+    ) -> MetricInput:
+        return [
+            {
+                "preds": pred_mask,
+                "target": target_mask,
+            }
+            for pred_mask, target_mask in zip(preds.masks, inputs.masks)
+        ]
+
 
 class MMSegCompatibleModel(OTXSegmentationModel):
     """Segmentation model compatible for MMSeg.
@@ -59,12 +93,26 @@ class MMSegCompatibleModel(OTXSegmentationModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = DiceCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = self.config.pop("load_from", None)
         self.image_size = (1, 3, 544, 544)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         from .utils.mmseg import create_model
@@ -185,15 +233,18 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = DiceCallable,
+        **kwargs,
     ) -> None:
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def _customize_outputs(
@@ -221,3 +272,16 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
             scores=[],
             masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
         )
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: SegBatchPredEntity | SegBatchPredEntityWithXAI,
+        inputs: SegBatchDataEntity,
+    ) -> MetricInput:
+        return [
+            {
+                "preds": pred_mask,
+                "target": target_mask,
+            }
+            for pred_mask, target_mask in zip(preds.masks, inputs.masks)
+        ]

@@ -1,49 +1,25 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for rotated detection lightning module used in OTX."""
-from __future__ import annotations
+"""Class definition for rotated detection model entity used in OTX."""
 
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
 import cv2
 import torch
 from datumaro import Polygon
 from torchvision import tv_tensors
 
-from otx.algo.instance_segmentation.otx_instseg_evaluation import (
-    OTXMaskRLEMeanAveragePrecision,
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity
+from otx.core.model.instance_segmentation import (
+    MMDetInstanceSegCompatibleModel,
+    OTXInstanceSegModel,
+    OVInstanceSegmentationModel,
 )
-from otx.core.data.entity.instance_segmentation import (
-    InstanceSegBatchPredEntity,
-)
-from otx.core.model.entity.rotated_detection import OTXRotatedDetModel
-from otx.core.model.module.instance_segmentation import OTXInstanceSegLitModule
-
-if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
 
 
-class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
-    """Base class for the lightning module used in OTX rotated detection task."""
-
-    def __init__(
-        self,
-        otx_model: OTXRotatedDetModel,
-        torch_compile: bool,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = lambda p: torch.optim.SGD(p, lr=0.01),
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = torch.optim.lr_scheduler.ConstantLR,
-        metric: MetricCallable = lambda: OTXMaskRLEMeanAveragePrecision(),
-    ):
-        super().__init__(
-            otx_model=otx_model,
-            torch_compile=torch_compile,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-        )
+class OTXRotatedDetModel(OTXInstanceSegModel):
+    """Base class for the rotated detection models used in OTX."""
 
     def predict_step(self, *args: torch.Any, **kwargs: torch.Any) -> InstanceSegBatchPredEntity:
         """Predict step for rotated detection task.
@@ -120,3 +96,15 @@ class OTXRotatedDetLitModule(OTXInstanceSegLitModule):
             polygons=batch_polygons,
             labels=batch_labels,
         )
+
+
+class MMDetRotatedDetModel(OTXRotatedDetModel, MMDetInstanceSegCompatibleModel):
+    """Rotated Detection model compaible for MMDet."""
+
+
+class OVRotatedDetectionModel(OVInstanceSegmentationModel):
+    """Rotated Detection model compatible for OpenVINO IR Inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX detection model compatible for OTX testing pipeline.
+    """

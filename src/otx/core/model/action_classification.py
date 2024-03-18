@@ -15,25 +15,50 @@ from otx.core.data.entity.action_classification import (
     ActionClsBatchPredEntity,
     ActionClsBatchPredEntityWithXAI,
 )
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.accuracy import MultiClassClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
 
     from otx.core.exporter.base import OTXModelExporter
+    from otx.core.metrics import MetricCallable
 
 
 class OTXActionClsModel(
-    OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+    OTXModel[
+        ActionClsBatchDataEntity,
+        ActionClsBatchPredEntity,
+        ActionClsBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Base class for the action classification models used in OTX."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -47,6 +72,18 @@ class OTXActionClsModel(
         )
         return parameters
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ActionClsBatchPredEntity | ActionClsBatchPredEntityWithXAI,
+        inputs: ActionClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
 
 class MMActionCompatibleModel(OTXActionClsModel):
     """Action classification model compitible for MMAction.
@@ -56,12 +93,26 @@ class MMActionCompatibleModel(OTXActionClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 1, 3, 8, 224, 224)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         from .utils.mmaction import create_model
@@ -166,15 +217,18 @@ class OVActionClsModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = False,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        **kwargs,
     ) -> None:
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def _customize_inputs(self, entity: ActionClsBatchDataEntity) -> dict[str, Any]:

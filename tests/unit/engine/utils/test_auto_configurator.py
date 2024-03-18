@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import (
     DEFAULT_CONFIG_PER_TASK,

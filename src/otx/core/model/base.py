@@ -7,15 +7,21 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 import warnings
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
 
 import numpy as np
 import openvino
+import torch
 from jsonargparse import ArgumentParser
+from lightning import LightningModule
 from openvino.model_api.models import Model
-from torch import nn
+from torch import Tensor, nn
+from torch.optim.lr_scheduler import ConstantLR
+from torch.optim.sgd import SGD
+from torchmetrics import Metric, MetricCollection
 
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
@@ -26,21 +32,28 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
+from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    import torch
-    from lightning import Trainer
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.data.module import OTXDataModule
+    from otx.core.metrics import MetricCallable
+
+logger = logging.getLogger()
+
+DefaultOptimizerCallable = lambda params: SGD(params=params, lr=0.01)
+DefaultSchedulerCallable = ConstantLR
 
 
 class OTXModel(
-    nn.Module,
+    LightningModule,
     Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
 ):
     """Base class for the models used in OTX.
@@ -51,7 +64,14 @@ class OTXModel(
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
 
-    def __init__(self, num_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = NullMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         super().__init__()
 
         self._label_info = LabelInfo.from_num_classes(num_classes)
@@ -60,12 +80,280 @@ class OTXModel(
         self.original_model_forward = None
         self._explain_mode = False
 
-    def setup_callback(self, trainer: Trainer) -> None:
-        """Callback for setup OTX Model.
+        self.optimizer_callable = optimizer
+        self.scheduler_callable = scheduler
+        self.metric_callable = metric
+        self.torch_compile = torch_compile
 
-        Args:
-            trainer(Trainer): Lightning trainer contains OTXLitModule and OTXDatamodule.
+        # this line allows to access init params with 'self.hparams' attribute
+        # also ensures init params will be stored in ckpt
+        self.save_hyperparameters(logger=False, ignore=["model", "optimizer", "scheduler", "metric"])
+
+    def training_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> Tensor:
+        """Step for model training."""
+        train_loss = self.forward(inputs=batch)
+
+        if isinstance(train_loss, Tensor):
+            self.log(
+                "train/loss",
+                train_loss,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+            )
+            return train_loss
+        if isinstance(train_loss, dict):
+            for k, v in train_loss.items():
+                self.log(
+                    f"train/{k}",
+                    v,
+                    on_step=True,
+                    on_epoch=False,
+                    prog_bar=True,
+                )
+
+            total_train_loss = sum(train_loss.values())
+            self.log(
+                "train/loss",
+                total_train_loss,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+            )
+            return total_train_loss
+
+        raise TypeError(train_loss)
+
+    def validation_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single validation step on a batch of data from the validation set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
         """
+        preds = self.forward(inputs=batch)
+
+        if isinstance(preds, OTXBatchLossEntity):
+            raise TypeError(preds)
+
+        metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
+
+        if isinstance(metric_inputs, dict):
+            self.metric.update(**metric_inputs)
+            return
+
+        if isinstance(metric_inputs, list) and all(isinstance(inp, dict) for inp in metric_inputs):
+            for inp in metric_inputs:
+                self.metric.update(**inp)
+            return
+
+        raise TypeError(metric_inputs)
+
+    def test_step(self, batch: T_OTXBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        :param batch: A batch of data (a tuple) containing the input tensor of images and target
+            labels.
+        :param batch_idx: The index of the current batch.
+        """
+        preds = self.forward(inputs=batch)
+
+        if isinstance(preds, OTXBatchLossEntity):
+            raise TypeError(preds)
+
+        metric_inputs = self._convert_pred_entity_to_compute_metric(preds, batch)
+
+        if isinstance(metric_inputs, dict):
+            self.metric.update(**metric_inputs)
+            return
+
+        if isinstance(metric_inputs, list) and all(isinstance(inp, dict) for inp in metric_inputs):
+            for inp in metric_inputs:
+                self.metric.update(**inp)
+            return
+
+        raise TypeError(metric_inputs)
+
+    def predict_step(
+        self,
+        batch: T_OTXBatchDataEntity,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI:
+        """Step function called during PyTorch Lightning Trainer's predict."""
+        if self.explain_mode:
+            return self.forward_explain(inputs=batch)
+
+        outputs = self.forward(inputs=batch)
+
+        if isinstance(outputs, OTXBatchLossEntity):
+            raise TypeError(outputs)
+
+        return outputs
+
+    def on_validation_start(self) -> None:
+        """Called at the beginning of validation."""
+        self.configure_metric()
+
+    def on_test_start(self) -> None:
+        """Called at the beginning of testing."""
+        self.configure_metric()
+
+    def on_validation_epoch_start(self) -> None:
+        """Callback triggered when the validation epoch starts."""
+        self.metric.reset()
+
+    def on_test_epoch_start(self) -> None:
+        """Callback triggered when the test epoch starts."""
+        self.metric.reset()
+
+    def on_validation_epoch_end(self) -> None:
+        """Callback triggered when the validation epoch ends."""
+        self._log_metrics(self.metric, "val")
+
+    def on_test_epoch_end(self) -> None:
+        """Callback triggered when the test epoch ends."""
+        self._log_metrics(self.metric, "test")
+
+    def setup(self, stage: str) -> None:
+        """Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.
+
+        This is a good hook when you need to build models dynamically or adjust something about
+        them. This hook is called on every process when using DDP.
+
+        :param stage: Either `"fit"`, `"validate"`, `"test"`, or `"predict"`.
+        """
+        if self.torch_compile and stage == "fit":
+            self.model = torch.compile(self.model)
+
+    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict]]:
+        """Choose what optimizers and learning-rate schedulers to use in your optimization.
+
+        Normally you'd need one. But in the case of GANs or similar you might have multiple.
+
+        Examples:
+            https://lightning.ai/docs/pytorch/latest/common/lightning_module.html#configure-optimizers
+
+        :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
+        """
+
+        def ensure_list(item: Any) -> list:  # noqa: ANN401
+            return item if isinstance(item, list) else [item]
+
+        optimizers = [
+            optimizer(params=self.parameters()) if callable(optimizer) else optimizer
+            for optimizer in ensure_list(self.optimizer_callable)
+        ]
+
+        lr_schedulers = []
+        for scheduler_config in ensure_list(self.scheduler_callable):
+            scheduler = scheduler_config(optimizers[0]) if callable(scheduler_config) else scheduler_config
+            lr_scheduler_config = {"scheduler": scheduler}
+            if hasattr(scheduler, "interval"):
+                lr_scheduler_config["interval"] = scheduler.interval
+            if hasattr(scheduler, "monitor"):
+                lr_scheduler_config["monitor"] = scheduler.monitor
+            lr_schedulers.append(lr_scheduler_config)
+
+        return optimizers, lr_schedulers
+
+    def configure_metric(self) -> None:
+        """Configure the metric."""
+        if not callable(self.metric_callable):
+            raise TypeError(self.metric_callable)
+
+        metric = self.metric_callable(self.label_info)
+
+        if not isinstance(metric, (Metric, MetricCollection)):
+            msg = "Metric should be the instance of `torchmetrics.Metric` or `torchmetrics.MetricCollection`."
+            raise TypeError(msg, metric)
+
+        self._metric = metric.to(self.device)
+
+    @property
+    def metric(self) -> Metric | MetricCollection:
+        """Metric module for this OTX model."""
+        return self._metric
+
+    @abstractmethod
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI,
+        inputs: T_OTXBatchDataEntity,
+    ) -> MetricInput:
+        """Convert given inputs to a Python dictionary for the metric computation."""
+        raise NotImplementedError
+
+    def _log_metrics(self, meter: Metric, key: str) -> None:
+        results: dict[str, Tensor] = meter.compute()
+
+        if not isinstance(results, dict):
+            raise TypeError(results)
+
+        if not results:
+            msg = f"{meter} has no data to compute metric or there is an error computing metric"
+            raise RuntimeError(msg)
+
+        for name, value in results.items():
+            log_metric_name = f"{key}/{name}"
+
+            if value.numel() != 1:
+                msg = f"Log metric name={log_metric_name} is not a scalar tensor. Skip logging it."
+                warnings.warn(msg, stacklevel=1)
+                continue
+
+            self.log(log_metric_name, value, sync_dist=True, prog_bar=True)
+
+    def state_dict(self) -> dict[str, Any]:
+        """Return state dictionary of model entity with meta information.
+
+        Returns:
+            A dictionary containing datamodule state.
+
+        """
+        state_dict = super().state_dict()
+        state_dict["label_info"] = self.label_info
+        return state_dict
+
+    def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state dictionary from checkpoint state dictionary.
+
+        It successfully loads the checkpoint from OTX v1.x and for finetune and for resume.
+
+        If checkpoint's label_info and OTXLitModule's label_info are different,
+        load_state_pre_hook for smart weight loading will be registered.
+        """
+        if is_ckpt_from_otx_v1(ckpt):
+            msg = "The checkpoint comes from OTXv1, checkpoint keys will be updated automatically."
+            warnings.warn(msg, stacklevel=2)
+            state_dict = self.load_from_otx_v1_ckpt(ckpt)
+        elif is_ckpt_for_finetuning(ckpt):
+            state_dict = ckpt["state_dict"]
+        else:
+            state_dict = ckpt
+
+        ckpt_label_info = state_dict.pop("label_info", None)
+
+        if ckpt_label_info and self.label_info is None:
+            msg = (
+                "`state_dict` to load has `label_info`, but the current model has no `label_info`. "
+                "It is recommended to set proper `label_info` for the incremental learning case."
+            )
+            warnings.warn(msg, stacklevel=2)
+        if ckpt_label_info and self.label_info and ckpt_label_info != self.label_info:
+            logger.warning(
+                f"Data classes from checkpoint: {ckpt_label_info.label_names} -> "
+                f"Data classes from training data: {self.label_info.label_names}",
+            )
+            self.register_load_state_dict_pre_hook(
+                self.label_info.label_names,
+                ckpt_label_info.label_names,
+            )
+        return super().load_state_dict(state_dict, *args, **kwargs)
+
+    def load_from_otx_v1_ckpt(self, ckpt: dict[str, Any]) -> dict:
+        """Load the previous OTX ckpt according to OTX2.0."""
+        raise NotImplementedError
 
     @property
     def label_info(self) -> LabelInfo:
@@ -148,7 +436,7 @@ class OTXModel(
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntityWithXAI:
         """Model forward explain function."""
         raise NotImplementedError
 
@@ -341,6 +629,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = NullMetricCallable,
     ) -> None:
         self.model_name = model_name
         self.model_type = model_type
@@ -348,7 +637,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
-        super().__init__(num_classes)
+        super().__init__(num_classes=num_classes, metric=metric)
 
         tile_enabled = False
         with contextlib.suppress(RuntimeError):
@@ -384,18 +673,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
         return {"inputs": images}
 
-    def _customize_outputs(
-        self,
-        outputs: Any,  # noqa: ANN401
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
-        """Customize OTX output batch data entity if needed for model."""
-        raise NotImplementedError
-
-    def forward(
+    def _forward(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI:
         """Model forward function."""
 
         def _callback(result: NamedTuple, idx: int) -> None:
@@ -414,7 +695,20 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         else:
             outputs = [self.model(im) for im in numpy_inputs]
 
-        return self._customize_outputs(outputs, inputs)
+        customized_outputs = self._customize_outputs(outputs, inputs)
+
+        if isinstance(customized_outputs, OTXBatchLossEntity):
+            raise TypeError(customized_outputs)
+
+        return customized_outputs
+
+    def forward(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
+        """Model forward function."""
+        return self._forward(inputs=inputs)  # type: ignore[return-value]
+
+    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntityWithXAI:
+        """Model forward explain function."""
+        return self._forward(inputs=inputs)  # type: ignore[return-value]
 
     def optimize(
         self,
@@ -502,24 +796,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
 
-    def _reset_prediction_layer(self, num_classes: int) -> None:
-        return
-
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
         return {}
-
-    @property
-    def label_info(self) -> LabelInfo:
-        """Get this model label information."""
-        return self._label_info
-
-    @label_info.setter
-    def label_info(self, label_info: LabelInfo | list[str]) -> None:
-        """Set this model label information."""
-
-    @property
-    def num_classes(self) -> int:
-        """Returns model's number of classes. Can be redefined at the model's level."""
-        return self.label_info.num_classes

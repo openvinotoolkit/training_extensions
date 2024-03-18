@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 import torch
+from torchmetrics import Accuracy
 
 from otx.algo.hooks.recording_forward_hook import feature_vector_fn
 from otx.core.data.dataset.classification import HLabelInfo
@@ -34,17 +35,26 @@ from otx.core.data.entity.classification import (
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.accuracy import (
+    HLabelClsMetricCallble,
+    MultiClassClsMetricCallable,
+    MultiLabelClsMetricCallable,
+)
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
     from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
+
+    from otx.core.metrics import MetricCallable
 
 
 class ExplainableOTXClsModel(
@@ -78,7 +88,7 @@ class ExplainableOTXClsModel(
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntityWithXAI:
         """Model forward function."""
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
@@ -179,6 +189,22 @@ class OTXMulticlassClsModel(
 ):
     """Base class for the classification models used in OTX."""
 
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
@@ -193,6 +219,18 @@ class OTXMulticlassClsModel(
         )
         return parameters
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI,
+        inputs: MulticlassClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
 
 class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     """Multi-class Classification model compatible for MMPretrain.
@@ -202,12 +240,26 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
@@ -334,6 +386,22 @@ class OTXMultilabelClsModel(
 ):
     """Multi-label classification models used in OTX."""
 
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiLabelClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
@@ -349,6 +417,16 @@ class OTXMultilabelClsModel(
         )
         return parameters
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI,
+        inputs: MultilabelClsBatchDataEntity,
+    ) -> MetricInput:
+        return {
+            "preds": torch.stack(preds.scores),
+            "target": torch.stack(inputs.labels),
+        }
+
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     """Multi-label Classification model compatible for MMPretrain.
@@ -358,12 +436,26 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = lambda num_labels: Accuracy(task="multilabel", num_labels=num_labels),
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
@@ -488,6 +580,22 @@ class OTXHlabelClsModel(
 ):
     """H-label classification models used in OTX."""
 
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
     @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
@@ -519,6 +627,36 @@ class OTXHlabelClsModel(
         )
         return parameters
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI,
+        inputs: HlabelClsBatchDataEntity,
+    ) -> MetricInput:
+        if self.num_multilabel_classes > 0:
+            preds_multiclass = torch.stack(preds.labels)[:, : self.num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads :]
+            pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+        else:
+            pred_result = torch.stack(preds.labels)
+        return {
+            "preds": pred_result,
+            "target": torch.stack(inputs.labels),
+        }
+
+    @property  # type: ignore[override]
+    def label_info(self) -> HLabelInfo:
+        """Get the hierarchical model label information."""
+        return self._label_info  # type: ignore[return-value]
+
+    @label_info.setter
+    def label_info(self, label_info: HLabelInfo) -> None:
+        """Set the hierarchical model label information.
+
+        Args:
+            hierarchical_info: the label information represents the hierarchy.
+        """
+        self._label_info = label_info
+
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     """H-label Classification model compatible for MMPretrain.
@@ -528,12 +666,36 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+    @OTXHlabelClsModel.label_info.setter  # type: ignore[attr-defined]
+    def label_info(self, label_info: HLabelInfo) -> None:
+        """Set the hierarchical model label information and update the model head as well.
+
+        Args:
+            hierarchical_info: the label information represents the hierarchy.
+        """
+        self._label_info = label_info
+        self.model.head.set_hlabel_info(label_info)
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
@@ -541,14 +703,6 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         model, classification_layers = create_model(self.config, self.load_from)
         self.classification_layers = classification_layers
         return model
-
-    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
-        """Set hierarchical information in model head.
-
-        Args:
-            hierarchical_info: the label information represents the hierarchy.
-        """
-        self.model.head.set_hlabel_info(hierarchical_info)
 
     def _customize_inputs(self, entity: HlabelClsBatchDataEntity) -> dict[str, Any]:
         from mmpretrain.structures import DataSample
@@ -674,15 +828,18 @@ class OVMulticlassClassificationModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = False,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        **kwargs,
     ) -> None:
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def _customize_outputs(
@@ -717,6 +874,94 @@ class OVMulticlassClassificationModel(
             labels=pred_labels,
         )
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI,
+        inputs: MulticlassClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
+
+class OVMultilabelClassificationModel(
+    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI],
+):
+    """Multilabel classification model compatible for OpenVINO IR inference.
+
+    It can consume OpenVINO IR model path or model name from Intel OMZ repository
+    and create the OTX classification model compatible for OTX testing pipeline.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        model_name: str,
+        model_type: str = "Classification",
+        async_inference: bool = True,
+        max_num_requests: int | None = None,
+        use_throughput_mode: bool = True,
+        model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = MultiLabelClsMetricCallable,
+        **kwargs,
+    ) -> None:
+        model_api_configuration = model_api_configuration if model_api_configuration else {}
+        model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
+        super().__init__(
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
+        )
+
+    def _customize_outputs(
+        self,
+        outputs: list[ClassificationResult],
+        inputs: MultilabelClsBatchDataEntity,
+    ) -> MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI:
+        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
+
+        if outputs and outputs[0].saliency_map.size != 0:
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
+
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
+            predicted_f_vectors = [out.feature_vector[0] for out in outputs]
+            return MultilabelClsBatchPredEntityWithXAI(
+                batch_size=len(outputs),
+                images=inputs.images,
+                imgs_info=inputs.imgs_info,
+                scores=pred_scores,
+                labels=[],
+                saliency_maps=predicted_s_maps,
+                feature_vectors=predicted_f_vectors,
+            )
+
+        return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            scores=pred_scores,
+            labels=[],
+        )
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI,
+        inputs: MultilabelClsBatchDataEntity,
+    ) -> MetricInput:
+        return {
+            "preds": torch.stack(preds.scores),
+            "target": torch.stack(inputs.labels),
+        }
+
 
 class OVHlabelClassificationModel(
     OVModel[HlabelClsBatchDataEntity, HlabelClsBatchPredEntity, HlabelClsBatchPredEntityWithXAI],
@@ -738,19 +983,22 @@ class OVHlabelClassificationModel(
         model_api_configuration: dict[str, Any] | None = None,
         num_multiclass_heads: int = 1,
         num_multilabel_classes: int = 0,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        **kwargs,
     ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
         model_api_configuration = model_api_configuration if model_api_configuration else {}
         model_api_configuration.update({"hierarchical": True, "output_raw_scores": True})
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
@@ -820,65 +1068,18 @@ class OVHlabelClassificationModel(
             labels=all_pred_labels,
         )
 
-
-class OVMultilabelClassificationModel(
-    OVModel[MultilabelClsBatchDataEntity, MultilabelClsBatchPredEntity, MultilabelClsBatchPredEntityWithXAI],
-):
-    """Multilabel classification model compatible for OpenVINO IR inference.
-
-    It can consume OpenVINO IR model path or model name from Intel OMZ repository
-    and create the OTX classification model compatible for OTX testing pipeline.
-    """
-
-    def __init__(
+    def _convert_pred_entity_to_compute_metric(
         self,
-        num_classes: int,
-        model_name: str,
-        model_type: str = "Classification",
-        async_inference: bool = True,
-        max_num_requests: int | None = None,
-        use_throughput_mode: bool = True,
-        model_api_configuration: dict[str, Any] | None = None,
-    ) -> None:
-        model_api_configuration = model_api_configuration if model_api_configuration else {}
-        model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
-        super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
-        )
-
-    def _customize_outputs(
-        self,
-        outputs: list[ClassificationResult],
-        inputs: MultilabelClsBatchDataEntity,
-    ) -> MultilabelClsBatchPredEntity | MultilabelClsBatchPredEntityWithXAI:
-        pred_scores = [torch.tensor([top_label[2] for top_label in out.top_labels]) for out in outputs]
-
-        if outputs and outputs[0].saliency_map.size != 0:
-            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
-            predicted_s_maps = [out.saliency_map[0] for out in outputs]
-
-            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
-            predicted_f_vectors = [out.feature_vector[0] for out in outputs]
-            return MultilabelClsBatchPredEntityWithXAI(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=pred_scores,
-                labels=[],
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
-            )
-
-        return MultilabelClsBatchPredEntity(
-            batch_size=len(outputs),
-            images=inputs.images,
-            imgs_info=inputs.imgs_info,
-            scores=pred_scores,
-            labels=[],
-        )
+        preds: HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI,
+        inputs: HlabelClsBatchDataEntity,
+    ) -> MetricInput:
+        if self.num_multilabel_classes > 0:
+            preds_multiclass = torch.stack(preds.labels)[:, : self.num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads :]
+            pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
+        else:
+            pred_result = torch.stack(preds.labels)
+        return {
+            "preds": pred_result,
+            "target": torch.stack(inputs.labels),
+        }
