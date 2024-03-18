@@ -6,10 +6,11 @@ import numpy as np
 import pytest
 import torch
 from datumaro import Polygon
-from otx.core.data.entity.base import ImageInfo, OTXDataEntity, Points
-from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 from torch import LongTensor
 from torchvision import tv_tensors
+
+from otx.core.data.entity.base import ImageInfo, OTXDataEntity, Points
+from otx.core.data.entity.visual_prompting import VisualPromptingDataEntity
 
 
 @pytest.fixture()

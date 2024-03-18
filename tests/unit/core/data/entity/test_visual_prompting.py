@@ -5,6 +5,9 @@
 
 import torch
 from datumaro import Polygon
+from torch import LongTensor
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -13,8 +16,6 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingDataEntity,
 )
 from otx.core.types.task import OTXTaskType
-from torch import LongTensor
-from torchvision import tv_tensors
 
 
 class TestVisualPromptingDataEntity:

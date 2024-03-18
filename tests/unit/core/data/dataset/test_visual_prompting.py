@@ -7,11 +7,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from datumaro import Dataset as DmDataset
-from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
-from otx.core.data.entity.base import ImageInfo, Points
 from torch import Tensor
 from torchvision.transforms.v2 import Identity, Transform
 from torchvision.tv_tensors import BoundingBoxes, Image, Mask
+
+from otx.core.data.dataset.visual_prompting import OTXVisualPromptingDataset, OTXZeroShotVisualPromptingDataset
+from otx.core.data.entity.base import ImageInfo, Points
 
 
 class TestOTXVisualPromptingDataset:

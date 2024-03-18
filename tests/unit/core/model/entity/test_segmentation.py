@@ -11,6 +11,7 @@ import pytest
 import torch
 from importlib_resources import files
 from omegaconf import OmegaConf
+
 from otx.core.model.entity.segmentation import MMSegCompatibleModel
 
 if TYPE_CHECKING:
@@ -44,6 +45,7 @@ class TestOTXSegmentationModel:
     def test_customize_outputs(self, model, fxt_seg_data_entity) -> None:
         from mmengine.structures import PixelData
         from mmseg.structures import SegDataSample
+
         from otx.core.data.entity.base import OTXBatchLossEntity
         from otx.core.data.entity.segmentation import SegBatchPredEntity
 

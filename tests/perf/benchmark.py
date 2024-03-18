@@ -14,6 +14,7 @@ from pathlib import Path
 from time import time
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 log = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ class Benchmark:
         dry_run (bool): Whether to just print the OTX command without execution. Defaults to False.
         deterministic (bool): Whether to turn on deterministic training mode. Defaults to False.
         accelerator (str): Accelerator device on which to run benchmark. Defaults to gpu.
+        reference_results (pd.DataFrame): Reference benchmark results for performance checking.
     """
 
     @dataclass
@@ -53,7 +55,7 @@ class Benchmark:
 
         name: str
         path: Path
-        size: str
+        group: str
         data_format: str
         num_classes: int
         num_repeat: int = 1
@@ -68,6 +70,19 @@ class Benchmark:
         compare: str
         margin: float
 
+        def __call__(self, result_entry: pd.Series, target_entry: pd.Series) -> None:
+            """Check result against given target."""
+            if self.name not in result_entry or result_entry[self.name] is None or np.isnan(result_entry[self.name]):
+                return
+            if self.name not in target_entry or target_entry[self.name] is None or np.isnan(target_entry[self.name]):
+                return
+            if self.compare == "==":
+                assert abs(result_entry[self.name] - target_entry[self.name]) < target_entry[self.name] * self.margin
+            elif self.compare == "<":
+                assert result_entry[self.name] < target_entry[self.name] * (1.0 + self.margin)
+            elif self.compare == ">":
+                assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
+
     def __init__(
         self,
         data_root: Path = Path("data"),
@@ -79,6 +94,7 @@ class Benchmark:
         dry_run: bool = False,
         deterministic: bool = False,
         accelerator: str = "gpu",
+        reference_results: pd.DataFrame | None = None,
     ):
         self.data_root = data_root
         self.output_root = output_root
@@ -89,6 +105,7 @@ class Benchmark:
         self.dry_run = dry_run
         self.deterministic = deterministic
         self.accelerator = accelerator
+        self.reference_results = reference_results
 
     def run(
         self,
@@ -114,9 +131,9 @@ class Benchmark:
 
         tags = {
             "task": model.task,
-            "data_size": dataset.size,
+            "data_group": dataset.group,
             "model": model.name,
-            "dataset": dataset.name,
+            "data": dataset.name,
             **self.tags,
         }
 
@@ -125,10 +142,8 @@ class Benchmark:
             num_repeat = self.num_repeat  # Override by global setting
 
         for seed in range(num_repeat):
-            seed = 42
             sub_work_dir = work_dir / str(seed)
             tags["seed"] = str(seed)
-            extra_metrics = {}
 
             # Train & test
             command = [
@@ -156,8 +171,14 @@ class Benchmark:
                 command.extend(["--max_epochs", str(self.num_epoch)])
             start_time = time()
             self._run_command(command)
-            extra_metrics["train/e2e_time"] = time() - start_time
+            extra_metrics = {"train/e2e_time": time() - start_time}
             self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"epoch": "train/epoch"})
+            self._log_metrics(
+                work_dir=sub_work_dir / ".latest" / "train",
+                tags=tags,
+                criteria=criteria,
+                extra_metrics=extra_metrics,
+            )
 
             command = [
                 "otx",
@@ -166,6 +187,7 @@ class Benchmark:
                 str(sub_work_dir),
             ]
             self._run_command(command)
+            self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Export & test
             if self.eval_upto in ["export", "optimize"]:
@@ -177,19 +199,24 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
+                exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
+                if not exported_model_path.exists():
+                    exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model_decoder.xml"
+
                 command = [  # NOTE: not working for h_label_cls. to be fixed
                     "otx",
                     "test",
                     "--config",
-                    str(sub_work_dir / ".latest" / "export" / "configs.yaml"),
+                    f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    str(exported_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
                 self._run_command(command)
 
                 self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export"})
+                self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Optimize & test
             if self.eval_upto == "optimize":
@@ -200,11 +227,15 @@ class Benchmark:
                     "--config",
                     f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "export" / "exported_model.xml"),
+                    str(exported_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
                 self._run_command(command)
+
+                optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
+                if not optimized_model_path.exists():
+                    optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model_decoder.xml"
 
                 command = [
                     "otx",
@@ -213,21 +244,20 @@ class Benchmark:
                     "--config",
                     f"src/otx/recipe/{model.task}/openvino_model.yaml",
                     "--checkpoint",
-                    str(sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"),
+                    str(optimized_model_path),
                     "--work_dir",
                     str(sub_work_dir),
                 ]
                 self._run_command(command)
 
                 self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize"})
-
-            # Parse raw data into raw metrics
-            self._log_metrics(work_dir=sub_work_dir, tags=tags, criteria=criteria, extra_metrics=extra_metrics)
+                self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Force memory clean up
             gc.collect()
 
-        return self.load_result(work_dir)
+        result = self.load_result(work_dir)
+        return self.average_result(result, keys=["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         if self.dry_run:
@@ -239,8 +269,8 @@ class Benchmark:
         self,
         work_dir: Path,
         tags: dict[str, str],
-        criteria: list[Benchmark.Criterion],
-        extra_metrics: dict[str, Any],
+        criteria: list[Criterion],
+        extra_metrics: dict[str, Any] | None = None,
     ) -> None:
         if not work_dir.exists():
             return
@@ -249,8 +279,9 @@ class Benchmark:
         csv_files = work_dir.glob("**/metrics.csv")
         raw_data = [pd.read_csv(csv_file) for csv_file in csv_files]
         raw_data = pd.concat(raw_data, ignore_index=True)
-        for k, v in extra_metrics.items():
-            raw_data[k] = v
+        if extra_metrics:
+            for k, v in extra_metrics.items():
+                raw_data[k] = v
 
         # Summarize
         metrics = []
@@ -303,20 +334,60 @@ class Benchmark:
         results = [pd.read_csv(csv_file) for csv_file in csv_files]
         if len(results) == 0:
             return None
-        # Merge data
-        data = pd.concat(results, ignore_index=True)
-        # Average by unique group
-        grouped = data.groupby(["task", "data_size", "model"])
+
+        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
+
+    @staticmethod
+    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
+        """Average result w.r.t. given keys
+
+        Args:
+            result (pd.DataFrame): Result data frame
+            keys (list[str]): Keys to summarize whole data
+
+        Retruns:
+            pd.DataFrame: Averaged result table
+        """
+        # Flatten index
+        index_names = data.index.names
+        column_names = data.columns
+        data = data.reset_index()
+        # Average by keys
+        grouped = data.groupby(keys)
         aggregated = grouped.mean(numeric_only=True)
+        # Merge index columns
+        idx_columns = set(index_names) - set(keys)
+        for col in idx_columns:
+            aggregated[col] = "all"
         # Merge tag columns (non-numeric & non-index)
-        tag_columns = set(data.columns) - set(aggregated.columns) - set(grouped.keys)
+        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
         for col in tag_columns:
             # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
             aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        # Average by task
-        task_grouped = data.groupby(["task"], as_index=False)
-        task_aggregated = task_grouped.mean(numeric_only=True)
-        task_aggregated["data_size"] = "all"
-        task_aggregated["model"] = "all"
-        task_aggregated = task_aggregated.set_index(["task", "data_size", "model"])
-        return pd.concat([aggregated, task_aggregated])
+        # Recover index
+        return aggregated.reset_index().set_index(index_names)
+
+    def check(self, result: pd.DataFrame, criteria: list[Criterion]):
+        """Check result w.r.t. reference data.
+
+        Args:
+            result (pd.DataFrame): Result data frame
+            criteria (list[Criterion]): Criteria to check results
+        """
+        if result is None:
+            return
+
+        if self.reference_results is None:
+            print("No benchmark references loaded. Skipping result checking.")
+            return
+
+        for key, result_entry in result.iterrows():
+            if key not in self.reference_results.index:
+                print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+                continue
+            target_entry = self.reference_results.loc[key]
+            if isinstance(target_entry, pd.DataFrame):
+                target_entry = target_entry.iloc[0]  # 1-row pd.DataFrame to pd.Series
+
+            for criterion in criteria:
+                criterion(result_entry, target_entry)

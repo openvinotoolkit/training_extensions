@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import pytest
+
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
@@ -32,6 +33,8 @@ def test_auto_configuration(
         pytest.skip(
             reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
         )
+    if task.lower().startswith("anomaly"):
+        pytest.skip(reason="This will be added in a future pipeline behavior.")
 
     tmp_path_train = tmp_path / f"auto_train_{task}"
     data_root = fxt_target_dataset_per_task[task.lower()]

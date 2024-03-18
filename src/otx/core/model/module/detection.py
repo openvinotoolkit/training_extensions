@@ -98,7 +98,6 @@ class OTXDetectionLitModule(OTXLitModule):
         :param batch_idx: The index of the current batch.
         """
         preds = self.model(inputs)
-        print(inputs.images.device, self.device, preds.scores[0].device)
 
         if not isinstance(preds, (DetBatchPredEntity, DetBatchPredEntityWithXAI)):
             raise TypeError(preds)

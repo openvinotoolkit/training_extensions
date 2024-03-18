@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import torch
+from torch import nn
+
 from otx.algo.detection.backbones.pytorchcv_backbones import (
     _build_model_including_pytorchcv,
     multioutput_forward,
@@ -12,7 +14,6 @@ from otx.algo.detection.backbones.pytorchcv_backbones import (
     replace_norm,
     train,
 )
-from torch import nn
 
 
 class MockModule(nn.Module):

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
+
 from otx.algo.classification import DINOv2
 
 

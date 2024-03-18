@@ -3,6 +3,7 @@
 #
 import pytest
 from omegaconf import DictConfig
+
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.config import mmconfig_dict_to_dict
@@ -24,6 +25,6 @@ class TestOTXModel:
     ) -> None:
         dataloader = fxt_datamodule.train_dataloader()
         for inputs in dataloader:
-            outputs = fxt_model(inputs)
+            outputs = fxt_model.forward(inputs)
             assert isinstance(outputs, dict)
             break

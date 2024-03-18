@@ -553,12 +553,11 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             processed_image, meta = self.model["image_encoder"].preprocess(numpy_image)
             images.append(processed_image)
             metas.append(meta)
-
             if self.training:
                 points: list[np.ndarray] = []
                 bboxes: list[np.ndarray] = []
                 _labels: dict[str, list[int]] = defaultdict(list)
-                for prompt, label in zip(prompts, labels):
+                for prompt, label in zip(prompts, labels):  # type: ignore[arg-type]
                     if isinstance(prompt, tv_tensors.BoundingBoxes):
                         bboxes.append(prompt.cpu().numpy())
                         _labels["bboxes"].append(label.cpu().numpy())

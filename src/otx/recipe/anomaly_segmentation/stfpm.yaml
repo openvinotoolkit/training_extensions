@@ -1,9 +1,6 @@
 model:
   class_path: otx.algo.anomaly.stfpm.Stfpm
   init_args:
-    input_size:
-      - 256
-      - 256
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
 
@@ -21,7 +18,7 @@ engine:
 
 callback_monitor: train_loss_epoch # val loss is not available as there is no validation set from default dataloader
 
-data: ../../_base_/data/torchvision_base.yaml
+data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 100
   limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
@@ -29,6 +26,9 @@ overrides:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         patience: 5
+    - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
+      init_args:
+        max_interval: 1
   data:
     task: ANOMALY_SEGMENTATION
     config:

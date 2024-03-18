@@ -1,7 +1,8 @@
 import torch
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
 from otx.algo.instance_segmentation.otx_instseg_evaluation import OTXMaskRLEMeanAveragePrecision
 from otx.core.utils.mask_util import encode_rle
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
 def test_custom_rle_map_metric(num_masks=50, h=10, w=10):

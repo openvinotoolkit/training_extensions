@@ -9,9 +9,10 @@ from typing import Any
 import pytest
 import torch
 from mmpretrain.structures import DataSample
+from torch import nn
+
 from otx.algo.classification.heads.custom_hlabel_linear_cls_head import CustomHierarchicalLinearClsHead
 from otx.algo.classification.heads.custom_hlabel_non_linear_cls_head import CustomHierarchicalNonLinearClsHead
-from torch import nn
 
 
 @pytest.fixture()

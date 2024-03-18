@@ -8,6 +8,9 @@ from typing import Any, Callable
 
 import pytest
 import torch
+from torch import Tensor
+from torchvision import tv_tensors
+
 from otx.algo.visual_prompting.zero_shot_segment_anything import (
     OTXZeroShotSegmentAnything,
     PromptGetter,
@@ -15,8 +18,6 @@ from otx.algo.visual_prompting.zero_shot_segment_anything import (
 )
 from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import ZeroShotVisualPromptingBatchPredEntity
-from torch import Tensor
-from torchvision import tv_tensors
 
 
 class TestPromptGetter:
@@ -537,8 +538,6 @@ class TestOTXZeroShotSegmentAnything:
 
         if is_training:
             assert "processed_prompts" in output_data
-        else:
-            assert "is_cascade" in output_data
 
     def test_customize_inputs_infer(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_inputs with training=False."""

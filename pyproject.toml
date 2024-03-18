@@ -60,6 +60,7 @@ docs = [
     "pydata-sphinx-theme==0.12.0",
     "sphinx-tabs",
     "sphinx-panels",
+    "sphinx-design",
     "sphinx-copybutton==0.5.0",
     "sphinx-autoapi",
     "sphinxemoji",
@@ -91,7 +92,18 @@ mmlab = [
     "oss2==2.17.0",
 ]
 anomaly = [
-    "anomalib==1.0.0",
+    # [FIXME] @ashwinvaidya17: Install using a temporary hot-fix commit due to a torchmetrics version conflict.
+    "anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@e78091883a620229c277a79674a904d9f785f8d5",
+    # This is a dependency to avoid conflicts with installing the anomalib[core] option.
+    "av>=10.0.0",
+    "einops>=0.3.2",
+    "freia>=0.2",
+    "imgaug==0.4.0",
+    "kornia>=0.6.6,<0.6.10",
+    "matplotlib>=3.4.3",
+    "opencv-python>=4.5.3.56",
+    "pandas>=1.1.0",
+    "open-clip-torch>=2.23.0",
 ]
 
 [project.scripts]
@@ -128,6 +140,15 @@ source = [
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
+]
+
+[tool.coverage.run]
+omit = [
+    "**/__init__.py",
+    "src/otx/recipes/*",
+    "src/otx/tools/*",
+    "**/mmconfigs/*",
+    "**/mmdeploy/*",
 ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -315,3 +336,4 @@ markers = [
     "gpu: mark tests which require NVIDIA GPU device",
     # "cpu: mark tests which require CPU device",
 ]
+python_files = "tests/**/*.py"

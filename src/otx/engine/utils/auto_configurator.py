@@ -42,9 +42,9 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.INSTANCE_SEGMENTATION: RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
     OTXTaskType.ACTION_DETECTION: RECIPE_PATH / "action" / "action_detection" / "x3d_fastrcnn.yaml",
-    OTXTaskType.ANOMALY_CLASSIFICATION: RECIPE_PATH / "anomaly" / "anomaly_classification" / "padim.yaml",
-    OTXTaskType.ANOMALY_SEGMENTATION: RECIPE_PATH / "anomaly" / "anomaly_segmentation" / "padim.yaml",
-    OTXTaskType.ANOMALY_DETECTION: RECIPE_PATH / "anomaly" / "anomaly_detection" / "padim.yaml",
+    OTXTaskType.ANOMALY_CLASSIFICATION: RECIPE_PATH / "anomaly_classification" / "padim.yaml",
+    OTXTaskType.ANOMALY_SEGMENTATION: RECIPE_PATH / "anomaly_segmentation" / "padim.yaml",
+    OTXTaskType.ANOMALY_DETECTION: RECIPE_PATH / "anomaly_detection" / "padim.yaml",
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
 }
@@ -67,6 +67,7 @@ TASK_PER_DATA_FORMAT = {
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],
+    "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
 }
 
 OVMODEL_PER_TASK = {
@@ -256,6 +257,14 @@ class AutoConfigurator:
         if label_info is not None:
             num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
+
+            from otx.core.data.dataset.classification import HLabelInfo
+
+            if isinstance(label_info, HLabelInfo):
+                init_args = self.config["model"]["init_args"]
+                init_args["num_multiclass_heads"] = label_info.num_multiclass_heads
+                init_args["num_multilabel_classes"] = label_info.num_multilabel_classes
+
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 

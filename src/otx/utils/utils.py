@@ -6,18 +6,18 @@
 from __future__ import annotations
 
 from decimal import Decimal
-import torch
 from typing import TYPE_CHECKING, Any
+
+import torch
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 XPU_AVAILABLE = None
 try:
-    import intel_extension_for_pytorch as ipex
+    import intel_extension_for_pytorch  # noqa: F401
 except ImportError:
     XPU_AVAILABLE = False
-    ipex = None
 
 
 def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import pytest
 import torch
+from torch import Tensor, nn
+
 from otx.algo.visual_prompting.backbones.vit import (
     Attention,
     Block,
@@ -16,7 +18,6 @@ from otx.algo.visual_prompting.backbones.vit import (
     window_unpartition,
 )
 from otx.algo.visual_prompting.utils import MLPBlock
-from torch import Tensor, nn
 
 
 class TestViT:

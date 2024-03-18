@@ -26,12 +26,12 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"wgisd_small_{idx}",
             path=Path("instance_seg/wgisd_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=5,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -42,26 +42,26 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium",
             path=Path("instance_seg/coco_car_person_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=2,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
         ),
         Benchmark.Dataset(
-            name="bdd_large",
-            path=Path("instance_seg/bdd_large"),
-            size="large",
+            name="vitens_coliform",
+            path=Path("instance_seg/Vitens-Coliform-coco"),
+            group="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -100,7 +100,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -122,12 +121,12 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"vitens_aeromonas_small_{idx}",
             path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -138,12 +137,12 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_aeromonas_medium",
             path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -183,7 +182,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

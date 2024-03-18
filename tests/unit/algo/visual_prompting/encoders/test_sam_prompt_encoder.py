@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import pytest
 import torch
-from otx.algo.visual_prompting.encoders.sam_prompt_encoder import PositionEmbeddingRandom, SAMPromptEncoder
 from torch import nn
+
+from otx.algo.visual_prompting.encoders.sam_prompt_encoder import PositionEmbeddingRandom, SAMPromptEncoder
 
 
 class TestSAMPromptEncoder:

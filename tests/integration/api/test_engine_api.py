@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from openvino.model_api.tilers import Tiler
+
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel
 from otx.core.types.task import OTXTaskType
@@ -37,8 +38,6 @@ def test_engine_from_config(
         pytest.skip(
             reason="H-labels require num_multiclass_head, num_multilabel_classes, which skip until we have the ability to automate this.",
         )
-    if "anomaly" in task.lower():
-        pytest.skip(reason="There's no dataset for anomaly tasks.")
 
     tmp_path_train = tmp_path / task
     engine = Engine.from_config(
@@ -70,6 +69,9 @@ def test_engine_from_config(
         OTXTaskType.ACTION_DETECTION,
         OTXTaskType.H_LABEL_CLS,
         OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
     ]:
         return
 
@@ -95,7 +97,7 @@ def test_engine_from_config(
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
         OTXTaskType.MULTI_LABEL_CLS,
-        # Will be supported after merging PR#2997
+        # Restore these models after fixing undetermined CI failures for ATSS and Mask RCNN
         # OTXTaskType.DETECTION,
         # OTXTaskType.ROTATED_DETECTION,
         # OTXTaskType.INSTANCE_SEGMENTATION,

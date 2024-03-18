@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import pytest
 import torch
+
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 
 
