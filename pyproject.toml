@@ -139,6 +139,13 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
+[tool.coverage.run]
+omit = [
+    "**/__init__.py",
+    "src/otx/recipes/*",
+    "src/otx/tools/*",
+]
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
 [tool.mypy]
