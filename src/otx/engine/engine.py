@@ -138,10 +138,10 @@ class Engine:
         )
         if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
             import numpy as np
-            from mmengine.structures import instance_data
-
             from mmcv.ops.nms import NMSop
             from mmcv.ops.roi_align import RoIAlign
+            from mmengine.structures import instance_data
+
             from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
 
             long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
