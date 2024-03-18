@@ -144,6 +144,8 @@ omit = [
     "**/__init__.py",
     "src/otx/recipes/*",
     "src/otx/tools/*",
+    "**/mmconfigs/*",
+    "**/mmdeploy/*",
 ]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
