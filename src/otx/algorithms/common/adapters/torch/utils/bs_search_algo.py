@@ -5,28 +5,20 @@
 
 import multiprocessing as mp
 from typing import Callable, Dict, Tuple
-from pprint import pprint
 import os
 
 import torch
 import torch.distributed as dist
 
+from otx.algorithms.common.utils import is_xpu_available
 from otx.utils.logger import get_logger
 
 logger = get_logger()
 
 
 def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[bool, int]:
-    import intel_extension_for_pytorch
     mp.set_start_method(None, True)
     cuda_oom = False
-    # torch.cuda.reset_max_memory_cached(device=None)
-    # torch.cuda.empty_cache()
-
-    pprint(dict(os.environ))
-
-    # torch.xpu.reset_peak_memory_stats(device=None)
-    # torch.xpu.empty_cache()
 
     try:
         kwargs = train_func_kwargs
@@ -43,8 +35,7 @@ def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[boo
         else:
             raise e
 
-    # max_memory_reserved = torch.cuda.max_memory_reserved(device=None)
-    max_memory_reserved = torch.xpu.max_memory_reserved(device=None)
+    max_memory_reserved = _get_max_memory_reserved()
 
     trial_queue.put(
         {
@@ -77,25 +68,21 @@ class BsSearchAlgo:
         self._default_bs = default_bs
         self._max_bs = max_bs
         self._bs_try_history: Dict[int, int] = {}
-        # _, self._total_mem = torch.cuda.mem_get_info()
-        self._total_mem = torch.xpu.get_device_properties(0).total_memory
+        self._total_mem = _get_total_memory_size()
         self._mem_lower_bound = 0.8 * self._total_mem
         self._mem_upper_bound = 0.85 * self._total_mem
         self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
-        # torch.cuda.reset_max_memory_cached(device=None)
-        # torch.cuda.empty_cache()
 
-        torch.xpu.reset_peak_memory_stats(device=None)
-        torch.xpu.empty_cache()
+        _reset_max_memory_cached_in_accelerator()
+        _empty_cache_in_accelerator()
 
         trial_queue = self._mp_ctx.Queue()
         proc = self._mp_ctx.Process(target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue))
         proc.start()
         output = trial_queue.get()
-        breakpoint()
         proc.join()
 
         cuda_oom = output["cuda_oom"]
@@ -132,8 +119,8 @@ class BsSearchAlgo:
             f"Adapting Batch size => bs : {bs}, CUDA_OOM : {cuda_oom}, "
             f"GPU memory usage : {max_memory_reserved / self._total_mem}%"
         )
-        # torch.cuda.empty_cache()
-        torch.xpu.empty_cache()
+
+        _empty_cache_in_accelerator()
 
         return cuda_oom, max_memory_reserved
 
@@ -166,8 +153,7 @@ class BsSearchAlgo:
                 available_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, lowest_unavailable_bs)
 
-            if lowest_unavailable_bs - available_bs <= 2 or True:
-                available_bs = 16
+            if lowest_unavailable_bs - available_bs <= 2:
                 break
 
         if available_bs == 0:
@@ -282,3 +268,30 @@ class BsSearchAlgo:
             estimated_bs = self._max_bs
 
         return estimated_bs
+
+
+def _get_max_memory_reserved():
+    if is_xpu_available():
+        return torch.xpu.max_memory_reserved(device=None)
+    return torch.cuda.max_memory_reserved(device=None)
+
+
+def _get_total_memory_size():
+    if is_xpu_available():
+        return torch.xpu.get_device_properties(0).total_memory
+    _, total_mem = torch.cuda.mem_get_info()
+    return total_mem
+
+    
+def _empty_cache_in_accelerator():
+    if is_xpu_available():
+        torch.xpu.empty_cache()
+    elif torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    
+
+def _reset_max_memory_cached_in_accelerator():
+    if is_xpu_available():
+        torch.xpu.reset_peak_memory_stats(device=None)
+    elif torch.cuda.is_available():
+        torch.cuda.reset_max_memory_cached(device=None)

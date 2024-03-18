@@ -33,7 +33,6 @@ class MemCacheHandlerBase:
     """
 
     def __init__(self, mem_size: int):
-        self._mem_size = mem_size
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int):

@@ -49,7 +49,7 @@ def train_func_single_iter(batch_size, train_func, cfg, validate, datasets, meta
     # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
     # CustomEvalHook => exclude validation in classification task
     idx_hooks_to_remove = []
-    hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
+    hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook", "CancelInterfaceHook"]
     for i, hook in enumerate(cfg.custom_hooks):
         if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
             hook["enable_eval_before_run"] = False
@@ -62,12 +62,10 @@ def train_func_single_iter(batch_size, train_func, cfg, validate, datasets, meta
         for i in reversed(idx_hooks_to_remove):
             del cfg.custom_hooks[i]
 
-    # new_datasets = [SubDataset(datasets[0], batch_size)]
-    from mmdet.datasets import build_dataset
-    datasets = [build_dataset(cfg.data.train)]
+    new_dataset = [SubDataset(datasets[0], batch_size)]
 
     train_func(
-        dataset=datasets,
+        dataset=new_dataset,
         cfg=cfg,
         validate=validate,
         model=model,

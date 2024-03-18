@@ -461,7 +461,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     def __getstate__(self):
         _ = self.roi
-        ret = self.__dict__
+        ret = copy.copy(self.__dict__)
         ret["_DatasetItemEntity__roi_lock"] = None
         return ret
 

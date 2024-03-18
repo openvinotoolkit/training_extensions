@@ -8,7 +8,7 @@ import io
 import os
 import time
 from contextlib import nullcontext
-from copy import deepcopy
+from copy import copy, deepcopy
 from functools import partial
 from typing import Any, Dict, Optional, Union
 
@@ -258,8 +258,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        cfg.pop('algo_backend')
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
+            coped_cfg = copy(cfg)
+            coped_cfg.pop('algo_backend')
             # train_func = partial(train_detector, meta=meta, model=model, distributed=False)
             # import pickle
             # breakpoint()
@@ -267,7 +268,7 @@ class MMDetectionTask(OTXDetectionTask):
             # new_ds = pickle.loads(temp)
             adapt_batch_size(
                 train_detector,
-                cfg,
+                coped_cfg,
                 datasets,
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
@@ -281,7 +282,6 @@ class MMDetectionTask(OTXDetectionTask):
             #     isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
             #     not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             # )
-            breakpoint()
 
         train_detector(
             model,
