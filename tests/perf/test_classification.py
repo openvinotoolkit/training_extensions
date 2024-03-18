@@ -114,7 +114,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "gpu"
+        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -196,7 +196,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "gpu"
+        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
@@ -276,7 +276,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "gpu"
+        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,
