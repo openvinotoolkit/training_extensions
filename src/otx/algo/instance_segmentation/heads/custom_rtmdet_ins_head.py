@@ -65,8 +65,9 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
             torch.arange(n, device=mask_logits.device),
             num_chunks,
         )
+        mask_logits = mask_logits.sigmoid()
         for inds in chunks:
-            masks_chunk = F.interpolate(
+            masks[:, inds] = (F.interpolate(
                 mask_logits[:, inds],
                 size=[
                     img_w,
@@ -74,9 +75,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
                 ],
                 mode="bilinear",
                 align_corners=False,
-            )
-            masks_chunk = masks_chunk.sigmoid()
-            masks[:, inds] = (masks_chunk >= threshold).to(dtype=torch.bool)
+            ) >= threshold).to(dtype=torch.bool)
         return masks
 
     def _bbox_mask_post_process(
