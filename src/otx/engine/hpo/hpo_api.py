@@ -133,13 +133,9 @@ class HPOConfigurator:
 
     @hpo_config.setter
     def hpo_config(self, hpo_config: HpoConfig | None) -> None:
-        train_dataset_size = len(
-            self._engine.datamodule.subsets[self._engine.datamodule.config.train_subset.subset_name],
-        )
+        train_dataset_size = len(self._engine.datamodule.train_dataloader())
         if self._engine.datamodule.config.val_subset.subset_name in self._engine.datamodule.subsets:
-            val_dataset_size = len(
-                self._engine.datamodule.subsets[self._engine.datamodule.config.val_subset.subset_name],
-            )
+            val_dataset_size = len(self._engine.datamodule.val_dataloader())
         else:
             val_dataset_size = 1
 
