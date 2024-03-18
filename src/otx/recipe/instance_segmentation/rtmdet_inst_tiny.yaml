@@ -45,7 +45,7 @@ overrides:
       include_polygons: true
       train_subset:
         batch_size: 4
-        num_workers: 10
+        num_workers: 8
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -98,8 +98,8 @@ overrides:
               - 1
           - type: PackDetInputs
       val_subset:
-        batch_size: 2
-        num_workers: 10
+        batch_size: 1
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -122,8 +122,8 @@ overrides:
               - img_shape
               - scale_factor
       test_subset:
-        batch_size: 2
-        num_workers: 10
+        batch_size: 1
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null
