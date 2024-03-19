@@ -77,8 +77,8 @@ class TestCustomRTMDetInsSepBNHead:
     def test_predict_by_feat_onnx(self) -> None:
         lit_module = RTMDetInst(num_classes=1, variant="tiny")
         lit_module.eval()
-        lit_module = lit_module.to("cpu")
-        lit_module.model = lit_module.model.to("cpu")
+        lit_module = lit_module.to("cuda")
+        lit_module.model = lit_module.model.to("cuda")
         with tempfile.TemporaryDirectory() as tmpdirname:
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
