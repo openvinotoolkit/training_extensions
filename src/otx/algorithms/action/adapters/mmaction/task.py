@@ -329,6 +329,7 @@ class MMActionTask(OTXActionTask):
                 datasets,
                 cfg,
                 cfg.distributed,
+                meta=meta,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 

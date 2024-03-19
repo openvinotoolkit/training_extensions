@@ -416,6 +416,7 @@ class MMClassificationTask(OTXClassificationTask):
                 cfg,
                 cfg.distributed,
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                meta=meta,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 

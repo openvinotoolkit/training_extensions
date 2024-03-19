@@ -5,7 +5,7 @@
 
 from copy import copy
 from math import sqrt
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -51,6 +51,7 @@ def _train_func_single_iter(
     datasets: List[Dataset],
     cfg: OTXConfig,
     validate: bool = False,
+    meta: Optional[Dict[str, Any]] = None,
 ):
     caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
@@ -83,6 +84,7 @@ def _train_func_single_iter(
         cfg=cfg,
         distributed=False,
         validate=validate,
+        meta=meta,
     )
 
 
@@ -93,6 +95,7 @@ def adapt_batch_size(
     cfg: OTXConfig,
     distributed: bool = False,
     validate: bool = False,
+    meta: Optional[Dict[str, Any]] = None,
     not_increase: bool = True,
 ):
     """Decrease batch size if default batch size isn't fit to current GPU device.
@@ -108,6 +111,7 @@ def adapt_batch_size(
         cfg (OTXConfig): Configuration of a training.
         distributed (bool): whether distributed training or not.
         validate (bool): Whether do vlidation or not.
+        meta (Optional[Dict[str, Any]]): meta information.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
@@ -128,6 +132,7 @@ def adapt_batch_size(
                 "datasets": datasets,
                 "cfg": copied_cfg,
                 "validate": validate,
+                "meta": meta,
             },
             default_bs=default_bs,
             max_bs=len(datasets[0]),
