@@ -206,7 +206,7 @@ Here are the main outputs can expect with CLI:
 
         .. code-block:: shell
 
-            (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml --data_root data/wgisd
+            (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml --data_root data/flower_photos
 
     .. tab-item:: API (from_config)
 
