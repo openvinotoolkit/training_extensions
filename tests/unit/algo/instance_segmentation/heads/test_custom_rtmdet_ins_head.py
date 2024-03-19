@@ -74,15 +74,12 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=None,
         )
 
-    def test_predict_by_feat_onnx(self) -> None:
+    def test_predict_by_feat_ov(self) -> None:
         lit_module = RTMDetInst(num_classes=1, variant="tiny")
-        lit_module.eval()
-        lit_module = lit_module.to("cuda")
-        lit_module.model = lit_module.model.to("cuda")
-        with tempfile.TemporaryDirectory() as tmpdirname:
+        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
                 base_name="exported_model",
-                export_format=OTXExportFormatType.ONNX,
+                export_format=OTXExportFormatType.OPENVINO,
             )
             Path.exists(exported_model_path)
