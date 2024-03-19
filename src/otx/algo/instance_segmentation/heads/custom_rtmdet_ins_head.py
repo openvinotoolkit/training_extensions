@@ -67,15 +67,18 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
         )
         mask_logits = mask_logits.sigmoid()
         for inds in chunks:
-            masks[:, inds] = (F.interpolate(
-                mask_logits[:, inds],
-                size=[
-                    img_w,
-                    img_h,
-                ],
-                mode="bilinear",
-                align_corners=False,
-            ) >= threshold).to(dtype=torch.bool)
+            masks[:, inds] = (
+                F.interpolate(
+                    mask_logits[:, inds],
+                    size=[
+                        img_w,
+                        img_h,
+                    ],
+                    mode="bilinear",
+                    align_corners=False,
+                )
+                >= threshold
+            ).to(dtype=torch.bool)
         return masks
 
     def _bbox_mask_post_process(
