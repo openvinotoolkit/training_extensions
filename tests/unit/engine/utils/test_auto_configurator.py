@@ -9,6 +9,7 @@ from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
+from otx.core.types.transformer_libs import TransformLibType
 from otx.engine.utils.auto_configurator import (
     DEFAULT_CONFIG_PER_TASK,
     AutoConfigurator,
@@ -140,3 +141,26 @@ class TestAutoConfigurator:
                 assert callable(sch)
         else:
             assert callable(scheduler)
+
+    def test_update_ov_subset_pipeline(self) -> None:
+        data_root = "tests/assets/car_tree_bug"
+        auto_configurator = AutoConfigurator(data_root=data_root, task="DETECTION")
+
+        datamodule = auto_configurator.get_datamodule()
+
+        assert datamodule.config.test_subset.transforms == [
+            {"type": "LoadImageFromFile"},
+            {"type": "Resize", "scale": [992, 736], "keep_ratio": False},
+            {"type": "LoadAnnotations", "with_bbox": True},
+            {
+                "type": "PackDetInputs",
+                "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+            },
+        ]
+
+        assert datamodule.config.test_subset.transform_lib_type == TransformLibType.MMDET
+
+        updated_datamodule = auto_configurator.update_ov_subset_pipeline(datamodule, subset="test")
+        assert updated_datamodule.config.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
+
+        assert updated_datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION
