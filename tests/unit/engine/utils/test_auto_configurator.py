@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import pytest
+
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel

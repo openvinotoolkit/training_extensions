@@ -3,11 +3,12 @@
 """Unit tests of detection data entity."""
 
 import torch
+from torch import LongTensor
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetBatchDataEntity, DetDataEntity
 from otx.core.types.task import OTXTaskType
-from torch import LongTensor
-from torchvision import tv_tensors
 
 
 class TestDetDataEntity:

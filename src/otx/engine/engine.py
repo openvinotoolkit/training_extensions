@@ -13,6 +13,7 @@ from warnings import warn
 import torch
 from lightning import Trainer, seed_everything
 
+from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
@@ -25,7 +26,6 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
-from otx.algo.plugins import MixedPrecisionXPUPlugin
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import AutoConfigurator
@@ -39,8 +39,6 @@ if TYPE_CHECKING:
     from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
-
-
 
 
 LITMODULE_PER_TASK = {
@@ -139,15 +137,16 @@ class Engine:
             )
         )
         if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
+            import numpy as np
             from mmcv.ops.nms import NMSop
             from mmcv.ops.roi_align import RoIAlign
-            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
             from mmengine.structures import instance_data
-            import numpy as np
 
-            LongTypeTensor = Union[torch.LongTensor, torch.xpu.LongTensor]
-            BoolTypeTensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
-            instance_data.IndexType = Union[str, slice, int, list, LongTypeTensor, BoolTypeTensor, np.ndarray]
+            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
+
+            long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
+            bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
+            instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
 

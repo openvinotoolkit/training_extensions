@@ -1,7 +1,8 @@
 import numpy as np
 import torch
-from otx.core.utils.mask_util import encode_rle
 from pycocotools import mask as mask_utils
+
+from otx.core.utils.mask_util import encode_rle
 
 
 def test_encode_rle(num_test_cases=30):

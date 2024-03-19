@@ -2,8 +2,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
-from typing import Any, Dict, Union
+from typing import Any
 
 import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
@@ -20,19 +21,20 @@ class XPUAccelerator(Accelerator):
     def setup_device(self, device: torch.device) -> None:
         """Sets up the specified device."""
         if device.type != "xpu":
-            raise RuntimeError(f"Device should be xpu, got {device} instead")
+            msg = f"Device should be xpu, got {device} instead"
+            raise RuntimeError(msg)
 
         torch.xpu.set_device(device)
 
     @staticmethod
-    def parse_devices(devices: Any) -> Any:
+    def parse_devices(devices: str | list | torch.device) -> list:
         """Parses devices for multi-GPU training."""
         if isinstance(devices, list):
             return devices
         return [devices]
 
     @staticmethod
-    def get_parallel_devices(devices: Any) -> Any:
+    def get_parallel_devices(devices: list) -> list[torch.device]:
         """Generates a list of parrallel devices."""
         return [torch.device("xpu", idx) for idx in devices]
 
@@ -46,15 +48,16 @@ class XPUAccelerator(Accelerator):
         """Checks if XPU available."""
         return is_xpu_available()
 
-    def get_device_stats(self, device: Union[str, torch.device]) -> Dict[str, Any]:
+    def get_device_stats(self, device: str | torch.device) -> dict[str, Any]:
         """Returns XPU devices stats."""
         return {}
 
     def teardown(self) -> None:
         """Cleans-up XPU-related resources."""
-        pass
 
 
 AcceleratorRegistry.register(
-    XPUAccelerator.accelerator_name, XPUAccelerator, description="Accelerator supports XPU devices"
+    XPUAccelerator.accelerator_name,
+    XPUAccelerator,
+    description="Accelerator supports XPU devices",
 )

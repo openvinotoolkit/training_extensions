@@ -30,12 +30,12 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name=f"pothole_small_{idx}",
             path=Path("detection/pothole_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -46,12 +46,12 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="pothole_medium",
             path=Path("detection/pothole_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -60,26 +60,12 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_large",
             path=Path("detection/vitens_large"),
-            size="large",
+            group="large",
             data_format="coco",
             num_classes=1,
-            num_repeat=1,
+            num_repeat=5,
             extra_overrides={
-                # "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
-            },
-        ),
-        Benchmark.Dataset(
-            name="pascal_tiny",
-            path=Path("pascal_tiny/coco_otx"),
-            size="large",
-            data_format="coco",
-            num_classes=20,
-            num_repeat=1,
-            extra_overrides={
-                # "deterministic": "True",
+                "deterministic": "True",
                 "metric": "otx.core.metrics.fmeasure.FMeasure",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
@@ -118,7 +104,6 @@ class TestPerfObjectDetection(PerfTestBase):
         fxt_dataset: Benchmark.Dataset,
         fxt_benchmark: Benchmark,
     ):
-        fxt_benchmark.accelerator = "xpu"
         self._test_perf(
             model=fxt_model,
             dataset=fxt_dataset,

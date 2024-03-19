@@ -5,6 +5,7 @@
 
 import pytest
 import torch
+
 from otx.algo.action_classification.recognizers.movinet_recognizer import MoViNetRecognizer
 
 

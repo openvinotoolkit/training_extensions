@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from omegaconf import DictConfig
+
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,

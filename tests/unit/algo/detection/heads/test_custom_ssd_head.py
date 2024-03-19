@@ -3,6 +3,7 @@
 """Test of CustomSSDHead."""
 
 from mmdet.models.losses.cross_entropy_loss import CrossEntropyLoss
+
 from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
 
 

@@ -3,6 +3,7 @@
 #
 import pytest
 from omegaconf import DictConfig
+
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.detection import MMDetCompatibleModel
 from otx.core.utils.config import mmconfig_dict_to_dict

@@ -3,18 +3,21 @@
 #
 """Plugin for mixed-precision training on XPU."""
 
+from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Generator, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Generator
 
-import lightning.pytorch as pl
 import torch
-from lightning_fabric.utilities.types import Optimizable
 from lightning.pytorch.plugins.precision.precision import Precision
 from lightning.pytorch.utilities import GradClipAlgorithmType
 from lightning.pytorch.utilities.exceptions import MisconfigurationException
 from torch import Tensor
 from torch.optim import LBFGS, Optimizer
+
+if TYPE_CHECKING:
+    import lightning.pytorch as pl
+    from lightning_fabric.utilities.types import Optimizable
 
 
 class MixedPrecisionXPUPlugin(Precision):
@@ -24,10 +27,10 @@ class MixedPrecisionXPUPlugin(Precision):
         scaler: An optional :class:`torch.cuda.amp.GradScaler` to use.
     """
 
-    def __init__(self, scaler: Optional[Any] = None) -> None:
+    def __init__(self, scaler: torch.cuda.amp.GradScaler | None = None) -> None:
         self.scaler = scaler
 
-    def pre_backward(self, tensor: Tensor, module: "pl.LightningModule") -> Tensor:
+    def pre_backward(self, tensor: Tensor, module: pl.LightningModule) -> Tensor:
         """Apply grad scaler before backward."""
         if self.scaler is not None:
             tensor = self.scaler.scale(tensor)
@@ -36,19 +39,23 @@ class MixedPrecisionXPUPlugin(Precision):
     def optimizer_step(  # type: ignore[override]
         self,
         optimizer: Optimizable,
-        model: "pl.LightningModule",
-        closure: Callable[[], Any],
-        **kwargs: Any,
-    ) -> Any:
+        model: pl.LightningModule,
+        closure: Callable,
+        **kwargs: dict,
+    ) -> None | dict:
         """Make an optimizer step using scaler if it was passed."""
         if self.scaler is None:
             # skip scaler logic, as bfloat16 does not require scaler
             return super().optimizer_step(
-                optimizer, model=model, closure=closure, **kwargs
+                optimizer,
+                model=model,
+                closure=closure,
+                **kwargs,
             )
         if isinstance(optimizer, LBFGS):
+            msg = "Native AMP and the LBFGS optimizer are not compatible."
             raise MisconfigurationException(
-                f"Native AMP and the LBFGS optimizer are not compatible."
+                msg,
             )
         closure_result = closure()
 
@@ -71,14 +78,15 @@ class MixedPrecisionXPUPlugin(Precision):
     def clip_gradients(
         self,
         optimizer: Optimizer,
-        clip_val: Union[int, float] = 0.0,
+        clip_val: int | float = 0.0,
         gradient_clip_algorithm: GradClipAlgorithmType = GradClipAlgorithmType.NORM,
     ) -> None:
         """Handle grad clipping with scaler."""
         if clip_val > 0 and _optimizer_handles_unscaling(optimizer):
+            msg = f"The current optimizer, {type(optimizer).__qualname__}, does not allow for gradient clipping"
+            " because it performs unscaling of gradients internally. HINT: Are you using a 'fused' optimizer?"
             raise RuntimeError(
-                f"The current optimizer, {type(optimizer).__qualname__}, does not allow for gradient clipping"
-                " because it performs unscaling of gradients internally. HINT: Are you using a 'fused' optimizer?"
+                msg,
             )
         super().clip_gradients(optimizer=optimizer, clip_val=clip_val, gradient_clip_algorithm=gradient_clip_algorithm)
 
@@ -88,19 +96,19 @@ class MixedPrecisionXPUPlugin(Precision):
         with torch.xpu.autocast(True):
             yield
 
-    def state_dict(self) -> Dict[str, Any]:
+    def state_dict(self) -> dict[str, Any]:
         """Returns state dict of the plugin."""
         if self.scaler is not None:
             return self.scaler.state_dict()
         return {}
 
-    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
+    def load_state_dict(self, state_dict: dict[str, torch.Tensor]) -> None:
         """Loads state dict to the plugin."""
         if self.scaler is not None:
             self.scaler.load_state_dict(state_dict)
 
 
-def _optimizer_handles_unscaling(optimizer: Any) -> bool:
+def _optimizer_handles_unscaling(optimizer: torch.optim.Optimizer) -> bool:
     """Determines if a PyTorch optimizer handles unscaling gradients in the step method ratherthan through the scaler.
 
     Since, the current implementation of this function checks a PyTorch internal variable on the optimizer, the return

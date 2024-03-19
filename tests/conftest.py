@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import pytest
 import torch
+from torchvision.tv_tensors import Image, Mask
+
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegDataEntity
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
-from torchvision.tv_tensors import Image, Mask
 
 
 @pytest.fixture(scope="session")

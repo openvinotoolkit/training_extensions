@@ -3,6 +3,7 @@
 """Test of ClassIncrementalMixin."""
 
 import torch
+
 from otx.algo.detection.atss import ATSS
 
 

@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from datumaro import Dataset as DmDataset
 from omegaconf import DictConfig, OmegaConf
+
 from otx.core.config.data import (
     DataModuleConfig,
     SubsetConfig,

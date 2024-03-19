@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 import pytest
 from jsonargparse import ArgumentParser
+
 from otx.cli.utils.help_formatter import (
     CustomHelpFormatter,
     get_cli_usage_docstring,

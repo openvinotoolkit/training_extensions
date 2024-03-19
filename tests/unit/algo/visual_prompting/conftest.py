@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import pytest
 import torch
+from torchvision import tv_tensors
+
 from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -14,7 +16,6 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingDataEntity,
 )
-from torchvision import tv_tensors
 
 
 @pytest.fixture(scope="session")

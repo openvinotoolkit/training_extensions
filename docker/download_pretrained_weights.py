@@ -8,6 +8,7 @@ from pathlib import Path
 
 from importlib_resources import files
 from omegaconf import OmegaConf
+
 from otx.core.utils.instantiators import partial_instantiate_class
 
 logging.basicConfig(

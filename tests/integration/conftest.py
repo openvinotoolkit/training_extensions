@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from mmengine.config import Config as MMConfig
+
 from otx.core.types.task import OTXTaskType
 
 

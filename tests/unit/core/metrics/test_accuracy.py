@@ -5,6 +5,7 @@
 
 import pytest
 import torch
+
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.metrics.accuracy import (

@@ -7,6 +7,7 @@ from __future__ import annotations
 import pytest
 import torch
 from mmpretrain.structures import DataSample
+
 from otx.algo.classification.heads import CustomMultiLabelLinearClsHead, CustomMultiLabelNonLinearClsHead
 from otx.algo.classification.losses import AsymmetricAngularLossWithIgnore
 
