@@ -136,19 +136,7 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
-            import numpy as np
-            from mmcv.ops.nms import NMSop
-            from mmcv.ops.roi_align import RoIAlign
-            from mmengine.structures import instance_data
-
-            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
-
-            long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
-            bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
-            instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
-            NMSop.forward = monkey_patched_nms
-            RoIAlign.forward = monkey_patched_roi_align
+        self._patch_packages_xpu()
 
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
@@ -927,3 +915,19 @@ class Engine:
         model.optimizer = optimizer
         model.scheduler = scheduler
         return model
+
+    def _patch_packages_xpu(self) -> None:
+        """Patch packages when xpu is available."""
+        if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
+            import numpy as np
+            from mmcv.ops.nms import NMSop
+            from mmcv.ops.roi_align import RoIAlign
+            from mmengine.structures import instance_data
+
+            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
+
+            long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
+            bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
+            instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
+            NMSop.forward = monkey_patched_nms
+            RoIAlign.forward = monkey_patched_roi_align
