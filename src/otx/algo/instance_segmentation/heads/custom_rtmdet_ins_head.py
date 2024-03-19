@@ -189,7 +189,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
         return results
 
 
-def _nms_with_mask_static(
+def _custom_nms_with_mask_static(
     self: CustomRTMDetInsSepBNHead,
     priors: torch.Tensor,
     bboxes: torch.Tensor,
@@ -204,6 +204,10 @@ def _nms_with_mask_static(
     mask_thr_binary: float = 0.5,  # noqa: ARG001
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Wrapper for `multiclass_nms` with ONNXRuntime.
+
+    Note:
+        Compared with the original _nms_with_mask_static, this function
+        crops masks using RoIAlign and returns the cropped masks.
 
     Args:
         self: The instance of `RTMDetInsHead`.
@@ -341,7 +345,7 @@ def rtmdet_ins_head__predict_by_feat(
     keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
     mask_thr_binary = cfg.get("mask_thr_binary", 0.5)
 
-    return _nms_with_mask_static(
+    return _custom_nms_with_mask_static(
         self,
         priors,
         bboxes,
