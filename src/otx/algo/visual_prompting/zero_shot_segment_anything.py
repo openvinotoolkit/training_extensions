@@ -624,20 +624,30 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         save_outputs: bool = True,
         pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
         pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = VisualPromptingMetricCallable,
-        torch_compile: bool = False,
-        **kwargs,
-    ):
-        self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
-        super().__init__(
-            num_classes=num_classes,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            metric=metric,
-            torch_compile=torch_compile,
-        )
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = True,
+        default_threshold_reference: float = 0.3,
+        default_threshold_target: float = 0.65,
+        use_stability_score: bool = False,
+        return_single_mask: bool = False,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        self.config = {
+            "backbone": backbone,
+            "freeze_image_encoder": freeze_image_encoder,
+            "freeze_prompt_encoder": freeze_prompt_encoder,
+            "freeze_mask_decoder": freeze_mask_decoder,
+            "default_threshold_reference": default_threshold_reference,
+            "default_threshold_target": default_threshold_target,
+            "use_stability_score": use_stability_score,
+            "return_single_mask": return_single_mask,
+            "return_extra_metrics": return_extra_metrics,
+            "stability_score_offset": stability_score_offset,
+            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
+        }
+        super().__init__(num_classes=num_classes)
 
         self.save_outputs = save_outputs
         self.root_reference_info: Path = Path(root_reference_info)
