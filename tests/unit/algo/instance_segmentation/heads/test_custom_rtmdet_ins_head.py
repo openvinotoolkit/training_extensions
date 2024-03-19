@@ -1,9 +1,14 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import tempfile
+from pathlib import Path
+
 import torch
 from mmengine.config import ConfigDict
 from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
+from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+from otx.core.types.export import OTXExportFormatType
 
 
 class TestCustomRTMDetInsSepBNHead:
@@ -47,7 +52,7 @@ class TestCustomRTMDetInsSepBNHead:
             return_value=torch.rand(100, 14, 14),
         )
 
-        mask_head.predict_by_feat(
+        results = mask_head.predict_by_feat(
             cls_scores=cls_scores,
             bbox_preds=bbox_preds,
             kernel_preds=kernel_preds,
@@ -56,3 +61,26 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=test_cfg,
             rescale=True,
         )
+
+        mask_head._bbox_mask_post_process(
+            results[0],
+            mask_feat,
+            cfg=test_cfg,
+        )
+
+        mask_head._bbox_mask_post_process(
+            results[0],
+            mask_feat,
+            cfg=None,
+        )
+
+    def test_predict_by_feat_onnx(self, mocker) -> None:
+        lit_module = RTMDetInst(num_classes=1, variant="tiny")
+        lit_module.eval()
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            exported_model_path = lit_module.export(
+                output_dir=Path(tmpdirname),
+                base_name="exported_model",
+                export_format=OTXExportFormatType.ONNX,
+            )
+            Path.exists(exported_model_path)
