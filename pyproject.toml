@@ -67,10 +67,7 @@ docs = [
     "nbsphinx",
 ]
 base = [
-    "torch==2.1.0a0",
-    "torchvision==0.16.0a0",
-    "torchaudio==2.1.0a0",
-    "intel-extension-for-pytorch==2.1.10+xpu",
+    "torch==2.1.1",
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
