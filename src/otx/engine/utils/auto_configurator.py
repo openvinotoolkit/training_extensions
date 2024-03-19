@@ -9,6 +9,7 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
@@ -333,22 +334,26 @@ class AutoConfigurator:
             num_classes=label_info.num_classes,
         )
 
-    def get_ov_datamodule(self) -> OTXDataModule:
-        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+    def update_ov_subset_pipeline(self, datamodule: OTXDataModule, subset: str = "test") -> OTXDataModule:
+        """Returns an OTXDataModule object with OpenVINO subset transforms applied.
+
+        Args:
+            datamodule (OTXDataModule): The original OTXDataModule object.
+            subset (str, optional): The subset to update. Defaults to "test".
 
         Returns:
-            OTXDataModule: An instance of OTXDataModule.
+            OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
-        config = self._load_default_config(model_name="openvino_model")
-        config["data"]["config"]["data_root"] = self.data_root
-        data_config = config["data"]["config"].copy()
-        return OTXDataModule(
-            task=config["data"]["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TileConfig(**data_config.pop("tile_config", {})),
-                **data_config,
-            ),
+        data_configuration = datamodule.config
+        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"][f"{subset}_subset"]
+        subset_config = getattr(data_configuration, f"{subset}_subset")
+        subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
+        subset_config.transforms = ov_test_config["transforms"]
+        data_configuration.tile_config.enable_tiler = False
+        msg = (
+            f"For OpenVINO IR models, Update the following {subset} transforms: {subset_config.transforms}"
+            f"and transform_lib_type: {subset_config.transform_lib_type}"
+            "And the tiler is disabled."
         )
+        warn(msg, stacklevel=1)
+        return OTXDataModule(task=datamodule.task, config=data_configuration)
