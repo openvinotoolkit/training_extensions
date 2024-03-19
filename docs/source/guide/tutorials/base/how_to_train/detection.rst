@@ -182,8 +182,8 @@ Let's check the object detection configuration running the following command:
     callback_monitor: val/map_50
     disable_infer_num_classes: false
     engine:
-    task: DETECTION
-    device: auto
+      task: DETECTION
+      device: auto
     data:
     ...
 
@@ -246,7 +246,7 @@ Here are the main outputs can expect with CLI:
             data_root = "data/wgisd"
 
             engine = Engine(
-                      model="atss_mobilenetv2,
+                      model="atss_mobilenetv2",
                       data_root=data_root,
                       work_dir="otx-workspace",
                     )
