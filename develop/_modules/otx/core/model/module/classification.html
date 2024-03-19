@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/model/module/classification';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -277,7 +273,9 @@
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 
-<div class="viewcode-block" id="OTXMulticlassClsLitModule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule">[docs]</a><span class="k">class</span> <span class="nc">OTXMulticlassClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXMulticlassClsLitModule">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXMulticlassClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the lightning module used in OTX multi-class classification task.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -296,11 +294,14 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMulticlassClsLitModule.configure_metric"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.configure_metric">[docs]</a>    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMulticlassClsLitModule.configure_metric">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.configure_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the metric.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_metric</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span></div>
+
 
     <span class="k">def</span> <span class="nf">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
@@ -314,7 +315,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">/accuracy&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMulticlassClsLitModule.validation_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.validation_step">[docs]</a>    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMulticlassClsLitModule.validation_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.validation_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single validation step on a batch of data from the validation set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -331,6 +334,7 @@
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
             <span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">preds</span><span class="p">:</span> <span class="n">MulticlassClsBatchPredEntity</span> <span class="o">|</span> <span class="n">MulticlassClsBatchPredEntityWithXAI</span><span class="p">,</span>
@@ -343,7 +347,9 @@
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
         <span class="p">}</span>
 
-<div class="viewcode-block" id="OTXMulticlassClsLitModule.test_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.test_step">[docs]</a>    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMulticlassClsLitModule.test_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMulticlassClsLitModule.test_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single test step on a batch of data from the test set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -358,10 +364,14 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">Metric</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
-            <span class="p">)</span></div></div>
+            <span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="OTXMultilabelClsLitModule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule">[docs]</a><span class="k">class</span> <span class="nc">OTXMultilabelClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OTXMultilabelClsLitModule">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXMultilabelClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the lightning module used in OTX multi-label classification task.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -380,7 +390,9 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMultilabelClsLitModule.configure_metric"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.configure_metric">[docs]</a>    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMultilabelClsLitModule.configure_metric">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.configure_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the metric.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
             <span class="n">num_classes_augmented_params</span> <span class="o">=</span> <span class="p">{</span>
@@ -401,6 +413,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span></div>
 
+
     <span class="k">def</span> <span class="nf">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter</span><span class="p">:</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
@@ -410,7 +423,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">/accuracy&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMultilabelClsLitModule.validation_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.validation_step">[docs]</a>    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMultilabelClsLitModule.validation_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.validation_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single validation step on a batch of data from the validation set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -427,6 +442,7 @@
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
             <span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">preds</span><span class="p">:</span> <span class="n">MultilabelClsBatchPredEntity</span> <span class="o">|</span> <span class="n">MultilabelClsBatchPredEntityWithXAI</span><span class="p">,</span>
@@ -437,7 +453,9 @@
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">),</span>
         <span class="p">}</span>
 
-<div class="viewcode-block" id="OTXMultilabelClsLitModule.test_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.test_step">[docs]</a>    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXMultilabelClsLitModule.test_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXMultilabelClsLitModule.test_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single test step on a batch of data from the test set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -452,10 +470,14 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">Metric</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
-            <span class="p">)</span></div></div>
+            <span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="OTXHlabelClsLitModule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule">[docs]</a><span class="k">class</span> <span class="nc">OTXHlabelClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OTXHlabelClsLitModule">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXHlabelClsLitModule</span><span class="p">(</span><span class="n">OTXLitModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the lightning module used in OTX H-label classification task.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -485,7 +507,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span><span class="p">:</span> <span class="nb">int</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_singlelabel_classes</span><span class="p">:</span> <span class="nb">int</span>
 
-<div class="viewcode-block" id="OTXHlabelClsLitModule.configure_metric"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.configure_metric">[docs]</a>    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXHlabelClsLitModule.configure_metric">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.configure_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the metric.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span><span class="p">)</span>
@@ -510,6 +534,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span></div>
 
+
     <span class="k">def</span> <span class="nf">_set_hlabel_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="p">,</span> <span class="n">HLabelInfo</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The type of self.label_info should be HLabelInfo, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
@@ -533,7 +558,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">/accuracy&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXHlabelClsLitModule.validation_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.validation_step">[docs]</a>    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXHlabelClsLitModule.validation_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.validation_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single validation step on a batch of data from the validation set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -549,6 +576,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
             <span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -566,7 +594,9 @@
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">),</span>
         <span class="p">}</span>
 
-<div class="viewcode-block" id="OTXHlabelClsLitModule.test_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.test_step">[docs]</a>    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXHlabelClsLitModule.test_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.classification.html#otx.core.model.module.classification.OTXHlabelClsLitModule.test_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a single test step on a batch of data from the test set.</span>
 
 <span class="sd">        :param batch: A batch of data (a tuple) containing the input tensor of images and target</span>
@@ -583,6 +613,7 @@
                 <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_pred_entity_to_compute_metric</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
             <span class="p">)</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Meta information of OTXLitModule.&quot;&quot;&quot;</span>
@@ -595,6 +626,7 @@
     <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_meta_info</span> <span class="o">=</span> <span class="n">label_info</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_hlabel_setup</span><span class="p">()</span></div>
+
 </pre></div>
 
             </article>
@@ -671,7 +703,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

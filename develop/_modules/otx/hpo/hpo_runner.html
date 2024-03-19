@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
-    <script src="../../../_static/tabs.js"></script>
-    <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/hpo/hpo_runner';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -268,16 +264,16 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="RunningTrial"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.RunningTrial">[docs]</a><span class="nd">@dataclass</span>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">RunningTrial</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Data class for a running trial.&quot;&quot;&quot;</span>
 
     <span class="n">process</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span>
     <span class="n">trial</span><span class="p">:</span> <span class="n">Trial</span>
-    <span class="n">queue</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span></div>
+    <span class="n">queue</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span>
 
 
-<div class="viewcode-block" id="HpoLoop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.HpoLoop">[docs]</a><span class="k">class</span> <span class="nc">HpoLoop</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">HpoLoop</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;HPO loop manager to run trials.</span>
 
 <span class="sd">    Args:</span>
@@ -320,7 +316,7 @@
         <span class="n">append_main_proc_signal_handler</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_signal_handler</span><span class="p">)</span>
         <span class="n">append_main_proc_signal_handler</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_signal_handler</span><span class="p">)</span>
 
-<div class="viewcode-block" id="HpoLoop.run"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.HpoLoop.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a HPO loop.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;HPO loop starts.&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -343,7 +339,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HPO trials exited abnormally more than three times. HPO is suspended.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_reports</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_join_all_processes</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_join_all_processes</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_start_trial_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trial</span><span class="p">:</span> <span class="n">Trial</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> trial is now running.&quot;</span><span class="p">)</span>
@@ -434,7 +430,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_all_running_processes</span><span class="p">()</span>
 
         <span class="n">singal_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;SIGINT&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">:</span> <span class="s2">&quot;SIGTERM&quot;</span><span class="p">}</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">singal_name</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span><span class="si">}</span><span class="s2"> is sent. process exited.&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">singal_name</span><span class="p">[</span><span class="n">signum</span><span class="p">]</span><span class="si">}</span><span class="s2"> is sent. process exited.&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_run_train</span><span class="p">(</span><span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">hp_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">report_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -482,7 +478,9 @@
     <span class="k">return</span> <span class="n">trial_status</span>
 
 
-<div class="viewcode-block" id="run_hpo_loop"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.hpo_runner.html#otx.hpo.run_hpo_loop">[docs]</a><span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
+<div class="viewcode-block" id="run_hpo_loop">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.run_hpo_loop">[docs]</a>
+<span class="k">def</span> <span class="nf">run_hpo_loop</span><span class="p">(</span>
     <span class="n">hpo_algo</span><span class="p">:</span> <span class="n">HpoBase</span><span class="p">,</span>
     <span class="n">train_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">resource_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
@@ -506,6 +504,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">hpo_loop</span> <span class="o">=</span> <span class="n">HpoLoop</span><span class="p">(</span><span class="n">hpo_algo</span><span class="p">,</span> <span class="n">train_func</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">,</span> <span class="n">num_parallel_trial</span><span class="p">,</span> <span class="n">num_gpu_for_single_trial</span><span class="p">,</span> <span class="n">available_gpu</span><span class="p">)</span>
     <span class="n">hpo_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+
 </pre></div>
 
             </article>
@@ -582,7 +581,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

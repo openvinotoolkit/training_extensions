@@ -13,6 +13,13 @@ otx.algo.segmentation.heads
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CustomFCNHead
+      CustomLightHamHead
+   
    
 
    
@@ -20,13 +27,4 @@ otx.algo.segmentation.heads
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algo.segmentation.heads.custom_fcn_head
-   otx.algo.segmentation.heads.custom_ham_head
 

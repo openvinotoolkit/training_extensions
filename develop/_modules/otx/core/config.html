@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
-    <script src="../../../_static/tabs.js"></script>
-    <script src="../../../_static/design-tabs.js"></script>
+    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/config';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -253,7 +249,9 @@
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">dtype</span>
 
 
-<div class="viewcode-block" id="as_int_tuple"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_int_tuple">[docs]</a><span class="k">def</span> <span class="nf">as_int_tuple</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<div class="viewcode-block" id="as_int_tuple">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_int_tuple">[docs]</a>
+<span class="k">def</span> <span class="nf">as_int_tuple</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve YAML list into Python integer tuple.</span>
 
 <span class="sd">    Example:</span>
@@ -266,7 +264,10 @@
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="as_torch_dtype"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_torch_dtype">[docs]</a><span class="k">def</span> <span class="nf">as_torch_dtype</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dtype</span><span class="p">:</span>
+
+<div class="viewcode-block" id="as_torch_dtype">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.as_torch_dtype">[docs]</a>
+<span class="k">def</span> <span class="nf">as_torch_dtype</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dtype</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve YAML string into PyTorch dtype.</span>
 
 <span class="sd">    Example:</span>
@@ -318,7 +319,10 @@
     <span class="k">return</span> <span class="n">mapping</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="dtype_representer"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.dtype_representer">[docs]</a><span class="k">def</span> <span class="nf">dtype_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span> <span class="o">|</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">dtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">:</span>
+
+<div class="viewcode-block" id="dtype_representer">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.dtype_representer">[docs]</a>
+<span class="k">def</span> <span class="nf">dtype_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span> <span class="o">|</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">dtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom representer for converting dtype object to YAML sequence node.</span>
 
 <span class="sd">    Args:</span>
@@ -331,7 +335,10 @@
     <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_str</span><span class="p">(</span><span class="s2">&quot;${as_torch_dtype:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="any_representer"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.any_representer">[docs]</a><span class="k">def</span> <span class="nf">any_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span> <span class="o">|</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
+
+<div class="viewcode-block" id="any_representer">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.any_representer">[docs]</a>
+<span class="k">def</span> <span class="nf">any_representer</span><span class="p">(</span><span class="n">dumper</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span> <span class="o">|</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">yaml</span><span class="o">.</span><span class="n">ScalarNode</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Representer function that converts any data to a YAML node.</span>
 
 <span class="sd">    Args:</span>
@@ -344,7 +351,10 @@
     <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_none</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ignore_aliases"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.ignore_aliases">[docs]</a><span class="k">def</span> <span class="nf">ignore_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># noqa: ARG001, ANN401</span>
+
+<div class="viewcode-block" id="ignore_aliases">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.ignore_aliases">[docs]</a>
+<span class="k">def</span> <span class="nf">ignore_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">yaml</span><span class="o">.</span><span class="n">representer</span><span class="o">.</span><span class="n">SafeRepresenter</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># noqa: ARG001, ANN401</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine whether to ignore aliases in YAML representation.</span>
 
 <span class="sd">    Args:</span>
@@ -364,7 +374,10 @@
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="register_configs"><a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.register_configs">[docs]</a><span class="k">def</span> <span class="nf">register_configs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="register_configs">
+<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.core.config.html#otx.core.config.register_configs">[docs]</a>
+<span class="k">def</span> <span class="nf">register_configs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register custom resolvers.&quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">OmegaConf</span>
 
@@ -378,6 +391,7 @@
     <span class="n">yaml</span><span class="o">.</span><span class="n">SafeDumper</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="n">dtype_representer</span><span class="p">)</span>
     <span class="n">yaml</span><span class="o">.</span><span class="n">SafeDumper</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="n">_SpecialForm</span><span class="p">,</span> <span class="n">any_representer</span><span class="p">)</span>  <span class="c1"># typing.Any for DictConfig</span>
     <span class="n">yaml</span><span class="o">.</span><span class="n">SafeDumper</span><span class="o">.</span><span class="n">ignore_aliases</span> <span class="o">=</span> <span class="n">ignore_aliases</span>  <span class="c1"># type: ignore  # noqa: PGH003</span></div>
+
 
 
 <span class="n">register_configs</span><span class="p">()</span>
@@ -457,7 +471,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

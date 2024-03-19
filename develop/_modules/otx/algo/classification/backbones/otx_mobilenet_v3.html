@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/classification/backbones/otx_mobilenet_v3';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -265,7 +261,7 @@
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="ModelInterface"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.ModelInterface">[docs]</a><span class="k">class</span> <span class="nc">ModelInterface</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ModelInterface</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Model Interface.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -304,21 +300,21 @@
 
         <span class="k">if</span> <span class="n">reduce_dims</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span></div>
+        <span class="k">return</span> <span class="n">out</span>
 
 
-<div class="viewcode-block" id="HSigmoid"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.HSigmoid">[docs]</a><span class="k">class</span> <span class="nc">HSigmoid</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HSigmoid</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Approximated sigmoid function, so-called hard-version of sigmoid from &#39;Searching for MobileNetV3,&#39;.</span>
 
 <span class="sd">    https://arxiv.org/abs/1905.02244.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="HSigmoid.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.HSigmoid.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">relu6</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span></div></div>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">relu6</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
 
 
-<div class="viewcode-block" id="HSwish"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.HSwish">[docs]</a><span class="k">class</span> <span class="nc">HSwish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HSwish</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;H-Swish activation function from &#39;Searching for MobileNetV3,&#39;.</span>
 
 <span class="sd">    https://arxiv.org/abs/1905.02244.</span>
@@ -331,12 +327,12 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span> <span class="o">=</span> <span class="n">inplace</span>
 
-<div class="viewcode-block" id="HSwish.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.HSwish.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">relu6</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span></div></div>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">relu6</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span>
 
 
-<div class="viewcode-block" id="SELayer"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.SELayer">[docs]</a><span class="k">class</span> <span class="nc">SELayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SELayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SE layer.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
@@ -349,34 +345,34 @@
             <span class="n">HSigmoid</span><span class="p">(),</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="SELayer.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.SELayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="c1"># with no_nncf_se_layer_context():</span>
         <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg_pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span></div></div>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
 
 
-<div class="viewcode-block" id="conv_3x3_bn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.conv_3x3_bn">[docs]</a><span class="k">def</span> <span class="nf">conv_3x3_bn</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">conv_3x3_bn</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv 3x3 layer with batch-norm.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">IN_conv1</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
         <span class="n">HSwish</span><span class="p">(),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="conv_1x1_bn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.conv_1x1_bn">[docs]</a><span class="k">def</span> <span class="nf">conv_1x1_bn</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;softmax&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">conv_1x1_bn</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;softmax&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Conv 1x1 layer with batch-norm.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">),</span>
         <span class="n">HSwish</span><span class="p">()</span> <span class="k">if</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;softmax&quot;</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">PReLU</span><span class="p">(),</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-<div class="viewcode-block" id="InvertedResidual"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.InvertedResidual">[docs]</a><span class="k">class</span> <span class="nc">InvertedResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">InvertedResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Inverted residual.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">use_se</span><span class="p">,</span> <span class="n">use_hs</span><span class="p">):</span>
@@ -430,14 +426,14 @@
                 <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">),</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="InvertedResidual.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.InvertedResidual.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="MobileNetV3Base"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3Base">[docs]</a><span class="k">class</span> <span class="nc">MobileNetV3Base</span><span class="p">(</span><span class="n">ModelInterface</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MobileNetV3Base</span><span class="p">(</span><span class="n">ModelInterface</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base model of MobileNetV3.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -466,15 +462,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_finder</span> <span class="o">=</span> <span class="n">lr_finder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_dim</span> <span class="o">=</span> <span class="n">feature_dim</span>
 
-<div class="viewcode-block" id="MobileNetV3Base.infer_head"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3Base.infer_head">[docs]</a>    <span class="k">def</span> <span class="nf">infer_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">skip_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">infer_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">skip_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Inference head.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="MobileNetV3Base.extract_features"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3Base.extract_features">[docs]</a>    <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract features.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="MobileNetV3Base.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3Base.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_embeddings</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gt_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_IN</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -482,10 +478,10 @@
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">return_featuremaps</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">y</span>
-        <span class="k">return</span> <span class="n">y</span></div></div>
+        <span class="k">return</span> <span class="n">y</span>
 
 
-<div class="viewcode-block" id="MobileNetV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3">[docs]</a><span class="k">class</span> <span class="nc">MobileNetV3</span><span class="p">(</span><span class="n">MobileNetV3Base</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MobileNetV3</span><span class="p">(</span><span class="n">MobileNetV3Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileNetV3.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfgs</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">IN_conv1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -517,12 +513,12 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_weights</span><span class="p">()</span>
 
-<div class="viewcode-block" id="MobileNetV3.extract_features"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3.extract_features">[docs]</a>    <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract features.&quot;&quot;&quot;</span>
         <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">)</span>
 
-<div class="viewcode-block" id="MobileNetV3.infer_head"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.MobileNetV3.infer_head">[docs]</a>    <span class="k">def</span> <span class="nf">infer_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">skip_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">infer_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">skip_pool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Inference head.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_pool</span><span class="p">:</span>
             <span class="n">glob_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_feature_vector</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pooling_type</span><span class="p">,</span> <span class="n">reduce_dims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -530,7 +526,7 @@
             <span class="n">glob_features</span> <span class="o">=</span> <span class="n">x</span>
 
         <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">glob_features</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">glob_features</span><span class="p">,</span> <span class="n">logits</span></div>
+        <span class="k">return</span> <span class="n">glob_features</span><span class="p">,</span> <span class="n">logits</span>
 
     <span class="k">def</span> <span class="nf">_initialize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
@@ -546,10 +542,12 @@
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
-                <span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span></div>
+                <span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="OTXMobileNetV3"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.OTXMobileNetV3">[docs]</a><span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="OTXMobileNetV3">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXMobileNetV3">[docs]</a>
+<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OTXMobileNetV3</span><span class="p">(</span><span class="n">MobileNetV3</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MobileNetV3 model for OTX.&quot;&quot;&quot;</span>
 
@@ -595,18 +593,25 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">width_mult</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># pylint: disable=consider-using-f-string</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMobileNetV3.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.OTXMobileNetV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXMobileNetV3.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXMobileNetV3.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_featuremaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXMobileNetV3.init_weights"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.otx_mobilenet_v3.html#otx.algo.classification.backbones.OTXMobileNetV3.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OTXMobileNetV3.init_weights">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.backbones.html#otx.algo.classification.backbones.OTXMobileNetV3.init_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize weights.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrained</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">pretrained</span><span class="p">):</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pretrained</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;init weight - </span><span class="si">{</span><span class="n">pretrained_urls</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             </article>
@@ -683,7 +688,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

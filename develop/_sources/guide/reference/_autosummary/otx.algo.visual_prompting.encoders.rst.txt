@@ -13,6 +13,13 @@ otx.algo.visual\_prompting.encoders
 
    
    
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SAMImageEncoder
+      SAMPromptEncoder
+   
    
 
    
@@ -20,13 +27,4 @@ otx.algo.visual\_prompting.encoders
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.algo.visual_prompting.encoders.sam_image_encoder
-   otx.algo.visual_prompting.encoders.sam_prompt_encoder
 

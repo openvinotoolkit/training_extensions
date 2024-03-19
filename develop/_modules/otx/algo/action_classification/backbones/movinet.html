@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/algo/action_classification/backbones/movinet';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -257,7 +253,7 @@
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span><span class="p">,</span> <span class="n">_triple</span>
 
 
-<div class="viewcode-block" id="Conv2dBNActivation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.Conv2dBNActivation">[docs]</a><span class="k">class</span> <span class="nc">Conv2dBNActivation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Conv2dBNActivation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A base module that applies a 2D Conv-BN-Activation.</span>
 
 <span class="sd">    Args:</span>
@@ -319,10 +315,10 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_planes</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_layers</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_layers</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Conv3DBNActivation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.Conv3DBNActivation">[docs]</a><span class="k">class</span> <span class="nc">Conv3DBNActivation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Conv3DBNActivation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A base module that applies a 3D Conv-BN-Activation.</span>
 
 <span class="sd">    Args:</span>
@@ -385,10 +381,10 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_planes</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_layers</span><span class="p">)</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dict_layers</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ConvBlock3D"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.ConvBlock3D">[docs]</a><span class="k">class</span> <span class="nc">ConvBlock3D</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ConvBlock3D</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A module that applies a 2+1D or 3D Conv-BN-activation sequential.</span>
 
 <span class="sd">    Args:</span>
@@ -507,7 +503,7 @@
                 <span class="n">x</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;b c t (h w) -&gt; b c t h w&quot;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
-<div class="viewcode-block" id="ConvBlock3D.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.ConvBlock3D.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of ConvBlock3D.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_like</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">same_padding</span><span class="p">(</span>
@@ -519,10 +515,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="SqueezeExcitation"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.SqueezeExcitation">[docs]</a><span class="k">class</span> <span class="nc">SqueezeExcitation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SqueezeExcitation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Squeeze-and-Excitation (SE) block.</span>
 
 <span class="sd">    Args:</span>
@@ -582,10 +578,10 @@
         <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_2</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SqueezeExcitation.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.SqueezeExcitation.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of SqueezeExcitation.&quot;&quot;&quot;</span>
         <span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">x</span>
 
 
 <span class="k">def</span> <span class="nf">_make_divisible</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">divisor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">min_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -598,7 +594,7 @@
     <span class="k">return</span> <span class="n">new_v</span>
 
 
-<div class="viewcode-block" id="same_padding"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.same_padding">[docs]</a><span class="k">def</span> <span class="nf">same_padding</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">same_padding</span><span class="p">(</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
     <span class="n">in_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">in_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -636,17 +632,17 @@
     <span class="n">pad_left</span> <span class="o">=</span> <span class="n">pad_along_width</span> <span class="o">//</span> <span class="mi">2</span>
     <span class="n">pad_right</span> <span class="o">=</span> <span class="n">pad_along_width</span> <span class="o">-</span> <span class="n">pad_left</span>
     <span class="n">padding_pad</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_left</span><span class="p">,</span> <span class="n">pad_right</span><span class="p">,</span> <span class="n">pad_top</span><span class="p">,</span> <span class="n">pad_bottom</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">padding_pad</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">padding_pad</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TFAvgPool3D"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.TFAvgPool3D">[docs]</a><span class="k">class</span> <span class="nc">TFAvgPool3D</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TFAvgPool3D</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;3D average pooling layer with padding.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">avgf</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool3d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
-<div class="viewcode-block" id="TFAvgPool3D.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.TFAvgPool3D.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies 3D average pooling with padding to the input tensor.</span>
 
 <span class="sd">        Args:</span>
@@ -672,10 +668,10 @@
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">9</span> <span class="o">/</span> <span class="mi">6</span>
             <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="mi">9</span> <span class="o">/</span> <span class="mi">6</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="BasicBneck"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.BasicBneck">[docs]</a><span class="k">class</span> <span class="nc">BasicBneck</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">BasicBneck</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic bottleneck block of MoViNet network.</span>
 
 <span class="sd">    Args:</span>
@@ -773,7 +769,7 @@
         <span class="c1"># ReZero</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BasicBneck.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.BasicBneck.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of BasicBneck.&quot;&quot;&quot;</span>
         <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;expand&quot;</span><span class="p">):</span>
@@ -781,10 +777,10 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deep</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">se</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">residual</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">residual</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">x</span>
 
 
-<div class="viewcode-block" id="MoViNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.MoViNet">[docs]</a><span class="k">class</span> <span class="nc">MoViNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MoViNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MoViNet class used for video classification.</span>
 
 <span class="sd">    Args:</span>
@@ -854,7 +850,7 @@
             <span class="n">activation_layer</span><span class="o">=</span><span class="n">activation_layer</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="MoViNet.avg"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.MoViNet.avg">[docs]</a>    <span class="k">def</span> <span class="nf">avg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">avg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the adaptive average pool of the input tensor.</span>
 
 <span class="sd">        Args:</span>
@@ -864,9 +860,9 @@
 <span class="sd">            Tensor: A tensor with the averaged values.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">adaptive_avg_pool3d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">adaptive_avg_pool3d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MoViNet._init_weights"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.MoViNet._init_weights">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_init_weights</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;fan_out&quot;</span><span class="p">)</span>
@@ -877,21 +873,23 @@
             <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span></div>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MoViNet.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.MoViNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward function of MoViNet.&quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv7</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MoViNet.init_weights"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.MoViNet.init_weights">[docs]</a>    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the weights of network.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_weights</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_weights</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="OTXMoViNet"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.OTXMoViNet">[docs]</a><span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<div class="viewcode-block" id="OTXMoViNet">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.html#otx.algo.action_classification.OTXMoViNet">[docs]</a>
+<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">OTXMoViNet</span><span class="p">(</span><span class="n">MoViNet</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MoViNet wrapper class for OTX.&quot;&quot;&quot;</span>
 
@@ -940,7 +938,9 @@
         <span class="n">cfg</span><span class="o">.</span><span class="n">dense9</span> <span class="o">=</span> <span class="n">Config</span><span class="p">({</span><span class="s2">&quot;hidden_dim&quot;</span><span class="p">:</span> <span class="mi">2048</span><span class="p">})</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXMoViNet.fill_se_config"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.OTXMoViNet.fill_se_config">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OTXMoViNet.fill_se_config">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.html#otx.algo.action_classification.OTXMoViNet.fill_se_config">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">fill_se_config</span><span class="p">(</span>
         <span class="n">conf</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
         <span class="n">input_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -977,7 +977,10 @@
             <span class="n">padding</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXMoViNet.fill_conv"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.backbones.movinet.html#otx.algo.action_classification.OTXMoViNet.fill_conv">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="OTXMoViNet.fill_conv">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.html#otx.algo.action_classification.OTXMoViNet.fill_conv">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">fill_conv</span><span class="p">(</span>
         <span class="n">conf</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
         <span class="n">input_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1003,7 +1006,9 @@
         <span class="n">conf</span><span class="o">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
         <span class="n">conf</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
         <span class="n">conf</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
-        <span class="n">conf</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span></div></div>
+        <span class="n">conf</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span></div>
+</div>
+
 </pre></div>
 
             </article>
@@ -1080,7 +1085,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>
