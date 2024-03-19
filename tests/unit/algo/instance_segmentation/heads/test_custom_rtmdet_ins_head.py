@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import tempfile
+from functools import partial
 from pathlib import Path
 
 import torch
@@ -77,6 +78,10 @@ class TestCustomRTMDetInsSepBNHead:
     def test_predict_by_feat_ov(self) -> None:
         lit_module = RTMDetInst(num_classes=1, variant="tiny")
         with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
+            lit_module.model.bbox_head.anchor_generator.single_level_grid_priors = partial(
+                lit_module.model.bbox_head.anchor_generator.single_level_grid_priors,
+                device="cpu",
+            )
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
                 base_name="exported_model",
