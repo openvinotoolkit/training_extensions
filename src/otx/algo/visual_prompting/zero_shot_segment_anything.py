@@ -19,12 +19,9 @@ from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
 from torch.nn import functional as F  # noqa: N812
 from torchvision import tv_tensors
-from torchvision.tv_tensors import BoundingBoxes, Image
+from torchvision.tv_tensors import BoundingBoxes, Image, Mask, TVTensor
 
-from otx.algo.visual_prompting.segment_anything import (
-    DEFAULT_CONFIG_SEGMENT_ANYTHING,
-    SegmentAnything,
-)
+from otx.algo.visual_prompting.segment_anything import DEFAULT_CONFIG_SEGMENT_ANYTHING, SegmentAnything
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
@@ -230,8 +227,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
     @torch.no_grad()
     def learn(
         self,
-        images: list[tv_tensors.Image],
-        processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]],
+        images: list[Image],
+        processed_prompts: list[dict[int, list[TVTensor]]],
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
@@ -244,8 +241,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Currently, single batch is only supported.
 
         Args:
-            images (list[tv_tensors.Image]): List of given images for reference features.
-            processed_prompts (dict[int, list[tv_tensors.TVTensor]]): The class-wise prompts
+            images (list[Image]): List of given images for reference features.
+            processed_prompts (dict[int, list[TVTensor]]): The class-wise prompts
                 processed at OTXZeroShotSegmentAnything._gather_prompts_with_labels.
             reference_feats (Tensor): Reference features for target prediction.
             used_indices (Tensor): To check which indices of reference features are validate.
@@ -269,7 +266,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
                 # TODO (sungchul): ensemble multi reference features (current : use merged masks)
                 ref_mask = torch.zeros(*map(int, ori_shape), dtype=torch.uint8, device=image.device)
                 for input_prompt in input_prompts:
-                    if isinstance(input_prompt, tv_tensors.Mask):
+                    if isinstance(input_prompt, Mask):
                         # directly use annotation information as a mask
                         ref_mask[input_prompt == 1] += 1  # TODO (sungchul): check if the mask is bool or int
                     else:
@@ -321,7 +318,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
     @torch.no_grad()
     def infer(
         self,
-        images: list[tv_tensors.Image],
+        images: list[Image],
         reference_feats: Tensor,
         used_indices: Tensor,
         ori_shapes: list[Tensor],
@@ -334,7 +331,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         Get target results by using reference features and target images' features.
 
         Args:
-            images (list[tv_tensors.Image]): Given images for target results.
+            images (list[Image]): Given images for target results.
             reference_feats (Tensor): Reference features for target prediction.
             used_indices (Tensor): To check which indices of reference features are validate.
             ori_shapes (list[Tensor]): Original image size.
@@ -729,7 +726,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             self.used_indices = outputs[0].get("used_indices")
             return outputs
 
-        masks: list[tv_tensors.Mask] = []
+        masks: list[Mask] = []
         prompts: list[Points] = []
         scores: list[Tensor] = []
         labels: list[LongTensor] = []
@@ -737,7 +734,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             for label, predicted_mask in predicted_masks.items():
                 if len(predicted_mask) == 0:
                     continue
-                masks.append(tv_tensors.Mask(torch.stack(predicted_mask, dim=0), dtype=torch.float32))
+                masks.append(Mask(torch.stack(predicted_mask, dim=0), dtype=torch.float32))
                 prompts.append(
                     Points(
                         torch.stack([p[:2] for p in used_points[label]], dim=0),
@@ -761,11 +758,11 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
 
     def _gather_prompts_with_labels(
         self,
-        prompts: list[list[tv_tensors.TVTensor]],
+        prompts: list[list[TVTensor]],
         labels: list[Tensor],
-    ) -> list[dict[int, list[tv_tensors.TVTensor]]]:
+    ) -> list[dict[int, list[TVTensor]]]:
         """Gather prompts according to labels."""
-        total_processed_prompts: list[dict[int, list[tv_tensors.TVTensor]]] = []
+        total_processed_prompts: list[dict[int, list[TVTensor]]] = []
         for prompt, label in zip(prompts, labels):
             processed_prompts = defaultdict(list)
             for _prompt, _label in zip(prompt, label):  # type: ignore[arg-type]
@@ -774,7 +771,7 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             total_processed_prompts.append(sorted_processed_prompts)
         return total_processed_prompts
 
-    def apply_image(self, image: tv_tensors.Image | np.ndarray, target_length: int = 1024) -> tv_tensors.Image:
+    def apply_image(self, image: Image | np.ndarray, target_length: int = 1024) -> Image:
         """Preprocess image to be used in the model."""
         h, w = image.shape[-2:]
         target_size = self.get_preprocess_shape(h, w, target_length)
