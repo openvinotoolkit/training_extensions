@@ -37,7 +37,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
-  precision: 32 # 16/"16-true" does not work
+  precision: 32
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
@@ -49,7 +49,7 @@ overrides:
       include_polygons: true
       train_subset:
         batch_size: 4
-        num_workers: 10
+        num_workers: 8
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -71,7 +71,7 @@ overrides:
           - type: PackDetInputs
       val_subset:
         batch_size: 1
-        num_workers: 10
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -97,7 +97,7 @@ overrides:
               - scale_factor
       test_subset:
         batch_size: 1
-        num_workers: 10
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null
