@@ -8,11 +8,18 @@ from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from torchmetrics.detection import MeanAveragePrecision
 
-VisualPromptingMetricCallable = lambda label_info: MetricCollection(  # noqa: ARG005
-    metrics={
-        "iou": BinaryJaccardIndex(),
-        "f1-score": BinaryF1Score(),
-        "dice": Dice(),
-        "mAP": MeanAveragePrecision(iou_type="segm"),
-    },
-)
+from otx.core.data.dataset.base import LabelInfo
+
+
+def _visual_prompting_metric_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001
+    return MetricCollection(
+        metrics={
+            "iou": BinaryJaccardIndex(),
+            "f1-score": BinaryF1Score(),
+            "dice": Dice(),
+            "mAP": MeanAveragePrecision(iou_type="segm"),
+        },
+    )
+
+
+VisualPromptingMetricCallable = _visual_prompting_metric_callable

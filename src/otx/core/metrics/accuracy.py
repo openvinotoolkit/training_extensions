@@ -11,7 +11,9 @@ import torch
 from torch import nn
 from torchmetrics import ConfusionMatrix, Metric
 from torchmetrics.classification.accuracy import Accuracy as TorchmetricAcc
-from torchmetrics.classification.accuracy import MultilabelAccuracy as TorchmetricMultilabelAcc
+from torchmetrics.classification.accuracy import (
+    MultilabelAccuracy as TorchmetricMultilabelAcc,
+)
 from torchmetrics.collections import MetricCollection
 
 from otx.core.metrics.types import MetricCallable
@@ -338,13 +340,22 @@ class MixedHLabelAccuracy(Metric):
         return multiclass_accs
 
 
-MultiClassClsMetricCallable: MetricCallable = lambda label_info: MetricCollection(
-    {"accuracy": TorchmetricAcc(task="multiclass", num_classes=label_info.num_classes)},
-)
+def _multi_class_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
+    return MetricCollection(
+        {"accuracy": TorchmetricAcc(task="multiclass", num_classes=label_info.num_classes)},
+    )
 
-MultiLabelClsMetricCallable: MetricCallable = lambda label_info: MetricCollection(
-    {"accuracy": TorchmetricAcc(task="multilabel", num_labels=label_info.num_classes)},
-)
+
+MultiClassClsMetricCallable: MetricCallable = _multi_class_cls_metric_callable
+
+
+def _multi_label_cls_metric_callable(label_info: LabelInfo) -> MetricCollection:
+    return MetricCollection(
+        {"accuracy": TorchmetricAcc(task="multilabel", num_labels=label_info.num_classes)},
+    )
+
+
+MultiLabelClsMetricCallable: MetricCallable = _multi_label_cls_metric_callable
 
 
 def _mixed_hlabel_accuracy(label_info: HLabelInfo) -> MetricCollection:

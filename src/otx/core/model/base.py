@@ -42,13 +42,19 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from torch.optim.optimizer import Optimizer, params_t
 
     from otx.core.data.module import OTXDataModule
     from otx.core.metrics import MetricCallable
 
 logger = logging.getLogger()
 
-DefaultOptimizerCallable = lambda params: SGD(params=params, lr=0.01)
+
+def _default_optimizer_callable(params: params_t) -> Optimizer:
+    return SGD(params=params, lr=0.01)
+
+
+DefaultOptimizerCallable = _default_optimizer_callable
 DefaultSchedulerCallable = ConstantLR
 
 

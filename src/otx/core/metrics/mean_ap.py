@@ -5,11 +5,16 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pycocotools.mask as mask_utils
 import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+from otx.core.data.dataset.base import LabelInfo
+
+if TYPE_CHECKING:
+    from torchmetrics import Metric
 
 
 class MaskRLEMeanAveragePrecision(MeanAveragePrecision):
@@ -67,9 +72,18 @@ class MaskRLEMeanAveragePrecision(MeanAveragePrecision):
         return None, tuple(masks)
 
 
-MeanAPCallable = lambda label_info: MeanAveragePrecision(box_format="xyxy", iou_type="bbox")  # noqa: ARG005
+def _mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
+    return MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
 
-MaskRLEMeanAPCallable = lambda label_info: MaskRLEMeanAveragePrecision(  # noqa: ARG005
-    box_format="xyxy",
-    iou_type="segm",
-)
+
+MeanAPCallable = _mean_ap_callable
+
+
+def _mask_rle_mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
+    return MaskRLEMeanAveragePrecision(
+        box_format="xyxy",
+        iou_type="segm",
+    )
+
+
+MaskRLEMeanAPCallable = _mask_rle_mean_ap_callable

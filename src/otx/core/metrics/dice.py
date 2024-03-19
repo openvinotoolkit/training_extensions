@@ -5,6 +5,13 @@
 from torchmetrics.classification.dice import Dice
 from torchmetrics.collections import MetricCollection
 
-DiceCallable = lambda label_info: MetricCollection(
-    {"Dice": Dice(num_classes=label_info.num_classes + 1, ignore_index=label_info.num_classes)},
-)
+from otx.core.data.dataset.base import LabelInfo
+
+
+def _dice_callable(label_info: LabelInfo) -> MetricCollection:
+    return MetricCollection(
+        {"Dice": Dice(num_classes=label_info.num_classes + 1, ignore_index=label_info.num_classes)},
+    )
+
+
+DiceCallable = _dice_callable
