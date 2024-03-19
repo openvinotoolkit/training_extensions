@@ -6,7 +6,7 @@ To learn more about Classification task, refer to :doc:`../../../explanation/alg
 
 .. note::
 
-  To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
+  To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./classification`.
 
 The process has been tested on the following configuration.
 
@@ -34,7 +34,6 @@ environment:
 .. code-block:: shell
 
   .otx/bin/activate
-  # or by this line, if you created an environment, using tox
   . venv/otx/bin/activate
 
 ***************************
@@ -44,12 +43,26 @@ Dataset preparation
 Download and prepare a `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_
 with the following command:
 
+To prepare the classification dataset, need to make the directory for the train/validation and test.
+Since this is just example, we'll use the same train/val/test datasets.
+
 .. code-block:: shell
 
   cd data
+
+  # download and unzip the data
   wget http://download.tensorflow.org/example_images/flower_photos.tgz
   tar -xzvf flower_photos.tgz
-  cd ..
+
+  # construct the data structure to insert to the OTX
+  cd flower_photos
+  mkdir train
+  mv daisy dandelion roses sunflowers tulips train
+  cp -r train val
+  cp -r train test
+
+  # move the original directory
+  cd ../..
 
 |
 
@@ -58,17 +71,24 @@ with the following command:
 
 |
 
-This dataset contains images of 5 different flower categories and is stored in the ImageNet format which is supported by OpenVINO™ Training Extensions:
+Then the final dataset directory likes below,
+please keep the exact same name for the train/val/test folder, to identify the dataset.
 
 .. code-block::
 
   flower_photos
-    ├── daisy
-    ├── dandelion
-    ├── roses
-    ├── sunflowers
-    ├── tulips
-
+    train
+      ├── daisy
+      ├── dandelion
+      ├── roses
+      ├── sunflowers
+      ├── tulips
+    val
+      ├── daisy
+      ├── ... 
+    test
+      ├── daisy
+      ├── ... 
 
 *********
 Training
@@ -83,48 +103,70 @@ The list of supported templates for classification is available with the command
 
   You also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
-.. code-block:: shell
+.. tab-set::
 
-  (otx) ...$ otx find --task MULTI_CLSS_CLS
-  ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
-  ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃                                  
-  ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
-  │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │                                  
-  │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │                                  
-  │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │                                  
-  │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │                                  
-  │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │                                  
-  │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │                                  
-  │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │                                  
-  │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │                                  
-  │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │                                  
-  │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │                                  
-  │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │                                  
-  │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │                                  
-  │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │                                  
-  │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │                                  
-  │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │                                  
-  │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │                                  
-  │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │                                  
-  └─────────────────┴──────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
+  .. tab-item:: CLI
 
-To have a specific example in this tutorial, all commands will be run on the :ref:`otx_mobilenet_v3_large <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+    .. code-block:: shell
 
-2.  Next, you need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classification.
-For other classification types you need to prepare splits in advance.
+      (otx) ...$ otx find --task MULTI_CLASS_CLS
+      ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
+      ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃                                  
+      ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
+      │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │                                  
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │                                  
+      │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │                                  
+      │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │                                  
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │                                  
+      │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │                                  
+      │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │                                  
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │                                  
+      │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │                                  
+      │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │                                  
+      │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │                                  
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │                                  
+      │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │                                  
+      │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │                                  
+      │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │                                  
+      │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │                                  
+      │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │                                  
+      └─────────────────┴──────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
 
-.. note::
+  .. tab-item:: API
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classification. For the multi-label and hierarchical tasks you need to prepare data splits in advance.
+    .. code-block:: python
 
-Let's prepare an OpenVINO™ Training Extensions classification workspace running the following command:
+      from otx.engine.utils.api import list_models
+
+      model_lists = list_models(task="MULTI_CLASS_CLS", pattern="*efficient") 
+      print(model_lists)
+      '''
+      [
+        'otx_efficientnet_b0',
+        'efficientnet_v2_light',
+        'efficientnet_b0_light',
+        ...
+      ]
+      '''
+
+2. On this step we will prepare custom configuration
+with:
+
+- all necessary configs for otx_efficientnet_b0
+- train/validation sets, based on provided annotation.
+
+It may be counterintuitive, but for ``--data_root`` we need to pass the path to the dataset folder root (in our case it's ``data/flower_photos``) instead of the folder with validation images.
+This is because the function automatically detects annotations and images according to the expected folder structure we achieved above.
+
+Let's check the multi-class classification configuration running the following command:
 
 .. code-block:: shell
 
   (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml  --data_root data/flower_photos --print_config
 
+  ...
   data_root: data/flower_photos
-  work_dir: otx-regression
+  work_dir: otx-workspace
   callback_monitor: val/accuracy
   disable_infer_num_classes: false
   engine:
@@ -133,132 +175,367 @@ Let's prepare an OpenVINO™ Training Extensions classification workspace runnin
   data:
   ...
 
-3. To start training you need to call ``otx train``
+.. note::
 
-.. code-block:: shell
+    If you want to get configuration as yaml file, please use ``--print_config`` parameter and ``> configs.yaml``.
 
-  (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml  --data_root data/flower_photos
+    .. code-block:: shell
 
-That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
+        (otx) ...$ otx train --config  src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml --data_root data/flower_photos --print_config > configs.yaml
+        # Update configs.yaml & Train configs.yaml
+        (otx) ...$ otx train --config configs.yaml
 
-The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.
 
-After that, you have the PyTorch classification model trained with OpenVINO™ Training Extensions, which you can use for evaluation, export, optimization and deployment.
+3. ``otx train`` trains a model (a particular model template)
+on a dataset and results:
+
+Here are the main outputs can expect with CLI:
+- ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt`` - a model checkpoint file.
+- ``{work_dir}/{timestamp}/configs.yaml`` - The configuration file used in the training can be reused to reproduce the training.
+- ``{work_dir}/.latest`` - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.
+
+.. tab-set::
+
+    .. tab-item:: CLI (auto-config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --data_root data/flower_photos
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml --data_root data/flower_photos
+
+    .. tab-item:: API (from_config)
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "data/flower_photos"
+            recipe = "src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml"
+
+            engine = Engine.from_config(
+                      config_path=recipe,
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "data/flower_photos"
+
+            engine = Engine(
+                      model="otx_mobilenet_v3_large",
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
+
+For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
+                                     --max_epochs 100
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
+            datamodule = OTXDataModule(..., config=data_config)
+
+            engine = Engine(..., datamodule=datamodule)
+
+            engine.train(max_epochs=100)
+
+
+5. The training result ``checkpoints/*.ckpt`` file is located in ``{work_dir}`` folder,
+while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. note::
-  If you specified ``--workspace``, you also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
-
-***********
-Validation
-***********
-
-1. ``otx eval`` runs evaluation of a trained
-model on a specific dataset.
-
-The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
-
-``otx eval`` will calculate a top-1 accuracy score for multi-class classification.
-
-2. The command below will run validation on our dataset
-and save performance results in ``performance.json`` file:
+    We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights models/weights.pth \
-                      --output outputs
+    otx-workspace
+    ├── outputs/
+        ├── 20240403_134256/
+            ├── csv/
+            ├── checkpoints/
+            |   └── epoch_*.pth
+            ├── tensorboard/
+            └── configs.yaml
+        └── .latest
+            └── train/
+    ...
 
-You will get a similar validation output:
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
-.. code-block::
+After that, we have the PyTorch multi-class classification model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
 
-  ...
+***********
+Evaluation
+***********
 
-  2023-02-03 23:43:29,514 | INFO : run task done.
-  2023-02-03 23:43:35,859 | INFO : called evaluate()
-  2023-02-03 23:43:35,870 | INFO : Accuracy after evaluation: 0.9659400544959128
-  2023-02-03 23:43:35,871 | INFO : Evaluation completed
-  Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
+1. ``otx test`` runs evaluation of a
+trained model on a particular dataset.
+
+Test function receives test annotation information and model snapshot, trained in previous step.
+
+The default metric is accuracy measure.
+
+2. That's how we can evaluate the snapshot in ``otx-workspace``
+folder on flower_photos dataset and save results to ``otx-workspace``:
+
+.. tab-set::
+
+    .. tab-item:: CLI (with work_dir)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/data_time       │    0.9929155111312866     │
+            │       test/map_50         │    0.0430680550634861     │
+            │      test/iter_time       │    0.058606021106243134   │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --config  src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml \
+                                --data_root data/flower_photos \
+                                --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_014.ckpt
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/data_time       │    0.9929155111312866     │
+            │       test/map_50         │    0.0430680550634861     │
+            │      test/iter_time       │    0.058606021106243134   │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.test()
+
+
+3. The output of ``{work_dir}/{timestamp}/csv/version_0/metrics.csv`` consists of
+a dict with target metric name and its value.
+
 
 *********
 Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
-2. You can run the below command line to export the trained model
-and save the exported model to the ``openvino_model`` folder:
+2. That's how we can export the trained model ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt``
+from the previous section and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
 
-.. code-block::
+.. tab-set::
 
-  (otx) ...$ otx export --load-weights models/weights.pth \
-                        --output openvino_model
+    .. tab-item:: CLI (with work_dir)
 
-  ...
+        .. code-block:: shell
 
-  2023-02-02 03:23:03,057 | INFO : run task done.
-  2023-02-02 03:23:03,064 | INFO : Exporting completed
+            (otx) ...$ otx export --work_dir otx-workspace
+            ...
+            Elapsed time: 0:00:02.446673
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_014.ckpt
+            ...
+            Elapsed time: 0:00:02.446673
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.export()
 
 
-3. You can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
-using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
+3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+using ``otx test`` and passing the IR model path to the ``--checkpoint`` parameter.
 
-.. code-block::
+.. tab-set::
 
-  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights openvino_model/openvino.xml \
-                      --output openvino_model
+    .. tab-item:: CLI (with work_dir)
 
-  ...
+        .. code-block:: shell
 
-  Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
+            (otx) ...$ otx test --work_dir otx-workspace \
+                                --checkpoint otx-workspace/20240312_052847/exported_model.xml \
+                                --engine.device cpu
+            ...
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │       test/accuracy       │    0.9931880235671997     │
+            │      test/data_time       │   0.018398193642497063    │
+            │      test/iter_time       │    0.2764030694961548     │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --config src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml \
+                                --data_root data/flower_photos \
+                                --checkpoint otx-workspace/20240312_052847/exported_model.xml \
+                                --engine.device cpu
+            ...
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │       test/accuracy       │    0.9931880235671997     │
+            │      test/data_time       │   0.018398193642497063    │
+            │      test/iter_time       │    0.2764030694961548     │
+            └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            exported_model = engine.export()
+            engine.test(checkpoint=exported_model)
+
+
+4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
+Learn more about template-specific parameters using ``otx export --help``.
+
+For example, If you want to get the ONNX model format you can run it like below.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_014.ckpt --export_format ONNX
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.export(..., export_format="ONNX")
+
+If you also want to export ``saliency_map``, a feature related to explain, and ``feature_vector`` information for XAI, you can do the following.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_014.ckpt --explain True
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.export(..., explain=True)
 
 
 *************
 Optimization
 *************
 
-1. You can further optimize the model with ``otx optimize``.
-It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
+1. We can further optimize the model with ``otx optimize``.
+It uses PTQ depending on the model and transforms it to ``INT8`` format.
 
-Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
+``PTQ`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
-2. Command example for optimizing
-a PyTorch model (`.pth`) with OpenVINO™ NNCF.
+To learn more about optimization, refer to `NNCF repository <https://github.com/openvinotoolkit/nncf>`_.
 
-.. code-block::
+2.  Command example for optimizing OpenVINO™ model (.xml)
+with OpenVINO™ PTQ.
 
-  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
+.. tab-set::
 
-  ...
+    .. tab-item:: CLI
 
-  INFO:nncf:Loaded 983/983 parameters
-  2023-02-04 00:06:11,725 | INFO : run task done.
-  2023-02-04 00:06:16,924 | INFO : called evaluate()
-  2023-02-04 00:06:16,935 | INFO : Accuracy after evaluation: 0.9591280653950953
-  2023-02-04 00:06:16,936 | INFO : Evaluation completed
-  Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
+        .. code-block:: shell
 
-The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
+            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+                                     --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
-3.  Command example for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ PTQ.
+            ...
+            Statistics collection ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 30/30 • 0:00:14 • 0:00:00
+            Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
+            Elapsed time: 0:00:08.958733
 
-.. code-block::
+    .. tab-item:: API
 
-  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --output ptq_model
+        .. code-block:: python
 
-  ...
+            ckpt_path = "otx-workspace/20240312_052847/exported_model.xml"
+            engine.optimize(checkpoint=ckpt_path)
 
-  Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
 
-Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
+The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
+Please note, that PTQ will take some time without logging to optimize the model.
 
-4. Now you have fully trained, optimized and exported an
-efficient model representation ready-to-use classification model.
+3. Finally, we can also evaluate the optimized model by passing
+it to the ``otx test`` function.
 
-The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
-The examples are provided with an object detection model, but it is easy to apply them for classification by substituting the object detection model with classification one.
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace \ 
+                                --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
+                                --engine.device cpu
+
+            ...
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │       test/accuracy       │     0.989645779132843     │
+            │      test/data_time       │    0.00853706430643797    │
+            │      test/iter_time       │    0.43554383516311646    │
+            └───────────────────────────┴───────────────────────────┘
+            Elapsed time: 0:00:16.260521
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240312_055042/optimized_model.xml"
+            engine.test(checkpoint=ckpt_path)
+
+Now we have fully trained, optimized and exported an efficient model representation ready-to-use multi-class classification model.
