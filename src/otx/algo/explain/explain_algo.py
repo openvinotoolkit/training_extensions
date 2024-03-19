@@ -7,10 +7,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, Sequence
 
-import numpy as np
 import torch
 
 if TYPE_CHECKING:
+    import numpy as np
     from mmengine.structures.instance_data import InstanceData
 
 

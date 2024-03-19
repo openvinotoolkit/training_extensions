@@ -3,18 +3,14 @@
 #
 """Unit tests for detection model entity."""
 
-from typing import TYPE_CHECKING
-
 import pytest
 import torch
 from importlib_resources import files
+from omegaconf import OmegaConf
+from omegaconf.dictconfig import DictConfig
 from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.data.entity.detection import DetBatchPredEntityWithXAI
 from otx.core.model.entity.detection import MMDetCompatibleModel
-
-if TYPE_CHECKING:
-    from omegaconf import OmegaConf
-    from omegaconf.dictconfig import DictConfig
 
 
 class TestOTXDetectionModel:
