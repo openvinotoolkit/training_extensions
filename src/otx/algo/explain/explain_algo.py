@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Hooks for recording/updating model internal activations."""
+"""Algorithms for calculcalating XAI branch for Explainable AI."""
 
 from __future__ import annotations
 
@@ -12,7 +12,6 @@ import torch
 
 if TYPE_CHECKING:
     from mmengine.structures.instance_data import InstanceData
-    from torch.utils.hooks import RemovableHandle
 
 
 def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> torch.Tensor:
@@ -31,7 +30,7 @@ def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> tor
     return torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1)).flatten(start_dim=1)
 
 
-class BaseRecordingForwardHook:
+class BaseExplainAlgo:
     """While registered with the designated PyTorch module, this class caches feature vector during forward pass.
 
     Args:
@@ -115,18 +114,8 @@ class BaseRecordingForwardHook:
         return saliency_maps.to(torch.uint8)
 
 
-class ActivationMapHook(BaseRecordingForwardHook):
-    """ActivationMapHook. Mean of the feature map along the channel dimension."""
-
-    @classmethod
-    def create_and_register_hook(
-        cls,
-        backbone: torch.nn.Module,
-    ) -> BaseRecordingForwardHook:
-        """Create this object and register it to the module forward hook."""
-        hook = cls()
-        hook.handle = backbone.register_forward_hook(hook.recording_forward)
-        return hook
+class ActivationMap(BaseExplainAlgo):
+    """ActivationMap. Mean of the feature map along the channel dimension."""
 
     def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
@@ -143,7 +132,7 @@ class ActivationMapHook(BaseRecordingForwardHook):
         return activation_map.reshape((batch_size, h, w))
 
 
-class ReciproCAMHook(BaseRecordingForwardHook):
+class ReciproCAM(BaseExplainAlgo):
     """Implementation of Recipro-CAM for class-wise saliency map.
 
     Recipro-CAM: gradient-free reciprocal class activation map (https://arxiv.org/pdf/2209.14074.pdf)
@@ -225,7 +214,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         return mosaic_feature_map
 
 
-class ViTReciproCAMHook(BaseRecordingForwardHook):
+class ViTReciproCAM(BaseExplainAlgo):
     """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers.
 
     Args:
@@ -327,8 +316,8 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
         return mosaic_feature_map
 
 
-class DetClassProbabilityMapHook(BaseRecordingForwardHook):
-    """Saliency map hook for object detection models."""
+class DetClassProbabilityMap(BaseExplainAlgo):
+    """Saliency map generation algo for object detection models."""
 
     def __init__(
         self,
@@ -391,8 +380,8 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         return saliency_maps.reshape((batch_size, self._num_classes, height, width))
 
 
-class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
-    """Dummy saliency map hook for Mask R-CNN model."""
+class MaskRCNNExplainAlgo(BaseExplainAlgo):
+    """Dummy saliency map algo for Mask R-CNN model."""
 
     def __init__(self, num_classes: int) -> None:
         super().__init__()
