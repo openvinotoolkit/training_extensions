@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>otx.algo.anomaly.padim &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>otx.algo.anomaly.draem &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -45,11 +45,11 @@
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script src="../../../_static/design-tabs.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algo.anomaly.padim';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algo.anomaly.draem';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algo.anomaly.stfpm" href="otx.algo.anomaly.stfpm.html" />
-    <link rel="prev" title="otx.algo.anomaly.draem" href="otx.algo.anomaly.draem.html" />
+    <link rel="next" title="otx.algo.anomaly.padim" href="otx.algo.anomaly.padim.html" />
+    <link rel="prev" title="otx.algo.anomaly" href="otx.algo.anomaly.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -398,31 +398,31 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.algo.anomaly.padim">
-<span id="otx-algo-anomaly-padim"></span><h1>otx.algo.anomaly.padim<a class="headerlink" href="#module-otx.algo.anomaly.padim" title="Permalink to this heading">#</a></h1>
-<p>OTX Padim model.</p>
+  <section id="module-otx.algo.anomaly.draem">
+<span id="otx-algo-anomaly-draem"></span><h1>otx.algo.anomaly.draem<a class="headerlink" href="#module-otx.algo.anomaly.draem" title="Permalink to this heading">#</a></h1>
+<p>OTX Draem model.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.anomaly.padim.Padim" title="otx.algo.anomaly.padim.Padim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Padim</span></code></a>([backbone, layers, pre_trained, ...])</p></td>
-<td><p>OTX Padim model.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.anomaly.draem.Draem" title="otx.algo.anomaly.draem.Draem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Draem</span></code></a>([enable_sspcab, sspcab_lambda, ...])</p></td>
+<td><p>OTX Draem model.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.algo.anomaly.padim.Padim">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.anomaly.padim.</span></span><span class="sig-name descname"><span class="pre">Padim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'resnet18'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['layer1',</span> <span class="pre">'layer2',</span> <span class="pre">'layer3']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_trained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/anomaly/padim.html#Padim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.anomaly.padim.Padim" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="otx.core.model.module.anomaly.anomaly_lightning.html#otx.core.model.module.anomaly.anomaly_lightning.OTXAnomaly" title="otx.core.model.module.anomaly.anomaly_lightning.OTXAnomaly"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXAnomaly</span></code></a>, <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OTXModel" title="otx.core.model.entity.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Padim</span></code></p>
-<p>OTX Padim model.</p>
+<dt class="sig sig-object py" id="otx.algo.anomaly.draem.Draem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.anomaly.draem.</span></span><span class="sig-name descname"><span class="pre">Draem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_sspcab</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sspcab_lambda</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anomaly_source_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.1,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/anomaly/draem.html#Draem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.anomaly.draem.Draem" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="otx.core.model.module.anomaly.anomaly_lightning.html#otx.core.model.module.anomaly.anomaly_lightning.OTXAnomaly" title="otx.core.model.module.anomaly.anomaly_lightning.OTXAnomaly"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXAnomaly</span></code></a>, <a class="reference internal" href="otx.core.model.entity.base.html#otx.core.model.entity.base.OTXModel" title="otx.core.model.entity.base.OTXModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXModel</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Draem</span></code></p>
+<p>OTX Draem model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>backbone</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>, </em><em>optional</em>) – Feature extractor backbone. Defaults to “resnet18”.</p></li>
-<li><p><strong>layers</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.12)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Feature extractor layers. Defaults to [“layer1”, “layer2”, “layer3”].</p></li>
-<li><p><strong>pre_trained</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Pretrained backbone. Defaults to True.</p></li>
-<li><p><strong>n_features</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – Number of features. Defaults to None.</p></li>
-<li><p><strong>num_classes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a><em>, </em><em>optional</em>) – Anoamly don’t use num_classes ,
-but OTXModel always receives num_classes, so need this.</p></li>
+<li><p><strong>enable_sspcab</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Enable SSPCAB training. Defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>sspcab_lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a>) – SSPCAB loss weight. Defaults to <code class="docutils literal notranslate"><span class="pre">0.1</span></code>.</p></li>
+<li><p><strong>anomaly_source_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em> | </em><em>None</em>) – Path to folder that contains the anomaly source images. Random noise will
+be used if left empty. Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><em>float</em></a><em>]</em>) – Parameter that determines the opacity of the noise mask.
+Defaults to <code class="docutils literal notranslate"><span class="pre">(0.1,</span> <span class="pre">1.0)</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -438,17 +438,17 @@ but OTXModel always receives num_classes, so need this.</p></li>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.algo.anomaly.draem.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.algo.anomaly.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.algo.anomaly.draem</p>
+          <p class="prev-next-title">otx.algo.anomaly</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.algo.anomaly.stfpm.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.algo.anomaly.padim.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.algo.anomaly.stfpm</p>
+      <p class="prev-next-title">otx.algo.anomaly.padim</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -469,10 +469,10 @@ but OTXModel always receives num_classes, so need this.</p></li>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algo.anomaly.padim.Padim">
+  <a class="reference internal nav-link" href="#otx.algo.anomaly.draem.Draem">
    <code class="docutils literal notranslate">
     <span class="pre">
-     Padim
+     Draem
     </span>
    </code>
   </a>
@@ -494,7 +494,7 @@ but OTXModel always receives num_classes, so need this.</p></li>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.algo.anomaly.padim.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.algo.anomaly.draem.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

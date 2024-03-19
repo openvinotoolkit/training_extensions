@@ -572,6 +572,10 @@
 <section id="id9">
 <h5>Training Parameters<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h5>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Enable</span> <span class="pre">SSPCAB</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">False</span></code>. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the model will use the SSPCAB block.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SSPCAB</span> <span class="pre">Lambda</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">0.1</span></code>. This parameter is used to control the trade-off between the self-supervised reconstruction loss and the training loss.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Anomaly</span> <span class="pre">Source</span> <span class="pre">Path</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">None</span></code>. This parameter is used to specify the path to the anomaly source images.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Beta</span></code>: Parameter that determines the opacity of the noise mask. The default is (0.1, 1.0).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span></code>: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.</p></li>
 <li><dl class="simple">

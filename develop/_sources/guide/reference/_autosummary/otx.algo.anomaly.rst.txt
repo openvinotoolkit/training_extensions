@@ -27,6 +27,7 @@ otx.algo.anomaly
    :toctree:
    :recursive:
 
+   otx.algo.anomaly.draem
    otx.algo.anomaly.padim
    otx.algo.anomaly.stfpm
 
