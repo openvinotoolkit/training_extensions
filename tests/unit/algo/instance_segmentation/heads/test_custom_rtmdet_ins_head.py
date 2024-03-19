@@ -7,32 +7,45 @@ from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRT
 
 
 class TestCustomRTMDetInsSepBNHead:
-    def test_init(self) -> None:
+    def test_mask_pred(self, mocker) -> None:
         num_samples = 1
         num_classes = 1
-        num_prototypes = 8
         test_cfg = ConfigDict(
-            nms_pre=100, score_thr=0.05, nms=dict(type="nms", iou_threshold=0.5), max_per_img=100, mask_thr_binary=0.5
+            nms_pre=100,
+            score_thr=0.00,
+            nms={"type": "nms", "iou_threshold": 0.5},
+            max_per_img=100,
+            mask_thr_binary=0.5,
+            min_bbox_size=0,
         )
-        mask_head = CustomRTMDetInsSepBNHead(
-            num_classes=num_classes,
-            in_channels=1,
-            anchor_generator={
-                "type": "MlvlPointGenerator",
-                "offset": 0,
-                "strides": (1,),
-            },
-        )
-        cls_scores = [torch.rand((num_samples, num_classes, 14, 14))]
-        bbox_preds = [torch.rand((num_samples, 4, 14, 14))]
-        kernel_preds = [torch.rand((num_samples, 100, 14, 14))]
-        mask_feat = torch.rand(num_samples, num_prototypes, 14, 14)
         s = 128
         img_metas = {
             "img_shape": (s, s, 3),
             "scale_factor": (1, 1),
             "ori_shape": (s, s, 3),
         }
+        mask_head = CustomRTMDetInsSepBNHead(
+            num_classes=num_classes,
+            in_channels=1,
+            num_prototypes=1,
+            num_dyconvs=1,
+            anchor_generator={
+                "type": "MlvlPointGenerator",
+                "offset": 0,
+                "strides": (1,),
+            },
+            bbox_coder={"type": "DistancePointBBoxCoder"},
+        )
+        cls_scores = [torch.rand((num_samples, num_classes, 14, 14))]
+        bbox_preds = [torch.rand((num_samples, 4, 14, 14))]
+        kernel_preds = [torch.rand((1, 32, 14, 14))]
+        mask_feat = torch.rand(num_samples, 1, 14, 14)
+
+        mocker.patch.object(
+            CustomRTMDetInsSepBNHead,
+            "_mask_predict_by_feat_single",
+            return_value=torch.rand(100, 14, 14),
+        )
 
         mask_head.predict_by_feat(
             cls_scores=cls_scores,
