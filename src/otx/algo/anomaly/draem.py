@@ -1,14 +1,24 @@
 """OTX Draem model."""
+# TODO(someone): Revisit mypy errors after OTXLitModule deprecation and anomaly refactoring
+# mypy: ignore-errors
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from anomalib.models.image import Draem as AnomalibDraem
 
-from otx.core.model.entity.base import OTXModel
-from otx.core.model.module.anomaly import OTXAnomaly
+from otx.core.model.anomaly import OTXAnomaly
+from otx.core.model.base import OTXModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.utilities.types import STEP_OUTPUT
+    from torch.optim.optimizer import Optimizer
+
+    from otx.core.model.anomaly import AnomalyModelInputs
 
 
 class Draem(OTXAnomaly, OTXModel, AnomalibDraem):
@@ -40,3 +50,69 @@ class Draem(OTXAnomaly, OTXModel, AnomalibDraem):
             anomaly_source_path=anomaly_source_path,
             beta=beta,
         )
+
+    def configure_metric(self) -> None:
+        """This does not follow OTX metric configuration."""
+        return
+
+    def configure_optimizers(self) -> tuple[list[Optimizer], list[Optimizer]] | None:
+        """STFPM does not follow OTX optimizer configuration."""
+        return Draem.configure_optimizers(self)
+
+    def on_validation_epoch_start(self) -> None:
+        """Callback triggered when the validation epoch starts."""
+        Draem.on_validation_epoch_start(self)
+
+    def on_test_epoch_start(self) -> None:
+        """Callback triggered when the test epoch starts."""
+        Draem.on_test_epoch_start(self)
+
+    def on_validation_epoch_end(self) -> None:
+        """Callback triggered when the validation epoch ends."""
+        Draem.on_validation_epoch_end(self)
+
+    def on_test_epoch_end(self) -> None:
+        """Callback triggered when the test epoch ends."""
+        Draem.on_test_epoch_end(self)
+
+    def training_step(
+        self,
+        inputs: AnomalyModelInputs,
+        batch_idx: int = 0,
+    ) -> STEP_OUTPUT:
+        """Call training step of the anomalib model."""
+        if not isinstance(inputs, dict):
+            inputs = self._customize_inputs(inputs)
+        return Draem.training_step(self, inputs, batch_idx)  # type: ignore[misc]
+
+    def validation_step(
+        self,
+        inputs: AnomalyModelInputs,
+        batch_idx: int = 0,
+    ) -> STEP_OUTPUT:
+        """Call validation step of the anomalib model."""
+        if not isinstance(inputs, dict):
+            inputs = self._customize_inputs(inputs)
+        return Draem.validation_step(self, inputs, batch_idx)  # type: ignore[misc]
+
+    def test_step(
+        self,
+        inputs: AnomalyModelInputs,
+        batch_idx: int = 0,
+        **kwargs,
+    ) -> STEP_OUTPUT:
+        """Call test step of the anomalib model."""
+        if not isinstance(inputs, dict):
+            inputs = self._customize_inputs(inputs)
+        return Draem.test_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
+
+    def predict_step(
+        self,
+        inputs: AnomalyModelInputs,
+        batch_idx: int = 0,
+        **kwargs,
+    ) -> STEP_OUTPUT:
+        """Call test step of the anomalib model."""
+        if not isinstance(inputs, dict):
+            inputs = self._customize_inputs(inputs)
+        return Draem.predict_step(self, inputs, batch_idx, **kwargs)  # type: ignore[misc]
