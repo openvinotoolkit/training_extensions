@@ -99,7 +99,7 @@ class BsSearchAlgo:
             # Because heapq only supports min heap, use negatized batch size
             self._bs_try_history[bs] = max_memory_reserved
 
-        logger.debug(
+        logger.info(
             f"Adapting Batch size => bs : {bs}, OOM : {oom}, "
             f"memory usage : {max_memory_reserved / self._total_mem}%"
         )
@@ -220,7 +220,7 @@ class BsSearchAlgo:
         bs1 = bs_arr[0][0]
         bs1_mem_usage = bs_arr[0][1]
 
-        for i in range(1, len(bs_arr)):
+        for i in range(len(bs_arr) - 1, 0, -1):
             graident = (bs_arr[i][1] - bs1_mem_usage) / (bs_arr[i][0] - bs1)
             b = bs1_mem_usage - graident * bs1
             if graident != 0:
@@ -237,6 +237,8 @@ class BsSearchAlgo:
                 return bs1
 
         estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
+        print(estimated_bs)
+        breakpoint()
 
         # If estimated_bs is already tried and it used memory more than upper bound,
         # set estimated_bs as lowest value of batch sizes using memory more than uppoer bound - 2

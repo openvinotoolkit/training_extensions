@@ -122,8 +122,8 @@ def adapt_batch_size(
     copied_cfg = copy(cfg)
     copied_cfg.pop("algo_backend", None)
 
+    default_bs = _get_batch_size(cfg)
     if not distributed or (rank := dist.get_rank()) == 0:
-        default_bs = _get_batch_size(cfg)
         bs_search_algo = BsSearchAlgo(
             train_func=_train_func_single_iter,
             train_func_kwargs={
