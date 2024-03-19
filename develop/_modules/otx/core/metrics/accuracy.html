@@ -1,6 +1,7 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../../../">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,23 +25,26 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=949a1ff5" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css?v=a5c4661c" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=d626d52b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../../_static/documentation_options.js?v=79f5c508"></script>
-    <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../../_static/copybutton.js?v=ff8fa330"></script>
-    <script src="../../../../_static/tabs.js?v=3030b3cb"></script>
-    <script src="../../../../_static/design-tabs.js?v=36754332"></script>
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="../../../../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/metrics/accuracy';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -256,9 +260,7 @@
     <span class="kn">from</span> <span class="nn">otx.core.data.dataset.base</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
 
 
-<div class="viewcode-block" id="NamedConfusionMatrix">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.NamedConfusionMatrix">[docs]</a>
-<span class="k">class</span> <span class="nc">NamedConfusionMatrix</span><span class="p">(</span><span class="n">ConfusionMatrix</span><span class="p">):</span>
+<div class="viewcode-block" id="NamedConfusionMatrix"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.NamedConfusionMatrix">[docs]</a><span class="k">class</span> <span class="nc">NamedConfusionMatrix</span><span class="p">(</span><span class="n">ConfusionMatrix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Named Confusion Matrix to add row, col label names.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span>
@@ -302,10 +304,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span></div>
 
 
-
-<div class="viewcode-block" id="AccuracywithLabelGroup">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup">[docs]</a>
-<span class="k">class</span> <span class="nc">AccuracywithLabelGroup</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="AccuracywithLabelGroup"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup">[docs]</a><span class="k">class</span> <span class="nc">AccuracywithLabelGroup</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base accuracy class for the OTX classification tasks with lable group.</span>
 
 <span class="sd">    It calculates the accuracy with the label_groups information, not class.</span>
@@ -330,13 +329,10 @@
     <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">label_info</span>
 
-<div class="viewcode-block" id="AccuracywithLabelGroup.update">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AccuracywithLabelGroup.update"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update state with predictions and targets.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preds</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
-
 
     <span class="k">def</span> <span class="nf">_compute_unnormalized_confusion_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">NamedConfusionMatrix</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -354,23 +350,17 @@
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Average should be MICRO or MACRO, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">average</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AccuracywithLabelGroup.compute">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup.compute">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<div class="viewcode-block" id="AccuracywithLabelGroup.compute"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.AccuracywithLabelGroup.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the metric.&quot;&quot;&quot;</span>
         <span class="n">conf_matrices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_unnormalized_confusion_matrices</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;conf_matrix&quot;</span><span class="p">:</span> <span class="n">conf_matrices</span><span class="p">,</span>
             <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_accuracy_from_conf_matrices</span><span class="p">(</span><span class="n">conf_matrices</span><span class="p">),</span>
-        <span class="p">}</span></div>
-</div>
+        <span class="p">}</span></div></div>
 
 
-
-<div class="viewcode-block" id="MulticlassAccuracywithLabelGroup">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup">[docs]</a>
-<span class="k">class</span> <span class="nc">MulticlassAccuracywithLabelGroup</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
+<div class="viewcode-block" id="MulticlassAccuracywithLabelGroup"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup">[docs]</a><span class="k">class</span> <span class="nc">MulticlassAccuracywithLabelGroup</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accuracy class for the multi-class classification with label group.</span>
 
 <span class="sd">    For the multi-class classification, the number of label_groups should be 1.</span>
@@ -403,10 +393,7 @@
         <span class="k">return</span> <span class="n">conf_matrices</span></div>
 
 
-
-<div class="viewcode-block" id="MultilabelAccuracywithLabelGroup">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup">[docs]</a>
-<span class="k">class</span> <span class="nc">MultilabelAccuracywithLabelGroup</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
+<div class="viewcode-block" id="MultilabelAccuracywithLabelGroup"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup">[docs]</a><span class="k">class</span> <span class="nc">MultilabelAccuracywithLabelGroup</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accuracy class for the multi-label classification with label_group.</span>
 
 <span class="sd">    For the multi-label classification, the number of label_groups should be the same with number of labels.</span>
@@ -438,10 +425,7 @@
         <span class="k">return</span> <span class="n">conf_matrices</span></div>
 
 
-
-<div class="viewcode-block" id="HlabelAccuracy">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.HlabelAccuracy">[docs]</a>
-<span class="k">class</span> <span class="nc">HlabelAccuracy</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
+<div class="viewcode-block" id="HlabelAccuracy"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.HlabelAccuracy">[docs]</a><span class="k">class</span> <span class="nc">HlabelAccuracy</span><span class="p">(</span><span class="n">AccuracywithLabelGroup</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accuracy class for the hierarchical-label classification.</span>
 
 <span class="sd">    H-label Classification is the combination version of multi-class and multi-label classification.</span>
@@ -491,10 +475,7 @@
         <span class="k">return</span> <span class="n">conf_matrices</span></div>
 
 
-
-<div class="viewcode-block" id="MixedHLabelAccuracy">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy">[docs]</a>
-<span class="k">class</span> <span class="nc">MixedHLabelAccuracy</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="MixedHLabelAccuracy"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy">[docs]</a><span class="k">class</span> <span class="nc">MixedHLabelAccuracy</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixed accuracy metric for h-label classification.</span>
 
 <span class="sd">    It only used multi-class and multi-label metrics from torchmetrics.</span>
@@ -550,9 +531,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">multilabel_accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multilabel_accuracy</span><span class="o">.</span><span class="n">_apply</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">exclude_state</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="MixedHLabelAccuracy.update">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preds</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MixedHLabelAccuracy.update"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preds</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update state with predictions and targets.&quot;&quot;&quot;</span>
         <span class="c1"># Split preds into multiclass and multilabel parts</span>
         <span class="k">for</span> <span class="n">head_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">):</span>
@@ -574,10 +553,7 @@
             <span class="c1"># Multilabel update</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">multilabel_accuracy</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds_multilabel</span><span class="p">,</span> <span class="n">target_multilabel</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="MixedHLabelAccuracy.compute">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy.compute">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="MixedHLabelAccuracy.compute"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.metrics.accuracy.html#otx.core.metrics.accuracy.MixedHLabelAccuracy.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the final statistics.&quot;&quot;&quot;</span>
         <span class="n">multiclass_accs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
@@ -590,9 +566,7 @@
 
             <span class="k">return</span> <span class="p">(</span><span class="n">multiclass_accs</span> <span class="o">+</span> <span class="n">multilabel_acc</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
-        <span class="k">return</span> <span class="n">multiclass_accs</span></div>
-</div>
-
+        <span class="k">return</span> <span class="n">multiclass_accs</span></div></div>
 </pre></div>
 
             </article>
@@ -669,7 +643,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

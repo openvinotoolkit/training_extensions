@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../../">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>otx.core.model.module.instance_segmentation &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
@@ -25,22 +26,25 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
-    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.module.instance_segmentation';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -294,9 +298,17 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="otx.html">otx</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.action_detection.html">otx.algo.action_detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.anomaly.html">otx.algo.anomaly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.callbacks.html">otx.algo.callbacks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.classification.html">otx.algo.classification</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.hooks.html">otx.algo.hooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.samplers.html">otx.algo.samplers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.schedulers.html">otx.algo.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.utils.html">otx.algo.utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
@@ -316,15 +328,35 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.data.html">otx.data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.data.anomaly.html">otx.data.anomaly</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.engine.html">otx.engine.engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.hpo.html">otx.engine.hpo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.utils.html">otx.engine.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.signal.html">otx.utils.signal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -332,7 +364,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -367,7 +399,7 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.core.model.module.instance_segmentation">
-<span id="otx-core-model-module-instance-segmentation"></span><h1>otx.core.model.module.instance_segmentation<a class="headerlink" href="#module-otx.core.model.module.instance_segmentation" title="Link to this heading">#</a></h1>
+<span id="otx-core-model-module-instance-segmentation"></span><h1>otx.core.model.module.instance_segmentation<a class="headerlink" href="#module-otx.core.model.module.instance_segmentation" title="Permalink to this heading">#</a></h1>
 <p>Class definition for instance segmentation lightning module used in OTX.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
@@ -379,18 +411,18 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.module.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXInstanceSegLitModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model:</span> <span class="pre">ExplainableOTXInstanceSegModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">list[OptimizerCallable]</span> <span class="pre">|</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">OTXInstanceSegLitModule.&lt;lambda&gt;&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">list[LRSchedulerCallable]</span> <span class="pre">|</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.optim.lr_scheduler.ConstantLR'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">OTXInstanceSegLitModule.&lt;lambda&gt;&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.module.instance_segmentation.</span></span><span class="sig-name descname"><span class="pre">OTXInstanceSegLitModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model:</span> <span class="pre">ExplainableOTXInstanceSegModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_compile:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer:</span> <span class="pre">list[OptimizerCallable]</span> <span class="pre">|</span> <span class="pre">OptimizerCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">OTXInstanceSegLitModule.&lt;lambda&gt;&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler:</span> <span class="pre">list[LRSchedulerCallable]</span> <span class="pre">|</span> <span class="pre">LRSchedulerCallable</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.optim.lr_scheduler.ConstantLR'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric:</span> <span class="pre">MetricCallable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">OTXInstanceSegLitModule.&lt;lambda&gt;&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule" title="otx.core.model.module.base.OTXLitModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXLitModule</span></code></a></p>
 <p>Base class for the lightning module used in OTX instance segmentation task.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.configure_metric">
-<span class="sig-name descname"><span class="pre">configure_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.configure_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.configure_metric" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">configure_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.configure_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.configure_metric" title="Permalink to this definition">#</a></dt>
 <dd><p>Configure the metric.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.load_state_dict">
-<span class="sig-name descname"><span class="pre">load_state_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ckpt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.load_state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.load_state_dict" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_state_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ckpt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.load_state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.load_state_dict" title="Permalink to this definition">#</a></dt>
 <dd><p>Load state_dict from checkpoint.</p>
 <p>For detection, it is need to update confidence threshold information when
 the metric is FMeasure.</p>
@@ -398,24 +430,24 @@ the metric is FMeasure.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_test_epoch_end">
-<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.on_test_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_test_epoch_end" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.on_test_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_test_epoch_end" title="Permalink to this definition">#</a></dt>
 <dd><p>Callback triggered when the test epoch ends.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_validation_epoch_end">
-<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.on_validation_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_validation_epoch_end" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.on_validation_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.on_validation_epoch_end" title="Permalink to this definition">#</a></dt>
 <dd><p>Callback triggered when the validation epoch ends.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">InstanceSegBatchDataEntity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.test_step" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><span class="pre">InstanceSegBatchDataEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.test_step" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform a single test step on a batch of data from the test set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<em>InstanceSegBatchDataEntity</em>) – The input data for the test step.</p></li>
+<li><p><strong>inputs</strong> (<a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><em>InstanceSegBatchDataEntity</em></a>) – The input data for the test step.</p></li>
 <li><p><strong>batch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The index of the current batch.</p></li>
 </ul>
 </dd>
@@ -427,12 +459,12 @@ the metric is FMeasure.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.validation_step">
-<span class="sig-name descname"><span class="pre">validation_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">InstanceSegBatchDataEntity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.validation_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.validation_step" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">validation_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><span class="pre">InstanceSegBatchDataEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/module/instance_segmentation.html#OTXInstanceSegLitModule.validation_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.module.instance_segmentation.OTXInstanceSegLitModule.validation_step" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform a single validation step on a batch of data from the validation set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<em>InstanceSegBatchDataEntity</em>) – The input data for the validation step.</p></li>
+<li><p><strong>inputs</strong> (<a class="reference internal" href="otx.core.data.entity.instance_segmentation.html#otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity" title="otx.core.data.entity.instance_segmentation.InstanceSegBatchDataEntity"><em>InstanceSegBatchDataEntity</em></a>) – The input data for the validation step.</p></li>
 <li><p><strong>batch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The index of the current batch.</p></li>
 </ul>
 </dd>
@@ -621,7 +653,7 @@ the metric is FMeasure.</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

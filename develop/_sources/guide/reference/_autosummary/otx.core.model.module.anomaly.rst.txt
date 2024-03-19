@@ -13,12 +13,6 @@ otx.core.model.module.anomaly
 
    
    
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      OTXAnomaly
-   
    
 
    
@@ -26,4 +20,12 @@ otx.core.model.module.anomaly
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.core.model.module.anomaly.anomaly_lightning
 

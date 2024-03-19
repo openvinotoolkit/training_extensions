@@ -1,0 +1,29 @@
+otx.algo.anomaly.stfpm
+======================
+
+.. automodule:: otx.algo.anomaly.stfpm
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Stfpm
+   
+   
+
+   
+   
+   
+
+
+

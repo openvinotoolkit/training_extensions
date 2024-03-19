@@ -9,22 +9,9 @@ otx.hpo
 
    
    
-   .. rubric:: Functions
-
-   .. autosummary::
-   
-      run_hpo_loop
-   
    
 
    
-   
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      TrialStatus
-      HyperBand
    
    
 
@@ -33,4 +20,17 @@ otx.hpo
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.hpo.hpo_base
+   otx.hpo.hpo_runner
+   otx.hpo.hyperband
+   otx.hpo.resource_manager
+   otx.hpo.search_space
+   otx.hpo.utils
 

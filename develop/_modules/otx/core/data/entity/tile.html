@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.data.entity.tile &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/tabs.js"></script>
+    <script src="../../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/data/entity/tile';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.data.entity.tile</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Module for OTX tile data entities.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXDataEntity</span>
+<span class="kn">from</span> <span class="nn">.detection</span> <span class="kn">import</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetDataEntity</span>
+<span class="kn">from</span> <span class="nn">.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegDataEntity</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">datumaro</span> <span class="kn">import</span> <span class="n">Polygon</span>
+    <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">LongTensor</span>
+    <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
+
+
+<span class="n">T_OTXTileBatchDataEntity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXTileBatchDataEntity&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXTileBatchDataEntity&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="TileDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileDataEntity</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXDataEntity</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base data entity for tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        num_tiles (int): The number of tiles.</span>
+<span class="sd">        entity_list (Sequence[OTXDataEntity]): A list of OTXDataEntity.</span>
+<span class="sd">        tile_attr_list (list[dict[str, int | str]]): The tile attributes including tile index and tile RoI information.</span>
+<span class="sd">        ori_img_info (ImageInfo): The image information about the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">num_tiles</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">entity_list</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">T_OTXDataEntity</span><span class="p">]</span>
+    <span class="n">tile_attr_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]</span>
+    <span class="n">ori_img_info</span><span class="p">:</span> <span class="n">ImageInfo</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXTaskType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OTX Task type definition.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="TileDetDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileDetDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileDetDataEntity</span><span class="p">(</span><span class="n">TileDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity for detection tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ori_bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the original image.</span>
+<span class="sd">        ori_labels (LongTensor): The labels of the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ori_bboxes</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span>
+    <span class="n">ori_labels</span><span class="p">:</span> <span class="n">LongTensor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXTaskType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OTX Task type definition.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">DETECTION</span></div>
+
+
+<div class="viewcode-block" id="OTXTileBatchDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.OTXTileBatchDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXTileBatchDataEntity</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base batch data entity for tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        batch_size (int): The size of the batch.</span>
+<span class="sd">        batch_tiles (list[list[tv_tensors.Image]]): The batch of tile images.</span>
+<span class="sd">        batch_tile_img_infos (list[list[ImageInfo]]): The batch of tiles image information.</span>
+<span class="sd">        batch_tile_attr_list (list[list[dict[str, int | str]]]):</span>
+<span class="sd">            The batch of tile attributes including tile index and tile RoI information.</span>
+<span class="sd">        imgs_info (list[ImageInfo]): The image information about the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">batch_tiles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">]]</span>
+    <span class="n">batch_tile_img_infos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ImageInfo</span><span class="p">]]</span>
+    <span class="n">batch_tile_attr_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]]</span>
+    <span class="n">imgs_info</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ImageInfo</span><span class="p">]</span>
+
+<div class="viewcode-block" id="OTXTileBatchDataEntity.unbind"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.OTXTileBatchDataEntity.unbind">[docs]</a>    <span class="k">def</span> <span class="nf">unbind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unbind batch data entity.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="TileBatchDetDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchDetDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileBatchDetDataEntity</span><span class="p">(</span><span class="n">OTXTileBatchDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch data entity for detection tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bboxes (list[tv_tensors.BoundingBoxes]): The bounding boxes of the original image.</span>
+<span class="sd">        labels (list[LongTensor]): The labels of the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">]</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LongTensor</span><span class="p">]</span>
+
+<div class="viewcode-block" id="TileBatchDetDataEntity.unbind"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchDetDataEntity.unbind">[docs]</a>    <span class="k">def</span> <span class="nf">unbind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">DetBatchDataEntity</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unbind batch data entity for detection task.&quot;&quot;&quot;</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile</span> <span class="k">for</span> <span class="n">tiles</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tiles</span> <span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">]</span>
+        <span class="n">tile_infos</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile_info</span> <span class="k">for</span> <span class="n">tile_infos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tile_img_infos</span> <span class="k">for</span> <span class="n">tile_info</span> <span class="ow">in</span> <span class="n">tile_infos</span><span class="p">]</span>
+        <span class="n">tile_attr_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile_attr</span> <span class="k">for</span> <span class="n">tile_attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tile_attr_list</span> <span class="k">for</span> <span class="n">tile_attr</span> <span class="ow">in</span> <span class="n">tile_attrs</span><span class="p">]</span>
+
+        <span class="n">batch_tile_attr_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tile_attr_list</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_attr_list</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="n">batch_data_entities</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">DetBatchDataEntity</span><span class="p">(</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">tiles</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">],</span>
+                <span class="n">imgs_info</span><span class="o">=</span><span class="n">tile_infos</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">],</span>
+                <span class="n">bboxes</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+                <span class="n">labels</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">batch_tile_attr_list</span><span class="p">,</span> <span class="n">batch_data_entities</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TileBatchDetDataEntity.collate_fn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchDetDataEntity.collate_fn">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">batch_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TileDetDataEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TileBatchDetDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate function to collect TileDetDataEntity into TileBatchDetDataEntity in data loader.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_entities</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should have &gt; 0 entities&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="n">batch_entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">task</span>
+
+        <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">task</span> <span class="o">!=</span> <span class="n">task</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should include a single OTX task&quot;</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">DetDataEntity</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;All entities should be DetDataEntity before collate_fn()&quot;</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TileBatchDetDataEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">batch_tiles</span><span class="o">=</span><span class="p">[[</span><span class="n">entity</span><span class="o">.</span><span class="n">image</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">batch_tile_img_infos</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">img_info</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span>
+            <span class="p">],</span>
+            <span class="n">batch_tile_attr_list</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">tile_attr_list</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_img_info</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_bboxes</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_labels</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TileInstSegDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileInstSegDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileInstSegDataEntity</span><span class="p">(</span><span class="n">TileDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity for instance segmentation tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        ori_bboxes (tv_tensors.BoundingBoxes): The bounding boxes of the original image.</span>
+<span class="sd">        ori_labels (LongTensor): The labels of the original image.</span>
+<span class="sd">        ori_masks (tv_tensors.Mask): The masks of the original image.</span>
+<span class="sd">        ori_polygons (list[Polygon]): The polygons of the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ori_bboxes</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span>
+    <span class="n">ori_labels</span><span class="p">:</span> <span class="n">LongTensor</span>
+    <span class="n">ori_masks</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span>
+    <span class="n">ori_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXTaskType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OTX Task type definition.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span></div>
+
+
+<div class="viewcode-block" id="TileBatchInstSegDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">TileBatchInstSegDataEntity</span><span class="p">(</span><span class="n">OTXTileBatchDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch data entity for instance segmentation tile task.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bboxes (list[tv_tensors.BoundingBoxes]): The bounding boxes of the original image.</span>
+<span class="sd">        labels (list[LongTensor]): The labels of the original image.</span>
+<span class="sd">        masks (list[tv_tensors.Mask]): The masks of the original image.</span>
+<span class="sd">        polygons (list[list[Polygon]]): The polygons of the original image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">bboxes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">]</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LongTensor</span><span class="p">]</span>
+    <span class="n">masks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">]</span>
+    <span class="n">polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Polygon</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="TileBatchInstSegDataEntity.unbind"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity.unbind">[docs]</a>    <span class="k">def</span> <span class="nf">unbind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unbind batch data entity for instance segmentation task.&quot;&quot;&quot;</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile</span> <span class="k">for</span> <span class="n">tiles</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tiles</span> <span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">]</span>
+        <span class="n">tile_infos</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile_info</span> <span class="k">for</span> <span class="n">tile_infos</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tile_img_infos</span> <span class="k">for</span> <span class="n">tile_info</span> <span class="ow">in</span> <span class="n">tile_infos</span><span class="p">]</span>
+        <span class="n">tile_attr_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">tile_attr</span> <span class="k">for</span> <span class="n">tile_attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_tile_attr_list</span> <span class="k">for</span> <span class="n">tile_attr</span> <span class="ow">in</span> <span class="n">tile_attrs</span><span class="p">]</span>
+
+        <span class="n">batch_tile_attr_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tile_attr_list</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tile_attr_list</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">batch_data_entities</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">InstanceSegBatchDataEntity</span><span class="p">(</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">images</span><span class="o">=</span><span class="n">tiles</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">],</span>
+                <span class="n">imgs_info</span><span class="o">=</span><span class="n">tile_infos</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">],</span>
+                <span class="n">bboxes</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+                <span class="n">labels</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+                <span class="n">masks</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+                <span class="n">polygons</span><span class="o">=</span><span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tiles</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">batch_tile_attr_list</span><span class="p">,</span> <span class="n">batch_data_entities</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TileBatchInstSegDataEntity.collate_fn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.tile.html#otx.core.data.entity.tile.TileBatchInstSegDataEntity.collate_fn">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">batch_entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TileInstSegDataEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TileBatchInstSegDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collate function to collect TileInstSegDataEntity into TileBatchInstSegDataEntity in data loader.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_entities</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should have &gt; 0 entities&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="n">batch_entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">task</span>
+
+        <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">task</span> <span class="o">!=</span> <span class="n">task</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should include a single OTX task&quot;</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">InstanceSegDataEntity</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;All entities should be InstanceSegDataEntity before collate_fn()&quot;</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TileBatchInstSegDataEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">batch_tiles</span><span class="o">=</span><span class="p">[[</span><span class="n">entity</span><span class="o">.</span><span class="n">image</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">batch_tile_img_infos</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">img_info</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">tile_entity</span><span class="o">.</span><span class="n">entity_list</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span>
+            <span class="p">],</span>
+            <span class="n">batch_tile_attr_list</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">tile_attr_list</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_img_info</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">bboxes</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_bboxes</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_labels</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">masks</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_masks</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+            <span class="n">polygons</span><span class="o">=</span><span class="p">[</span><span class="n">tile_entity</span><span class="o">.</span><span class="n">ori_polygons</span> <span class="k">for</span> <span class="n">tile_entity</span> <span class="ow">in</span> <span class="n">batch_entities</span><span class="p">],</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

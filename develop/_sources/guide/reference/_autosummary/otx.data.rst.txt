@@ -13,12 +13,6 @@ otx.data
 
    
    
-   .. rubric:: Classes
-
-   .. autosummary::
-   
-      AnomalyDataModule
-   
    
 
    
@@ -26,4 +20,12 @@ otx.data
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.data.anomaly
 

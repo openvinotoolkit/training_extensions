@@ -1,0 +1,29 @@
+otx.algo.anomaly.padim
+======================
+
+.. automodule:: otx.algo.anomaly.padim
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Padim
+   
+   
+
+   
+   
+   
+
+
+

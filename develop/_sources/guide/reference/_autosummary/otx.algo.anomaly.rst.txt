@@ -1,0 +1,33 @@
+otx.algo.anomaly
+================
+
+.. automodule:: otx.algo.anomaly
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.algo.anomaly.draem
+   otx.algo.anomaly.padim
+   otx.algo.anomaly.stfpm
+

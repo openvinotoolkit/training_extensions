@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../../">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>otx.algo.classification &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
@@ -25,27 +26,30 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=949a1ff5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css?v=a5c4661c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../../_static/documentation_options.js?v=79f5c508"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
-    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/design-tabs.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algo.classification';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="otx.algo.classification.backbones" href="otx.algo.classification.backbones.html" />
-    <link rel="prev" title="otx.algo.action_classification" href="otx.algo.action_classification.html" />
+    <link rel="prev" title="otx.algo.callbacks.iteration_timer" href="otx.algo.callbacks.iteration_timer.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -294,9 +298,17 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="otx.html">otx</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.algo.html">otx.algo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.action_detection.html">otx.algo.action_detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.anomaly.html">otx.algo.anomaly</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.callbacks.html">otx.algo.callbacks</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.algo.classification</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.hooks.html">otx.algo.hooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.samplers.html">otx.algo.samplers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.schedulers.html">otx.algo.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.algo.utils.html">otx.algo.utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
@@ -316,15 +328,35 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.data.html">otx.data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.data.anomaly.html">otx.data.anomaly</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.engine.html">otx.engine.engine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.hpo.html">otx.engine.hpo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.engine.utils.html">otx.engine.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.search_space.html">otx.hpo.search_space</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.hpo.utils.html">otx.hpo.utils</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.signal.html">otx.utils.signal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.utils.utils.html">otx.utils.utils</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -332,7 +364,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -367,28 +399,17 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.algo.classification">
-<span id="otx-algo-classification"></span><h1>otx.algo.classification<a class="headerlink" href="#module-otx.algo.classification" title="Link to this heading">#</a></h1>
+<span id="otx-algo-classification"></span><h1>otx.algo.classification<a class="headerlink" href="#module-otx.algo.classification" title="Permalink to this heading">#</a></h1>
 <p>Module for OTX classification models.</p>
-<p class="rubric">Classes</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algo.classification.DINOv2" title="otx.algo.classification.DINOv2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DINOv2</span></code></a>(backbone_name, freeze_backbone, ...)</p></td>
-<td><p>DINO-v2 Model.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#otx.algo.classification.DINOv2RegisterClassifier" title="otx.algo.classification.DINOv2RegisterClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DINOv2RegisterClassifier</span></code></a>(num_classes, config)</p></td>
-<td><p>DINO-v2 Classification Model with register.</p></td>
-</tr>
-</tbody>
-</table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algo.classification.DINOv2">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.</span></span><span class="sig-name descname"><span class="pre">DINOv2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze_backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.</span></span><span class="sig-name descname"><span class="pre">DINOv2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze_backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>DINO-v2 Model.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algo.classification.DINOv2.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2.forward" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2.forward" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function.</p>
 </dd></dl>
 
@@ -396,7 +417,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algo.classification.DINOv2RegisterClassifier">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.</span></span><span class="sig-name descname"><span class="pre">DINOv2RegisterClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2RegisterClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2RegisterClassifier" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algo.classification.</span></span><span class="sig-name descname"><span class="pre">DINOv2RegisterClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/algo/classification/otx_dino_v2.html#DINOv2RegisterClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algo.classification.DINOv2RegisterClassifier" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXMulticlassClsModel" title="otx.core.model.entity.classification.OTXMulticlassClsModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXMulticlassClsModel</span></code></a></p>
 <p>DINO-v2 Classification Model with register.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
@@ -408,11 +429,29 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.backbones.html#module-otx.algo.classification.backbones" title="otx.algo.classification.backbones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.backbones</span></code></a></p></td>
 <td><p>Backbone modules for OTX custom model.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.classification.heads.html#module-otx.algo.classification.heads" title="otx.algo.classification.heads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.heads</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.classification.deit_tiny.html#module-otx.algo.classification.deit_tiny" title="otx.algo.classification.deit_tiny"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.deit_tiny</span></code></a></p></td>
+<td><p>DeitTiny model implementation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.efficientnet_b0.html#module-otx.algo.classification.efficientnet_b0" title="otx.algo.classification.efficientnet_b0"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.efficientnet_b0</span></code></a></p></td>
+<td><p>EfficientNetB0 model implementation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.classification.efficientnet_v2.html#module-otx.algo.classification.efficientnet_v2" title="otx.algo.classification.efficientnet_v2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.efficientnet_v2</span></code></a></p></td>
+<td><p>EfficientNetV2 model implementation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.heads.html#module-otx.algo.classification.heads" title="otx.algo.classification.heads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.heads</span></code></a></p></td>
 <td><p>Head modules for OTX custom model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.losses.html#module-otx.algo.classification.losses" title="otx.algo.classification.losses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.losses</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.classification.losses.html#module-otx.algo.classification.losses" title="otx.algo.classification.losses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.losses</span></code></a></p></td>
 <td><p>Backbone modules for OTX custom model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.mobilenet_v3_large.html#module-otx.algo.classification.mobilenet_v3_large" title="otx.algo.classification.mobilenet_v3_large"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.mobilenet_v3_large</span></code></a></p></td>
+<td><p>MobileNetV3 model implementation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.classification.otx_dino_v2.html#module-otx.algo.classification.otx_dino_v2" title="otx.algo.classification.otx_dino_v2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.otx_dino_v2</span></code></a></p></td>
+<td><p>DINO-V2 model for the OTX classification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.classification.torchvision_model.html#module-otx.algo.classification.torchvision_model" title="otx.algo.classification.torchvision_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.classification.torchvision_model</span></code></a></p></td>
+<td><p>Torchvision model for the OTX classification.</p></td>
 </tr>
 </tbody>
 </table>
@@ -426,11 +465,11 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.algo.action_classification.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.algo.callbacks.iteration_timer.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.algo.action_classification</p>
+          <p class="prev-next-title">otx.algo.callbacks.iteration_timer</p>
       </div>
   </a>
   <a class='right-next' id="next-link" href="otx.algo.classification.backbones.html" title="next page">
@@ -554,7 +593,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

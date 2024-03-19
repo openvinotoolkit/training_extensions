@@ -1,0 +1,1002 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.data.entity.base &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/tabs.js"></script>
+    <script src="../../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/data/entity/base';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.data.entity.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Module for OTX base data entities.&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms.v2.functional</span> <span class="k">as</span> <span class="nn">F</span>  <span class="c1"># noqa: N812</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">stack</span>
+<span class="kn">from</span> <span class="nn">torch.utils._pytree</span> <span class="kn">import</span> <span class="n">tree_flatten</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
+
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.utils</span> <span class="kn">import</span> <span class="n">clamp_points</span><span class="p">,</span> <span class="n">register_pytree_node</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.image</span> <span class="kn">import</span> <span class="n">ImageColorChannel</span><span class="p">,</span> <span class="n">ImageType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="custom_wrap"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.custom_wrap">[docs]</a><span class="k">def</span> <span class="nf">custom_wrap</span><span class="p">(</span><span class="n">wrappee</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">like</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">TVTensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">TVTensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add `Points` in tv_tensors.wrap.</span>
+
+<span class="sd">    If `like` is</span>
+<span class="sd">        - tv_tensors.BoundingBoxes : the `format` and `canvas_size` of `like` are assigned to `wrappee`</span>
+<span class="sd">        - Points : the `canvas_size` of `like` is assigned to `wrappee`</span>
+<span class="sd">    Unless, they are passed as `kwargs`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        wrappee (Tensor): The tensor to convert.</span>
+<span class="sd">        like (tv_tensors.TVTensor): The reference. `wrappee` will be converted into the same subclass as `like`.</span>
+<span class="sd">        kwargs: Can contain &quot;format&quot; and &quot;canvas_size&quot; if `like` is a tv_tensor.BoundingBoxes,</span>
+<span class="sd">            or &quot;canvas_size&quot; if `like` is a `Points`. Ignored otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">like</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span>  <span class="c1"># noqa: SLF001</span>
+            <span class="n">wrappee</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,</span> <span class="n">like</span><span class="o">.</span><span class="n">format</span><span class="p">),</span>
+            <span class="n">canvas_size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;canvas_size&quot;</span><span class="p">,</span> <span class="n">like</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">like</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>  <span class="c1"># noqa: RET505</span>
+        <span class="k">return</span> <span class="n">Points</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">wrappee</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;canvas_size&quot;</span><span class="p">,</span> <span class="n">like</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">))</span>  <span class="c1"># noqa: SLF001</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">wrappee</span><span class="o">.</span><span class="n">as_subclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">like</span><span class="p">))</span></div>
+
+
+<span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span> <span class="o">=</span> <span class="n">custom_wrap</span>
+
+
+<div class="viewcode-block" id="ImageInfo"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.ImageInfo">[docs]</a><span class="k">class</span> <span class="nc">ImageInfo</span><span class="p">(</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">TVTensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Meta info for image.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        img_id: Image id</span>
+<span class="sd">        img_shape: Image shape (heigth, width) after preprocessing</span>
+<span class="sd">        ori_shape: Image shape (heigth, width) right after loading it</span>
+<span class="sd">        padding: Number of pixels to pad all borders (left, top, right, bottom)</span>
+<span class="sd">        scale_factor: Scale factor (height, width) if the image is resized during preprocessing.</span>
+<span class="sd">            Default value is `(1.0, 1.0)` when there is no resizing. However, if the image is cropped,</span>
+<span class="sd">            it will lose the scaling information and be `None`.</span>
+<span class="sd">        normalized: If true, this image is normalized with `norm_mean` and `norm_std`</span>
+<span class="sd">        norm_mean: Mean vector used to normalize this image</span>
+<span class="sd">        norm_std: Standard deviation vector used to normalize this image</span>
+<span class="sd">        image_color_channel: Color channel type of this image, RGB or BGR.</span>
+<span class="sd">        ignored_labels: Label that should be ignored in this image. Default to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">img_idx</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">img_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="n">ori_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">normalized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">norm_mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">norm_std</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span>
+    <span class="n">ignored_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_wrap</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">dummy_tensor</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">img_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">img_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">ori_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="n">normalized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">norm_mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">norm_std</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span><span class="p">,</span>
+        <span class="n">ignored_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+        <span class="n">image_info</span> <span class="o">=</span> <span class="n">dummy_tensor</span><span class="o">.</span><span class="n">as_subclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_idx</span> <span class="o">=</span> <span class="n">img_idx</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="n">img_shape</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">ori_shape</span> <span class="o">=</span> <span class="n">ori_shape</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">normalized</span> <span class="o">=</span> <span class="n">normalized</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">norm_mean</span> <span class="o">=</span> <span class="n">norm_mean</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">norm_std</span> <span class="o">=</span> <span class="n">norm_std</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">image_color_channel</span> <span class="o">=</span> <span class="n">image_color_channel</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">ignored_labels</span> <span class="o">=</span> <span class="n">ignored_labels</span> <span class="k">if</span> <span class="n">ignored_labels</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">image_info</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">img_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">img_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">ori_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="n">normalized</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">norm_mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">norm_std</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+        <span class="n">image_color_channel</span><span class="p">:</span> <span class="n">ImageColorChannel</span> <span class="o">=</span> <span class="n">ImageColorChannel</span><span class="o">.</span><span class="n">RGB</span><span class="p">,</span>
+        <span class="n">ignored_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span>
+            <span class="n">dummy_tensor</span><span class="o">=</span><span class="n">Tensor</span><span class="p">(),</span>
+            <span class="n">img_idx</span><span class="o">=</span><span class="n">img_idx</span><span class="p">,</span>
+            <span class="n">img_shape</span><span class="o">=</span><span class="n">img_shape</span><span class="p">,</span>
+            <span class="n">ori_shape</span><span class="o">=</span><span class="n">ori_shape</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+            <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+            <span class="n">normalized</span><span class="o">=</span><span class="n">normalized</span><span class="p">,</span>
+            <span class="n">norm_mean</span><span class="o">=</span><span class="n">norm_mean</span><span class="p">,</span>
+            <span class="n">norm_std</span><span class="o">=</span><span class="n">norm_std</span><span class="p">,</span>
+            <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_color_channel</span><span class="p">,</span>
+            <span class="n">ignored_labels</span><span class="o">=</span><span class="n">ignored_labels</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_wrap_output</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">output</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[()]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrap an output (`torch.Tensor`) obtained from PyTorch function.</span>
+
+<span class="sd">        For example, this function will be called when</span>
+
+<span class="sd">        &gt;&gt;&gt; img_info = ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10))</span>
+<span class="sd">        &gt;&gt;&gt; `_wrap_output()` will be called after the PyTorch function `to()` is called</span>
+<span class="sd">        &gt;&gt;&gt; img_info = img_info.to(device=torch.cuda)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">flat_params</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tree_flatten</span><span class="p">(</span><span class="n">args</span> <span class="o">+</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">()))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">ImageInfo</span><span class="p">):</span>
+            <span class="n">image_info</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flat_params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ImageInfo</span><span class="p">))</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">ImageInfo</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span>
+                <span class="n">dummy_tensor</span><span class="o">=</span><span class="n">output</span><span class="p">,</span>
+                <span class="n">img_idx</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">img_idx</span><span class="p">,</span>
+                <span class="n">img_shape</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
+                <span class="n">ori_shape</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span>
+                <span class="n">scale_factor</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
+                <span class="n">normalized</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">normalized</span><span class="p">,</span>
+                <span class="n">norm_mean</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">norm_mean</span><span class="p">,</span>
+                <span class="n">norm_std</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">norm_std</span><span class="p">,</span>
+                <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">image_color_channel</span><span class="p">,</span>
+                <span class="n">ignored_labels</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="n">image_infos</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flat_params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ImageInfo</span><span class="p">)]</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)(</span>
+                <span class="n">ImageInfo</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span>
+                    <span class="n">dummy_tensor</span><span class="o">=</span><span class="n">dummy_tensor</span><span class="p">,</span>
+                    <span class="n">img_idx</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">img_idx</span><span class="p">,</span>
+                    <span class="n">img_shape</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
+                    <span class="n">ori_shape</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
+                    <span class="n">padding</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span>
+                    <span class="n">scale_factor</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
+                    <span class="n">normalized</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">normalized</span><span class="p">,</span>
+                    <span class="n">norm_mean</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">norm_mean</span><span class="p">,</span>
+                    <span class="n">norm_std</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">norm_std</span><span class="p">,</span>
+                    <span class="n">image_color_channel</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">image_color_channel</span><span class="p">,</span>
+                    <span class="n">ignored_labels</span><span class="o">=</span><span class="n">image_info</span><span class="o">.</span><span class="n">ignored_labels</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">dummy_tensor</span><span class="p">,</span> <span class="n">image_info</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">image_infos</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pad_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Image shape after padding.&quot;&quot;&quot;</span>
+        <span class="n">h_img</span><span class="p">,</span> <span class="n">w_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">h_img</span> <span class="o">+</span> <span class="n">top</span> <span class="o">+</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">w_img</span> <span class="o">+</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span>
+
+    <span class="nd">@pad_shape</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pad_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set padding from the given pad shape.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pad_shape: Padded image shape (height, width) or (height, width, channel)</span>
+<span class="sd">                which should be larger than this image shape.</span>
+<span class="sd">                In addition, the padded image should be padded</span>
+<span class="sd">                only for the right or bottom borders.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h_img</span><span class="p">,</span> <span class="n">w_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span>
+        <span class="n">h_pad</span><span class="p">,</span> <span class="n">w_pad</span> <span class="o">=</span> <span class="n">pad_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pad_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">h_pad</span> <span class="o">&lt;</span> <span class="n">h_img</span> <span class="ow">or</span> <span class="n">w_pad</span> <span class="o">&lt;</span> <span class="n">w_img</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">pad_shape</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">top</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">w_pad</span> <span class="o">-</span> <span class="n">w_img</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">h_pad</span> <span class="o">-</span> <span class="n">h_img</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;ImageInfo(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;img_idx=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_idx</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;img_shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;ori_shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ori_shape</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;padding=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;scale_factor=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;normalized=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">normalized</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;norm_mean=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_mean</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;norm_std=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_std</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;image_color_channel=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">image_color_channel</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;ignored_labels=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ignored_labels</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">resize</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_resize_image_info</span><span class="p">(</span><span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>  <span class="c1"># noqa: ARG001</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register ImageInfo to TorchVision v2 resize kernel.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">ori_h</span><span class="p">,</span> <span class="n">ori_w</span> <span class="o">=</span> <span class="n">image_info</span><span class="o">.</span><span class="n">ori_shape</span>
+    <span class="n">new_h</span><span class="p">,</span> <span class="n">new_w</span> <span class="o">=</span> <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_h</span> <span class="o">/</span> <span class="n">ori_h</span><span class="p">,</span> <span class="n">new_w</span> <span class="o">/</span> <span class="n">ori_w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">crop</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_crop_image_info</span><span class="p">(</span>
+    <span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register ImageInfo to TorchVision v2 resize kernel.&quot;&quot;&quot;</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">resized_crop</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_resized_crop_image_info</span><span class="p">(</span>
+    <span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register ImageInfo to TorchVision v2 resize kernel.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">center_crop</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_center_crop_image_info</span><span class="p">(</span>
+    <span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+    <span class="n">output_size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register ImageInfo to TorchVision v2 resize kernel.&quot;&quot;&quot;</span>
+    <span class="n">img_shape</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">_geometry</span><span class="o">.</span><span class="n">_center_crop_parse_output_size</span><span class="p">(</span><span class="n">output_size</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">image_info</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_pad_image_info</span><span class="p">(</span>
+    <span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register ImageInfo to TorchVision v2 resize kernel.&quot;&quot;&quot;</span>
+    <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">_geometry</span><span class="o">.</span><span class="n">_parse_pad_padding</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">ImageInfo</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_normalize_image_info</span><span class="p">(</span>
+    <span class="n">image_info</span><span class="p">:</span> <span class="n">ImageInfo</span><span class="p">,</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">std</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageInfo</span><span class="p">:</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">normalized</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">norm_mean</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mean</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mean</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">image_info</span><span class="o">.</span><span class="n">norm_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">std</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">std</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">image_info</span>
+
+
+<div class="viewcode-block" id="Points"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.Points">[docs]</a><span class="k">class</span> <span class="nc">Points</span><span class="p">(</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">TVTensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`torch.Tensor` subclass for points.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        data: Any data that can be turned into a tensor with `torch.as_tensor`.</span>
+<span class="sd">        canvas_size (two-tuple of ints): Height and width of the corresponding image or video.</span>
+<span class="sd">        dtype (torch.dtype, optional): Desired data type of the point. If omitted, will be inferred from `data`.</span>
+<span class="sd">        device (torch.device, optional): Desired device of the point. If omitted and `data` is a</span>
+<span class="sd">            `torch.Tensor`, the device is taken from it. Otherwise, the point is constructed on the CPU.</span>
+<span class="sd">        requires_grad (bool, optional): Whether autograd should record operations on the point. If omitted and</span>
+<span class="sd">            `data` is a `torch.Tensor`, the value is taken from it. Otherwise, defaults to `False`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">canvas_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_wrap</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">canvas_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Points</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">as_subclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">canvas_size</span> <span class="o">=</span> <span class="n">canvas_size</span>
+        <span class="k">return</span> <span class="n">points</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">canvas_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Points</span><span class="p">:</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_to_tensor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_wrap_output</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">output</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[()]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Points</span><span class="p">:</span>
+        <span class="n">flat_params</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tree_flatten</span><span class="p">(</span><span class="n">args</span> <span class="o">+</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="k">if</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="p">()))</span>
+        <span class="n">first_point_from_args</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flat_params</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Points</span><span class="p">))</span>
+        <span class="n">canvas_size</span> <span class="o">=</span> <span class="n">first_point_from_args</span><span class="o">.</span><span class="n">canvas_size</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">Points</span><span class="p">):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">Points</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">output</span><span class="p">)(</span><span class="n">Points</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tensor_contents</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_repr</span><span class="p">(</span><span class="n">canvas_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="resize_points"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.resize_points">[docs]</a><span class="k">def</span> <span class="nf">resize_points</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">canvas_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">max_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resize points.&quot;&quot;&quot;</span>
+    <span class="n">old_height</span><span class="p">,</span> <span class="n">old_width</span> <span class="o">=</span> <span class="n">canvas_size</span>
+    <span class="n">new_height</span><span class="p">,</span> <span class="n">new_width</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">_geometry</span><span class="o">.</span><span class="n">_compute_resized_output_size</span><span class="p">(</span>  <span class="c1"># noqa: SLF001</span>
+        <span class="n">canvas_size</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+        <span class="n">max_size</span><span class="o">=</span><span class="n">max_size</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">new_height</span><span class="p">,</span> <span class="n">new_width</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">old_height</span><span class="p">,</span> <span class="n">old_width</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">points</span><span class="p">,</span> <span class="n">canvas_size</span>
+
+    <span class="n">w_ratio</span> <span class="o">=</span> <span class="n">new_width</span> <span class="o">/</span> <span class="n">old_width</span>
+    <span class="n">h_ratio</span> <span class="o">=</span> <span class="n">new_height</span> <span class="o">/</span> <span class="n">old_height</span>
+    <span class="n">ratios</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">w_ratio</span><span class="p">,</span> <span class="n">h_ratio</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">points</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">new_height</span><span class="p">,</span> <span class="n">new_width</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">resize</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">Points</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_resize_points_dispatch</span><span class="p">(</span>
+    <span class="n">inpt</span><span class="p">:</span> <span class="n">Points</span><span class="p">,</span>
+    <span class="n">size</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">max_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Points</span><span class="p">:</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">canvas_size</span> <span class="o">=</span> <span class="n">resize_points</span><span class="p">(</span>
+        <span class="n">inpt</span><span class="o">.</span><span class="n">as_subclass</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+        <span class="n">inpt</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">,</span>
+        <span class="n">max_size</span><span class="o">=</span><span class="n">max_size</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">inpt</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="pad_points"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.pad_points">[docs]</a><span class="k">def</span> <span class="nf">pad_points</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">canvas_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad points.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">padding_mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;constant&quot;</span><span class="p">]:</span>
+        <span class="c1"># TODO(sungchul): add support of other padding modes # noqa: TD003</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Padding mode &#39;</span><span class="si">{</span><span class="n">padding_mode</span><span class="si">}</span><span class="s2">&#39; is not supported with bounding boxes&quot;</span><span class="p">)</span>  <span class="c1"># noqa: EM102, TRY003</span>
+
+    <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">_geometry</span><span class="o">.</span><span class="n">_parse_pad_padding</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+
+    <span class="n">pad</span> <span class="o">=</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">]</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">points</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pad</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">points</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">points</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">canvas_size</span>
+    <span class="n">height</span> <span class="o">+=</span> <span class="n">top</span> <span class="o">+</span> <span class="n">bottom</span>
+    <span class="n">width</span> <span class="o">+=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span>
+    <span class="n">canvas_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">clamp_points</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">),</span> <span class="n">canvas_size</span></div>
+
+
+<span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">Points</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_pad_bounding_boxes_dispatch</span><span class="p">(</span>
+    <span class="n">inpt</span><span class="p">:</span> <span class="n">Points</span><span class="p">,</span>
+    <span class="n">padding</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">padding_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>  <span class="c1"># noqa: ARG001</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Points</span><span class="p">:</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">canvas_size</span> <span class="o">=</span> <span class="n">pad_points</span><span class="p">(</span>
+        <span class="n">inpt</span><span class="o">.</span><span class="n">as_subclass</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span>
+        <span class="n">canvas_size</span><span class="o">=</span><span class="n">inpt</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="n">padding_mode</span><span class="o">=</span><span class="n">padding_mode</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">inpt</span><span class="p">,</span> <span class="n">canvas_size</span><span class="o">=</span><span class="n">canvas_size</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_size_points"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.get_size_points">[docs]</a><span class="nd">@F</span><span class="o">.</span><span class="n">register_kernel</span><span class="p">(</span><span class="n">functional</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">get_size</span><span class="p">,</span> <span class="n">tv_tensor_cls</span><span class="o">=</span><span class="n">Points</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_size_points</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n">Points</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get size of points.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">point</span><span class="o">.</span><span class="n">canvas_size</span><span class="p">)</span></div>
+
+
+<span class="n">T_OTXDataEntity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXDataEntity&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXDataEntity&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OTXDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXDataEntity">[docs]</a><span class="nd">@register_pytree_node</span>
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXDataEntity</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base data entity for OTX.</span>
+
+<span class="sd">    This entity is the output of each OTXDataset,</span>
+<span class="sd">    which can be go through the input preprocessing tranforms.</span>
+
+<span class="sd">    :param task: OTX task definition</span>
+<span class="sd">    :param image: Image tensor or list of Image tensor which can have different type according to `image_type`</span>
+<span class="sd">        1) `image_type=ImageType.NUMPY`: H x W x C numpy image tensor</span>
+<span class="sd">        2) `image_type=ImageType.TV_IMAGE`: C x H x W torchvision image tensor</span>
+<span class="sd">        3) `image_type=ImageType.NUMPY_LIST`: List of H x W x C numpy image tensors</span>
+<span class="sd">        3) `image_type=ImageType.TV_IMAGE_LIST`: List of C x H x W torchvision image tensors</span>
+<span class="sd">    :param imgs_info: Meta information for images</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">]</span>
+    <span class="n">img_info</span><span class="p">:</span> <span class="n">ImageInfo</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXTaskType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OTX task type definition.&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OTXTaskType is not defined.&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Image type definition.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ImageType</span><span class="o">.</span><span class="n">get_image_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXDataEntity.to_tv_image"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXDataEntity.to_tv_image">[docs]</a>    <span class="k">def</span> <span class="nf">to_tv_image</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">T_OTXDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert `self.image` to TorchVision Image if it is a Numpy array (inplace operation).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">to_image</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of fields in this data entity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OTXPredEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXPredEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXPredEntity</span><span class="p">(</span><span class="n">OTXDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity to represent the model output prediction.&quot;&quot;&quot;</span>
+
+    <span class="n">score</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Tensor</span></div>
+
+
+<div class="viewcode-block" id="OTXPredEntityWithXAI"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXPredEntityWithXAI">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXPredEntityWithXAI</span><span class="p">(</span><span class="n">OTXPredEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity to represent model output prediction with explanations.&quot;&quot;&quot;</span>
+
+    <span class="n">saliency_map</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">Tensor</span>
+    <span class="n">feature_vector</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">list</span></div>
+
+
+<span class="n">T_OTXBatchDataEntity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXBatchDataEntity&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXBatchDataEntity&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OTXBatchDataEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchDataEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXBatchDataEntity</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXDataEntity</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base Batch data entity for OTX.</span>
+
+<span class="sd">    This entity is the output of PyTorch DataLoader,</span>
+<span class="sd">    which is the direct input of OTXModel.</span>
+
+<span class="sd">    :param images: List of B numpy RGB image tensors (C x H x W) or</span>
+<span class="sd">        An image tensor stacked with B RGB image tensors (B x C x H x W)</span>
+<span class="sd">    :param imgs_info: Meta information for images</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">images</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">]</span> <span class="o">|</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span>
+    <span class="n">imgs_info</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ImageInfo</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXTaskType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OTX task type definition.&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OTXTaskType is not defined.&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">images_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Images type definition.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ImageType</span><span class="o">.</span><span class="n">get_image_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXBatchDataEntity.collate_fn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchDataEntity.collate_fn">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">entities</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T_OTXDataEntity</span><span class="p">],</span>
+        <span class="n">stack_images</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXBatchDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entities: List of OTX data entities.</span>
+<span class="sd">            stack_images: If True, return 4D B x C x H x W image tensor.</span>
+<span class="sd">                Otherwise return a list of 3D C x H x W image tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Collated OTX batch data entity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should have &gt; 0 entities&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">task</span> <span class="o">=</span> <span class="n">entities</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">task</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">task</span> <span class="o">==</span> <span class="n">entity</span><span class="o">.</span><span class="n">task</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;collate_fn() input should include a single OTX task&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">image</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">]</span>
+        <span class="n">like</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">images</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">stack_images</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">like</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">entity</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">):</span>  <span class="c1"># type: ignore[union-attr]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;You set stack_images as True, but not all images in the batch has same shape. &quot;</span>
+                <span class="s2">&quot;In this case, we cannot stack images. Some tasks, e.g., detection, &quot;</span>
+                <span class="s2">&quot;can have different image shapes among samples in the batch. However, if it is not your intention, &quot;</span>
+                <span class="s2">&quot;consider setting stack_images as False in the config.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">stack_images</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">OTXBatchDataEntity</span><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">stack</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">like</span><span class="o">=</span><span class="n">like</span><span class="p">)</span> <span class="k">if</span> <span class="n">stack_images</span> <span class="k">else</span> <span class="n">images</span><span class="p">,</span>
+            <span class="n">imgs_info</span><span class="o">=</span><span class="p">[</span><span class="n">entity</span><span class="o">.</span><span class="n">img_info</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">entities</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stacked_images</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A stacked image tensor (B x C x H x W).</span>
+
+<span class="sd">        if its `images` field is a list of image tensors,</span>
+<span class="sd">        convert it to a 4D image tensor and return it.</span>
+<span class="sd">        Otherwise, return it as is.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Image</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span>
+
+        <span class="n">like</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">like</span><span class="o">=</span><span class="n">like</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OTXBatchDataEntity.pin_memory"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchDataEntity.pin_memory">[docs]</a>    <span class="k">def</span> <span class="nf">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pin memory for member tensor variables.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO(vinnamki): Keep track this issue</span>
+        <span class="c1"># https://github.com/pytorch/pytorch/issues/116403</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">(),</span> <span class="n">like</span><span class="o">=</span><span class="n">image</span><span class="p">)</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">(),</span> <span class="n">like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+<span class="n">T_OTXBatchPredEntity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXBatchPredEntity&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXBatchPredEntity&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">T_OTXBatchPredEntityWithXAI</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXBatchPredEntityWithXAI&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXBatchPredEntityWithXAI&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OTXBatchPredEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchPredEntity">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXBatchPredEntity</span><span class="p">(</span><span class="n">OTXBatchDataEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity to represent model output predictions.&quot;&quot;&quot;</span>
+
+    <span class="n">scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="OTXBatchPredEntityWithXAI"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchPredEntityWithXAI">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">OTXBatchPredEntityWithXAI</span><span class="p">(</span><span class="n">OTXBatchPredEntity</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity to represent model output predictions with explanations.&quot;&quot;&quot;</span>
+
+    <span class="n">saliency_maps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">feature_vectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span></div>
+
+
+<span class="n">T_OTXBatchLossEntity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span>
+    <span class="s2">&quot;T_OTXBatchLossEntity&quot;</span><span class="p">,</span>
+    <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;OTXBatchLossEntity&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OTXBatchLossEntity"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.data.entity.base.html#otx.core.data.entity.base.OTXBatchLossEntity">[docs]</a><span class="k">class</span> <span class="nc">OTXBatchLossEntity</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data entity to represent model output losses.&quot;&quot;&quot;</span></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>

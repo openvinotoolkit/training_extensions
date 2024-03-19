@@ -1,0 +1,660 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>otx.core.data.mem_cache &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/tabs.js"></script>
+    <script src="../../../../_static/design-tabs.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/data/mem_cache';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <h1>Source code for otx.core.data.mem_cache</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Memory cache handler implementations and singleton class to call them.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+
+<span class="kn">from</span> <span class="nn">otx.utils</span> <span class="kn">import</span> <span class="n">append_signal_handler</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">multiprocessing.managers</span> <span class="kn">import</span> <span class="n">DictProxy</span>
+    <span class="kn">from</span> <span class="nn">multiprocessing.synchronize</span> <span class="kn">import</span> <span class="n">Lock</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+<span class="n">GIB</span> <span class="o">=</span> <span class="mi">1024</span><span class="o">**</span><span class="mi">3</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;MemCacheHandlerSingleton&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MemCacheHandlerBase&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NULL_MEM_CACHE_HANDLER&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MemCacheHandlerError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parse_mem_cache_size_to_int&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="parse_mem_cache_size_to_int"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.parse_mem_cache_size_to_int">[docs]</a><span class="k">def</span> <span class="nf">parse_mem_cache_size_to_int</span><span class="p">(</span><span class="n">mem_cache_size</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse memory size string to integer.</span>
+
+<span class="sd">    For example, &quot;2GB&quot; =&gt; 2,000,000,000 or &quot;3MIB&quot; =&gt; 3 * 1024 * 1024.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^([\d\.]+)\s*([a-zA-Z]{0,3})$&quot;</span><span class="p">,</span> <span class="n">mem_cache_size</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Cannot parse </span><span class="si">{</span><span class="n">mem_cache_size</span><span class="si">}</span><span class="s2"> string.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">units</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;KIB&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;MIB&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="p">,</span>
+        <span class="s2">&quot;GIB&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">30</span><span class="p">,</span>
+        <span class="s2">&quot;KB&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;MB&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="o">**</span><span class="mi">6</span><span class="p">,</span>
+        <span class="s2">&quot;GB&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span><span class="p">,</span>
+        <span class="s2">&quot;K&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="p">,</span>
+        <span class="s2">&quot;G&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="o">**</span><span class="mi">30</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">number</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">units</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mem_cache_size</span><span class="si">}</span><span class="s2"> has disallowed unit (</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">number</span> <span class="o">*</span> <span class="n">units</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span></div>
+
+
+<span class="k">class</span> <span class="nc">_DummyLock</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="MemCacheHandlerBase"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for memory cache handler.</span>
+
+<span class="sd">    It will be combined with LoadImageFromOTXDataset to store/retrieve the samples in memory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mem_size</span> <span class="o">=</span> <span class="n">mem_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_data_structs</span><span class="p">(</span><span class="n">mem_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_data_structs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span> <span class="o">*</span> <span class="n">mem_size</span><span class="p">)()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="p">:</span> <span class="p">(</span>
+            <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+            <span class="o">|</span> <span class="n">DictProxy</span><span class="p">[</span>
+                <span class="n">Any</span><span class="p">,</span>
+                <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span> <span class="n">Lock</span> <span class="o">|</span> <span class="n">_DummyLock</span> <span class="o">=</span> <span class="n">_DummyLock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of cached items.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mem_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the reserved memory pool size (bytes).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arr</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MemCacheHandlerBase.get"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>  <span class="c1"># noqa: ANN401</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to look up the cached item with the given key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (Any): A key for looking up the cached item</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            If succeed return (np.ndarray, Dict), otherwise return (None, None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span><span class="n">addr</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+            <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">addr</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">stride_tricks</span><span class="o">.</span><span class="n">as_strided</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">),</span> <span class="n">meta</span>
+
+        <span class="k">except</span> <span class="ne">BrokenPipeError</span><span class="p">:</span>
+            <span class="c1"># It is possible that the manager is dead but</span>
+            <span class="c1"># the multi-processing worker in DataLoader is alive.</span>
+            <span class="c1"># In this case, we need to handle this error.</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="MemCacheHandlerBase.put"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>  <span class="c1"># noqa: ANN401</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to store np.ndarray and metadata with a key to the reserved memory pool.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (Any): A key to store the cached item</span>
+<span class="sd">            data (np.ndarray): A data sample to store</span>
+<span class="sd">            meta (Optional[Dict]): A metadata of the data sample</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[int]: If succeed return the address of cached item in memory pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">addr</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">data_bytes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">itemsize</span>
+
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="n">new_page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">data_bytes</span>
+
+                <span class="k">if</span> <span class="n">new_page</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem_size</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Memory pool reaches it&#39;s limit. Cannot cache more. Freeze it.&quot;</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">ct</span><span class="o">.</span><span class="n">memmove</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">data_bytes</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">strides</span><span class="p">,</span>
+                    <span class="n">meta</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_page</span>
+                <span class="k">return</span> <span class="n">new_page</span>
+        <span class="k">except</span> <span class="ne">BrokenPipeError</span><span class="p">:</span>
+            <span class="c1"># It is possible that the manager is dead but</span>
+            <span class="c1"># the multi-processing worker in DataLoader is alive.</span>
+            <span class="c1"># In this case, we need to handle this error.</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Representation for the current handler status.&quot;&quot;&quot;</span>
+        <span class="n">perc</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem_size</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mem_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;uses </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mem_size</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">perc</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%) memory pool and &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;store </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> items.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dump just mem_size and re-initialize with that value when unpickled.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem_size</span><span class="p">,))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">frozen</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;True if this handler is frozen, otherwise return False.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span>
+
+<div class="viewcode-block" id="MemCacheHandlerBase.freeze"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase.freeze">[docs]</a>    <span class="k">def</span> <span class="nf">freeze</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If frozen, it is impossible to store a new item anymore.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="MemCacheHandlerBase.unfreeze"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase.unfreeze">[docs]</a>    <span class="k">def</span> <span class="nf">unfreeze</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If unfrozen, it is possible to store a new item.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="MemCacheHandlerBase.shutdown"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerBase.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shutdown mem caching handler.</span>
+
+<span class="sd">        It is effective only for the multiprocessing handler.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">MemCacheHandlerForSP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory caching handler for single processing.</span>
+
+<span class="sd">    Use if PyTorch&#39;s DataLoader.num_workers == 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">MemCacheHandlerForMP</span><span class="p">(</span><span class="n">MemCacheHandlerBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory caching handler for multi processing.</span>
+
+<span class="sd">    Use if PyTorch&#39;s DataLoader.num_workers &gt; 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_init_data_structs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arr</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Array</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cur_page</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_addr</span><span class="p">:</span> <span class="n">DictProxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_freeze</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">c_bool</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shutdown mem caching handler.</span>
+
+<span class="sd">        It is effective only for the multiprocessing handler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="MemCacheHandlerError"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerError">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception class for MemCacheHandler.&quot;&quot;&quot;</span></div>
+
+
+<span class="n">NULL_MEM_CACHE_HANDLER</span> <span class="o">=</span> <span class="n">MemCacheHandlerBase</span><span class="p">(</span><span class="n">mem_size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">NULL_MEM_CACHE_HANDLER</span><span class="o">.</span><span class="n">freeze</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="MemCacheHandlerSingleton"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerSingleton">[docs]</a><span class="k">class</span> <span class="nc">MemCacheHandlerSingleton</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper class to create MemCacheHandler.&quot;&quot;&quot;</span>
+
+    <span class="n">instances</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">MemCacheHandlerBase</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">CPU_MEM_LIMITS_GIB</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
+
+<div class="viewcode-block" id="MemCacheHandlerSingleton.create"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerSingleton.create">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MemCacheHandlerBase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new MemCacheHandlerBase instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str): There are two options: null, multiprocessing or singleprocessing.</span>
+<span class="sd">            mem_size (int): The size of memory pool (bytes).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># COPY FROM mmcv.runner.get_dist_info</span>
+        <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">distributed</span>
+
+        <span class="n">world_size</span> <span class="o">=</span> <span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span> <span class="k">if</span> <span class="n">distributed</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="c1"># Prevent CPU OOM issue</span>
+        <span class="n">memory_info</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span>
+        <span class="n">available_cpu_mem</span> <span class="o">=</span> <span class="n">memory_info</span><span class="o">.</span><span class="n">available</span> <span class="o">/</span> <span class="n">GIB</span>
+
+        <span class="k">if</span> <span class="n">world_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">mem_size</span> <span class="o">=</span> <span class="n">mem_size</span> <span class="o">//</span> <span class="n">world_size</span>
+            <span class="n">available_cpu_mem</span> <span class="o">=</span> <span class="n">available_cpu_mem</span> <span class="o">//</span> <span class="n">world_size</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Since world_size=</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2"> &gt; 1, each worker a </span><span class="si">{</span><span class="n">mem_size</span><span class="si">}</span><span class="s2"> size memory pool.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Try to create a </span><span class="si">{</span><span class="n">mem_size</span><span class="si">}</span><span class="s2"> size memory pool.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">check_system_memory</span><span class="p">(</span><span class="n">mem_size</span><span class="p">,</span> <span class="n">available_cpu_mem</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No available CPU memory left, mem_size will be set to 0.&quot;</span><span class="p">)</span>
+            <span class="n">mem_size</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;null&quot;</span> <span class="ow">or</span> <span class="n">mem_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">NULL_MEM_CACHE_HANDLER</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;multiprocessing&quot;</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">MemCacheHandlerForMP</span><span class="p">(</span><span class="n">mem_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;singleprocessing&quot;</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">MemCacheHandlerForSP</span><span class="p">(</span><span class="n">mem_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2"> is unknown mode.&quot;</span>
+            <span class="k">raise</span> <span class="n">MemCacheHandlerError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># Should delete if receive sigint to gracefully terminate</span>
+        <span class="k">def</span> <span class="nf">_new_handler</span><span class="p">(</span><span class="n">signum_</span><span class="p">,</span> <span class="n">frame_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># noqa: ARG001, ANN001</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+        <span class="n">append_signal_handler</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">_new_handler</span><span class="p">)</span>
+        <span class="n">append_signal_handler</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="n">_new_handler</span><span class="p">)</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">instances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">instance</span></div>
+
+<div class="viewcode-block" id="MemCacheHandlerSingleton.check_system_memory"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerSingleton.check_system_memory">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">check_system_memory</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mem_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">available_cpu_mem</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check there is enough system memory to maintain memory caching pool.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            mem_size: Requested memory size (bytes) for the memory cahcing pool</span>
+<span class="sd">            available_cpu_mem: Memory capacity (bytes) of this system</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Return true if there is enough system memory. Otherwise, return false.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">expected_mem_usage</span> <span class="o">=</span> <span class="p">(</span><span class="n">mem_size</span> <span class="o">/</span> <span class="n">GIB</span><span class="p">)</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">CPU_MEM_LIMITS_GIB</span>
+        <span class="k">return</span> <span class="n">available_cpu_mem</span> <span class="o">&gt;=</span> <span class="n">expected_mem_usage</span></div>
+
+<div class="viewcode-block" id="MemCacheHandlerSingleton.delete"><a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.data.mem_cache.html#otx.core.data.mem_cache.MemCacheHandlerSingleton.delete">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shutdown and delete the created instance meantime.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">instances</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">[]</span></div></div>
+</pre></div>
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
