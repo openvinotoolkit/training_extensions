@@ -25,12 +25,6 @@ def test_activationmap() -> None:
     saliency_maps = explain_algo.func(feature_map)
     assert saliency_maps.size() == torch.Size([1, 5, 5])
 
-    hook.recording_forward(None, None, feature_map)
-    assert len(hook.records) == 1
-
-    hook.reset()
-    assert hook.records == []
-
 
 def test_reciprocam() -> None:
     def cls_head_forward_fn(_) -> None:
@@ -51,12 +45,6 @@ def test_reciprocam() -> None:
     saliency_maps = explain_algo.func(feature_map)
     assert saliency_maps.size() == torch.Size([1, 2, 5, 5])
 
-    hook.recording_forward(None, None, feature_map)
-    assert len(hook.records) == 1
-
-    hook.reset()
-    assert hook.records == []
-
 
 def test_vitreciprocam() -> None:
     def cls_head_forward_fn(_) -> None:
@@ -74,12 +62,6 @@ def test_vitreciprocam() -> None:
 
     saliency_maps = explain_algo.func(feature_map)
     assert saliency_maps.size() == torch.Size([1, 2, 14, 14])
-
-    hook.recording_forward(None, None, feature_map)
-    assert len(hook.records) == 1
-
-    hook.reset()
-    assert hook.records == []
 
 
 def test_detclassprob() -> None:
