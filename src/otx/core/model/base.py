@@ -806,3 +806,72 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""
         return {}
+
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        """Reset its prediction layer with a given number of classes.
+
+        Args:
+            num_classes: Number of classes
+        """
+        # TODO(vinnamki): See the following link
+        # https://github.com/openvinotoolkit/training_extensions/actions/runs/8339199693/job/22821020564?pr=3155#step:5:3966
+        # This is because this test is trying to launch the test pipeline with giving 80 num_classes to OV model
+        # which is really trained for 21 classes.
+        # Indeed, it should be failed at initialization but the current code allows it.
+        # Without this function overriding, it fails at label_info injection
+        #
+        # ╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+        # │ /home/vinnamki/otx/training_extensions/src/otx/cli/cli.py:586 in run         │
+        # │                                                                              │
+        # │   583 │   │   │   fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand │
+        # │   584 │   │   │   fn = getattr(self.engine, self.subcommand)                 │
+        # │   585 │   │   │   try:                                                       │
+        # │ ❱ 586 │   │   │   │   fn(**fn_kwargs)                                        │
+        # │   587 │   │   │   except Exception:                                          │
+        # │   588 │   │   │   │   self.console.print_exception(width=self.console.width) │
+        # │   589 │   │   │   self.save_config(work_dir=Path(self.engine.work_dir))      │
+        # │                                                                              │
+        # │ /home/vinnamki/otx/training_extensions/src/otx/engine/engine.py:338 in test  │
+        # │                                                                              │
+        # │   335 │   │   │   │   f"It will be overriden: {self.model.label_info} => {se │
+        # │   336 │   │   │   )                                                          │
+        # │   337 │   │   │   logging.warning(msg)                                       │
+        # │ ❱ 338 │   │   │   self.model.label_info = self.datamodule.label_info         │
+        # │   339 │   │   │                                                              │
+        # │   340 │   │   │   # TODO (vinnamki): This should be changed to raise an erro │
+        # │   341 │   │   │   # raise ValueError()                                       │
+        # │                                                                              │
+        # │ /home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/site-packages/torch/nn/ │
+        # │ modules/module.py:1754 in __setattr__                                        │
+        # │                                                                              │
+        # │   1751 │   │   │   │   │   │   │   value = output                            │
+        # │   1752 │   │   │   │   │   buffers[name] = value                             │
+        # │   1753 │   │   │   │   else:                                                 │
+        # │ ❱ 1754 │   │   │   │   │   super().__setattr__(name, value)                  │
+        # │   1755 │                                                                     │
+        # │   1756 │   def __delattr__(self, name):                                      │
+        # │   1757 │   │   if name in self._parameters:                                  │
+        # │                                                                              │
+        # │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:386 in     │
+        # │ label_info                                                                   │
+        # │                                                                              │
+        # │   383 │   │   │   │   f"(={new_num_classes})."                               │
+        # │   384 │   │   │   )                                                          │
+        # │   385 │   │   │   warnings.warn(msg, stacklevel=0)                           │
+        # │ ❱ 386 │   │   │   self._reset_prediction_layer(num_classes=label_info.num_cl │
+        # │   387 │   │                                                                  │
+        # │   388 │   │   self._label_info = label_info                                  │
+        # │   389                                                                        │
+        # │                                                                              │
+        # │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:609 in     │
+        # │ _reset_prediction_layer                                                      │
+        # │                                                                              │
+        # │   606 │   │   Args:                                                          │
+        # │   607 │   │   │   num_classes: Number of classes                             │
+        # │   608 │   │   """                                                            │
+        # │ ❱ 609 │   │   raise NotImplementedError                                      │
+        # │   610 │                                                                      │
+        # │   611 │   @property                                                          │
+        # │   612 │   def _optimization_config(self) -> dict[str, str]:                  │
+        # ╰──────────────────────────────────────────────────────────────────────────────╯
+        # NotImplementedError

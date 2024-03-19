@@ -410,6 +410,8 @@ def test_otx_ov_test(
     if task in ["action_classification"]:
         pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
+    pytest.xfail("See ticket no. 135955")
+
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"
     command_cfg = [
