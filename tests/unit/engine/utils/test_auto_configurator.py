@@ -142,7 +142,7 @@ class TestAutoConfigurator:
         else:
             assert callable(scheduler)
 
-    def test_update_ov_test_pipeline(self) -> None:
+    def test_update_ov_subset_pipeline(self) -> None:
         data_root = "tests/assets/car_tree_bug"
         auto_configurator = AutoConfigurator(data_root=data_root, task="DETECTION")
 
@@ -160,7 +160,7 @@ class TestAutoConfigurator:
 
         assert datamodule.config.test_subset.transform_lib_type == TransformLibType.MMDET
 
-        updated_datamodule = auto_configurator.update_ov_test_pipeline(datamodule)
+        updated_datamodule = auto_configurator.update_ov_subset_pipeline(datamodule, subset="test")
         assert updated_datamodule.config.test_subset.transforms == [{"class_path": "torchvision.transforms.v2.ToImage"}]
 
         assert updated_datamodule.config.test_subset.transform_lib_type == TransformLibType.TORCHVISION

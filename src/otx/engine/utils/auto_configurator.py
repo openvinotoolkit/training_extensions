@@ -334,23 +334,25 @@ class AutoConfigurator:
             num_classes=label_info.num_classes,
         )
 
-    def update_ov_test_pipeline(self, datamodule: OTXDataModule) -> OTXDataModule:
-        """Returns an OTXDataModule object with OpenVINO test transforms applied.
+    def update_ov_subset_pipeline(self, datamodule: OTXDataModule, subset: str = "test") -> OTXDataModule:
+        """Returns an OTXDataModule object with OpenVINO subset transforms applied.
 
         Args:
             datamodule (OTXDataModule): The original OTXDataModule object.
+            subset (str, optional): The subset to update. Defaults to "test".
 
         Returns:
-            OTXDataModule: The modified OTXDataModule object with OpenVINO test transforms applied.
+            OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
         data_configuration = datamodule.config
-        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"]["test_subset"]
-        data_configuration.test_subset.transform_lib_type = ov_test_config["transform_lib_type"]
-        data_configuration.test_subset.transforms = ov_test_config["transforms"]
+        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"][f"{subset}_subset"]
+        subset_config = getattr(data_configuration, f"{subset}_subset")
+        subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
+        subset_config.transforms = ov_test_config["transforms"]
         data_configuration.tile_config.enable_tiler = False
         msg = (
-            f"For OpenVINO IR models, Update the following test transforms: {data_configuration.test_subset.transforms}"
-            f"and transform_lib_type: {data_configuration.test_subset.transform_lib_type}"
+            f"For OpenVINO IR models, Update the following {subset} transforms: {subset_config.transforms}"
+            f"and transform_lib_type: {subset_config.transform_lib_type}"
             "And the tiler is disabled."
         )
         warn(msg, stacklevel=1)
