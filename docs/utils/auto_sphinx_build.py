@@ -2,11 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """This script enable automatic detect the change of docs/source contents.
+
 It brings the convinient to check the output of the docs.
+
 When you used the VSCode + watchdog, you can easily check the docs output.
+
 1. Open the builded index.rst file with live server (Visual Studio Code extension)
 2. Execute this script `auto_sphix_build_for_vscode.py`
 3. Then, the watchdog + sphinx builder automatically builds the source when there are changes
+
 """
 
 import os

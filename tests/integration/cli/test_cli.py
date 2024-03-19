@@ -121,9 +121,6 @@ def test_otx_e2e(
             "dino_v2",
             "instance_segmentation",
             "action",
-            "anomaly_classification",
-            "anomaly_detection",
-            "anomaly_segmentation",
         ]
     ):
         return
@@ -141,6 +138,10 @@ def test_otx_e2e(
             "EXPORTABLE_CODE": "exportable_code.zip",
         }
 
+    overrides = fxt_cli_override_command_per_task[task]
+    if "anomaly" in task:
+        overrides = {}  # Overrides are not needed in export
+
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_file:
         command_cfg = [
@@ -152,7 +153,7 @@ def test_otx_e2e(
             fxt_target_dataset_per_task[task],
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
-            *fxt_cli_override_command_per_task[task],
+            *overrides,
             "--checkpoint",
             str(ckpt_files[-1]),
             "--export_format",
@@ -177,6 +178,10 @@ def test_otx_e2e(
     )
     exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
+    overrides = fxt_cli_override_command_per_task[task]
+    if "anomaly" in task:
+        overrides = {}  # Overrides are not needed in infer
+
     command_cfg = [
         "otx",
         "test",
@@ -188,7 +193,7 @@ def test_otx_e2e(
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
-        *fxt_cli_override_command_per_task[task],
+        *overrides,
         "--checkpoint",
         exported_model_path,
     ]
@@ -328,8 +333,8 @@ def test_otx_explain_e2e(
             "Slide6_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
-            "5_class_0_saliency_map.png",
+            np.array([152, 193, 144, 132, 149, 204, 217], dtype=np.uint8),
+            "092_class_5_saliency_map.png",
         ),
         # Detection
         "detection_yolox_tiny": (

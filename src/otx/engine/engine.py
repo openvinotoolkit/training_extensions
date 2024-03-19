@@ -27,7 +27,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .utils.auto_configurator import AutoConfigurator
+from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -695,6 +695,68 @@ class Engine:
             optimizer=instantiated_config.get("optimizer"),
             scheduler=instantiated_config.get("scheduler"),
             **engine_kwargs,
+        )
+
+    @classmethod
+    def from_model_name(
+        cls,
+        model_name: str,
+        task: OTXTaskType,
+        data_root: PathLike | None = None,
+        work_dir: PathLike | None = None,
+        **kwargs,
+    ) -> Engine:
+        """Builds the engine from a model name.
+
+        Args:
+            model_name (str): The model name.
+            task (OTXTaskType): The type of OTX task.
+            data_root (PathLike | None): Root directory for the data.
+                Defaults to None. If data_root is None, use the data_root from the configuration file.
+            work_dir (PathLike | None, optional): Working directory for the engine.
+                Defaults to None. If work_dir is None, use the work_dir from the configuration file.
+            kwargs: Arguments that can override the engine's arguments.
+
+        Returns:
+            Engine: An instance of the Engine class.
+
+        Example:
+            >>> engine = Engine.from_model_name(
+            ...     model_name="atss_mobilenetv2",
+            ...     task="DETECTION",
+            ...     data_root=<dataset/path>,
+            ... )
+
+            If you want to override configuration from default config
+            >>> overriding = {
+            ...     "data.config.train_subset.batch_size": 2,
+            ...     "data.config.test_subset.subset_name": "TESTING",
+            ... }
+            >>> engine = Engine(
+            ...     model_name="atss_mobilenetv2",
+            ...     task="DETECTION",
+            ...     data_root=<dataset/path>,
+            ...     **overriding,
+            ... )
+        """
+        default_config = DEFAULT_CONFIG_PER_TASK.get(task)
+        model_path = str(default_config).split("/")
+        model_path[-1] = f"{model_name}.yaml"
+        config = Path("/".join(model_path))
+        if not config.exists():
+            candidate_list = [model.stem for model in config.parent.glob("*")]
+            msg = (
+                f"Model config file not found: {config}, please check the model name. "
+                f"Available models for {task} task are {candidate_list}"
+            )
+            raise FileNotFoundError(msg)
+
+        return cls.from_config(
+            config_path=config,
+            data_root=data_root,
+            work_dir=work_dir,
+            task=task,
+            **kwargs,
         )
 
     # ------------------------------------------------------------------------ #
