@@ -5,10 +5,9 @@
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathlib import Path
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import get_dist_info
 from mmdet.models.builder import BACKBONES, MODELS
@@ -113,7 +112,7 @@ def _pytorchcv_model_reduce(self) -> nn.Module:  # noqa: ANN001
 def _build_model_including_pytorchcv(
     cfg,
     registry: dict | ConfigDict | Config = MODELS,
-    default_args = None,
+    default_args=None,
 ) -> nn.Module:
     """Try to build model from mmdet first and build from pytorchcv."""
     try:

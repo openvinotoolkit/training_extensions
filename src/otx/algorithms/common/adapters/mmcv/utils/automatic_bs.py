@@ -9,16 +9,15 @@ from typing import Callable, Dict, List
 
 import numpy as np
 import torch
-from torch.cuda import is_available as cuda_available
 from torch import distributed as dist
+from torch.cuda import is_available as cuda_available
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
-from otx.core.data import caching
 from otx.algorithms.common.utils.utils import is_xpu_available
+from otx.core.data import caching
 from otx.utils.logger import get_logger
-
 
 logger = get_logger()
 
@@ -51,9 +50,9 @@ def _train_func_single_iter(
     model: torch.nn.Module,
     datasets: List[Dataset],
     cfg: OTXConfig,
-    validate: bool = False
+    validate: bool = False,
 ):
-    caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache 
+    caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
     _set_max_epoch(cfg, 1)  # setup for training a single iter to reduce time
 
@@ -107,7 +106,7 @@ def adapt_batch_size(
         model (torch.nn.Module): Model to train.
         datasets (List): List of datasets.
         cfg (OTXConfig): Configuration of a training.
-        distributed (bool): whether distributed training or not. 
+        distributed (bool): whether distributed training or not.
         validate (bool): Whether do vlidation or not.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
@@ -118,17 +117,17 @@ def adapt_batch_size(
 
     copied_cfg = copy(cfg)
     copied_cfg.pop("algo_backend", None)
-    
-    if not distributed or (rank := dist.get_rank()) ==  0:
+
+    if not distributed or (rank := dist.get_rank()) == 0:
         default_bs = _get_batch_size(cfg)
         bs_search_algo = BsSearchAlgo(
             train_func=_train_func_single_iter,
-            train_func_kwargs= {
-                "train_func" : train_func,
-                "model" : model,
-                "datasets" : datasets,
-                "cfg" : copied_cfg,
-                "validate" : validate,
+            train_func_kwargs={
+                "train_func": train_func,
+                "model": model,
+                "datasets": datasets,
+                "cfg": copied_cfg,
+                "validate": validate,
             },
             default_bs=default_bs,
             max_bs=len(datasets[0]),

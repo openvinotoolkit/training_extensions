@@ -3,9 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import queue
 import multiprocessing as mp
-from typing import Callable, Dict, Tuple, Any
+import queue
+from typing import Any, Callable, Dict, Tuple
 
 import torch
 
@@ -15,12 +15,7 @@ from otx.utils.logger import get_logger
 logger = get_logger()
 
 
-def _run_trial(
-    train_func: Callable,
-    train_func_kwargs: Dict[str, Any],
-    bs: int,
-    trial_queue: mp.Queue
-) -> Tuple[bool, int]:
+def _run_trial(train_func: Callable, train_func_kwargs: Dict[str, Any], bs: int, trial_queue: mp.Queue) -> None:
     mp.set_start_method(None, True)  # reset mp start method
 
     oom = False
@@ -29,10 +24,9 @@ def _run_trial(
         kwargs["batch_size"] = bs
         train_func(**kwargs)
     except RuntimeError as e:
-        if (
-            str(e).startswith("CUDA out of memory.") or  # CUDA OOM
-            str(e).startswith("Allocation is out of device memory on current platform.")  # XPU OOM
-        ):
+        if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
+            "Allocation is out of device memory on current platform."
+        ):  # XPU OOM
             oom = True
         else:
             raise e
@@ -41,11 +35,11 @@ def _run_trial(
 
     trial_queue.put(
         {
-            "oom" : oom,
-            "max_memory_reserved" :max_memory_reserved,
+            "oom": oom,
+            "max_memory_reserved": max_memory_reserved,
         }
     )
-    
+
 
 class BsSearchAlgo:
     """Algorithm class to find optimal batch size.
@@ -58,13 +52,7 @@ class BsSearchAlgo:
 
     MAX_FAIL_LIMIT = 3
 
-    def __init__(
-        self,
-        train_func: Callable,
-        train_func_kwargs: dict[str, Any],
-        default_bs: int,
-        max_bs: int
-    ):
+    def __init__(self, train_func: Callable, train_func_kwargs: Dict[str, Any], default_bs: int, max_bs: int):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
         if max_bs <= 0:
@@ -87,8 +75,7 @@ class BsSearchAlgo:
         for _ in range(self.MAX_FAIL_LIMIT):
             trial_queue = self._mp_ctx.Queue()
             proc = self._mp_ctx.Process(
-                target=_run_trial,
-                args=(self._train_func, self._train_func_kwargs, bs, trial_queue)
+                target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue)
             )
             proc.start()
             output = None

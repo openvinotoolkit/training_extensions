@@ -8,7 +8,7 @@ import io
 import os
 import time
 from contextlib import nullcontext
-from copy import copy, deepcopy
+from copy import deepcopy
 from functools import partial
 from typing import Any, Dict, Optional, Union
 

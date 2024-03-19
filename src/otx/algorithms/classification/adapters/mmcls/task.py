@@ -8,7 +8,6 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
-from functools import partial
 from typing import Any, Dict, Optional, Type, Union
 
 import torch
@@ -410,11 +409,12 @@ class MMClassificationTask(OTXClassificationTask):
             )
 
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
-            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(
-                train_func,
-                cfg,
+                train_model,
+                model,
                 datasets,
+                cfg,
+                cfg.distributed,
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
