@@ -11,7 +11,7 @@ from otx.utils.utils import is_xpu_available
 
 
 class TestXPUAccelerator:
-    @pytest.fixture
+    @pytest.fixture()
     def accelerator(self, mocker):
         mock_torch = mocker.patch("otx.algo.accelerators.xpu.torch")
         return XPUAccelerator(), mock_torch
@@ -34,7 +34,8 @@ class TestXPUAccelerator:
         devices = [1, 2, 3]
         parallel_devices = accelerator.get_parallel_devices(devices)
         assert isinstance(parallel_devices, list)
-        assert all([isinstance(device, mocker.MagicMock) for device in parallel_devices])
+        for device in parallel_devices:
+            assert isinstance(device, mocker.MagicMock)
 
     def test_auto_device_count(self, accelerator, mocker):
         accelerator, mock_torch = accelerator

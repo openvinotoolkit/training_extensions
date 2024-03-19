@@ -6,12 +6,12 @@
 
 import pytest
 import torch
-from torch.optim import Optimizer
 from otx.algo.plugins.xpu_precision import MixedPrecisionXPUPlugin
+from torch.optim import Optimizer
 
 
 class TestMixedPrecisionXPUPlugin:
-    @pytest.fixture
+    @pytest.fixture()
     def plugin(self):
         return MixedPrecisionXPUPlugin()
 
@@ -30,7 +30,7 @@ class TestMixedPrecisionXPUPlugin:
         closure = mocker.MagicMock()
         kwargs = {}
         mock_optimizer_step = mocker.patch(
-            "otx.algo.plugins.xpu_precision.Precision.optimizer_step"
+            "otx.algo.plugins.xpu_precision.Precision.optimizer_step",
         )
         out = plugin.optimizer_step(optimizer, model, closure, **kwargs)
         assert isinstance(out, mocker.MagicMock)
@@ -50,7 +50,7 @@ class TestMixedPrecisionXPUPlugin:
         clip_val = 0.1
         gradient_clip_algorithm = "norm"
         mock_clip_gradients = mocker.patch(
-            "otx.algo.plugins.xpu_precision.Precision.clip_gradients"
+            "otx.algo.plugins.xpu_precision.Precision.clip_gradients",
         )
         plugin.clip_gradients(optimizer, clip_val, gradient_clip_algorithm)
         mock_clip_gradients.assert_called_once()
