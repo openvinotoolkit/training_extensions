@@ -97,9 +97,9 @@ def test_engine_from_config(
         OTXTaskType.MULTI_CLASS_CLS,
         OTXTaskType.MULTI_LABEL_CLS,
         # Restore these models after fixing undetermined CI failures for ATSS and Mask RCNN
-        # OTXTaskType.DETECTION,
-        # OTXTaskType.ROTATED_DETECTION,
-        # OTXTaskType.INSTANCE_SEGMENTATION,
+        OTXTaskType.DETECTION,
+        OTXTaskType.ROTATED_DETECTION,
+        OTXTaskType.INSTANCE_SEGMENTATION,
     ]:
         return
 
