@@ -116,7 +116,7 @@ anomaly detection tasks
             ['stfpm', 'padim']
             '''
 
-You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib's `STFPM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_ and `PADIM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/padim.html>`_ documentation.
+You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib's `STFPM <https://anomalib.readthedocs.io/en/v1.0.0/markdown/guides/reference/models/image/stfpm.html>`_ and `PADIM <https://anomalib.readthedocs.io/en/v1.0.0/markdown/guides/reference/models/image/padim.html>`_ documentation.
 
 2. Let's proceed with PADIM for
 this example.

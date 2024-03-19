@@ -509,6 +509,16 @@
 <p class="admonition-title">Note</p>
 <p>Since the PADIM model uses a pre-trained backbone to extract features, the training does not involve fine-tuning of neural network weights. This means that PADIM does not make use of an optimizer and a loss function.</p>
 </div>
+<section id="parameters">
+<h5>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">#</a></h5>
+<p>Since the Padim model extracts features and uses clustering algorithms to learn normality, we use the following parameters for its training:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Backbone</span></code>: The default backbone is <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Wide</span> <span class="pre">ResNet50</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Layers</span></code>: The layers used for feature extraction. The default layers are <code class="docutils literal notranslate"><span class="pre">layer1,</span> <span class="pre">layer2,</span> <span class="pre">layer3</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Pre-Trained</span></code>: Whether or not to use a pre-trained backbone. The default value is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">N-Features</span></code>: The number of features to be retained for the dimensionality reduction step. Default values from the paper are available for: <code class="docutils literal notranslate"><span class="pre">ResNet18</span> <span class="pre">(100)</span></code> and <code class="docutils literal notranslate"><span class="pre">Wide</span> <span class="pre">ResNet50</span> <span class="pre">(550)</span></code>.</p></li>
+</ul>
+</section>
 </section>
 </section>
 <section id="knowledge-distillation-based-models">
@@ -527,6 +537,7 @@
 <p>Since STFPM trains the student network, we use the following parameters for its training:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Backbone</span></code>: The default backbone is <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Wide</span> <span class="pre">ResNet50</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Layers</span></code>: The layers used for feature extraction. The default layers are <code class="docutils literal notranslate"><span class="pre">layer1,</span> <span class="pre">layer2,</span> <span class="pre">layer3</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span></code>: Loss is computed as the mean squared error between the student and teacher feature pyramids. The default loss is <code class="docutils literal notranslate"><span class="pre">MSE</span></code> and cannot be changed.</p></li>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: The default optimizer is <code class="docutils literal notranslate"><span class="pre">SGD</span></code> and cannot be changed. It uses the following parameters that can be changed:</dt><dd><ul>
@@ -545,7 +556,7 @@
 </dl>
 </li>
 </ul>
-<p>For more information on STFPM’s training. We invite you to read Anomalib’s <a class="reference external" href="https://anomalib.readthedocs.io/en/latest/reference_guide/algorithms/stfpm.htm">STFPM documentation</a>.</p>
+<p>For more information on STFPM’s training. We invite you to read Anomalib’s <a class="reference external" href="https://anomalib.readthedocs.io/en/v1.0.0/markdown/guides/reference/models/image/stfpm.html">STFPM documentation</a>.</p>
 </section>
 </section>
 </section>
@@ -656,6 +667,13 @@
       <a class="reference internal nav-link" href="#id7">
        PADIM
       </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h5 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#parameters">
+         Parameters
+        </a>
+       </li>
+      </ul>
      </li>
     </ul>
    </li>
