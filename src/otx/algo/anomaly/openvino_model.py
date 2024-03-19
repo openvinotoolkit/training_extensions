@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 from lightning.pytorch import LightningModule
 
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.model.module.anomaly_lightning import AnomalyModelInputs
+from otx.core.model.module.anomaly import AnomalyModelInputs
 
 if TYPE_CHECKING:
     from openvino.model_api.models import Model
