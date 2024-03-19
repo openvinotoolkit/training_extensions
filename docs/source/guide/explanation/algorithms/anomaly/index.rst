@@ -171,6 +171,10 @@ A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork 
 Training Parameters
 ~~~~~~~~~~~~~~~~~~~~
 
+- ``Enable SSPCAB``: The default value is ``False``. If set to ``True``, the model will use the SSPCAB block.
+- ``SSPCAB Lambda``: The default value is ``0.1``. This parameter is used to control the trade-off between the self-supervised reconstruction loss and the training loss.
+- ``Anomaly Source Path``: The default value is ``None``. This parameter is used to specify the path to the anomaly source images.
+- ``Beta``: Parameter that determines the opacity of the noise mask. The default is (0.1, 1.0).
 - ``Optimizer``: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.
 - ``Loss``: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.
 - ``Additional Training Techniques``:
