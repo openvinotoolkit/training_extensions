@@ -1,14 +1,13 @@
-"""Algorithm to find a proper batch size which is fit to current GPU device."""
+"""Algorithm to find a proper batch size which is fit to current device."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import queue
 import multiprocessing as mp
-from typing import Callable, Dict, Tuple
-import os
+from typing import Callable, Dict, Tuple, Any
 
 import torch
-import torch.distributed as dist
 
 from otx.algorithms.common.utils import is_xpu_available
 from otx.utils.logger import get_logger
@@ -16,22 +15,25 @@ from otx.utils.logger import get_logger
 logger = get_logger()
 
 
-def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[bool, int]:
-    mp.set_start_method(None, True)
-    cuda_oom = False
+def _run_trial(
+    train_func: Callable,
+    train_func_kwargs: Dict[str, Any],
+    bs: int,
+    trial_queue: mp.Queue
+) -> Tuple[bool, int]:
+    mp.set_start_method(None, True)  # reset mp start method
 
+    oom = False
     try:
         kwargs = train_func_kwargs
         kwargs["batch_size"] = bs
         train_func(**kwargs)
-        print("ha"*100)
     except RuntimeError as e:
         if (
-            str(e).startswith("CUDA out of memory.") or
-            str(e).startswith("Allocation is out of device memory on current platform.")
+            str(e).startswith("CUDA out of memory.") or  # CUDA OOM
+            str(e).startswith("Allocation is out of device memory on current platform.")  # XPU OOM
         ):
-            print("ho"*100)
-            cuda_oom = True
+            oom = True
         else:
             raise e
 
@@ -39,7 +41,7 @@ def _run_trial(train_func, train_func_kwargs, bs: int, trial_queue) -> Tuple[boo
 
     trial_queue.put(
         {
-            "cuda_oom" : cuda_oom,
+            "oom" : oom,
             "max_memory_reserved" :max_memory_reserved,
         }
     )
@@ -54,7 +56,15 @@ class BsSearchAlgo:
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
-    def __init__(self, train_func: Callable[[int], None], train_func_kwargs: dict, default_bs: int, max_bs: int):
+    MAX_FAIL_LIMIT = 3
+
+    def __init__(
+        self,
+        train_func: Callable,
+        train_func_kwargs: dict[str, Any],
+        default_bs: int,
+        max_bs: int
+    ):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
         if max_bs <= 0:
@@ -74,55 +84,40 @@ class BsSearchAlgo:
         self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
-        cuda_oom = False
+        for _ in range(self.MAX_FAIL_LIMIT):
+            trial_queue = self._mp_ctx.Queue()
+            proc = self._mp_ctx.Process(
+                target=_run_trial,
+                args=(self._train_func, self._train_func_kwargs, bs, trial_queue)
+            )
+            proc.start()
+            output = None
+            while proc.is_alive():
+                try:
+                    output = trial_queue.get(timeout=1)
+                    break
+                except queue.Empty:
+                    pass
+            proc.join()
+            if output is not None:
+                break
+        else:
+            msg = f"Fail to train a model more than {self.MAX_FAIL_LIMIT} times during adaptive batch size."
+            raise RuntimeError(msg)
 
-        _reset_max_memory_cached_in_accelerator()
-        _empty_cache_in_accelerator()
-
-        trial_queue = self._mp_ctx.Queue()
-        proc = self._mp_ctx.Process(target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue))
-        proc.start()
-        output = trial_queue.get()
-        proc.join()
-
-        cuda_oom = output["cuda_oom"]
+        oom = output["oom"]
         max_memory_reserved = output["max_memory_reserved"]
 
-        if dist.is_initialized():  # Aggregate all results and broadcast to all processes
-            rank = dist.get_rank()
-            try_result = torch.tensor([int(cuda_oom), max_memory_reserved], dtype=torch.int64).cuda()
-
-            if rank == 0:
-                try_result_arr = [torch.empty(2, dtype=torch.int64).cuda() for _ in range(dist.get_world_size())]
-                dist.gather(try_result, gather_list=try_result_arr, dst=0)
-            else:
-                dist.gather(try_result, dst=0)
-
-            if rank == 0:
-                try_result_arr = torch.stack(try_result_arr)
-                cuda_oom = torch.any(try_result_arr[:, 0])  # type: ignore
-                max_memory_reserved = torch.max(try_result_arr[:, 1])  # type: ignore
-                total_try_result = torch.tensor([cuda_oom, max_memory_reserved], dtype=torch.int64).cuda()
-            else:
-                total_try_result = torch.empty(2, dtype=torch.int64).cuda()
-
-            dist.broadcast(total_try_result, src=0)
-
-            cuda_oom = total_try_result[0].bool().item()
-            max_memory_reserved = total_try_result[1].item()
-
-        if not cuda_oom:
+        if not oom:
             # Because heapq only supports min heap, use negatized batch size
             self._bs_try_history[bs] = max_memory_reserved
 
         logger.debug(
-            f"Adapting Batch size => bs : {bs}, CUDA_OOM : {cuda_oom}, "
-            f"GPU memory usage : {max_memory_reserved / self._total_mem}%"
+            f"Adapting Batch size => bs : {bs}, OOM : {oom}, "
+            f"memory usage : {max_memory_reserved / self._total_mem}%"
         )
 
-        _empty_cache_in_accelerator()
-
-        return cuda_oom, max_memory_reserved
+        return oom, max_memory_reserved
 
     @staticmethod
     def _get_even_center_val(val1: int, val2: int) -> int:
@@ -132,7 +127,7 @@ class BsSearchAlgo:
         return ret
 
     def auto_decrease_batch_size(self) -> int:
-        """Decrease batch size if default batch size isn't fit to current GPU device.
+        """Decrease batch size if default batch size isn't fit to current device.
 
         Returns:
             int: Proper batch size possibly decreased as default value isn't fit
@@ -142,10 +137,10 @@ class BsSearchAlgo:
         lowest_unavailable_bs = self._default_bs + 2
 
         while True:
-            cuda_oom, max_memory_reserved = self._try_batch_size(current_bs)
+            oom, max_memory_reserved = self._try_batch_size(current_bs)
 
-            # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
-            if cuda_oom or max_memory_reserved > self._mem_upper_bound:
+            # If memory usage is too close to limit, OOM can be raised during training
+            if oom or max_memory_reserved > self._mem_upper_bound:
                 if current_bs < lowest_unavailable_bs:
                     lowest_unavailable_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, available_bs)
@@ -167,7 +162,7 @@ class BsSearchAlgo:
         This function finds a big enough batch size by training with various batch sizes.
         It estimate a batch size using equation is estimated using training history.
         The reason why using the word "big enough" is that it tries to find not maxmium but big enough value which uses
-        GPU memory between lower and upper bound.
+        memory between lower and upper bound.
 
         Args:
             drop_last (bool): Whether to drop the last incomplete batch.
@@ -181,8 +176,8 @@ class BsSearchAlgo:
         estimated_bs = self._default_bs
 
         # try default batch size
-        cuda_oom, bs_mem_usage = self._try_batch_size(estimated_bs)
-        if cuda_oom or bs_mem_usage > self._mem_upper_bound:
+        oom, bs_mem_usage = self._try_batch_size(estimated_bs)
+        if oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
                 raise RuntimeError("Current device can't train model even with 2.")
@@ -193,8 +188,8 @@ class BsSearchAlgo:
         estimated_bs += 2
         if estimated_bs > self._max_bs:
             return self._default_bs
-        cuda_oom, bs_mem_usage = self._try_batch_size(estimated_bs)
-        if cuda_oom or bs_mem_usage > self._mem_upper_bound:
+        oom, bs_mem_usage = self._try_batch_size(estimated_bs)
+        if oom or bs_mem_usage > self._mem_upper_bound:
             return self._default_bs
 
         # estimate batch size using equation
@@ -203,9 +198,9 @@ class BsSearchAlgo:
             estimated_bs = self._estimate_batch_size(estimation_pct)
             if estimated_bs in self._bs_try_history:
                 break
-            cuda_oom, mem_usage = self._try_batch_size(estimated_bs)
+            oom, mem_usage = self._try_batch_size(estimated_bs)
 
-            if cuda_oom:
+            if oom:
                 estimation_pct -= 0.1
                 if estimation_pct <= 0:
                     estimated_bs = self._default_bs + 2
@@ -222,7 +217,7 @@ class BsSearchAlgo:
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:
-            raise RuntimeError("At least two trials should be done without CUDA OOM to estimate batch size.")
+            raise RuntimeError("At least two trials should be done without OOM to estimate batch size.")
 
         def distance_from_bound(val):
             if val[1] < self._mem_lower_bound:
@@ -244,7 +239,7 @@ class BsSearchAlgo:
             if graident != 0:
                 break
 
-        if graident == 0:  # all batch size history used same GPU memory
+        if graident == 0:  # all batch size history used same memory
             if bs1_mem_usage < self._mem_lower_bound:
                 return bs1 + 2
             elif bs1_mem_usage > self._mem_upper_bound:
@@ -256,8 +251,8 @@ class BsSearchAlgo:
 
         estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
 
-        # If estimated_bs is already tried and it used GPU memory more than upper bound,
-        # set estimated_bs as lowest value of batch sizes using GPU memory more than uppoer bound - 2
+        # If estimated_bs is already tried and it used memory more than upper bound,
+        # set estimated_bs as lowest value of batch sizes using memory more than uppoer bound - 2
         if estimated_bs in self._bs_try_history and self._bs_try_history[estimated_bs] > self._mem_upper_bound:
             for bs, mem_usage in bs_arr:
                 if mem_usage > self._mem_upper_bound:
@@ -270,28 +265,14 @@ class BsSearchAlgo:
         return estimated_bs
 
 
-def _get_max_memory_reserved():
+def _get_max_memory_reserved() -> int:
     if is_xpu_available():
         return torch.xpu.max_memory_reserved(device=None)
     return torch.cuda.max_memory_reserved(device=None)
 
 
-def _get_total_memory_size():
+def _get_total_memory_size() -> int:
     if is_xpu_available():
         return torch.xpu.get_device_properties(0).total_memory
     _, total_mem = torch.cuda.mem_get_info()
     return total_mem
-
-    
-def _empty_cache_in_accelerator():
-    if is_xpu_available():
-        torch.xpu.empty_cache()
-    elif torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    
-
-def _reset_max_memory_cached_in_accelerator():
-    if is_xpu_available():
-        torch.xpu.reset_peak_memory_stats(device=None)
-    elif torch.cuda.is_available():
-        torch.cuda.reset_max_memory_cached(device=None)
