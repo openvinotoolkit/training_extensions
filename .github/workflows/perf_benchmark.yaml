@@ -50,6 +50,45 @@ on:
           `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
           and reverted after run. Works only for v2.x assuming CLI compatibility.
         default: __CURRENT_BRANCH_COMMIT__
+  workflow_call:
+    inputs:
+      model-category:
+        type: string
+        description: Model category to run benchmark [default, all]
+        default: default
+      data-group:
+        type: string
+        description: Data group to run benchmark [small, medium, large, all]
+        default: all
+      num-repeat:
+        type: number
+        description: Overrides default per-data-group number of repeat setting
+        default: 0
+      num-epoch:
+        type: number
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: string
+        description: The last operation to evaluate. 'optimize' means all. [train, export, optimize]
+        default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      data-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: "/home/validation/data/v2/"
+      otx-ref:
+        type: string
+        description: |
+          Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
+          `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
+          and reverted after run. Works only for v2.x assuming CLI compatibility.
+        default: __CURRENT_BRANCH_COMMIT__
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -73,7 +112,7 @@ jobs:
           - task-short: "vsp"
             task: "visual_prompting"
     name: Perf-Benchmark-${{ matrix.task-short }}
-    runs-on: [self-hosted, linux, x64, dmount-v2, perf]
+    runs-on: [self-hosted, linux, x64, dmount-v2]
     timeout-minutes: 8640
     steps:
       - name: Checkout repository
@@ -85,6 +124,10 @@ jobs:
       - name: Install tox
         run: python -m pip install --require-hashes --no-deps -r .ci/tox-deps.txt
       - name: Run Performance Test
+        env:
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha }}
         run: >
           tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
           --model-category ${{ inputs.model-category }}
