@@ -49,9 +49,7 @@ on:
           Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
           `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
           and reverted after run. Works only for v1.x assuming CLI compatibility.
-      artifact-prefix:
-        type: string
-        default: perf-benchmark
+        default: __CURRENT_BRANCH_COMMIT__
   workflow_call:
     inputs:
       model-category:
@@ -90,9 +88,6 @@ on:
           Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
           `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
           and reverted after run. Works only for v1.x assuming CLI compatibility.
-      artifact-prefix:
-        type: string
-        default: perf-benchmark
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -152,7 +147,7 @@ jobs:
       - name: Upload test results
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
-          name: ${{ inputs.artifact-prefix }}-${{ matrix.task-short }}
+          name: pef-benchmark-${{ matrix.task-short }}
           path: .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
