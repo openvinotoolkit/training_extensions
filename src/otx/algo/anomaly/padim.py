@@ -15,26 +15,26 @@ class Padim(OTXAnomaly, OTXModel, AnomalibPadim):
     """OTX Padim model.
 
     Args:
-        input_size (tuple[int, int], optional): Input size. Defaults to (256, 256).
         backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
         layers (list[str], optional): Feature extractor layers. Defaults to ["layer1", "layer2", "layer3"].
         pre_trained (bool, optional): Pretrained backbone. Defaults to True.
         n_features (int | None, optional): Number of features. Defaults to None.
+        num_classes (int, optional): Anoamly don't use num_classes ,
+            but OTXModel always receives num_classes, so need this.
     """
 
     def __init__(
         self,
-        input_size: tuple[int, int] = (256, 256),
         backbone: str = "resnet18",
         layers: list[str] = ["layer1", "layer2", "layer3"],  # noqa: B006
         pre_trained: bool = True,
         n_features: int | None = None,
+        num_classes: int = 2,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, num_classes=2)
+        OTXModel.__init__(self, num_classes=num_classes)
         AnomalibPadim.__init__(
             self,
-            input_size=input_size,
             backbone=backbone,
             layers=layers,
             pre_trained=pre_trained,

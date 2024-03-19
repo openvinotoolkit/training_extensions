@@ -62,10 +62,6 @@ def test_otx_e2e(
         "1" if task in ("zero_shot_visual_prompting") else "2",
         *fxt_cli_override_command_per_task[task],
     ]
-    # H-Label-CLS need to add --metric
-    if task in ("h_label_cls"):
-        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
-        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -105,10 +101,6 @@ def test_otx_e2e(
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
-    # H-Label-CLS need to add --metric
-    if task in ("h_label_cls"):
-        command_cfg.extend(["--metric.num_multiclass_heads", "2"])
-        command_cfg.extend(["--metric.num_multilabel_classes", "3"])
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -129,6 +121,9 @@ def test_otx_e2e(
             "dino_v2",
             "instance_segmentation",
             "action",
+            "anomaly_classification",
+            "anomaly_detection",
+            "anomaly_segmentation",
         ]
     ):
         return
@@ -208,8 +203,11 @@ def test_otx_e2e(
     assert latest_dir.exists()
 
     # 5) otx export with XAI
-    if "_cls" not in task or "dino" in model_name:
-        return
+    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+        return  # Supported only for classification, detection and instance segmentation task.
+
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        return  # DINO and Rtmdet_tiny are not supported.
 
     format_to_file = {
         "ONNX": "exported_model.onnx",
@@ -279,11 +277,11 @@ def test_otx_explain_e2e(
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
-    if "_cls" not in task:
-        pytest.skip("Supported only for classification.")
+    if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
+        pytest.skip("Supported only for classification, detection and instance segmentation task.")
 
-    if "dino" in model_name:
-        pytest.skip("DINO is not supported.")
+    if "dino" in model_name or "rtmdet_inst_tiny" in model_name:
+        pytest.skip("DINO and Rtmdet_tiny are not supported.")
 
     # otx explain
     tmp_path_explain = tmp_path / f"otx_explain_{model_name}"
@@ -324,18 +322,42 @@ def test_otx_explain_e2e(
 
     sal_diff_thresh = 3
     reference_sal_vals = {
+        # Classification
         "multi_label_cls_efficientnet_v2_light": (
             np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
             "Slide6_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([43, 84, 61, 5, 54, 31, 57], dtype=np.uint8),
-            "5_class_0_saliency_map.png",
+            np.array([152, 193, 144, 132, 149, 204, 217], dtype=np.uint8),
+            "092_class_5_saliency_map.png",
+        ),
+        # Detection
+        "detection_yolox_tiny": (
+            np.array([111, 163, 141, 141, 146, 147, 158, 169, 184, 193], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        "detection_ssd_mobilenetv2": (
+            np.array([135, 80, 74, 34, 27, 32, 47, 42, 32, 34], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        "detection_atss_mobilenetv2": (
+            np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
+        ),
+        # Instance Segmentation
+        "instance_segmentation_maskrcnn_efficientnetb2b": (
+            np.array([54, 54, 54, 54, 0, 0, 0, 54, 0, 0], dtype=np.uint8),
+            "Slide3_class_0_saliency_map.png",
         ),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))[:, 0, 0]
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
+        if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
+            # Take corner values due to map sparsity of InstSeg
+            actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
+        else:
+            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
         assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
@@ -372,6 +394,9 @@ def test_otx_ov_test(
         "h_label_cls",
         "visual_prompting",
         "zero_shot_visual_prompting",
+        "anomaly_classification",
+        "anomaly_detection",
+        "anomaly_segmentation",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
@@ -469,4 +494,8 @@ def test_otx_hpo_e2e(
     )
     hpo_work_dor = latest_dir / "hpo"
     assert hpo_work_dor.exists()
+    # Anomaly doesn't do validation. Check just there is no error.
+    if task.startswith("anomaly"):
+        return
+
     assert len([val for val in hpo_work_dor.rglob("*.json") if str(val.stem).isdigit()]) == 2

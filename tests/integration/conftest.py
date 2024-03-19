@@ -67,6 +67,8 @@ def get_task_list(task: str) -> list[OTXTaskType]:
         return [OTXTaskType.ACTION_CLASSIFICATION, OTXTaskType.ACTION_DETECTION]
     if task == "visual_prompting":
         return [OTXTaskType.VISUAL_PROMPTING, OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING]
+    if task == "anomaly":
+        return [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION]
     return [OTXTaskType(task.upper())]
 
 
@@ -133,6 +135,9 @@ def fxt_target_dataset_per_task() -> dict:
         "action_detection": "tests/assets/action_detection_dataset/",
         "visual_prompting": "tests/assets/car_tree_bug",
         "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
+        "anomaly_classification": "tests/assets/anomaly_hazelnut",
+        "anomaly_detection": "tests/assets/anomaly_hazelnut",
+        "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
     }
 
 
@@ -141,12 +146,7 @@ def fxt_cli_override_command_per_task() -> dict:
     return {
         "multi_class_cls": [],
         "multi_label_cls": [],
-        "h_label_cls": [
-            "--model.num_multiclass_heads",
-            "2",
-            "--model.num_multilabel_classes",
-            "3",
-        ],
+        "h_label_cls": [],
         "detection": [],
         "rotated_detection": [],
         "instance_segmentation": [],
@@ -158,4 +158,7 @@ def fxt_cli_override_command_per_task() -> dict:
         ],
         "visual_prompting": [],
         "zero_shot_visual_prompting": [],
+        "anomaly_classification": ["--limit_val_batches", "0"],
+        "anomaly_detection": ["--limit_val_batches", "0"],
+        "anomaly_segmentation": ["--limit_val_batches", "0"],
     }

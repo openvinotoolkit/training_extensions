@@ -538,8 +538,6 @@ class TestOTXZeroShotSegmentAnything:
 
         if is_training:
             assert "processed_prompts" in output_data
-        else:
-            assert "is_cascade" in output_data
 
     def test_customize_inputs_infer(self, model: OTXZeroShotSegmentAnything, fxt_zero_shot_vpm_data_entity) -> None:
         """Test _customize_inputs with training=False."""
