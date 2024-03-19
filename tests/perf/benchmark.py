@@ -172,7 +172,10 @@ class Benchmark:
             start_time = time()
             self._run_command(command)
             extra_metrics = {"train/e2e_time": time() - start_time}
-            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "train", replaces={"train_": "train/", "{pre}": "train/"})
+            self._rename_raw_data(
+                work_dir=sub_work_dir / ".latest" / "train",
+                replaces={"train_": "train/", "{pre}": "train/"},
+            )
             self._log_metrics(
                 work_dir=sub_work_dir / ".latest" / "train",
                 tags=tags,
@@ -187,7 +190,10 @@ class Benchmark:
                 str(sub_work_dir),
             ]
             self._run_command(command)
-            self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test_": "test/", "{pre}": "test/"})
+            self._rename_raw_data(
+                work_dir=sub_work_dir / ".latest" / "test",
+                replaces={"test_": "test/", "{pre}": "test/"},
+            )
             self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Export & test
@@ -216,7 +222,10 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
-                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "export", "{pre}": "export/"})
+                self._rename_raw_data(
+                    work_dir=sub_work_dir / ".latest" / "test",
+                    replaces={"test": "export", "{pre}": "export/"},
+                )
                 self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Optimize & test
@@ -251,7 +260,10 @@ class Benchmark:
                 ]
                 self._run_command(command)
 
-                self._rename_raw_data(work_dir=sub_work_dir / ".latest" / "test", replaces={"test": "optimize", "{pre}": "optimize/"})
+                self._rename_raw_data(
+                    work_dir=sub_work_dir / ".latest" / "test",
+                    replaces={"test": "optimize", "{pre}": "optimize/"},
+                )
                 self._log_metrics(work_dir=sub_work_dir / ".latest" / "test", tags=tags, criteria=criteria)
 
             # Force memory clean up
@@ -312,6 +324,7 @@ class Benchmark:
 
     def _rename_raw_data(self, work_dir: Path, replaces: dict[str, str]) -> None:
         replaces = {**self.NAME_MAPPING, **replaces}
+
         def _rename_col(col_name: str) -> str:
             for src_str, dst_str in replaces.items():
                 if src_str == "{pre}":
@@ -409,5 +422,4 @@ class Benchmark:
             for criterion in criteria:
                 criterion(result_entry, target_entry)
 
-    NAME_MAPPING: dict[str, str] = {
-    }
+    NAME_MAPPING: dict[str, str] = {}  # noqa: RUF012
