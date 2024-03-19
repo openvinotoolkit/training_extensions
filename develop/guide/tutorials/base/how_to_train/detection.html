@@ -519,8 +519,8 @@ work_dir:<span class="w"> </span>otx-workspace
 callback_monitor:<span class="w"> </span>val/map_50
 disable_infer_num_classes:<span class="w"> </span><span class="nb">false</span>
 engine:
-task:<span class="w"> </span>DETECTION
-device:<span class="w"> </span>auto
+<span class="w">  </span>task:<span class="w"> </span>DETECTION
+<span class="w">  </span>device:<span class="w"> </span>auto
 data:
 ...
 </pre></div>
@@ -581,7 +581,7 @@ API</label><div class="sd-tab-content docutils">
 <span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/wgisd&quot;</span>
 
 <span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span>
-          <span class="n">model</span><span class="o">=</span><span class="s2">&quot;atss_mobilenetv2,</span>
+          <span class="n">model</span><span class="o">=</span><span class="s2">&quot;atss_mobilenetv2&quot;</span><span class="p">,</span>
           <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
           <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
         <span class="p">)</span>
