@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/model/module/base';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -275,7 +271,9 @@
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 
-<div class="viewcode-block" id="OTXLitModule"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule">[docs]</a><span class="k">class</span> <span class="nc">OTXLitModule</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+<div class="viewcode-block" id="OTXLitModule">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXLitModule</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the lightning module used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -299,7 +297,9 @@
         <span class="c1"># also ensures init params will be stored in ckpt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;otx_model&quot;</span><span class="p">])</span>
 
-<div class="viewcode-block" id="OTXLitModule.training_step"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.training_step">[docs]</a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">OTXBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXLitModule.training_step">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.training_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">OTXBatchDataEntity</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Step for model training.&quot;&quot;&quot;</span>
         <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
@@ -334,33 +334,54 @@
 
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_validation_start"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_validation_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_validation_start">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_validation_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called at the beginning of validation.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">configure_metric</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_test_start"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_test_start">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Called at the beginning of testing.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">configure_metric</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_validation_epoch_start"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_epoch_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_validation_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_validation_epoch_start">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_epoch_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_validation_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback triggered when the validation epoch starts.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">Metric</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_test_epoch_start"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_epoch_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_test_epoch_start">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_epoch_start">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_test_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback triggered when the test epoch starts.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">Metric</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_validation_epoch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_validation_epoch_end">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_validation_epoch_end">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback triggered when the validation epoch ends.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.on_test_epoch_end"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.on_test_epoch_end">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.on_test_epoch_end">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback triggered when the test epoch ends.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.setup"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.setup">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.setup">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Lightning hook that is called at the beginning of fit (train + validate), validate, test, or predict.</span>
 
 <span class="sd">        This is a good hook when you need to build models dynamically or adjust something about</span>
@@ -373,7 +394,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">setup_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.configure_optimizers"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
+
+<div class="viewcode-block" id="OTXLitModule.configure_optimizers">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.configure_optimizers">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Choose what optimizers and learning-rate schedulers to use in your optimization.</span>
 
 <span class="sd">        Normally you&#39;d need one. But in the case of GANs or similar you might have multiple.</span>
@@ -404,7 +428,10 @@
 
         <span class="k">return</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">lr_schedulers</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.configure_metric"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.configure_metric">[docs]</a>    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.configure_metric">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.configure_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">configure_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the metric.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span><span class="p">,</span> <span class="n">partial</span><span class="p">):</span>
             <span class="n">num_classes_augmented_params</span> <span class="o">=</span> <span class="p">{</span>
@@ -422,7 +449,10 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.register_load_state_dict_pre_hook"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.register_load_state_dict_pre_hook">[docs]</a>    <span class="k">def</span> <span class="nf">register_load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ckpt_classes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.register_load_state_dict_pre_hook">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.register_load_state_dict_pre_hook">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_classes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ckpt_classes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register self.model&#39;s load_state_dict_pre_hook.</span>
 
 <span class="sd">        Args:</span>
@@ -431,7 +461,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">register_load_state_dict_pre_hook</span><span class="p">(</span><span class="n">model_classes</span><span class="p">,</span> <span class="n">ckpt_classes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.state_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.state_dict">[docs]</a>    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="OTXLitModule.state_dict">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.state_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return state dictionary of model entity with meta information.</span>
 
 <span class="sd">        Returns:</span>
@@ -442,7 +475,10 @@
         <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>
         <span class="k">return</span> <span class="n">state_dict</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.load_state_dict"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.load_state_dict">[docs]</a>    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="OTXLitModule.load_state_dict">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.load_state_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load state dictionary from checkpoint state dictionary.</span>
 
 <span class="sd">        It successfully loads the checkpoint from OTX v1.x and for finetune and for resume.</span>
@@ -479,6 +515,7 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the member `OTXModel` label information.&quot;&quot;&quot;</span>
@@ -489,13 +526,18 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the member `OTXModel` label information.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">label_info</span>  <span class="c1"># type: ignore[assignment]</span>
 
-<div class="viewcode-block" id="OTXLitModule.forward"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+<div class="viewcode-block" id="OTXLitModule.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward pass.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward_explain</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="OTXLitModule.export"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.export">[docs]</a>    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OTXLitModule.export">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.module.base.html#otx.core.model.module.base.OTXLitModule.export">[docs]</a>
+    <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -512,7 +554,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Path: path to the exported model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">base_name</span><span class="p">,</span> <span class="n">export_format</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">base_name</span><span class="p">,</span> <span class="n">export_format</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
             </article>
@@ -589,7 +633,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

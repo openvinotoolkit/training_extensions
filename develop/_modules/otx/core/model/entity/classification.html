@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +24,23 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../../_static/doctools.js"></script>
-    <script src="../../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../../_static/copybutton.js"></script>
-    <script src="../../../../../_static/tabs.js"></script>
-    <script src="../../../../../_static/design-tabs.js"></script>
+    <script src="../../../../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../../../../_static/tabs.js?v=3030b3cb"></script>
+    <script src="../../../../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/model/entity/classification';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
@@ -288,7 +284,9 @@
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 
 
-<div class="viewcode-block" id="ExplainableOTXClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel">[docs]</a><span class="k">class</span> <span class="nc">ExplainableOTXClsModel</span><span class="p">(</span>
+<div class="viewcode-block" id="ExplainableOTXClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">ExplainableOTXClsModel</span><span class="p">(</span>
     <span class="n">OTXModel</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntityWithXAI</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX classification model which can attach a XAI hook.&quot;&quot;&quot;</span>
@@ -305,7 +303,9 @@
         <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;output_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">,</span> <span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">export_params</span>
 
-<div class="viewcode-block" id="ExplainableOTXClsModel.head_forward_fn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.head_forward_fn">[docs]</a>    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<div class="viewcode-block" id="ExplainableOTXClsModel.head_forward_fn">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.head_forward_fn">[docs]</a>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">head_forward_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs model&#39;s neck and head forward. Can be redefined at the model&#39;s level.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">neck</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;neck&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -316,7 +316,10 @@
         <span class="n">output</span> <span class="o">=</span> <span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">head</span><span class="p">([</span><span class="n">output</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="ExplainableOTXClsModel.forward_explain"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.forward_explain">[docs]</a>    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
+
+<div class="viewcode-block" id="ExplainableOTXClsModel.forward_explain">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.forward_explain">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXBatchPredEntity</span> <span class="o">|</span> <span class="n">T_OTXBatchPredEntityWithXAI</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
@@ -336,6 +339,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXClsModel</span><span class="o">.</span><span class="n">_customize_outputs</span>
             <span class="k">else</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span>
         <span class="p">)</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_forward_explain_image_classifier</span><span class="p">(</span>
@@ -368,7 +372,9 @@
             <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
         <span class="p">}</span>
 
-<div class="viewcode-block" id="ExplainableOTXClsModel.get_explain_fn"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.get_explain_fn">[docs]</a>    <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<div class="viewcode-block" id="ExplainableOTXClsModel.get_explain_fn">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.get_explain_fn">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">ReciproCAMHook</span>
 
@@ -378,6 +384,7 @@
             <span class="n">optimize_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">has_gap</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
+
 
     <span class="k">def</span> <span class="nf">_reset_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
@@ -410,7 +417,10 @@
         <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OTXMulticlassClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXMulticlassClsModel">[docs]</a><span class="k">class</span> <span class="nc">OTXMulticlassClsModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OTXMulticlassClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXMulticlassClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXMulticlassClsModel</span><span class="p">(</span>
     <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
         <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">MulticlassClsBatchPredEntity</span><span class="p">,</span>
@@ -435,7 +445,10 @@
         <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="MMPretrainMulticlassClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainMulticlassClsModel">[docs]</a><span class="k">class</span> <span class="nc">MMPretrainMulticlassClsModel</span><span class="p">(</span><span class="n">OTXMulticlassClsModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MMPretrainMulticlassClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainMulticlassClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">MMPretrainMulticlassClsModel</span><span class="p">(</span><span class="n">OTXMulticlassClsModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Multi-class Classification model compatible for MMPretrain.</span>
 
 <span class="sd">    It can consume MMPretrain model configuration translated into OTX configuration</span>
@@ -561,11 +574,14 @@
         <span class="k">return</span> <span class="n">export_params</span></div>
 
 
+
 <span class="c1">### NOTE, currently, although we&#39;ve made the separate Multi-cls, Multi-label classes</span>
 <span class="c1">### It&#39;ll be integrated after H-label classification integration with more advanced design.</span>
 
 
-<div class="viewcode-block" id="OTXMultilabelClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXMultilabelClsModel">[docs]</a><span class="k">class</span> <span class="nc">OTXMultilabelClsModel</span><span class="p">(</span>
+<div class="viewcode-block" id="OTXMultilabelClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXMultilabelClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXMultilabelClsModel</span><span class="p">(</span>
     <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
         <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">MultilabelClsBatchPredEntity</span><span class="p">,</span>
@@ -591,7 +607,10 @@
         <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="MMPretrainMultilabelClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainMultilabelClsModel">[docs]</a><span class="k">class</span> <span class="nc">MMPretrainMultilabelClsModel</span><span class="p">(</span><span class="n">OTXMultilabelClsModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MMPretrainMultilabelClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainMultilabelClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">MMPretrainMultilabelClsModel</span><span class="p">(</span><span class="n">OTXMultilabelClsModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Multi-label Classification model compatible for MMPretrain.</span>
 
 <span class="sd">    It can consume MMPretrain model configuration translated into OTX configuration</span>
@@ -719,7 +738,10 @@
         <span class="k">return</span> <span class="n">export_params</span></div>
 
 
-<div class="viewcode-block" id="OTXHlabelClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXHlabelClsModel">[docs]</a><span class="k">class</span> <span class="nc">OTXHlabelClsModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OTXHlabelClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OTXHlabelClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OTXHlabelClsModel</span><span class="p">(</span>
     <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
         <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">HlabelClsBatchPredEntity</span><span class="p">,</span>
@@ -761,7 +783,10 @@
         <span class="k">return</span> <span class="n">parameters</span></div>
 
 
-<div class="viewcode-block" id="MMPretrainHlabelClsModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainHlabelClsModel">[docs]</a><span class="k">class</span> <span class="nc">MMPretrainHlabelClsModel</span><span class="p">(</span><span class="n">OTXHlabelClsModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MMPretrainHlabelClsModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainHlabelClsModel">[docs]</a>
+<span class="k">class</span> <span class="nc">MMPretrainHlabelClsModel</span><span class="p">(</span><span class="n">OTXHlabelClsModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;H-label Classification model compatible for MMPretrain.</span>
 
 <span class="sd">    It can consume MMPretrain model configuration translated into OTX configuration</span>
@@ -783,13 +808,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span> <span class="o">=</span> <span class="n">classification_layers</span>
         <span class="k">return</span> <span class="n">model</span>
 
-<div class="viewcode-block" id="MMPretrainHlabelClsModel.set_hlabel_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainHlabelClsModel.set_hlabel_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchical_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MMPretrainHlabelClsModel.set_hlabel_info">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.MMPretrainHlabelClsModel.set_hlabel_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchical_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set hierarchical information in model head.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hierarchical_info: the label information represents the hierarchy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">set_hlabel_info</span><span class="p">(</span><span class="n">hierarchical_info</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_customize_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entity</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="kn">from</span> <span class="nn">mmpretrain.structures</span> <span class="kn">import</span> <span class="n">DataSample</span>
@@ -897,7 +925,10 @@
         <span class="k">return</span> <span class="n">export_params</span></div>
 
 
-<div class="viewcode-block" id="OVMulticlassClassificationModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVMulticlassClassificationModel">[docs]</a><span class="k">class</span> <span class="nc">OVMulticlassClassificationModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OVMulticlassClassificationModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVMulticlassClassificationModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OVMulticlassClassificationModel</span><span class="p">(</span>
     <span class="n">OVModel</span><span class="p">[</span><span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">MulticlassClsBatchPredEntity</span><span class="p">,</span> <span class="n">MulticlassClsBatchPredEntityWithXAI</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Classification model compatible for OpenVINO IR inference.</span>
@@ -959,7 +990,10 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OVHlabelClassificationModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVHlabelClassificationModel">[docs]</a><span class="k">class</span> <span class="nc">OVHlabelClassificationModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OVHlabelClassificationModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVHlabelClassificationModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OVHlabelClassificationModel</span><span class="p">(</span>
     <span class="n">OVModel</span><span class="p">[</span><span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">HlabelClsBatchPredEntity</span><span class="p">,</span> <span class="n">HlabelClsBatchPredEntityWithXAI</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Hierarchical classification model compatible for OpenVINO IR inference.</span>
@@ -994,7 +1028,9 @@
             <span class="n">model_api_configuration</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="OVHlabelClassificationModel.set_hlabel_info"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVHlabelClassificationModel.set_hlabel_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchical_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="OVHlabelClassificationModel.set_hlabel_info">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVHlabelClassificationModel.set_hlabel_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchical_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set hierarchical information in model head.</span>
 
 <span class="sd">        Since OV IR model consist of all required hierarchy information,</span>
@@ -1003,6 +1039,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;hierarchical_info&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hierarchical_info</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OpenVINO IR model should have hierarchical config embedded in rt_info of the model&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1062,7 +1099,10 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OVMultilabelClassificationModel"><a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVMultilabelClassificationModel">[docs]</a><span class="k">class</span> <span class="nc">OVMultilabelClassificationModel</span><span class="p">(</span>
+
+<div class="viewcode-block" id="OVMultilabelClassificationModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.OVMultilabelClassificationModel">[docs]</a>
+<span class="k">class</span> <span class="nc">OVMultilabelClassificationModel</span><span class="p">(</span>
     <span class="n">OVModel</span><span class="p">[</span><span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">MultilabelClsBatchPredEntity</span><span class="p">,</span> <span class="n">MultilabelClsBatchPredEntityWithXAI</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Multilabel classification model compatible for OpenVINO IR inference.</span>
@@ -1123,6 +1163,7 @@
             <span class="n">scores</span><span class="o">=</span><span class="n">pred_scores</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="p">[],</span>
         <span class="p">)</span></div>
+
 </pre></div>
 
             </article>
@@ -1199,7 +1240,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

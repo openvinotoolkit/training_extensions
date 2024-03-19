@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>OpenVINO™ Training Extensions CLI Usage &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
@@ -26,25 +25,22 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=949a1ff5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/design-tabs.js"></script>
+    <script src="../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=ff8fa330"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/get_started/cli_commands';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -298,17 +294,9 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_detection.html">otx.algo.action_detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.anomaly.html">otx.algo.anomaly</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.callbacks.html">otx.algo.callbacks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.hooks.html">otx.algo.hooks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.instance_segmentation.html">otx.algo.instance_segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.samplers.html">otx.algo.samplers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.schedulers.html">otx.algo.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.utils.html">otx.algo.utils</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
@@ -328,35 +316,15 @@
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.data.html">otx.data</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.data.anomaly.html">otx.data.anomaly</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.engine.html">otx.engine</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.engine.html">otx.engine.engine</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.hpo.html">otx.engine.hpo</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.engine.utils.html">otx.engine.utils</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.hpo.html">otx.hpo</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hpo_base.html">otx.hpo.hpo_base</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hpo_runner.html">otx.hpo.hpo_runner</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.hyperband.html">otx.hpo.hyperband</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.resource_manager.html">otx.hpo.resource_manager</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.search_space.html">otx.hpo.search_space</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.hpo.utils.html">otx.hpo.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.data.html">otx.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.utils.html">otx.utils</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.utils.signal.html">otx.utils.signal</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.utils.utils.html">otx.utils.utils</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.utils.html">otx.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -364,7 +332,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -399,7 +367,7 @@
             <article class="bd-article" role="main">
               
   <section id="openvino-training-extensions-cli-usage">
-<h1>OpenVINO™ Training Extensions CLI Usage<a class="headerlink" href="#openvino-training-extensions-cli-usage" title="Permalink to this heading">#</a></h1>
+<h1>OpenVINO™ Training Extensions CLI Usage<a class="headerlink" href="#openvino-training-extensions-cli-usage" title="Link to this heading">#</a></h1>
 <p>All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are <a class="reference internal" href="../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> in our documentation with life-practical examples on specific datasets for each task.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -408,7 +376,7 @@ Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or
 <cite>Jsonargparse Documentation &lt;https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files&gt;_</cite></p>
 </div>
 <section id="help">
-<h2>Help<a class="headerlink" href="#help" title="Permalink to this heading">#</a></h2>
+<h2>Help<a class="headerlink" href="#help" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">--help</span></code> show available sub-commands.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>--help
 ╭─<span class="w"> </span>Arguments<span class="w"> </span>─────────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -532,7 +500,7 @@ A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </s
 </div>
 </section>
 <section id="print-config">
-<h2>print_config<a class="headerlink" href="#print-config" title="Permalink to this heading">#</a></h2>
+<h2>print_config<a class="headerlink" href="#print-config" title="Link to this heading">#</a></h2>
 <p>Preview all configuration values that will be executed through that command line.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>&lt;config-file-path&gt;<span class="w"> </span>--print_config
 </pre></div>
@@ -574,7 +542,7 @@ A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </s
 </div>
 </section>
 <section id="find">
-<h2>Find<a class="headerlink" href="#find" title="Permalink to this heading">#</a></h2>
+<h2>Find<a class="headerlink" href="#find" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> lists model templates and backbones available for the given task. Specify the task name with <code class="docutils literal notranslate"><span class="pre">--task</span></code> option. Use <code class="docutils literal notranslate"><span class="pre">--pattern</span></code> to find the model name from OTX.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--help
 ╭─<span class="w"> </span>Arguments<span class="w"> </span>───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -634,7 +602,7 @@ A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </s
 </pre></div>
 </div>
 <section id="dataset-handling">
-<h3>Dataset handling<a class="headerlink" href="#dataset-handling" title="Permalink to this heading">#</a></h3>
+<h3>Dataset handling<a class="headerlink" href="#dataset-handling" title="Link to this heading">#</a></h3>
 <p>If the train dataset root and validation dataset root are the same - pass the same path to both options. For example, you have a standard COCO format for object detection:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coco_data_root</span>
   <span class="o">|----</span> <span class="n">annotations</span>
@@ -656,7 +624,7 @@ A<span class="w"> </span>better<span class="w"> </span>guide<span class="w"> </s
 </section>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template) on a dataset:</p>
 <p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./otx-workspace/</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--work_dir</span></code> option. These files are used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> receives <code class="docutils literal notranslate"><span class="pre">--config</span></code> as a argument. <code class="docutils literal notranslate"><span class="pre">config</span></code> can be a path to the specific <code class="docutils literal notranslate"><span class="pre">*.yaml</span></code> file. Also, the path to data root should be passed to the CLI to start training.</p>
@@ -694,7 +662,7 @@ For example, that is how you can change the max epochs and the batch size for th
 </div>
 </section>
 <section id="exporting">
-<h2>Exporting<a class="headerlink" href="#exporting" title="Permalink to this heading">#</a></h2>
+<h2>Exporting<a class="headerlink" href="#exporting" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.</p>
 <p>The command below performs exporting to the <code class="docutils literal notranslate"><span class="pre">{work_dir}/</span></code> path.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;path/to/trained/weights.pth&gt;
@@ -718,7 +686,7 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
 </div>
 </section>
 <section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
+<h2>Optimization<a class="headerlink" href="#optimization" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf#post-training-quantization">PTQ</a> depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
 <ul class="simple">
 <li><p>PTQ optimization used for models exported in the OpenVINO™ IR format</p></li>
@@ -742,7 +710,7 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
 </div>
 </section>
 <section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h2>
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> runs the evaluation of a model on the specific dataset.</p>
 <p>The command below will evaluate the trained model on the provided dataset:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>...<span class="w"> </span>--data_root<span class="w"> </span>&lt;path/to/test/root&gt;<span class="w"> </span><span class="se">\</span>
@@ -766,7 +734,7 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
 </div>
 </section>
 <section id="explanation">
-<h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this heading">#</a></h2>
+<h2>Explanation<a class="headerlink" href="#explanation" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
 <p>The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to <code class="docutils literal notranslate"><span class="pre">output</span></code> path:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>--config<span class="w"> </span>&lt;path/to/config&gt;<span class="w"> </span><span class="se">\</span>
@@ -785,7 +753,7 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
 </div>
 </section>
 <section id="workspace">
-<h2>Workspace<a class="headerlink" href="#workspace" title="Permalink to this heading">#</a></h2>
+<h2>Workspace<a class="headerlink" href="#workspace" title="Link to this heading">#</a></h2>
 <p>If we run a typical Training example, will have a folder like the one below as output.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx-workspace/
 <span class="w">    </span>.latest/<span class="w">                      </span><span class="c1"># Gather the most recent information.</span>
@@ -973,7 +941,7 @@ You can also omit <code class="docutils literal notranslate"><span class="pre">-
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
 
   </div>

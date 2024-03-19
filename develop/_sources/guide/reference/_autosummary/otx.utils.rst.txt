@@ -9,6 +9,13 @@ otx.utils
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      append_signal_handler
+      append_main_proc_signal_handler
+   
    
 
    
@@ -20,13 +27,4 @@ otx.utils
    
 
 
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.utils.signal
-   otx.utils.utils
 
