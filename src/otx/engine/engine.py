@@ -533,7 +533,6 @@ class Engine:
 
         model = self.model
         if not isinstance(model, OVModel):
-            optimize_datamodule = self._auto_configurator.update_ov_test_pipeline(datamodule=optimize_datamodule)
             model = self._auto_configurator.get_ov_model(
                 model_name=str(checkpoint),
                 label_info=optimize_datamodule.label_info,
