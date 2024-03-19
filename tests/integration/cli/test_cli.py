@@ -129,7 +129,7 @@ def test_otx_e2e(
         format_to_file = {
             "ONNX": "exported_model_decoder.onnx",
             "OPENVINO": "exported_model_decoder.xml",
-            # TODO (sungchul): EXPORTABLE_CODE will be supported # noqa: TD003
+            # TODO (sungchul): EXPORTABLE_CODE will be supported
         }
     else:
         format_to_file = {
@@ -404,7 +404,7 @@ def test_otx_ov_test(
         "anomaly_segmentation",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
+        # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
     if task in ["action_classification"]:
