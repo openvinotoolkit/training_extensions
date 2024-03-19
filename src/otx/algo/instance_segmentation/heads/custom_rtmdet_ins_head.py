@@ -155,7 +155,7 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
 
         if results.bboxes.numel() > 0:
             bboxes = get_box_tensor(results.bboxes)
-            # TODO (Eugene): batched_nms does not support half precision
+            # NOTE: mmcv.batched_nms Ops does not support half precision bboxes
             if bboxes.dtype != torch.float32:
                 bboxes = bboxes.float()
             det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)
