@@ -379,18 +379,20 @@ class OTXAnomaly:
     ) -> dict[str, Any]:
         """Customize inputs for the model."""
         if isinstance(inputs, AnomalyClassificationDataBatch):
-            return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
-        if isinstance(inputs, AnomalySegmentationDataBatch):
-            return {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
-        if isinstance(inputs, AnomalyDetectionDataBatch):
-            return {
+            output = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze()}
+        elif isinstance(inputs, AnomalySegmentationDataBatch):
+            output = {"image": inputs.images, "label": torch.vstack(inputs.labels).squeeze(), "mask": inputs.masks}
+        elif isinstance(inputs, AnomalyDetectionDataBatch):
+            output = {
                 "image": inputs.images,
                 "label": torch.vstack(inputs.labels).squeeze(),
                 "mask": inputs.masks,
                 "boxes": inputs.boxes,
             }
-        msg = f"Unsupported input type {type(inputs)}"
-        raise ValueError(msg)
+        else:
+            msg = f"Unsupported input type {type(inputs)}"
+            raise TypeError(msg)
+        return output
 
     def _customize_outputs(
         self,
