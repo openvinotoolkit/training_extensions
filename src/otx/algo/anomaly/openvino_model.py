@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
 import torch
 from anomalib import TaskType as AnomalibTaskType
 from anomalib.metrics import create_metric_collection
@@ -113,13 +114,16 @@ class AnomalyOpenVINO(OVModel, OTXModel, LightningModule):
         results = {
             "pred_score": torch.tensor([result.pred_score for result in outputs]),
             "pred_label": torch.tensor([0 if result.pred_label == "Normal" else 1 for result in outputs]),
-            "pred_mask": torch.tensor([result.pred_mask for result in outputs])
+            # converting to tensor directly from a list is slow
+            "pred_mask": torch.tensor(np.array([result.pred_mask for result in outputs]))
             if outputs[0].pred_mask is not None
             else None,
-            "anomaly_map": torch.tensor([result.anomaly_map for result in outputs])
+            "anomaly_map": torch.tensor(np.array([result.anomaly_map for result in outputs]))
             if outputs[0].anomaly_map is not None
             else None,
         }
+        # Normalize the anomaly map
+        results["anomaly_map"] = results["anomaly_map"].long() / 255.0 if results["anomaly_map"] is not None else None
         # compute metrics
         self.image_metrics.update(results["pred_score"], results["pred_label"])
         if results["pred_mask"] is not None and results["anomaly_map"] is not None:

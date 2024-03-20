@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<net name="Model0" version="11">
+    <layers>
+        <layer id="0" name="images" type="Parameter" version="opset1">
+            <data shape="1,3,256,256" element_type="f32" />
+            <output>
+                <port id="0" precision="FP32" names="images">
+                    <dim>1</dim>
+                    <dim>3</dim>
+                    <dim>256</dim>
+                    <dim>256</dim>
+                </port>
+            </output>
+        </layer>
+        <layer id="1" name="output" type="Result" version="opset1">
+            <data mode="numpy" />
+            <input>
+                <port id="0" precision="FP32">
+                    <dim>1</dim>
+                </port>
+            </input>
+
+        </layer>
+    </layers>
+    <edges>
+        <edge from-layer="0" from-port="0" to-layer="1" to-port="0" />
+    </edges>
+    <rt_info>
+        <Runtime_version value="dummy" />
+        <conversion_parameters>
+            <framework value="pytorch" />
+            <is_python_object value="True" />
+        </conversion_parameters>
+        <model_info>
+            <image_shape value="(256, 256)" />
+            <image_threshold value="0.7" />
+            <labels value="Normal Anomaly" />
+            <mean_values value="0.0 0.0 0.0" />
+            <model_type value="AnomalyDetection" />
+            <normalization_scale value="2" />
+            <orig_height value="256" />
+            <orig_width value="256" />
+            <pad_value value="0" />
+            <pixel_threshold value="0.1" />
+            <resize_type value="standard" />
+            <reverse_input_channels value="False" />
+            <scale_values value="1.0 1.0 1.0" />
+            <task value="unused for test" />
+        </model_info>
+    </rt_info>
+</net>
