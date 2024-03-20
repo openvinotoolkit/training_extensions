@@ -4,47 +4,24 @@
 import tempfile
 from pathlib import Path
 
-import pytest
 import torch
-from mmdeploy.apis.onnx import export
 from mmengine.config import ConfigDict
 from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
 from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
+from otx.core.types.export import OTXExportFormatType
 
 
 class TestCustomRTMDetInsSepBNHead:
-    @pytest.fixture()
-    def fx_deploy_cfg(self):
-        return ConfigDict(
-            deploy_cfg=ConfigDict(
-                codebase_config={
-                    "type": "mmdet",
-                    "task": "ObjectDetection",
-                    "model_type": "end2end",
-                    "post_processing": {
-                        "score_threshold": 0.05,
-                        "confidence_threshold": 0.005,
-                        "iou_threshold": 0.5,
-                        "max_output_boxes_per_class": 100,
-                        "pre_top_k": 300,
-                        "keep_top_k": 100,
-                        "background_label_id": -1,
-                        "export_postprocess_mask": False,
-                    },
-                },
-            ),
-        )
-
     def test_mask_pred(self, mocker) -> None:
         num_samples = 1
         num_classes = 1
         test_cfg = ConfigDict(
             nms_pre=100,
-            score_thr=0.00,
-            nms={"type": "nms", "iou_threshold": 0.5},
+            score_thr=0.0,
+            nms={"type": "nms", "iou_threshold": 1.0},
             max_per_img=100,
-            mask_thr_binary=0.5,
-            min_bbox_size=0,
+            mask_thr_binary=0.0,
+            min_bbox_size=-1,
         )
         s = 128
         img_metas = {
@@ -97,48 +74,12 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=None,
         )
 
-    def test_predict_by_feat_onnx(self, fx_deploy_cfg):
+    def test_predict_by_feat_ov(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdirname:
             lit_module = RTMDetInst(num_classes=1, variant="tiny")
-            model = lit_module.model
-            export_img = torch.rand([1, 3, 640, 640]).cpu()
-            input_names = ["image"]
-            output_names = ["boxes", "labels", "masks"]
-            export_path = Path(tmpdirname) / "exported_model.onnx"
-            dynamic_axes = {
-                "image": {
-                    0: "batch",
-                    2: "height",
-                    3: "width",
-                },
-                "boxes": {
-                    0: "batch",
-                    1: "num_dets",
-                },
-                "labels": {
-                    0: "batch",
-                    1: "num_dets",
-                },
-                "masks": {
-                    0: "batch",
-                    1: "num_dets",
-                    2: "height",
-                    3: "width",
-                },
-            }
-
-            export(
-                model,
-                export_img,
-                str(export_path),
-                output_names=output_names,
-                input_names=input_names,
-                keep_initializers_as_inputs=True,
-                verbose=False,
-                opset_version=11,
-                dynamic_axes=dynamic_axes,
-                context_info=fx_deploy_cfg,
+            exported_model_path = lit_module.export(
+                output_dir=Path(tmpdirname),
+                base_name="exported_model",
+                export_format=OTXExportFormatType.OPENVINO,
             )
-
-            Path.exists(export_path)
-            print("success!")
+            Path.exists(exported_model_path)

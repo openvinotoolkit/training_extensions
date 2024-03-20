@@ -203,7 +203,11 @@ def _custom_mask_predict_by_feat_single(
     kernels: torch.Tensor,
     priors: torch.Tensor,
 ) -> torch.Tensor:
-    """Decode mask with dynamic conv."""
+    """Decode mask with dynamic conv.
+
+    Note: Prior Generator has cuda device set as default.
+    However, this would cause some problems on CPU only devices.
+    """
     num_inst = priors.shape[1]
     batch_size = priors.shape[0]
     hw = mask_feat.size()[-2:]
