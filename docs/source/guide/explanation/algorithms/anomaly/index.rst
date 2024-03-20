@@ -108,6 +108,16 @@ To predict the anomaly score, Mahalanobis distance is calculated to score each p
 
    Since the PADIM model uses a pre-trained backbone to extract features, the training does not involve fine-tuning of neural network weights. This means that PADIM does not make use of an optimizer and a loss function.
 
+Parameters
+~~~~~~~~~~~~~~~~~~~~
+
+Since the Padim model extracts features and uses clustering algorithms to learn normality, we use the following parameters for its training:
+
+- ``Backbone``: The default backbone is ``ResNet18``. You can also use ``Wide ResNet50``.
+- ``Layers``: The layers used for feature extraction. The default layers are ``layer1, layer2, layer3``.
+- ``Pre-Trained``: Whether or not to use a pre-trained backbone. The default value is ``True``.
+- ``N-Features``: The number of features to be retained for the dimensionality reduction step. Default values from the paper are available for: ``ResNet18 (100)`` and ``Wide ResNet50 (550)``.
+
 Knowledge Distillation-based Models
 -----------------------------------
 Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OpenVINO Training Extensions currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
@@ -132,6 +142,7 @@ Training Parameters
 Since STFPM trains the student network, we use the following parameters for its training:
 
 - ``Backbone``: The default backbone is ``ResNet18``. You can also use ``Wide ResNet50``.
+- ``Layers``: The layers used for feature extraction. The default layers are ``layer1, layer2, layer3``.
 - ``Loss``: Loss is computed as the mean squared error between the student and teacher feature pyramids. The default loss is ``MSE`` and cannot be changed.
 - ``Optimizer``: The default optimizer is ``SGD`` and cannot be changed. It uses the following parameters that can be changed:
    - ``Learning Rate``: The default learning rate is ``0.4``.
@@ -141,7 +152,7 @@ Since STFPM trains the student network, we use the following parameters for its 
 - ``Aditional Techniques``:
    - ``Early Stopping``: Early stopping is used to stop the training process when the validation loss stops improving. The default value of the early stopping patience is ``10``.
 
-For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation <https://anomalib.readthedocs.io/en/latest/reference_guide/algorithms/stfpm.htm>`_.
+For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation <https://anomalib.readthedocs.io/en/v1.0.0/markdown/guides/reference/models/image/stfpm.html>`_.
 
 Reconstruction-based Models
 ---------------------------
@@ -160,6 +171,10 @@ A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork 
 Training Parameters
 ~~~~~~~~~~~~~~~~~~~~
 
+- ``Enable SSPCAB``: The default value is ``False``. If set to ``True``, the model will use the SSPCAB block.
+- ``SSPCAB Lambda``: The default value is ``0.1``. This parameter is used to control the trade-off between the self-supervised reconstruction loss and the training loss.
+- ``Anomaly Source Path``: The default value is ``None``. This parameter is used to specify the path to the anomaly source images.
+- ``Beta``: Parameter that determines the opacity of the noise mask. The default is (0.1, 1.0).
 - ``Optimizer``: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.
 - ``Loss``: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.
 - ``Additional Training Techniques``:
