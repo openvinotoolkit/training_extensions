@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Union
-from otx.core.types.task import OTXTaskType
 
 import torch
 
@@ -142,7 +141,6 @@ def patch_packages_xpu(task: str, accelerator: str) -> None:
         from mmengine.structures import instance_data
 
         from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
-
 
         long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
         bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]

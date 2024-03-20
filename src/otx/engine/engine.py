@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal, Union
+from typing import TYPE_CHECKING, Any, Iterable, Literal
 from warnings import warn
 
 import torch
