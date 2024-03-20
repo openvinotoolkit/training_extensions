@@ -23,7 +23,6 @@ from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
 from torchmetrics import Metric, MetricCollection
 
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -34,6 +33,7 @@ from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchData
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.types.export import OTXExportFormatType
+from otx.core.types.label import LabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1

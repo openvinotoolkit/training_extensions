@@ -5,9 +5,9 @@
 from pathlib import Path
 
 import pytest
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
+from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.types.transformer_libs import TransformLibType
 from otx.engine.utils.auto_configurator import (

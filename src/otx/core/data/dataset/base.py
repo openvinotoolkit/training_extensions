@@ -7,7 +7,6 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Iterable
 from contextlib import contextmanager
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic, Iterator, List, Union
 
 import cv2
@@ -21,9 +20,10 @@ from torchvision.transforms.v2 import Compose
 from otx.core.data.entity.base import T_OTXDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER
 from otx.core.types.image import ImageColorChannel
+from otx.core.types.label import LabelInfo
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset, Image, LabelCategories
+    from datumaro import DatasetSubset, Image
 
     from otx.core.data.mem_cache import MemCacheHandlerBase
 
@@ -47,63 +47,6 @@ def image_decode_context() -> Iterator[None]:
 
     _IMAGE_BACKEND.set(ori_image_backend)
     IMAGE_COLOR_SCALE.set(ori_image_color_scale)
-
-
-@dataclass
-class LabelInfo:
-    """Object to represent label information."""
-
-    label_names: list[str]
-    label_groups: list[list[str]]
-
-    @property
-    def num_classes(self) -> int:
-        """Return number of labels."""
-        return len(self.label_names)
-
-    @classmethod
-    def from_num_classes(cls, num_classes: int) -> LabelInfo:
-        """Create this object from the number of classes.
-
-        Args:
-            num_classes: Number of classes
-
-        Returns:
-            LabelInfo(
-                label_names=["label_0", ...],
-                label_groups=[["label_0", ...]]
-            )
-        """
-        label_names = [f"label_{idx}" for idx in range(num_classes)]
-
-        return LabelInfo(
-            label_names=label_names,
-            label_groups=[label_names],
-        )
-
-    @classmethod
-    def from_dm_label_groups(cls, dm_label_categories: LabelCategories) -> LabelInfo:
-        """Create this object from the datumaro label groups.
-
-        Args:
-            dm_label_categories (LabelCategories): The label category information from Datumaro.
-
-        Returns:
-            LabelInfo(
-                label_names=["Heart_King", "Heart_Queen", "Spade_King", "Spade_Jack"]
-                label_groups=[["Heart_King", "Heart_Queen"], ["Spade_King", "Spade_Jack"]]
-            )
-
-        """
-        label_names = [item.name for item in dm_label_categories.items]
-        label_groups = [label_group.labels for label_group in dm_label_categories.label_groups]
-        if len(label_groups) == 0:  # Single-label classification
-            label_groups = [label_names]
-
-        return LabelInfo(
-            label_names=label_names,
-            label_groups=label_groups,
-        )
 
 
 class OTXDataset(Dataset, Generic[T_OTXDataEntity]):

@@ -15,11 +15,12 @@ import torch
 from datumaro.components.annotation import Image, Mask
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.base import LabelInfo, Transforms
+from otx.core.data.dataset.base import Transforms
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
+from otx.core.types.label import LabelInfo
 
 from .base import OTXDataset
 

@@ -14,7 +14,7 @@ from mmpretrain.structures import DataSample
 from torch import nn
 
 if TYPE_CHECKING:
-    from otx.core.data.dataset.classification import HLabelInfo
+    from otx.core.types.label import HLabelInfo
 
 
 @MODELS.register_module()

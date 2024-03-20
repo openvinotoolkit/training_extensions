@@ -5,7 +5,7 @@
 from torchmetrics.classification.dice import Dice
 from torchmetrics.collections import MetricCollection
 
-from otx.core.data.dataset.base import LabelInfo
+from otx.core.types.label import LabelInfo
 
 
 def _dice_callable(label_info: LabelInfo) -> MetricCollection:

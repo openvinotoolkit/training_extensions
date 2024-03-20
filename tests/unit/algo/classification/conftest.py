@@ -7,8 +7,9 @@ import pytest
 import torch
 from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
-from otx.core.data.dataset.classification import HLabelInfo, MulticlassClsBatchDataEntity
+from otx.core.data.dataset.classification import MulticlassClsBatchDataEntity
 from otx.core.data.entity.base import ImageInfo
+from otx.core.types.label import HLabelInfo
 from torchvision import tv_tensors
 
 

@@ -14,7 +14,6 @@ import torch
 from torchmetrics import Accuracy
 
 from otx.algo.hooks.recording_forward_hook import feature_vector_fn
-from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -42,6 +41,7 @@ from otx.core.metrics.accuracy import (
     MultiLabelClsMetricCallable,
 )
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.types.label import HLabelInfo
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 

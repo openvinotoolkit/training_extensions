@@ -13,7 +13,6 @@ from lightning import LightningDataModule
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, RandomSampler
 
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.dataset.tile import OTXTileDatasetFactory
 from otx.core.data.factory import OTXDatasetFactory
 from otx.core.data.mem_cache import (
@@ -23,6 +22,7 @@ from otx.core.data.mem_cache import (
 from otx.core.data.pre_filtering import pre_filtering
 from otx.core.data.tile_adaptor import adapt_tile_config
 from otx.core.types.device import DeviceType
+from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.instantiators import instantiate_sampler
 from otx.core.utils.utils import get_adaptive_num_workers
