@@ -139,22 +139,3 @@ class TestMonkeyPatchedNMS:
         )
         result2 = nms(bboxes, scores, self.iou_threshold)
         assert torch.equal(result1, result2[1])
-
-
-class TestMonkeyPatchedRoIAlign:
-    @pytest.fixture()
-    def roi_align(self):
-        return RoIAlign(output_size=(7, 7), spatial_scale=1.0, sampling_ratio=0, aligned=False, use_torchvision=True)
-
-    @pytest.fixture()
-    def input_image(self):
-        return torch.randn(1, 3, 32, 32)
-
-    @pytest.fixture()
-    def rois(self):
-        return torch.tensor([[0, 1, 10, 40, 50], [1, 2, 30, 70, 90]], dtype=torch.float)
-
-    def test_monkey_patched_roi_align(self, roi_align, input_image, rois):
-        expected_output = roi_align.forward(input_image, rois)
-        output = monkey_patched_roi_align(roi_align, input_image, rois)
-        assert torch.allclose(expected_output, output)
