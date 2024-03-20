@@ -93,7 +93,6 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
     if cfg.device == "xpu":
         if cfg.optimizer_config.get("bf16_training", False):
             logger.warning("XPU supports fp32 training only currently.")
-        dtype = torch.float32
         model.train()
 
     if "bf16_training" in cfg.optimizer_config:
