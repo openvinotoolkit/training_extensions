@@ -76,11 +76,13 @@ class TestCustomRTMDetInsSepBNHead:
         )
 
     def test_predict_by_feat_ov(self) -> None:
+        assert torch.cuda.is_available(), "CUDA is not available"
         lit_module = RTMDetInst(num_classes=1, variant="tiny")
         with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
+            lit_module = lit_module.cuda()
             lit_module.model.bbox_head.anchor_generator.single_level_grid_priors = partial(
                 lit_module.model.bbox_head.anchor_generator.single_level_grid_priors,
-                device="cpu",
+                device="cuda",
             )
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
