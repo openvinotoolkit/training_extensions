@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F  # noqa: N812
 from mmcv.ops import RoIAlign, batched_nms
 from mmdeploy.codebase.mmdet import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.dense_heads.rtmdet_ins_head import _mask_predict_by_feat_single
+from mmdeploy.codebase.mmdet.models.dense_heads.rtmdet_ins_head import _parse_dynamic_params
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmcv.ops.nms import multiclass_nms
 from mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
@@ -197,6 +197,40 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
         return results
 
 
+def _custom_mask_predict_by_feat_single(
+    self: CustomRTMDetInsSepBNHead,
+    mask_feat: torch.Tensor,
+    kernels: torch.Tensor,
+    priors: torch.Tensor,
+) -> torch.Tensor:
+    """Decode mask with dynamic conv."""
+    num_inst = priors.shape[1]
+    batch_size = priors.shape[0]
+    hw = mask_feat.size()[-2:]
+    # NOTE: had to force to set device in prior generator
+    coord = self.prior_generator.single_level_grid_priors(hw, level_idx=0, device=mask_feat.device).to(mask_feat.device)
+    coord = coord.unsqueeze(0).unsqueeze(0).repeat(batch_size, 1, 1, 1)
+    priors = priors.unsqueeze(2)
+    points = priors[..., :2]
+    relative_coord = (points - coord).permute(0, 1, 3, 2) / (priors[..., 2:3] * 8)
+    relative_coord = relative_coord.reshape(batch_size, num_inst, 2, hw[0], hw[1])
+
+    mask_feat = torch.cat([relative_coord, mask_feat.unsqueeze(1).repeat(1, num_inst, 1, 1, 1)], dim=2)
+    weights, biases = _parse_dynamic_params(self, kernels)
+
+    n_layers = len(weights)
+    x = mask_feat.flatten(0, 1).flatten(2)
+    for i, (weight, bias) in enumerate(zip(weights, biases)):
+        # replace dynamic conv with bmm
+        weight = weight.flatten(0, 1)  # noqa: PLW2901
+        bias = bias.flatten(0, 1).unsqueeze(2)  # noqa: PLW2901
+        x = torch.bmm(weight, x)
+        x = x + bias
+        if i < n_layers - 1:
+            x = x.clamp_(min=0)
+    return x.reshape(batch_size, num_inst, hw[0], hw[1])
+
+
 def _custom_nms_with_mask_static(
     self: CustomRTMDetInsSepBNHead,
     priors: torch.Tensor,
@@ -256,7 +290,7 @@ def _custom_nms_with_mask_static(
     kernels = kernels[batch_inds, inds, :]
     priors = priors.unsqueeze(0).repeat(batch_size, 1, 1)
     priors = priors[batch_inds, inds, :]
-    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels, priors)
+    mask_logits = _custom_mask_predict_by_feat_single(self, mask_feats, kernels, priors)
     stride = self.prior_generator.strides[0][0]
     mask_logits = F.interpolate(mask_logits, scale_factor=stride, mode="bilinear")
     masks = mask_logits.sigmoid()
