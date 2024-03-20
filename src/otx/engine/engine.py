@@ -306,7 +306,7 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
@@ -384,7 +384,7 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         lit_module = self._build_lightning_module(
@@ -533,7 +533,10 @@ class Engine:
 
         model = self.model
         if not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            optimize_datamodule = self._auto_configurator.update_ov_subset_pipeline(
+                datamodule=optimize_datamodule,
+                subset="train",
+            )
             model = self._auto_configurator.get_ov_model(
                 model_name=str(checkpoint),
                 label_info=optimize_datamodule.label_info,
@@ -594,7 +597,7 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         lit_module = self._build_lightning_module(
