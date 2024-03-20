@@ -12,6 +12,9 @@ import torch
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from otx.core.types.task import OTXTaskType
+    from otx.core.types.device import DeviceType
+
 
 XPU_AVAILABLE = None
 try:
@@ -132,7 +135,7 @@ def is_xpu_available() -> bool:
     return XPU_AVAILABLE
 
 
-def patch_packages_xpu(task: str, accelerator: str) -> None:
+def patch_packages_xpu(task: str | OTXTaskType, accelerator : str | DeviceType) -> None:
     """Patch packages when xpu is available."""
     if accelerator == "xpu" and ("DETECTION" in task or "INSTANCE_SEGMENTATION" in task):
         import numpy as np
