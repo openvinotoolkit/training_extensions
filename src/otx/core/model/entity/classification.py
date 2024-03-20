@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import numpy as np
 import torch
 
-from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 class ExplainableOTXClsModel(
     OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
 ):
-    """OTX classification model which can attach a XAI hook."""
+    """OTX classification model which can attach a XAI (Explainable AI) branch."""
 
     @property
     def has_gap(self) -> bool:
@@ -129,9 +129,9 @@ class ExplainableOTXClsModel(
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+        from otx.algo.explain.explain_algo import ReciproCAM
 
-        explainer = ReciproCAMHook(
+        explainer = ReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,

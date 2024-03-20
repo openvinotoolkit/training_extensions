@@ -27,8 +27,8 @@ def pytest_addoption(parser):
         "--model-category",
         action="store",
         default="all",
-        choices=("default", "all"),
-        help="Choose default|all. Defaults to all.",
+        choices=("speed", "balance", "accuracy", "default", "other", "all"),
+        help="Choose speed|balcence|accuracy|default|other|all. Defaults to all.",
     )
     parser.addoption(
         "--data-group",
@@ -290,7 +290,9 @@ def fxt_mlflow_client(request: pytest.FixtureRequest) -> MlflowClient:
 def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.Model:
     """Skip models according to user options."""
     model: Benchmark.Model = request.param
-    if fxt_model_category == "default" and model.category == "other":
+    if fxt_model_category == "all":
+        return model
+    if (fxt_model_category == "default" and model.category == "other") or fxt_model_category != model.category:
         pytest.skip(f"{model.category} category model")
     return model
 
