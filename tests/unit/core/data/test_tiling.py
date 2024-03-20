@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from datumaro import Dataset as DmDataset
@@ -28,8 +30,8 @@ class TestOTXTiling:
         return mmdet_base.config.train_subset.transforms
 
     @pytest.fixture()
-    def fxt_det_data_config(self, fxt_asset_dir, fxt_mmcv_det_transform_config) -> OTXDataModule:
-        data_root = fxt_asset_dir / "car_tree_bug"
+    def fxt_det_data_config(self, fxt_mmcv_det_transform_config) -> OTXDataModule:
+        data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
 
         batch_size = 8
         num_workers = 0
