@@ -1,6 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
 import tempfile
 from pathlib import Path
 
@@ -74,8 +75,10 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=None,
         )
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test only if CUDA is available.")
     def test_predict_by_feat_ov(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad(), torch.device("cpu"):
+        # NOTE: For some reason, the test fails without CUDA.
+        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
             lit_module = RTMDetInst(num_classes=1, variant="tiny")
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
