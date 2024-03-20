@@ -137,7 +137,7 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        patch_packages_xpu(self.task.value, self.device.accelerator.value)
+        patch_packages_xpu(self.task.value, self.device.accelerator)
 
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
