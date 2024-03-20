@@ -26,6 +26,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
+from otx.utils.utils import patch_packages_xpu
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
@@ -136,7 +137,7 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        self._patch_packages_xpu()
+        patch_packages_xpu(self.task.value, self.device.accelerator.value)
 
         self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
             optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
@@ -811,7 +812,7 @@ class Engine:
             if self._device.accelerator == DeviceType.xpu:
                 self._cache.update(strategy="xpu_single")
                 # add plugin for Automatic Mixed Precision on XPU
-                if kwargs["precision"] == 16:
+                if self._cache.args["precision"] == 16:
                     self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
                     self._cache.args["precision"] = None
 
@@ -915,19 +916,3 @@ class Engine:
         model.optimizer = optimizer
         model.scheduler = scheduler
         return model
-
-    def _patch_packages_xpu(self) -> None:
-        """Patch packages when xpu is available."""
-        if self.task in [OTXTaskType.DETECTION, OTXTaskType.INSTANCE_SEGMENTATION] and self.device.accelerator == "xpu":
-            import numpy as np
-            from mmcv.ops.nms import NMSop
-            from mmcv.ops.roi_align import RoIAlign
-            from mmengine.structures import instance_data
-
-            from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
-
-            long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
-            bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
-            instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
-            NMSop.forward = monkey_patched_nms
-            RoIAlign.forward = monkey_patched_roi_align

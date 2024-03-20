@@ -55,7 +55,6 @@ def monkey_patched_nms(
         inds = inds[:max_num]
     if is_filtering_by_score:
         inds = valid_inds[inds]
-    print(inds)
     return inds
 
 

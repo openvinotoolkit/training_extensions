@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
+from otx.core.types.task import OTXTaskType
 
 import torch
 
@@ -130,3 +131,21 @@ def is_xpu_available() -> bool:
     if XPU_AVAILABLE is None:
         XPU_AVAILABLE = hasattr(torch, "xpu") and torch.xpu.is_available()
     return XPU_AVAILABLE
+
+
+def patch_packages_xpu(task: str, accelerator: str) -> None:
+    """Patch packages when xpu is available."""
+    if accelerator == "xpu" and ("DETECTION" in task or "INSTANCE_SEGMENTATION" in task):
+        import numpy as np
+        from mmcv.ops.nms import NMSop
+        from mmcv.ops.roi_align import RoIAlign
+        from mmengine.structures import instance_data
+
+        from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
+
+
+        long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
+        bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
+        instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
+        NMSop.forward = monkey_patched_nms
+        RoIAlign.forward = monkey_patched_roi_align
