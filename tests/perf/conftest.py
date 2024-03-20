@@ -96,6 +96,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--otx-ref",
         type=str,
+        default="__CURRENT_BRANCH_COMMIT__",
         help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
         "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
         "and reverted after run. Works only for v1.x assuming CLI compatibility.",
@@ -111,6 +112,8 @@ def fxt_current_date() -> str:
 @pytest.fixture(scope="session")
 def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
     otx_ref = request.config.getoption("--otx-ref")
+    if otx_ref == "__CURRENT_BRANCH_COMMIT__":
+        otx_ref = None
 
     if otx_ref:
         # Install specific version
