@@ -6,8 +6,6 @@
 import pytest
 import torch
 from mmcv.ops import nms
-from mmcv.ops.roi_align import RoIAlign
-from otx.algo.detection.utils import monkey_patched_roi_align
 from otx.algo.detection.utils.mmcv_patched_ops import monkey_patched_nms
 
 
