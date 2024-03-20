@@ -22,7 +22,7 @@ engine:
   task: VISUAL_PROMPTING
   device: cpu
 
-callback_monitor: val/Dice
+callback_monitor: val/f1-score
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
