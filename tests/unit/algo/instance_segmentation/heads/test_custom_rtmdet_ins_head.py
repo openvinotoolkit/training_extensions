@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import tempfile
-from functools import partial
 from pathlib import Path
 
 import torch
