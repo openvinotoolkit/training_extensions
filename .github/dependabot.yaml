@@ -3,29 +3,40 @@ updates:
   - package-ecosystem: docker
     directory: /.ci
     schedule:
-      interval: weekly
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /.ci
+    schedule:
+      interval: daily
+    # Allow up to 3 open pull requests for pip dependencies
+    open-pull-requests-limit: 3
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    # Allow up to 3 open pull requests for pip dependencies
+    open-pull-requests-limit: 3
 
   - package-ecosystem: docker
     directory: /docker
     schedule:
-      interval: weekly
+      interval: daily
 
   - package-ecosystem: pip
     directory: /src/otx/core/exporter/exportable_code/demo
     schedule:
-      interval: weekly
+      interval: daily
 
   - package-ecosystem: pip
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
+    # Allow up to 3 open pull requests for pip dependencies
+    open-pull-requests-limit: 3
 
   - package-ecosystem: pip
     directory: /for_developers/regression_test
     schedule:
-      interval: weekly
+      interval: daily
