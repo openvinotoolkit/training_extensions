@@ -382,6 +382,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reset_feat: bool = False,
         default_threshold_reference: float = 0.3,
+        is_cascade: bool = False,
     ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
         if reset_feat or self.reference_feats is None:
@@ -408,7 +409,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     if "point_coords" in inputs_decoder:
                         # bboxes and points
                         inputs_decoder.update(image_embeddings)
-                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=False)
+                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=is_cascade)
                         masks = prediction["upscaled_masks"]
                     else:
                         log.warning("annotation and polygon will be supported.")
@@ -440,7 +441,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
-        is_cascade: bool = False,
+        is_cascade: bool = True,
         threshold: float = 0.0,
         num_bg_points: int = 1,
         default_threshold_target: float = 0.65,
@@ -680,9 +681,10 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"].apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32),
-                    original_size[0],
+                    np.array([[x.min(), y.min()], [x.max(), y.max()]], dtype=np.float32),
+                    original_size,
                 )
+                box_coords = np.expand_dims(box_coords, axis=0)
                 inputs.update(
                     {
                         "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
