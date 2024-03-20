@@ -98,11 +98,10 @@ class TestCustomRTMDetInsSepBNHead:
         )
 
     def test_predict_by_feat_onnx(self, fx_deploy_cfg):
-        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
+        with tempfile.TemporaryDirectory() as tmpdirname:
             lit_module = RTMDetInst(num_classes=1, variant="tiny")
             model = lit_module.model
-            model = model.eval()
-            export_img = torch.rand([1, 3, 640, 640])
+            export_img = torch.rand([1, 3, 640, 640]).cpu()
             input_names = ["image"]
             output_names = ["boxes", "labels", "masks"]
             export_path = Path(tmpdirname) / "exported_model.onnx"
