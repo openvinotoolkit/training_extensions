@@ -6,13 +6,35 @@ from pathlib import Path
 
 import pytest
 import torch
+from mmdeploy.apis.onnx import export
 from mmengine.config import ConfigDict
 from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
 from otx.algo.instance_segmentation.rtmdet_inst import RTMDetInst
-from otx.core.types.export import OTXExportFormatType
 
 
 class TestCustomRTMDetInsSepBNHead:
+    @pytest.fixture()
+    def fx_deploy_cfg(self):
+        return ConfigDict(
+            deploy_cfg=ConfigDict(
+                codebase_config={
+                    "type": "mmdet",
+                    "task": "ObjectDetection",
+                    "model_type": "end2end",
+                    "post_processing": {
+                        "score_threshold": 0.05,
+                        "confidence_threshold": 0.005,
+                        "iou_threshold": 0.5,
+                        "max_output_boxes_per_class": 100,
+                        "pre_top_k": 300,
+                        "keep_top_k": 100,
+                        "background_label_id": -1,
+                        "export_postprocess_mask": False,
+                    },
+                },
+            ),
+        )
+
     def test_mask_pred(self, mocker) -> None:
         num_samples = 1
         num_classes = 1
@@ -75,14 +97,49 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=None,
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test only if CUDA is available.")
-    def test_predict_by_feat_ov(self) -> None:
-        # NOTE: For some reason, the test fails without CUDA.
+    def test_predict_by_feat_onnx(self, fx_deploy_cfg):
         with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
             lit_module = RTMDetInst(num_classes=1, variant="tiny")
-            exported_model_path = lit_module.export(
-                output_dir=Path(tmpdirname),
-                base_name="exported_model",
-                export_format=OTXExportFormatType.OPENVINO,
+            model = lit_module.model
+            model = model.eval()
+            export_img = torch.rand([1, 3, 640, 640])
+            input_names = ["image"]
+            output_names = ["boxes", "labels", "masks"]
+            export_path = Path(tmpdirname) / "exported_model.onnx"
+            dynamic_axes = {
+                "image": {
+                    0: "batch",
+                    2: "height",
+                    3: "width",
+                },
+                "boxes": {
+                    0: "batch",
+                    1: "num_dets",
+                },
+                "labels": {
+                    0: "batch",
+                    1: "num_dets",
+                },
+                "masks": {
+                    0: "batch",
+                    1: "num_dets",
+                    2: "height",
+                    3: "width",
+                },
+            }
+
+            export(
+                model,
+                export_img,
+                str(export_path),
+                output_names=output_names,
+                input_names=input_names,
+                keep_initializers_as_inputs=True,
+                verbose=False,
+                opset_version=11,
+                dynamic_axes=dynamic_axes,
+                context_info=fx_deploy_cfg,
             )
-            Path.exists(exported_model_path)
+
+            Path.exists(export_path)
+            print("success!")
