@@ -27,8 +27,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             name=f"wgisd_small_{idx}",
             path=Path("instance_seg/wgisd_small") / f"{idx}",
             group="small",
-            data_format="coco",
-            num_classes=5,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -43,8 +41,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             name="coco_car_person_medium",
             path=Path("instance_seg/coco_car_person_medium"),
             group="medium",
-            data_format="coco",
-            num_classes=2,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -57,8 +53,6 @@ class TestPerfInstanceSegmentation(PerfTestBase):
             name="vitens_coliform",
             path=Path("instance_seg/Vitens-Coliform-coco"),
             group="large",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -122,8 +116,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             name=f"vitens_aeromonas_small_{idx}",
             path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
             group="small",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -138,8 +130,6 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
             name="vitens_aeromonas_medium",
             path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
             group="medium",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
