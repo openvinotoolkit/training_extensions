@@ -11,9 +11,9 @@ The current version of OpenVINO™ Training Extensions was tested in the followi
 - Python >= 3.10
 
 
-***********************************************
-Install OpenVINO™ Training Extensions for users
-***********************************************
+**********************************************************
+Install OpenVINO™ Training Extensions for users (CUDA/CPU)
+**********************************************************
 
 1. Clone the training_extensions
 repository with the following command:
@@ -64,6 +64,68 @@ virtual environment.
 
 5. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
+
+*************************************************************
+Install OpenVINO™ Training Extensions for users (XPU devices)
+*************************************************************
+
+1. Follow the first two steps from above instructions
+on cloning the repository and creating a virtual environment.
+
+2. Install Intel Extensions For Pytorch (IPEX).
+Follow the `official documentation <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2Bxpu>`_ to install prerequisites such as OneAPI and proper drivers.
+
+.. code-block:: shell
+
+    python -m pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+3. Install MMCV.
+It is required to install mmcv from source to properly build it with IPEX.
+
+.. code-block:: shell
+
+    git clone https://github.com/open-mmlab/mmcv
+    cd mmcv
+    git checkout v2.1.0
+    MMCV_WITH_OPS=1 pip install -e .
+
+4. Install OpenVINO™ Training Extensions
+package from either:
+
+* A local source in development mode
+
+.. code-block:: shell
+
+    pip install -e .
+
+* PyPI
+
+.. code-block:: shell
+
+    pip install otx
+
+5. Install requirements for training
+excluding Pytorch and MMCV.
+
+.. code-block:: shell
+
+    otx install -v --do-not-install-torch --do-no-install-mmcv
+
+6. Activate OneAPI environment
+and export required IPEX system variables
+
+.. code-block:: shell
+
+    source /path/to/intel/oneapi/setvars.sh
+    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
+    export IPEX_FP32_MATH_MODE=TF32
+
+7. Once the package is installed in the virtual environment, you can use full
+OpenVINO™ Training Extensions command line functionality.
+
+.. code-block:: shell
+
+    otx --help
 
 ****************************************************
 Install OpenVINO™ Training Extensions for developers
