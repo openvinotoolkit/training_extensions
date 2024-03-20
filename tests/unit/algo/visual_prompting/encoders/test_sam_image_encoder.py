@@ -10,6 +10,7 @@ class TestSAMImageEncoder:
         ("backbone", "expected"),
         [
             ("tiny_vit", "TinyViT"),
+            ("vit_b", "ViT"),
         ],
     )
     def test_new(self, backbone: str, expected: str) -> None:
@@ -17,3 +18,8 @@ class TestSAMImageEncoder:
         sam_image_encoder = SAMImageEncoder(backbone=backbone)
 
         assert sam_image_encoder.__class__.__name__ == expected
+
+    def test_new_unsupported_backbone(self) -> None:
+        """Test __new__ for unsupported backbone."""
+        with pytest.raises(ValueError):  # noqa: PT011
+            SAMImageEncoder(backbone="unsupported_backbone")

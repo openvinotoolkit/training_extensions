@@ -11,7 +11,8 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 import torch
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
+from otx.core.data.entity.base import Points
+from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.model.visual_prompting import (
     OTXVisualPromptingModel,
@@ -172,6 +173,26 @@ class TestOVZeroShotVisualPromptingModel:
         mocker.patch.object(OVZeroShotVisualPromptingModel, "initialize_reference_info")
         return OVZeroShotVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
 
+    @pytest.mark.parametrize("training", [True, False])
+    def test_forward(
+        self,
+        mocker,
+        ov_zero_shot_visual_prompting_model,
+        fxt_zero_shot_vpm_data_entity,
+        training: bool,
+    ) -> None:
+        """Test forward."""
+        ov_zero_shot_visual_prompting_model.training = training
+        ov_zero_shot_visual_prompting_model.reference_feats = "reference_feats"
+        ov_zero_shot_visual_prompting_model.used_indices = "used_indices"
+        mocker_fn = mocker.patch.object(ov_zero_shot_visual_prompting_model, "learn" if training else "infer")
+        mocker_customize_outputs = mocker.patch.object(ov_zero_shot_visual_prompting_model, "_customize_outputs")
+
+        ov_zero_shot_visual_prompting_model.forward(fxt_zero_shot_vpm_data_entity[1])
+
+        mocker_fn.assert_called_once()
+        mocker_customize_outputs.assert_called_once()
+
     def test_learn(self, mocker, ov_zero_shot_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
         """Test learn."""
         ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
@@ -303,6 +324,52 @@ class TestOVZeroShotVisualPromptingModel:
             for label, predicted_mask in predicted_masks.items():
                 for pm, _ in zip(predicted_mask, used_points[label]):
                     assert pm.shape == (1024, 1024)
+
+    def test_customize_outputs_training(
+        self,
+        ov_zero_shot_visual_prompting_model,
+        fxt_zero_shot_vpm_data_entity,
+    ) -> None:
+        ov_zero_shot_visual_prompting_model.training = True
+
+        outputs = [torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6])]
+
+        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
+
+        assert result == outputs
+
+    def test_customize_outputs_inference(
+        self,
+        ov_zero_shot_visual_prompting_model,
+        fxt_zero_shot_vpm_data_entity,
+    ) -> None:
+        ov_zero_shot_visual_prompting_model.training = False
+
+        outputs = [
+            ({1: [[1, 2, 3], [4, 5, 6]]}, {1: [[7, 8, 9], [10, 11, 12]]}),
+            ({2: [[13, 14, 15], [16, 17, 18]]}, {2: [[19, 20, 21], [22, 23, 24]]}),
+        ]
+
+        result = ov_zero_shot_visual_prompting_model._customize_outputs(outputs, fxt_zero_shot_vpm_data_entity[1])
+
+        assert isinstance(result, ZeroShotVisualPromptingBatchPredEntity)
+        assert result.batch_size == len(outputs)
+        assert result.images == fxt_zero_shot_vpm_data_entity[1].images
+        assert result.imgs_info == fxt_zero_shot_vpm_data_entity[1].imgs_info
+
+        assert isinstance(result.masks, list)
+        assert all(isinstance(mask, tv_tensors.Mask) for mask in result.masks)
+
+        assert isinstance(result.prompts, list)
+        assert all(isinstance(prompt, Points) for prompt in result.prompts)
+
+        assert isinstance(result.scores, list)
+        assert all(isinstance(score, torch.Tensor) for score in result.scores)
+
+        assert isinstance(result.labels, list)
+        assert all(isinstance(label, torch.LongTensor) for label in result.labels)
+
+        assert result.polygons == []
 
     def test_gather_prompts_with_labels(self, ov_zero_shot_visual_prompting_model) -> None:
         """Test _gather_prompts_with_labels."""
