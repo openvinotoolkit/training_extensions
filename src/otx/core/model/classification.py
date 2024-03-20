@@ -13,6 +13,14 @@ import torch
 from torchmetrics import Accuracy
 
 from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.algo.explain.explain_algo import feature_vector_fn
+from otx.core.data.dataset.classification import HLabelInfo
+from otx.core.data.entity.base import (
+    OTXBatchLossEntity,
+    T_OTXBatchDataEntity,
+    T_OTXBatchPredEntity,
+    T_OTXBatchPredEntityWithXAI,
+)
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,

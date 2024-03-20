@@ -10,7 +10,7 @@ import numpy as np
 import torch
 from mmpretrain.models.utils import resize_pos_embed
 
-from otx.algo.hooks.recording_forward_hook import ViTReciproCAMHook
+from otx.algo.explain.explain_algo import ViTReciproCAM
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
@@ -33,8 +33,7 @@ if TYPE_CHECKING:
 
 
 class ForwardExplainMixInForDeit(ExplainableMixInMMPretrainModel):
-    """Deit model which can attach a XAI hook."""
-
+    """Deit model which can attach a XAI (Explainable AI) branch."""
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
@@ -133,7 +132,7 @@ class ForwardExplainMixInForDeit(ExplainableMixInMMPretrainModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        explainer = ViTReciproCAMHook(
+        explainer = ViTReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
         )
