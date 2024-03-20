@@ -76,13 +76,8 @@ class TestCustomRTMDetInsSepBNHead:
         )
 
     def test_predict_by_feat_ov(self) -> None:
-        torch.set_default_device('cpu')
-        lit_module = RTMDetInst(num_classes=1, variant="tiny")
-        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad():
-            lit_module.model.bbox_head.anchor_generator.single_level_grid_priors = partial(
-                lit_module.model.bbox_head.anchor_generator.single_level_grid_priors,
-                device="cpu",
-            )
+        with tempfile.TemporaryDirectory() as tmpdirname, torch.no_grad(), torch.device("cpu"):
+            lit_module = RTMDetInst(num_classes=1, variant="tiny")
             exported_model_path = lit_module.export(
                 output_dir=Path(tmpdirname),
                 base_name="exported_model",
