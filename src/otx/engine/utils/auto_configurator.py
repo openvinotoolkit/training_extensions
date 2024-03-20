@@ -9,6 +9,7 @@ import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import datumaro
 from lightning.pytorch.cli import instantiate_class
@@ -42,9 +43,9 @@ DEFAULT_CONFIG_PER_TASK = {
     OTXTaskType.INSTANCE_SEGMENTATION: RECIPE_PATH / "instance_segmentation" / "maskrcnn_r50.yaml",
     OTXTaskType.ACTION_CLASSIFICATION: RECIPE_PATH / "action" / "action_classification" / "x3d.yaml",
     OTXTaskType.ACTION_DETECTION: RECIPE_PATH / "action" / "action_detection" / "x3d_fastrcnn.yaml",
-    OTXTaskType.ANOMALY_CLASSIFICATION: RECIPE_PATH / "anomaly" / "anomaly_classification" / "padim.yaml",
-    OTXTaskType.ANOMALY_SEGMENTATION: RECIPE_PATH / "anomaly" / "anomaly_segmentation" / "padim.yaml",
-    OTXTaskType.ANOMALY_DETECTION: RECIPE_PATH / "anomaly" / "anomaly_detection" / "padim.yaml",
+    OTXTaskType.ANOMALY_CLASSIFICATION: RECIPE_PATH / "anomaly_classification" / "padim.yaml",
+    OTXTaskType.ANOMALY_SEGMENTATION: RECIPE_PATH / "anomaly_segmentation" / "padim.yaml",
+    OTXTaskType.ANOMALY_DETECTION: RECIPE_PATH / "anomaly_detection" / "padim.yaml",
     OTXTaskType.VISUAL_PROMPTING: RECIPE_PATH / "visual_prompting" / "sam_tiny_vit.yaml",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: RECIPE_PATH / "zero_shot_visual_prompting" / "sam_tiny_vit.yaml",
 }
@@ -67,6 +68,7 @@ TASK_PER_DATA_FORMAT = {
     "common_semantic_segmentation_with_subset_dirs": [OTXTaskType.SEMANTIC_SEGMENTATION],
     "kinetics": [OTXTaskType.ACTION_CLASSIFICATION],
     "ava": [OTXTaskType.ACTION_DETECTION],
+    "mvtec": [OTXTaskType.ANOMALY_CLASSIFICATION, OTXTaskType.ANOMALY_DETECTION, OTXTaskType.ANOMALY_SEGMENTATION],
 }
 
 OVMODEL_PER_TASK = {
@@ -80,6 +82,9 @@ OVMODEL_PER_TASK = {
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVVisualPromptingModel",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVZeroShotVisualPromptingModel",
     OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.entity.action_classification.OVActionClsModel",
+    OTXTaskType.ANOMALY_CLASSIFICATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
+    OTXTaskType.ANOMALY_DETECTION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
+    OTXTaskType.ANOMALY_SEGMENTATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
 }
 
 
@@ -256,6 +261,14 @@ class AutoConfigurator:
         if label_info is not None:
             num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
+
+            from otx.core.data.dataset.classification import HLabelInfo
+
+            if isinstance(label_info, HLabelInfo):
+                init_args = self.config["model"]["init_args"]
+                init_args["num_multiclass_heads"] = label_info.num_multiclass_heads
+                init_args["num_multilabel_classes"] = label_info.num_multilabel_classes
+
         logger.warning(f"Set Default Model: {self.config['model']}")
         return instantiate_class(args=(), init=self.config["model"])
 
@@ -321,22 +334,26 @@ class AutoConfigurator:
             num_classes=label_info.num_classes,
         )
 
-    def get_ov_datamodule(self) -> OTXDataModule:
-        """Returns an instance of OTXDataModule configured with the specified data root and data module configuration.
+    def update_ov_subset_pipeline(self, datamodule: OTXDataModule, subset: str = "test") -> OTXDataModule:
+        """Returns an OTXDataModule object with OpenVINO subset transforms applied.
+
+        Args:
+            datamodule (OTXDataModule): The original OTXDataModule object.
+            subset (str, optional): The subset to update. Defaults to "test".
 
         Returns:
-            OTXDataModule: An instance of OTXDataModule.
+            OTXDataModule: The modified OTXDataModule object with OpenVINO subset transforms applied.
         """
-        config = self._load_default_config(model_name="openvino_model")
-        config["data"]["config"]["data_root"] = self.data_root
-        data_config = config["data"]["config"].copy()
-        return OTXDataModule(
-            task=config["data"]["task"],
-            config=DataModuleConfig(
-                train_subset=SubsetConfig(**data_config.pop("train_subset")),
-                val_subset=SubsetConfig(**data_config.pop("val_subset")),
-                test_subset=SubsetConfig(**data_config.pop("test_subset")),
-                tile_config=TileConfig(**data_config.pop("tile_config", {})),
-                **data_config,
-            ),
+        data_configuration = datamodule.config
+        ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"][f"{subset}_subset"]
+        subset_config = getattr(data_configuration, f"{subset}_subset")
+        subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
+        subset_config.transforms = ov_test_config["transforms"]
+        data_configuration.tile_config.enable_tiler = False
+        msg = (
+            f"For OpenVINO IR models, Update the following {subset} transforms: {subset_config.transforms}"
+            f"and transform_lib_type: {subset_config.transform_lib_type}"
+            "And the tiler is disabled."
         )
+        warn(msg, stacklevel=1)
+        return OTXDataModule(task=datamodule.task, config=data_configuration)

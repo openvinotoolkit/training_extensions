@@ -24,3 +24,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+
+  - package-ecosystem: pip
+    directory: /for_developers/regression_test
+    schedule:
+      interval: weekly

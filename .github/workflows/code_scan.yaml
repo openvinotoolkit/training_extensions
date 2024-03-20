@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - "releases/*"
-      - "v2"
   schedule:
     # every UTC 6PM from Mon to Fri
     - cron: "0 18 * * 1-5"

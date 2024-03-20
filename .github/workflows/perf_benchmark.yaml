@@ -10,9 +10,9 @@ on:
           - default # speed, balance, accuracy models only
           - all # default + other models
         default: default
-      data-size:
+      data-group:
         type: choice
-        description: Dataset size to run benchmark
+        description: Data group to run benchmark
         options:
           - small
           - medium
@@ -20,7 +20,7 @@ on:
           - all
         default: all
       num-repeat:
-        description: Overrides default per-data-size number of repeat setting
+        description: Overrides default per-data-group number of repeat setting
         default: 0
       num-epoch:
         description: Overrides default per-model number of epoch setting
@@ -43,6 +43,13 @@ on:
         type: string
         description: Root directory containing validation data in CI server.
         default: "/home/validation/data/v2/"
+      otx-ref:
+        type: string
+        description: |
+          Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
+          `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
+          and reverted after run. Works only for v2.x assuming CLI compatibility.
+        default: __CURRENT_BRANCH_COMMIT__
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -82,13 +89,14 @@ jobs:
           tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
           --model-category ${{ inputs.model-category }}
           --data-root ${{ inputs.data-root }}
-          --data-size ${{ inputs.data-size }}
+          --data-group ${{ inputs.data-group }}
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}
           --eval-upto ${{ inputs.eval-upto }}
-          --summary-csv .tox/perf-benchmark-${{ matrix.task-short }}.csv
+          --summary-csv .tox/perf-benchmark-summary.csv
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           --user-name ${{ github.triggering_actor }}
+          --otx-ref ${{ inputs.otx-ref }}
       - name: Upload test results
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:

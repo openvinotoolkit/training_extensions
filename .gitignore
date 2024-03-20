@@ -40,3 +40,6 @@ src/**/*.so
 
 # For regression test data storage
 for_developers/regression_test/postgres_data/**/*
+
+# docs/reference
+docs/source/guide/reference/_autosummary/*

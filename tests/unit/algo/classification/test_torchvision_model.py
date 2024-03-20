@@ -68,3 +68,8 @@ class TestOTXTVModel:
         x = torch.randn(16, 2048)
         output = fxt_tv_model.head_forward_fn(x)
         assert output.shape == (16, 10)
+
+    def test_freeze_backbone(self):
+        freezed_model = OTXTVModel(backbone="resnet50", num_classes=10, freeze_backbone=True)
+        for param in freezed_model.model.backbone.parameters():
+            assert not param.requires_grad

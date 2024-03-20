@@ -53,7 +53,7 @@ class AnomalyClassificationDataBatch(OTXBatchDataEntity):
     ) -> AnomalyClassificationDataBatch:
         """Collection function to collect `OTXDataEntity` into `OTXBatchDataEntity` in data loader."""
         batch = super().collate_fn(entities)
-        images = tv_tensors.Image(data=torch.stack(batch.images, dim=0)) if stack_images else batch.images
+        images = tv_tensors.Image(data=torch.stack(tuple(batch.images), dim=0)) if stack_images else batch.images
         return AnomalyClassificationDataBatch(
             batch_size=batch.batch_size,
             images=images,

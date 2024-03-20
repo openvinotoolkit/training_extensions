@@ -8,7 +8,8 @@ from __future__ import annotations
 import copy
 import json
 import logging as log
-from typing import TYPE_CHECKING, Any
+import types
+from typing import TYPE_CHECKING, Any, Callable
 
 import torch
 from openvino.model_api.models import Model
@@ -19,6 +20,7 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
 from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.exporter.base import OTXModelExporter
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
@@ -26,11 +28,11 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
+    from mmdet.models.detectors import SingleStageDetector
+    from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import DetectionResult
     from torch import nn
-
-    from otx.core.exporter.base import OTXModelExporter
 
 
 class OTXDetectionModel(
@@ -105,42 +107,111 @@ class OTXDetectionModel(
 class ExplainableOTXDetModel(OTXDetectionModel):
     """OTX detection model which can attach a XAI hook."""
 
-    def register_explain_hook(self) -> None:
-        """Register explain hook at the model backbone output."""
+    def forward_explain(
+        self,
+        inputs: DetBatchDataEntity,
+    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
+        """Model forward function."""
+        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+
+        self.model.feature_vector_fn = feature_vector_fn
+        self.model.explain_fn = self.get_explain_fn()
+
+        # If customize_inputs is overridden
+        outputs = (
+            self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
+            if self._customize_inputs != ExplainableOTXDetModel._customize_inputs
+            else self._forward_explain_detection(self.model, inputs)
+        )
+
+        return (
+            self._customize_outputs(outputs, inputs)
+            if self._customize_outputs != ExplainableOTXDetModel._customize_outputs
+            else outputs["predictions"]
+        )
+
+    @staticmethod
+    def _forward_explain_detection(
+        self: SingleStageDetector,
+        inputs: torch.Tensor,
+        data_samples: OptSampleList | None = None,
+        mode: str = "tensor",
+    ) -> dict[str, torch.Tensor]:
+        """Forward func of the BaseDetector instance, which located in is in ExplainableOTXDetModel().model."""
+        # Workaround to remove grads for model parameters, since after class patching
+        # convolutions are failing since thay can't process gradients
+        for param in self.parameters():
+            param.requires_grad = False
+
+        backbone_feat = self.extract_feat(inputs)
+        bbox_head_feat = self.bbox_head.forward(backbone_feat)
+
+        # Process the first output form bbox detection head: classification scores
+        feature_vector = self.feature_vector_fn(backbone_feat)
+        saliency_map = self.explain_fn(bbox_head_feat[0])
+
+        if mode == "predict":
+            results_list = self.bbox_head.predict(backbone_feat, data_samples)
+            if isinstance(results_list, tuple):
+                # Export case
+                predictions = results_list
+            else:
+                # Predict case, InstanceData or List[InstanceData]
+                predictions = self.add_pred_to_datasample(data_samples, results_list)
+
+        elif mode == "tensor":
+            predictions = bbox_head_feat
+        elif mode == "loss":
+            # Temporary condition to pass undetermined "test_forward_train" test, values aren't used
+            predictions = self.bbox_head.loss(backbone_feat, data_samples)["loss_cls"]
+        else:
+            msg = f'Invalid mode "{mode}".'
+            raise RuntimeError(msg)
+
+        return {
+            "predictions": predictions,
+            "feature_vector": feature_vector,
+            "saliency_map": saliency_map,
+        }
+
+    def get_explain_fn(self) -> Callable:
+        """Returns explain function."""
         from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
         from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, CustomSSDHead)
-        self.explain_hook = DetClassProbabilityMapHook.create_and_register_hook(
-            self.backbone,
-            self.cls_head_forward_fn,
+        explainer = DetClassProbabilityMapHook(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )
+        return explainer.func
 
-    @property
-    def backbone(self) -> nn.Module:
-        """Returns model's backbone. Can be redefined at the model's level."""
-        if backbone := getattr(self.model, "backbone", None):
-            return backbone
-        raise ValueError
+    def _reset_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
 
-    @torch.no_grad()
-    def cls_head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward and returns cls scores.
+        self.model.explain_fn = self.get_explain_fn()
+        forward_with_explain = self._forward_explain_detection
 
-        This can be redefined at the model's level.
-        """
-        if (head := getattr(self.model, "bbox_head", None)) is None:
-            raise ValueError
+        self.original_model_forward = self.model.forward
 
-        if (neck := getattr(self.model, "neck", None)) is not None:
-            x = neck(x)
+        func_type = types.MethodType
+        # Patch class method
+        model_class = type(self.model)
+        model_class.forward = func_type(forward_with_explain, self.model)
 
-        head_out = head(x)
-        # Return the first output form detection head: classification scores
-        return head_out[0]
+    def _restore_model_forward(self) -> None:
+        if not self.explain_mode:
+            return
+
+        if not self.original_model_forward:
+            msg = "Original model forward was not saved."
+            raise RuntimeError(msg)
+
+        func_type = types.MethodType
+        self.model.forward = func_type(self.original_model_forward, self.model)
+        self.original_model_forward = None
 
     def get_num_anchors(self) -> list[int]:
         """Gets the anchor configuration from model."""
@@ -153,14 +224,12 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         return [1] * 10
 
-    def remove_explain_hook_handle(self) -> None:
-        """Removes explain hook from the model."""
-        if self.explain_hook.handle is not None:
-            self.explain_hook.handle.remove()
-
-    def reset_explain_hook(self) -> None:
-        """Clear all history of explain records."""
-        self.explain_hook.reset()
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        parameters = super()._export_parameters
+        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
+        return parameters
 
 
 class MMDetCompatibleModel(ExplainableOTXDetModel):
@@ -248,7 +317,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: dict[str, Any],
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
@@ -272,7 +341,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         bboxes = []
         labels = []
 
-        for output in outputs:
+        predictions = outputs["predictions"] if isinstance(outputs, dict) else outputs
+        for output in predictions:
             if not isinstance(output, DetDataSample):
                 raise TypeError(output)
             scores.append(output.pred_instances.scores)
@@ -285,23 +355,35 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             )
             labels.append(output.pred_instances.labels)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
+        if self.explain_mode:
+            if not isinstance(outputs, dict):
+                msg = f"Model output should be a dict, but got {type(outputs)}."
+                raise ValueError(msg)
+
+            if "feature_vector" not in outputs:
+                msg = "No feature vector in the model output."
+                raise ValueError(msg)
+
+            if "saliency_map" not in outputs:
+                msg = "No saliency maps in the model output."
+                raise ValueError(msg)
+
+            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntityWithXAI(
-                batch_size=len(outputs),
+                batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 bboxes=bboxes,
                 labels=labels,
-                saliency_maps=explain_results,
-                feature_vectors=[],
+                saliency_maps=saliency_maps,
+                feature_vectors=feature_vectors,
             )
 
         return DetBatchPredEntity(
-            batch_size=len(outputs),
+            batch_size=len(predictions),
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
@@ -414,10 +496,12 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
             scores.append(torch.tensor([output.score for output in output_objects]))
             labels.append(torch.tensor([output.id - label_shift for output in output_objects]))
 
-        if outputs and outputs[0].saliency_map.size != 1:
-            predicted_s_maps = [out.saliency_map for out in outputs]
-            predicted_f_vectors = [out.feature_vector for out in outputs]
+        if outputs and outputs[0].saliency_map.size > 1:
+            # Squeeze dim 4D => 3D, (1, num_classes, H, W) => (num_classes, H, W)
+            predicted_s_maps = [out.saliency_map[0] for out in outputs]
 
+            # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
+            predicted_f_vectors = [out.feature_vector[0] for out in outputs]
             return DetBatchPredEntityWithXAI(
                 batch_size=len(outputs),
                 images=inputs.images,

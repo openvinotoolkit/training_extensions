@@ -134,7 +134,7 @@ class OTXAnomaly:
     def __init__(self) -> None:
         self.optimizer: list[OptimizerCallable] | OptimizerCallable = None
         self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = None
-        self.input_size: list[int] = [256, 256]
+        self._input_size: tuple[int, int] = (256, 256)
         self.mean_values: tuple[float, float, float] = (0.0, 0.0, 0.0)
         self.scale_values: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.trainer: Trainer
@@ -146,6 +146,19 @@ class OTXAnomaly:
 
         self.image_metrics: AnomalibMetricCollection
         self.pixel_metrics: AnomalibMetricCollection
+
+    @property
+    def input_size(self) -> tuple[int, int]:
+        """Returns the input size of the model.
+
+        Returns:
+            tuple[int, int]: The input size of the model as a tuple of (height, width).
+        """
+        return self._input_size
+
+    @input_size.setter
+    def input_size(self, value: tuple[int, int]) -> None:
+        self._input_size = value
 
     @property
     def task(self) -> AnomalibTaskType:
@@ -342,13 +355,13 @@ class OTXAnomaly:
         """
         state_dict = super().state_dict()  # type: ignore[misc]
         # This is defined in OTXModel
-        state_dict["meta_info"] = self.meta_info  # type: ignore[attr-defined]
+        state_dict["label_info"] = self.label_info  # type: ignore[attr-defined]
         return state_dict
 
     def load_state_dict(self, ckpt: OrderedDict[str, Any], *args, **kwargs) -> None:
         """Pass the checkpoint to the anomaly model."""
         ckpt = ckpt.get("state_dict", ckpt)
-        ckpt.pop("meta_info", None)  # [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model
+        ckpt.pop("label_info", None)  # [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model
         return super().load_state_dict(ckpt, *args, **kwargs)  # type: ignore[misc]
 
     def forward(
@@ -441,8 +454,9 @@ class OTXAnomaly:
         """
         min_val = self.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
         max_val = self.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
+        image_shape = (256, 256) if self.input_size is None else self.input_size
         exporter = _AnomalyModelExporter(
-            image_shape=(self.input_size[0], self.input_size[1]),
+            image_shape=image_shape,
             image_threshold=self.image_threshold.value.cpu().numpy().tolist(),
             pixel_threshold=self.pixel_threshold.value.cpu().numpy().tolist(),
             task=self.task,

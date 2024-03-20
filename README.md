@@ -13,16 +13,17 @@
 
 <!-- markdownlint-disable MD042 -->
 
-[![python](https://img.shields.io/badge/python-3.8%2B-green)]()
-[![pytorch](https://img.shields.io/badge/pytorch-1.13.1%2B-orange)]()
-[![openvino](https://img.shields.io/badge/openvino-2023.0-purple)]()
+[![python](https://img.shields.io/badge/python-3.10%2B-green)]()
+[![pytorch](https://img.shields.io/badge/pytorch-2.1.1%2B-orange)]()
+[![openvino](https://img.shields.io/badge/openvino-2023.3.0-purple)]()
 
 <!-- markdownlint-enable  MD042 -->
 
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
-[![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml)
-[![Nightly Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yml)
-[![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/openvinotoolkit/training_extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/openvinotoolkit/training_extensions)
+[![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml)
+[![Nightly Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml)
+[![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Downloads](https://static.pepy.tech/personalized-badge/otx?period=total&units=international_system&left_color=grey&right_color=green&left_text=PyPI%20Downloads)](https://pepy.tech/project/otx)
 

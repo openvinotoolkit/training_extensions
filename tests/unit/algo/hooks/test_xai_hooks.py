@@ -89,13 +89,9 @@ def test_vitreciprocam() -> None:
 
 
 def test_detclassprob() -> None:
-    def cls_head_forward_fn(_) -> None:
-        return [torch.zeros((1, 2, 3, 3)), torch.zeros((1, 2, 6, 6))]
-
     num_classes = 2
     num_anchors = [1] * 10
     hook = DetClassProbabilityMapHook(
-        cls_head_forward_fn,
         num_classes=num_classes,
         num_anchors=num_anchors,
     )
@@ -104,16 +100,10 @@ def test_detclassprob() -> None:
     assert hook.records == []
     assert hook._norm_saliency_maps
 
-    backbone_out = torch.zeros((1, 5, 2, 2))
+    backbone_out = torch.zeros((1, 5, 2, 2, 2))
 
     saliency_maps = hook.func(backbone_out)
-    assert saliency_maps.size() == torch.Size([1, 2, 6, 6])
-
-    hook.recording_forward(None, None, backbone_out)
-    assert len(hook.records) == 1
-
-    hook.reset()
-    assert hook.records == []
+    assert saliency_maps.size() == torch.Size([5, 2, 2, 2])
 
 
 def test_maskrcnn() -> None:
@@ -129,9 +119,9 @@ def test_maskrcnn() -> None:
     # One image, 3 masks to aggregate
     pred = InstanceSegBatchPredEntity(
         batch_size=1,
-        masks=[tv_tensors.Mask(torch.ones(3, 10, 10))],
-        scores=[LongTensor([0.1, 0.2, 0.3])],
-        labels=[LongTensor([0, 0, 1])],
+        masks=tv_tensors.Mask(torch.ones(3, 10, 10)),
+        scores=LongTensor([0.1, 0.2, 0.3]),
+        labels=LongTensor([0, 0, 1]),
         # not used during saliency map calculation
         images=[tv_tensors.Image(torch.randn(3, 10, 10))],
         imgs_info=[ImageInfo(img_idx=0, img_shape=(10, 10), ori_shape=(10, 10))],

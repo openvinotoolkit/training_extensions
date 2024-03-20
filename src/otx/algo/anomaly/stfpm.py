@@ -21,21 +21,21 @@ class Stfpm(OTXAnomaly, OTXModel, AnomalibStfpm):
 
     Args:
         layers (Sequence[str]): Feature extractor layers.
-        input_size (tuple[int, int]): Input size.
         backbone (str, optional): Feature extractor backbone. Defaults to "resnet18".
+        num_classes (int, optional): Anoamly don't use num_classes ,
+            but OTXModel always receives num_classes, so need this.
     """
 
     def __init__(
         self,
         layers: Sequence[str] = ["layer1", "layer2", "layer3"],
-        input_size: tuple[int, int] = (256, 256),
         backbone: str = "resnet18",
+        num_classes: int = 2,
     ) -> None:
         OTXAnomaly.__init__(self)
-        OTXModel.__init__(self, num_classes=2)
+        OTXModel.__init__(self, num_classes=num_classes)
         AnomalibStfpm.__init__(
             self,
-            input_size=input_size,
             backbone=backbone,
             layers=layers,
         )

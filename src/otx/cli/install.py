@@ -64,10 +64,20 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
         help="Do not install PyTorch. Choose this option if you already install PyTorch.",
         action="store_true",
     )
+    parser.add_argument(
+        "--do-not-install-mmcv",
+        help="Do not install mmcv. Choose this option if you already install specific version of mmcv.",
+        action="store_true",
+    )
     subcommands_action.add_subcommand("install", parser, help="Install OTX requirements.")
 
 
-def otx_install(option: str | None = None, verbose: bool = False, do_not_install_torch: bool = False) -> int:
+def otx_install(
+    option: str | None = None,
+    verbose: bool = False,
+    do_not_install_torch: bool = False,
+    do_not_install_mmcv: bool = False,
+) -> int:
     """Install OTX requirements.
 
     Args:
@@ -109,7 +119,7 @@ def otx_install(option: str | None = None, verbose: bool = False, do_not_install
 
     # Parse mmX requirements if the task requires mmX packages.
     mmcv_install_args = []
-    if mmcv_requirements:
+    if mmcv_requirements and not do_not_install_mmcv:
         mmcv_install_args = get_mmcv_install_args(torch_requirement, mmcv_requirements)
         install_args += ["openmim"]
 
