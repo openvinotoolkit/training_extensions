@@ -42,7 +42,7 @@ on:
       data-root:
         type: string
         description: Root directory containing validation data in CI server.
-        default: /home/validation/data/new/
+        default: /home/validation/data/v1/
       otx-ref:
         type: string
         description: |
@@ -81,7 +81,7 @@ on:
       data-root:
         type: string
         description: Root directory containing validation data in CI server.
-        default: /home/validation/data/new/
+        default: /home/validation/data/v1/
       otx-ref:
         type: string
         description: |
