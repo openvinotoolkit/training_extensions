@@ -9,3 +9,8 @@ scan:
 severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
 vulnerability:
   ignore-unfixed: false
+format: template
+template: "@.ci/csv.tmpl"
+output: trivy-results.csv
+list-all-pkgs: true
+debug: true
