@@ -7,6 +7,9 @@ on:
         type: choice
         description: Model category to run benchmark
         options:
+          - speed
+          - balance
+          - accuracy
           - default # speed, balance, accuracy models only
           - all # default + other models
         default: default
@@ -54,7 +57,7 @@ on:
     inputs:
       model-category:
         type: string
-        description: Model category to run benchmark [default, all]
+        description: Model category to run benchmark [speed, balance, accuracy, default, all]
         default: default
       data-group:
         type: string
