@@ -294,7 +294,7 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
-After that, we have the PyTorch multi-class classification model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch multi-class classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Evaluation
@@ -357,7 +357,7 @@ Export
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
-Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
 
 2. That's how we can export the trained model ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt``
 from the previous section and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
@@ -505,7 +505,7 @@ with OpenVINO™ PTQ.
             engine.optimize(checkpoint=ckpt_path)
 
 
-The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
+The optimization time highly relies on the hardware characteristics, for example on Intel(R) Core(TM) i9-10980XE it took about 9 seconds.
 Please note, that PTQ will take some time without logging to optimize the model.
 
 3. Finally, we can also evaluate the optimized model by passing
