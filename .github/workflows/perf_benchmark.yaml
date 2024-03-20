@@ -147,7 +147,7 @@ jobs:
       - name: Upload test results
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
-          name: pef-benchmark-${{ matrix.task-short }}
+          name: perf-benchmark-${{ matrix.task-short }}
           path: .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
