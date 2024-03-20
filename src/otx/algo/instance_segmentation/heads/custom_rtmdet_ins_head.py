@@ -26,7 +26,12 @@ if TYPE_CHECKING:
 
 @MODELS.register_module()
 class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
-    """Custom RTMDet instance segmentation head."""
+    """Custom RTMDet instance segmentation head.
+
+    Note: In comparison to the original RTMDetInsSepBNHead, this class overrides the _bbox_mask_post_process
+    to conduct mask post-processing by chunking the masks into smaller chunks and processing them individually.
+    This approach mitigates the risk of running out of memory, particularly when handling a large number of masks.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
