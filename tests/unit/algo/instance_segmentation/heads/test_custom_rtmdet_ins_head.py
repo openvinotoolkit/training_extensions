@@ -1,10 +1,10 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
 import tempfile
 from pathlib import Path
 
+import pytest
 import torch
 from mmengine.config import ConfigDict
 from otx.algo.instance_segmentation.heads.custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
