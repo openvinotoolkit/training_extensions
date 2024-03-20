@@ -413,7 +413,7 @@ class OTXCLI:
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
             num_classes = self.datamodule.label_info.num_classes
-            if num_classes != model_config.init_args.num_classes:
+            if hasattr(model_config.init_args, "num_classes") and num_classes != model_config.init_args.num_classes:
                 warning_msg = (
                     f"The `num_classes` in dataset is {num_classes} "
                     f"but, the `num_classes` of model is {model_config.init_args.num_classes}. "
@@ -421,6 +421,14 @@ class OTXCLI:
                 )
                 warn(warning_msg, stacklevel=0)
                 model_config.init_args.num_classes = num_classes
+
+            # Hlabel classification
+            from otx.core.data.dataset.classification import HLabelInfo
+
+            if isinstance(self.datamodule.label_info, HLabelInfo):
+                hlabel_info = self.datamodule.label_info
+                model_config.init_args.num_multiclass_heads = hlabel_info.num_multiclass_heads
+                model_config.init_args.num_multilabel_classes = hlabel_info.num_multilabel_classes
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()

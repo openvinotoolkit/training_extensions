@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import numpy as np
 import torch
 
-from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 class ExplainableOTXClsModel(
     OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
 ):
-    """OTX classification model which can attach a XAI hook."""
+    """OTX classification model which can attach a XAI (Explainable AI) branch."""
 
     @property
     def has_gap(self) -> bool:
@@ -87,13 +87,13 @@ class ExplainableOTXClsModel(
         outputs = (
             self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
             if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
-            else self.model(inputs)
+            else self._forward_explain_image_classifier(self.model, inputs)
         )
 
         return (
             self._customize_outputs(outputs, inputs)
             if self._customize_outputs != ExplainableOTXClsModel._customize_outputs
-            else outputs
+            else outputs["predictions"]
         )
 
     @staticmethod
@@ -102,8 +102,8 @@ class ExplainableOTXClsModel(
         inputs: torch.Tensor,
         data_samples: list[DataSample] | None = None,
         mode: str = "tensor",
-    ) -> dict:
-        """Forward func of the ImageClassifier instance, which located in is in OTXModel().model."""
+    ) -> dict[str, torch.Tensor]:
+        """Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model."""
         x = self.backbone(inputs)
         backbone_feat = x
 
@@ -129,9 +129,9 @@ class ExplainableOTXClsModel(
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+        from otx.algo.explain.explain_algo import ReciproCAM
 
-        explainer = ReciproCAMHook(
+        explainer = ReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,
@@ -246,7 +246,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
     def _customize_outputs(
         self,
-        outputs: Any,  # noqa: ANN401
+        outputs: dict[str, Any],
         inputs: MulticlassClsBatchDataEntity,
     ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
         from mmpretrain.structures import DataSample

@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime AS base
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime@sha256:971fbeae82c0a5a7a970a264a8b8ce1c3426aa79df7111004ad2bc2640f7d89c AS base
 
 ARG http_proxy
 ARG https_proxy
@@ -25,9 +25,12 @@ USER non-root
 
 ENV PATH=${PATH}:${NON_ROOT_HOME}/.local/bin
 
-RUN pip install --no-cache-dir src_dir/ && \
+RUN pip install --no-cache-dir --require-hashes --no-deps -r src_dir/.ci/piptools-deps.txt && \
+    pip-compile --generate-hashes -o /tmp/requirements.txt src_dir/pyproject.toml && \
+    pip install --no-cache-dir --no-deps -e src_dir/ && \
+    pip install --no-cache-dir --require-hashes --no-deps -r /tmp/requirements.txt && \
     otx install --do-not-install-torch && \
-    rm -rf src_dir/
+    rm /tmp/requirements.txt
 
 FROM base AS cuda
 

@@ -17,14 +17,15 @@ class TestPerfVisualPrompting(PerfTestBase):
     """Benchmark visual prompting."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="visual_prompting", name="sam_tiny_vit", category="other"),
+        Benchmark.Model(task="visual_prompting", name="sam_tiny_vit", category="speed"),
+        Benchmark.Model(task="visual_prompting", name="sam_vit_b", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [
         Benchmark.Dataset(
             name=f"wgisd_small_{idx}",
             path=Path("visual_prompting/wgisd_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=5,
             num_repeat=5,
@@ -35,7 +36,7 @@ class TestPerfVisualPrompting(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium",
             path=Path("visual_prompting/coco_car_person_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=2,
             num_repeat=5,
@@ -44,7 +45,7 @@ class TestPerfVisualPrompting(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_coliform",
             path=Path("visual_prompting/Vitens-Coliform-coco"),
-            size="large",
+            group="large",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
@@ -95,15 +96,15 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
     """Benchmark zero-shot visual prompting."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_tiny_vit", category="other"),
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_vit_b", category="other"),
+        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_tiny_vit", category="speed"),
+        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_vit_b", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
             name="coco_car_person_medium_datumaro",
             path=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
-            size="medium",
+            group="medium",
             data_format="datumaro",
             num_classes=2,
             num_repeat=5,

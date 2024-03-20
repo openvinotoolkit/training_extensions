@@ -26,5 +26,8 @@ overrides:
       vpm_config:
         use_bbox: True
         use_point: False
+      train_subset:
+        batch_size: 1
+        num_workers: 0 # TODO (sungchul): CVS-135462
       test_subset:
         batch_size: 1

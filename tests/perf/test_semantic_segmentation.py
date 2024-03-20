@@ -30,7 +30,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"kvasir_small_{idx}",
             path=Path("semantic_seg/kvasir_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
             num_repeat=5,
@@ -41,7 +41,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="kvasir_medium",
             path=Path("semantic_seg/kvasir_medium"),
-            size="medium",
+            group="medium",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
             num_repeat=5,
@@ -50,7 +50,7 @@ class TestPerfSemanticSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="kvasir_large",
             path=Path("semantic_seg/kvasir_large"),
-            size="large",
+            group="large",
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
             num_repeat=5,

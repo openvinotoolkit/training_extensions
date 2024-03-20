@@ -26,7 +26,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"wgisd_small_{idx}",
             path=Path("instance_seg/wgisd_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=5,
             num_repeat=5,
@@ -42,7 +42,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium",
             path=Path("instance_seg/coco_car_person_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=2,
             num_repeat=5,
@@ -56,7 +56,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_coliform",
             path=Path("instance_seg/Vitens-Coliform-coco"),
-            size="large",
+            group="large",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
@@ -114,13 +114,14 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
     MODEL_TEST_CASES = [  # noqa: RUF012
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
         Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
+        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
     ]
 
     DATASET_TEST_CASES = [
         Benchmark.Dataset(
             name=f"vitens_aeromonas_small_{idx}",
             path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
-            size="small",
+            group="small",
             data_format="coco",
             num_classes=1,
             num_repeat=5,
@@ -136,7 +137,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_aeromonas_medium",
             path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
-            size="medium",
+            group="medium",
             data_format="coco",
             num_classes=1,
             num_repeat=5,

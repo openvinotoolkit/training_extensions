@@ -551,6 +551,7 @@ class TestVisualPrompting(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
         ModelTestCase(task="visual_prompting", name="sam_tiny_vit"),
+        ModelTestCase(task="visual_prompting", name="sam_vit_b"),
     ]
     # Test case parametrization for dataset
     DATASET_TEST_CASES = [  # noqa: RUF012
@@ -559,7 +560,7 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/wgisd_small") / f"{idx}",
             data_format="coco",
             num_classes=5,
-            extra_overrides={},
+            extra_overrides={"deterministic": "warn"},
         )
         for idx in range(1, 4)
     ] + [
@@ -568,14 +569,14 @@ class TestVisualPrompting(BaseTest):
             data_root=Path("visual_prompting/coco_car_person_medium"),
             data_format="coco",
             num_classes=2,
-            extra_overrides={},
+            extra_overrides={"deterministic": "warn"},
         ),
         DatasetTestCase(
             name="vitens_coliform",
             data_root=Path("visual_prompting/Vitens-Coliform-coco"),
             data_format="coco",
             num_classes=1,
-            extra_overrides={},
+            extra_overrides={"deterministic": "warn"},
         )
     ]
 
@@ -623,7 +624,10 @@ class TestZeroShotVisualPrompting(BaseTest):
             data_root=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
             data_format="datumaro",
             num_classes=2,
-            extra_overrides={"max_epochs": "1"}
+            extra_overrides={
+                "max_epochs": "1",
+                "deterministic": "warn"
+            }
         ),
     ]
 
@@ -797,6 +801,7 @@ class TestActionClassification(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
         ModelTestCase(task="action/action_classification", name="x3d"),
+        ModelTestCase(task="action/action_classification", name="movinet"),
     ]
     DATASET_TEST_CASES = [
         DatasetTestCase(
