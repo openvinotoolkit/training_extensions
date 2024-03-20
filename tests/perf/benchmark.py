@@ -56,8 +56,6 @@ class Benchmark:
         name: str
         path: Path
         group: str
-        data_format: str
-        num_classes: int
         num_repeat: int = 1
         extra_overrides: dict | None = None
 
@@ -155,10 +153,6 @@ class Benchmark:
                 str(data_root),
                 "--work_dir",
                 str(sub_work_dir),
-                "--model.num_classes",
-                str(dataset.num_classes),
-                "--data.config.data_format",
-                dataset.data_format,
                 "--engine.device",
                 self.accelerator,
             ]
