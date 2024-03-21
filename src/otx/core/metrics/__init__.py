@@ -3,8 +3,6 @@
 #
 """Module for OTX custom metrices."""
 
-from typing import Callable, Union
+from otx.core.metrics.types import MetricCallable, MetricInput, NullMetricCallable
 
-from torchmetrics import Metric
-
-MetricCallable = Union[Callable[[], Metric], Callable[[int], Metric]]
+__all__ = ["MetricCallable", "MetricInput", "NullMetricCallable"]

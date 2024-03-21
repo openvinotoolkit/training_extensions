@@ -4,18 +4,42 @@
 """X3DFastRCNN model implementation."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.action_detection import MMActionCompatibleModel
+from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.model.action_detection import MMActionCompatibleModel
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class X3DFastRCNN(MMActionCompatibleModel):
     """X3D Model."""
 
-    def __init__(self, num_classes: int, topk: int | tuple[int]):
+    def __init__(
+        self,
+        num_classes: int,
+        topk: int | tuple[int],
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = read_mmconfig("x3d_fastrcnn")
         config.roi_head.bbox_head.topk = topk
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

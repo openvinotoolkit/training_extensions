@@ -62,12 +62,12 @@ class TestPackDetInputs:
                         format=tv_tensors.BoundingBoxFormat.XYXY,
                         canvas_size=(1024, 1024),
                     ),
-                    points=None,  # TODO(sungchul): add point prompts in mmx # noqa: TD003
+                    points=None,  # TODO(sungchul): add point prompts in mmx
                     masks=None,
                     labels=LongTensor([1]),
                     polygons=None,
                 ),
-                False,  # TODO(sungchul): add point prompts in mmx # noqa: TD003
+                False,  # TODO(sungchul): add point prompts in mmx
                 torch.Size([3, 1024, 1024]),
             ),
         ],

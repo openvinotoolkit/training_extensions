@@ -22,12 +22,6 @@ scheduler:
       patience: 1
       monitor: val/map_50
 
-metric:
-  class_path: torchmetrics.detection.mean_ap.MeanAveragePrecision
-  init_args:
-    box_format: xyxy
-    iou_type: bbox
-
 engine:
   task: ACTION_DETECTION
   device: auto

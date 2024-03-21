@@ -1,12 +1,12 @@
 import torch
-from otx.algo.instance_segmentation.otx_instseg_evaluation import OTXMaskRLEMeanAveragePrecision
+from otx.core.metrics.mean_ap import MaskRLEMeanAveragePrecision
 from otx.core.utils.mask_util import encode_rle
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
 def test_custom_rle_map_metric(num_masks=50, h=10, w=10):
     """Test custom RLE MAP metric."""
-    custom_map_metric = OTXMaskRLEMeanAveragePrecision(iou_type="segm")
+    custom_map_metric = MaskRLEMeanAveragePrecision(iou_type="segm")
     torch_map_metric = MeanAveragePrecision(iou_type="segm")
 
     # Create random masks

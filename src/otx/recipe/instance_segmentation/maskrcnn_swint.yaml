@@ -20,12 +20,6 @@ scheduler:
       patience: 4
       monitor: val/map_50
 
-metric:
-  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
-  init_args:
-    box_format: xyxy
-    iou_type: segm
-
 engine:
   task: INSTANCE_SEGMENTATION
   device: auto
