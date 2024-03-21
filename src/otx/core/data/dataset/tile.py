@@ -76,6 +76,10 @@ class OTXTileTransform(Tile):
             threshold_drop_ann=threshold_drop_ann,
         )
         self._tile_size = tile_size
+        # TODO (Eugene): Bug found in original Datumaro tile polygon function.
+        # https://github.com/eugene123tw/training_extensions/tree/eugene/fix-tile-polygon-func
+        # It lacks polygon validation, potentially leading to GeometryCollection or MultiPolygon results,
+        # which the current function doesn't handle.
 
     def _extract_rois(self, image: Image) -> list[BboxIntCoords]:
         """Extracts Tile ROIs from the given image.

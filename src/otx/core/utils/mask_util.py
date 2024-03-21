@@ -51,7 +51,9 @@ def polygon_to_rle(
         list[dict]: List of RLE masks.
     """
     polygons = [polygon.points for polygon in polygons]
-    return mask_utils.frPyObjects(polygons, height, width)
+    if len(polygons):
+        return mask_utils.frPyObjects(polygons, height, width)
+    return []
 
 
 def encode_rle(mask: torch.Tensor) -> dict:
