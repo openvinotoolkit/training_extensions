@@ -142,7 +142,7 @@ def is_xpu_available() -> bool:
     return XPU_AVAILABLE
 
 
-def patch_packages_xpu(task: str | OTXTaskType, accelerator: str | DeviceType) -> None:
+def patch_packages_xpu() -> None:
     """Patch packages when xpu is available."""
     import lightning.pytorch as pl
     from lightning.pytorch.trainer.states import TrainerFn
@@ -181,6 +181,7 @@ def revert_packages_xpu():
     from mmcv.ops.roi_align import RoIAlign
     from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
     """Revert packages when xpu is available."""
+    global _nms_op_forward, _roi_align_forward, _setup_optimizers
     NMSop.forward = _nms_op_forward
     RoIAlign.forward = _roi_align_forward
     SingleDeviceStrategy.setup_optimizers = _setup_optimizers
