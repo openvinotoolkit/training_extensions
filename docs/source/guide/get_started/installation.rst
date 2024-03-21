@@ -97,11 +97,11 @@ package from either:
     pip install otx
 
 5. Install requirements for training
-excluding Pytorch and MMCV.
+excluding Pytorch.
 
 .. code-block:: shell
 
-    otx install -v --do-not-install-torch --do-not-install-mmcv
+    otx install -v --do-not-install-torch
 
 6. Activate OneAPI environment
 and export required IPEX system variables
