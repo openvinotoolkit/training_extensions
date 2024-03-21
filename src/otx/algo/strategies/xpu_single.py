@@ -61,8 +61,8 @@ class SingleXPUStrategy(SingleDeviceStrategy):
         self.model = model
 
 
-# StrategyRegistry.register(
-#     SingleXPUStrategy.strategy_name,
-#     SingleXPUStrategy,
-#     description="Strategy that enables training on single XPU",
-# )
+StrategyRegistry.register(
+    SingleXPUStrategy.strategy_name,
+    SingleXPUStrategy,
+    description="Strategy that enables training on single XPU",
+)

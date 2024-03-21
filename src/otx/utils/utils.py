@@ -144,44 +144,20 @@ def is_xpu_available() -> bool:
 
 def patch_packages_xpu() -> None:
     """Patch packages when xpu is available."""
-    import lightning.pytorch as pl
-    from lightning.pytorch.trainer.states import TrainerFn
-    from lightning.pytorch.core.optimizer import _init_optimizers_and_lr_schedulers
-
-    def patched_setup_optimizers(self, trainer: pl.Trainer) -> None:
-        """Sets up optimizers."""
-        if trainer.state.fn != TrainerFn.FITTING:
-            return
-        assert self.lightning_module is not None
-        self.optimizers, self.lr_scheduler_configs = _init_optimizers_and_lr_schedulers(self.lightning_module)
-        if len(self.optimizers) != 1:  # type: ignore[has-type]
-            msg = "XPU strategy doesn't support multiple optimizers"
-            raise RuntimeError(msg)
-        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
-        self.optimizers = [optimizer]
-        self.model = model
-
     # patch instance_data from mmengie
     long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
     bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
     instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
 
-    # patch nms, roi_align and setup_optimizers for the lightning strategy
-    global _nms_op_forward, _roi_align_forward, _setup_optimizers
+    # patch nms and roi_align
+    global _nms_op_forward, _roi_align_forward
     _nms_op_forward = NMSop.forward
     _roi_align_forward = RoIAlign.forward
-    _setup_optimizers = SingleDeviceStrategy.setup_optimizers
     NMSop.forward = monkey_patched_nms
     RoIAlign.forward = monkey_patched_roi_align
-    SingleDeviceStrategy.setup_optimizers = patched_setup_optimizers
 
 
 def revert_packages_xpu():
-    from mmcv.ops.nms import NMSop
-    from mmcv.ops.roi_align import RoIAlign
-    from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
     """Revert packages when xpu is available."""
-    global _nms_op_forward, _roi_align_forward, _setup_optimizers
     NMSop.forward = _nms_op_forward
     RoIAlign.forward = _roi_align_forward
-    SingleDeviceStrategy.setup_optimizers = _setup_optimizers

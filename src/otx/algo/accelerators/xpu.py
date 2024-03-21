@@ -18,13 +18,13 @@ class XPUAccelerator(Accelerator):
 
     accelerator_name = "xpu"
 
-    def setup_device(self) -> None:
+    def setup_device(self, device: torch.device) -> None:
         """Sets up the specified device."""
-        if not is_xpu_available():
-            msg = f"XPU is not available. Please, check the environment."
+        if device.type != "xpu":
+            msg = f"Device should be xpu, got {device} instead"
             raise RuntimeError(msg)
 
-        torch.xpu.set_device("xpu:0")
+        torch.xpu.set_device(device)
         patch_packages_xpu()
 
 

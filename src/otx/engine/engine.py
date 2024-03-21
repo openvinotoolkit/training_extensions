@@ -811,6 +811,7 @@ class Engine:
             self._cache.update(**kwargs)
             # set up xpu device
             if self._device.accelerator == DeviceType.xpu:
+                self._cache.update(strategy="xpu_single")
                 # add plugin for Automatic Mixed Precision on XPU
                 if self._cache.args["precision"] == 16:
                     self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
