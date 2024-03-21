@@ -211,10 +211,10 @@ trained model on a particular dataset.
 
 Test function receives test annotation information and model snapshot, trained in previous step.
 
-The default metric is mAP_50 measure.
+The default metric is accuracy measure.
 
 2. That's how we can evaluate the snapshot in ``otx-workspace``
-folder on WGISD dataset and save results to ``otx-workspace``:
+folder on hmdb51 dataset and save results to ``otx-workspace``:
 
 .. tab-set::
 
