@@ -40,10 +40,10 @@ class TestOTXVisualPromptingLitModule:
 
     def test_training_step(self, mocker, otx_visual_prompting_lit_module) -> None:
         """Test training_step."""
-        otx_visual_prompting_lit_module.model.return_value = {"loss": torch.tensor(1.)}
+        otx_visual_prompting_lit_module.model.return_value = {"loss": torch.tensor(1.0)}
         mocker_log_metrics = mocker.patch.object(otx_visual_prompting_lit_module, "_log_metrics")
 
-        _ = otx_visual_prompting_lit_module.training_step({"loss": torch.tensor(1.)}, 0)
+        _ = otx_visual_prompting_lit_module.training_step({"loss": torch.tensor(1.0)}, 0)
 
         mocker_log_metrics.assert_called_once()
 
@@ -55,7 +55,11 @@ class TestOTXVisualPromptingLitModule:
         for k, v in otx_visual_prompting_lit_module.test_metric.items():
             mocker_updates[k] = mocker.patch.object(v, "update")
 
-        otx_visual_prompting_lit_module._inference_step(otx_visual_prompting_lit_module.test_metric, fxt_vpm_data_entity[1], 0)
+        otx_visual_prompting_lit_module._inference_step(
+            otx_visual_prompting_lit_module.test_metric,
+            fxt_vpm_data_entity[1],
+            0,
+        )
 
         for v in mocker_updates.values():
             v.assert_called_once()
@@ -78,7 +82,10 @@ class TestOTXZeroShotVisualPromptingLitModule:
         otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
-        mocker_setup_data = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop, "setup_data")
+        mocker_setup_data = mocker.patch.object(
+            otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop,
+            "setup_data",
+        )
         mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop, "reset")
 
         otx_zero_shot_visual_prompting_lit_module.on_test_start()
@@ -92,7 +99,10 @@ class TestOTXZeroShotVisualPromptingLitModule:
         otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
-        mocker_setup_data = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop, "setup_data")
+        mocker_setup_data = mocker.patch.object(
+            otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop,
+            "setup_data",
+        )
         mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer._evaluation_loop, "reset")
 
         otx_zero_shot_visual_prompting_lit_module.on_predict_start()
@@ -118,7 +128,12 @@ class TestOTXZeroShotVisualPromptingLitModule:
         mocker_torch_save.assert_called_once()
         mocker_pickle_dump.assert_called_once()
 
-    def test_inference_step(self, mocker, otx_zero_shot_visual_prompting_lit_module, fxt_zero_shot_vpm_data_entity) -> None:
+    def test_inference_step(
+        self,
+        mocker,
+        otx_zero_shot_visual_prompting_lit_module,
+        fxt_zero_shot_vpm_data_entity,
+    ) -> None:
         """Test _inference_step."""
         otx_zero_shot_visual_prompting_lit_module.configure_metric()
         otx_zero_shot_visual_prompting_lit_module.model.return_value = fxt_zero_shot_vpm_data_entity[2]
@@ -126,12 +141,21 @@ class TestOTXZeroShotVisualPromptingLitModule:
         for k, v in otx_zero_shot_visual_prompting_lit_module.test_metric.items():
             mocker_updates[k] = mocker.patch.object(v, "update")
 
-        otx_zero_shot_visual_prompting_lit_module._inference_step(otx_zero_shot_visual_prompting_lit_module.test_metric, fxt_zero_shot_vpm_data_entity[1], 0)
+        otx_zero_shot_visual_prompting_lit_module._inference_step(
+            otx_zero_shot_visual_prompting_lit_module.test_metric,
+            fxt_zero_shot_vpm_data_entity[1],
+            0,
+        )
 
         for v in mocker_updates.values():
             v.assert_called_once()
 
-    def test_inference_step_with_more_preds(self, mocker, otx_zero_shot_visual_prompting_lit_module, fxt_zero_shot_vpm_data_entity) -> None:
+    def test_inference_step_with_more_preds(
+        self,
+        mocker,
+        otx_zero_shot_visual_prompting_lit_module,
+        fxt_zero_shot_vpm_data_entity,
+    ) -> None:
         """Test _inference_step with more predictions."""
         otx_zero_shot_visual_prompting_lit_module.configure_metric()
         preds = {}
@@ -145,12 +169,21 @@ class TestOTXZeroShotVisualPromptingLitModule:
         for k, v in otx_zero_shot_visual_prompting_lit_module.test_metric.items():
             mocker_updates[k] = mocker.patch.object(v, "update")
 
-        otx_zero_shot_visual_prompting_lit_module._inference_step(otx_zero_shot_visual_prompting_lit_module.test_metric, fxt_zero_shot_vpm_data_entity[1], 0)
+        otx_zero_shot_visual_prompting_lit_module._inference_step(
+            otx_zero_shot_visual_prompting_lit_module.test_metric,
+            fxt_zero_shot_vpm_data_entity[1],
+            0,
+        )
 
         for v in mocker_updates.values():
             v.assert_called_once()
 
-    def test_inference_step_with_more_target(self, mocker, otx_zero_shot_visual_prompting_lit_module, fxt_zero_shot_vpm_data_entity) -> None:
+    def test_inference_step_with_more_target(
+        self,
+        mocker,
+        otx_zero_shot_visual_prompting_lit_module,
+        fxt_zero_shot_vpm_data_entity,
+    ) -> None:
         """Test _inference_step with more targets."""
         otx_zero_shot_visual_prompting_lit_module.configure_metric()
         otx_zero_shot_visual_prompting_lit_module.model.return_value = fxt_zero_shot_vpm_data_entity[2]
@@ -164,7 +197,11 @@ class TestOTXZeroShotVisualPromptingLitModule:
                 target[k] = v
             else:
                 target[k] = v * 2
-        otx_zero_shot_visual_prompting_lit_module._inference_step(otx_zero_shot_visual_prompting_lit_module.test_metric, ZeroShotVisualPromptingBatchDataEntity(**target), 0)
+        otx_zero_shot_visual_prompting_lit_module._inference_step(
+            otx_zero_shot_visual_prompting_lit_module.test_metric,
+            ZeroShotVisualPromptingBatchDataEntity(**target),
+            0,
+        )
 
         for v in mocker_updates.values():
             v.assert_called_once()
