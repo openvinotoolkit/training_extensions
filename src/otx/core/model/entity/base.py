@@ -397,7 +397,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
-        import time
 
         def _callback(result: NamedTuple, idx: int) -> None:
             output_dict[idx] = result
