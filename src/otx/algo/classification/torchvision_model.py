@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
 from torch import nn
@@ -18,7 +18,15 @@ from otx.core.data.entity.classification import (
     MulticlassClsBatchPredEntity,
     MulticlassClsBatchPredEntityWithXAI,
 )
-from otx.core.model.entity.classification import OTXMulticlassClsModel
+from otx.core.metrics.accuracy import MultiClassClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.classification import OTXMulticlassClsModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+
 
 TVModelType = Literal[
     "alexnet",
@@ -104,7 +112,7 @@ class TVModelWithLossComputation(nn.Module):
         self,
         backbone: TVModelType,
         num_classes: int,
-        loss: Callable | None = None,
+        loss: nn.Module,
         freeze_backbone: bool = False,
     ) -> None:
         super().__init__()
@@ -130,7 +138,7 @@ class TVModelWithLossComputation(nn.Module):
             self.head = nn.Linear(feature_channel, num_classes)
 
         self.softmax = nn.Softmax(dim=-1)
-        self.loss = nn.CrossEntropyLoss() if loss is None else loss
+        self.loss = loss
 
     def forward(
         self,
@@ -173,20 +181,31 @@ class OTXTVModel(OTXMulticlassClsModel):
         self,
         backbone: TVModelType,
         num_classes: int,
-        loss: Callable | None = None,
+        loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
         freeze_backbone: bool = False,
     ) -> None:
         self.backbone = backbone
-        self.loss = loss
+        self.loss_callable = loss_callable
+        self.backbone = backbone
         self.freeze_backbone = freeze_backbone
 
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         return TVModelWithLossComputation(
             backbone=self.backbone,
             num_classes=self.num_classes,
-            loss=self.loss,
+            loss=self.loss_callable(),
             freeze_backbone=self.freeze_backbone,
         )
 

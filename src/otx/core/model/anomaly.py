@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from lightning.pytorch import Trainer
     from lightning.pytorch.callbacks.callback import Callback
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from lightning.pytorch.utilities.types import STEP_OUTPUT
     from torchmetrics import Metric
     from torchvision.transforms.v2 import Transform
 
@@ -246,37 +245,6 @@ class OTXAnomaly:
                 pixel_metrics=pixel_metrics,
             ),
         ]
-
-    def training_step(
-        self,
-        inputs: AnomalyModelInputs | dict,
-        batch_idx: int = 0,
-    ) -> STEP_OUTPUT:
-        """Call training step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return super().training_step(inputs, batch_idx)  # type: ignore[misc]
-
-    def validation_step(
-        self,
-        inputs: AnomalyModelInputs | dict,
-        batch_idx: int = 0,
-    ) -> STEP_OUTPUT:
-        """Call validation step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return super().validation_step(inputs, batch_idx)  # type: ignore[misc]
-
-    def test_step(
-        self,
-        inputs: AnomalyModelInputs | dict,
-        batch_idx: int = 0,
-        **kwargs,
-    ) -> STEP_OUTPUT:
-        """Call test step of the anomalib model."""
-        if not isinstance(inputs, dict):
-            inputs = self._customize_inputs(inputs)
-        return super().test_step(inputs, batch_idx, **kwargs)  # type: ignore[misc]
 
     def on_test_batch_end(
         self,

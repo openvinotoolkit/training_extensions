@@ -3,11 +3,15 @@
 #
 """Class definition for visual prompting model entity used in OTX."""
 
+# TODO(vinnamki): There are so many mypy errors. Resolve them after refactoring visual prompting code.
+# mypy: ignore-errors
+
 from __future__ import annotations
 
 import logging as log
 import os
 import pickle
+import time
 from collections import defaultdict
 from copy import deepcopy
 from functools import partial
@@ -18,6 +22,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import cv2
 import numpy as np
 import torch
+from torch import Tensor
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity, Points, T_OTXBatchPredEntityWithXAI
@@ -25,31 +30,169 @@ from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
+    VisualPromptingBatchPredEntityWithXAI,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingBatchPredEntityWithXAI,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
-from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from openvino.model_api.models import Model
+    from torchmetrics import MetricCollection
 
     from otx.core.data.module import OTXDataModule
+    from otx.core.metrics import MetricCallable
+
+
+def _convert_pred_entity_to_compute_metric(
+    preds: VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
+    inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+) -> MetricInput:
+    """Convert the prediction entity to the format required by the compute metric function."""
+    pred_info = []
+    target_info = []
+
+    for masks, scores, labels in zip(
+        preds.masks,
+        preds.scores,
+        preds.labels,
+    ):
+        pred_info.append(
+            {
+                "masks": masks.data,
+                "scores": scores,
+                "labels": labels,
+            },
+        )
+
+    for imgs_info, masks, polygons, labels in zip(
+        inputs.imgs_info,
+        inputs.masks,
+        inputs.polygons,
+        inputs.labels,
+    ):
+        bit_masks = masks if len(masks) else polygon_to_bitmap(polygons, *imgs_info.ori_shape)
+        target_info.append(
+            {
+                "masks": tv_tensors.Mask(bit_masks, dtype=torch.bool).data,
+                "labels": torch.cat(list(labels.values())) if isinstance(labels, dict) else labels,
+            },
+        )
+
+    return {"preds": pred_info, "target": target_info}
+
+
+def _inference_step(
+    model: OTXVisualPromptingModel | OVVisualPromptingModel,
+    metric: MetricCollection,
+    inputs: VisualPromptingBatchDataEntity,
+) -> None:
+    """Perform a single inference step on a batch of data from the inference set."""
+    preds = model.forward(inputs)
+
+    if not isinstance(preds, VisualPromptingBatchPredEntity):
+        raise TypeError(preds)
+
+    converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
+
+    for _name, _metric in metric.items():
+        if _name == "mAP":
+            # MeanAveragePrecision
+            _preds = [
+                {k: v > 0.5 if k == "masks" else v.squeeze(1) if k == "scores" else v for k, v in ett.items()}
+                for ett in converted_entities["preds"]
+            ]
+            _target = converted_entities["target"]
+            _metric.update(preds=_preds, target=_target)
+        elif _name in ["IoU", "F1", "Dice"]:
+            # BinaryJaccardIndex, BinaryF1Score, Dice
+            for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                _metric.update(cvt_preds["masks"], cvt_target["masks"])
+
+
+def _inference_step_for_zeroshot(
+    model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
+    metric: MetricCollection,
+    inputs: ZeroShotVisualPromptingBatchDataEntity,
+) -> None:
+    """Perform a single inference step on a batch of data from the inference set."""
+    preds = model.forward(inputs)
+
+    if not isinstance(preds, ZeroShotVisualPromptingBatchPredEntity):
+        raise TypeError(preds)
+
+    converted_entities: dict[str, list[dict[str, Tensor]]] = _convert_pred_entity_to_compute_metric(preds, inputs)  # type: ignore[assignment]
+
+    for _name, _metric in metric.items():
+        if _name == "mAP":
+            # MeanAveragePrecision
+            _preds = [
+                {
+                    k: v > 0.5 if k == "masks" else v.squeeze(1).to(model.device) if k == "labels" else v
+                    for k, v in ett.items()
+                }
+                for ett in converted_entities["preds"]
+            ]
+            _target = converted_entities["target"]
+
+            # match #_preds and #_target
+            if len(_preds) > len(_target):
+                # interpolate _target
+                num_diff = len(_preds) - len(_target)
+                for idx in range(num_diff):
+                    _target.append(_target[idx])
+            elif len(_preds) < len(_target):
+                num_diff = len(_target) - len(_preds)
+                pad_prediction = {
+                    "masks": torch.zeros_like(_target[0]["masks"], dtype=_target[0]["masks"].dtype),
+                    "labels": torch.zeros_like(_target[0]["labels"], dtype=_target[0]["labels"].dtype),
+                    "scores": torch.zeros(len(_target[0]["labels"]), dtype=torch.float32),
+                }  # for empty prediction
+                for idx in range(num_diff):
+                    _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
+
+            _metric.update(preds=_preds, target=_target)
+        elif _name in ["IoU", "F1", "Dice"]:
+            # BinaryJaccardIndex, BinaryF1Score, Dice
+            for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
+                _metric.update(
+                    cvt_preds["masks"].sum(dim=0).clamp(0, 1),
+                    cvt_target["masks"].sum(dim=0).clamp(0, 1),
+                )
 
 
 class OTXVisualPromptingModel(
     OTXModel[
-        VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
-        VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXBatchPredEntityWithXAI,
+        VisualPromptingBatchDataEntity,
+        VisualPromptingBatchPredEntity,
+        VisualPromptingBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
     """Base class for the visual prompting models used in OTX."""
 
-    def __init__(self, num_classes: int = 0) -> None:
-        super().__init__(num_classes=num_classes)
+    def __init__(
+        self,
+        num_classes: int = 0,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -96,12 +239,219 @@ class OTXVisualPromptingModel(
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
 
+    def validation_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single validation step on a batch of data from the validation set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the validation step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+
+        Returns:
+            None
+        """
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
+
+    def test_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+        """
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: VisualPromptingBatchPredEntity | VisualPromptingBatchPredEntityWithXAI,
+        inputs: VisualPromptingBatchDataEntity,
+    ) -> MetricInput:
+        """Convert the prediction entity to the format required by the compute metric function."""
+        return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
+
+
+class OTXZeroShotVisualPromptingModel(
+    OTXModel[
+        ZeroShotVisualPromptingBatchDataEntity,
+        ZeroShotVisualPromptingBatchPredEntity,
+        ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
+):
+    """Base class for the visual prompting models used in OTX."""
+
+    def __init__(
+        self,
+        num_classes: int = 0,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXVisualPromptingModelExporter(via_onnx=True, **self._export_parameters)
+
+    @property
+    def _export_parameters(self) -> dict[str, Any]:
+        """Defines parameters required to export a particular model implementation."""
+        export_params = super()._export_parameters
+        export_params["metadata"].update(
+            {
+                ("model_info", "model_type"): "Visual_Prompting",
+                ("model_info", "task_type"): "visual_prompting",
+            },
+        )
+        export_params["input_size"] = (1, 3, self.model.image_size, self.model.image_size)
+        export_params["resize_mode"] = "fit_to_window"
+        export_params["mean"] = (123.675, 116.28, 103.53)
+        export_params["std"] = (58.395, 57.12, 57.375)
+        return export_params
+
+    @property
+    def _optimization_config(self) -> dict[str, Any]:
+        """PTQ config for visual prompting models."""
+        return {
+            "model_type": "transformer",
+            "advanced_parameters": {
+                "activations_range_estimator_params": {
+                    "min": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MIN",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                    "max": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MAX",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                },
+            },
+        }
+
+    def on_train_start(self) -> None:
+        """Initialize reference infos before learn."""
+        self.initialize_reference_info()
+
+    def on_test_start(self) -> None:
+        """Load previously saved reference info."""
+        super().on_test_start()
+        if not self.load_latest_reference_info(self.device):
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
+            self.trainer.fit_loop.run()
+            # to use infer logic
+            self.training = False
+            # to set _combined_loader
+            self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
+            self.trainer._evaluation_loop.reset()  # noqa: SLF001
+            self.load_latest_reference_info(self.device)
+
+    def on_predict_start(self) -> None:
+        """Load previously saved reference info."""
+        if not self.load_latest_reference_info(self.device):
+            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+            self.trainer.lightning_module.automatic_optimization = False
+            self.trainer.fit_loop.run()
+            # to use infer logic
+            self.training = False
+            # to set _combined_loader
+            self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
+            self.trainer._evaluation_loop.reset()  # noqa: SLF001
+            self.load_latest_reference_info(self.device)
+
+    def on_train_epoch_start(self) -> None:
+        """Skip on_train_epoch_start unused in zero-shot visual prompting."""
+
+    def on_train_epoch_end(self) -> None:
+        """Skip on_train_epoch_end unused in zero-shot visual prompting."""
+        if self.save_outputs:
+            reference_info = {
+                "reference_feats": self.reference_feats,
+                "used_indices": self.used_indices,
+            }
+            # save reference info
+            path_reference_info: Path = self.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
+            Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
+            if isinstance(self, OTXZeroShotVisualPromptingModel):
+                torch.save(reference_info, path_reference_info)
+                pickle.dump(
+                    {k: v.numpy() for k, v in reference_info.items()},
+                    Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
+                )
+            else:
+                torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
+                pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
+            log.info(f"Saved reference info at {path_reference_info}.")
+
+    def on_validation_epoch_start(self) -> None:
+        """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
+
+    def on_validation_epoch_end(self) -> None:
+        """Skip on_validation_epoch_end unused in zero-shot visual prompting."""
+
+    def configure_optimizers(self) -> None:  # type: ignore[override]
+        """Skip configure_optimizers unused in zero-shot visual prompting."""
+
+    def training_step(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
+        batch_idx: int,
+    ) -> Tensor:
+        """Skip training_step unused in zero-shot visual prompting."""
+        self.forward(inputs)
+
+    def validation_step(
+        self,
+        inputs: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Skip validation_step unused in zero-shot visual prompting."""
+
+    def test_step(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+        """
+        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> MetricInput:
+        """Convert the prediction entity to the format required by the compute metric function."""
+        return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
+
 
 class OVVisualPromptingModel(
     OVModel[
-        VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
-        VisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXBatchPredEntityWithXAI,
+        VisualPromptingBatchDataEntity,
+        VisualPromptingBatchPredEntity,
+        VisualPromptingBatchPredEntityWithXAI,
     ],
 ):
     """Visual prompting model compatible for OpenVINO IR inference.
@@ -119,6 +469,8 @@ class OVVisualPromptingModel(
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        **kwargs,
     ) -> None:
         if async_inference:
             log.warning(
@@ -133,13 +485,14 @@ class OVVisualPromptingModel(
             for module in ["image_encoder", "decoder"]
         }
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def _create_model(self) -> dict[str, Model]:
@@ -168,7 +521,7 @@ class OVVisualPromptingModel(
     def forward(
         self,
         inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> VisualPromptingBatchPredEntity:
         """Model forward function."""
         if self.async_inference:
             log.warning(
@@ -340,6 +693,41 @@ class OVVisualPromptingModel(
 
         return output_model_paths
 
+    def validation_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single validation step on a batch of data from the validation set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the validation step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+
+        Returns:
+            None
+        """
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
+
+    def test_step(self, inputs: VisualPromptingBatchDataEntity, batch_idx: int) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+        """
+        _inference_step(model=self, metric=self.metric, inputs=inputs)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: VisualPromptingBatchPredEntity,
+        inputs: VisualPromptingBatchDataEntity,
+    ) -> MetricInput:
+        """Convert the prediction entity to the format required by the compute metric function."""
+        return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
+
 
 class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     """Zero-shot visual prompting model compatible for OpenVINO IR inference.
@@ -357,17 +745,20 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
+        metric: MetricCallable = VisualPromptingMetricCallable,
         root_reference_info: str = "vpm_zsl_reference_infos",
         save_outputs: bool = True,
+        **kwargs,
     ) -> None:
         super().__init__(
-            num_classes,
-            model_name,
-            model_type,
-            async_inference,
-            max_num_requests,
-            use_throughput_mode,
-            model_api_configuration,
+            num_classes=num_classes,
+            model_name=model_name,
+            model_type=model_type,
+            async_inference=async_inference,
+            max_num_requests=max_num_requests,
+            use_throughput_mode=use_throughput_mode,
+            model_api_configuration=model_api_configuration,
+            metric=metric,
         )
         self.root_reference_info: Path = Path(root_reference_info)
         self.save_outputs: bool = save_outputs
@@ -990,3 +1381,34 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
+
+    def validation_step(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Skip validation_step unused in zero-shot visual prompting."""
+
+    def test_step(
+        self,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+        batch_idx: int,
+    ) -> None:
+        """Perform a single test step on a batch of data from the test set.
+
+        Args:
+            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            batch_idx (int): The index of the current batch.
+
+        Raises:
+            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+        """
+        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        inputs: ZeroShotVisualPromptingBatchDataEntity,
+    ) -> MetricInput:
+        """Convert the prediction entity to the format required by the compute metric function."""
+        return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)

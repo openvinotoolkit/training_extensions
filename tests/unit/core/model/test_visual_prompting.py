@@ -13,7 +13,7 @@ import pytest
 import torch
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
-from otx.core.model.entity.visual_prompting import (
+from otx.core.model.visual_prompting import (
     OTXVisualPromptingModel,
     OVVisualPromptingModel,
     OVZeroShotVisualPromptingModel,
@@ -369,13 +369,13 @@ class TestOVZeroShotVisualPromptingModel:
     def test_find_latest_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
         """Test _find_latest_reference_info."""
         mocker.patch(
-            "otx.core.model.entity.visual_prompting.os.path.isdir",
+            "otx.core.model.visual_prompting.os.path.isdir",
             return_value=True,
         )
 
         # there are some saved reference info
         mocker.patch(
-            "otx.core.model.entity.visual_prompting.os.listdir",
+            "otx.core.model.visual_prompting.os.listdir",
             return_value=["1", "2"],
         )
         results = ov_zero_shot_visual_prompting_model._find_latest_reference_info(Path())
@@ -383,7 +383,7 @@ class TestOVZeroShotVisualPromptingModel:
 
         # there are no saved reference info
         mocker.patch(
-            "otx.core.model.entity.visual_prompting.os.listdir",
+            "otx.core.model.visual_prompting.os.listdir",
             return_value=[],
         )
         results = ov_zero_shot_visual_prompting_model._find_latest_reference_info(Path())
@@ -396,10 +396,10 @@ class TestOVZeroShotVisualPromptingModel:
         # get previously saved reference info
         mocker.patch.object(ov_zero_shot_visual_prompting_model, "_find_latest_reference_info", return_value="1")
         mocker.patch(
-            "otx.core.model.entity.visual_prompting.pickle.load",
+            "otx.core.model.visual_prompting.pickle.load",
             return_value={"reference_feats": np.zeros((1, 1, 256)), "used_indices": np.array([0])},
         )
-        mocker.patch("otx.core.model.entity.visual_prompting.Path.open", return_value="Mocked data")
+        mocker.patch("otx.core.model.visual_prompting.Path.open", return_value="Mocked data")
 
         ov_zero_shot_visual_prompting_model.load_latest_reference_info()
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (1, 1, 256)

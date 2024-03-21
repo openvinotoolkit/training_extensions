@@ -5,22 +5,44 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from torch.onnx import OperatorExportTypes
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.segmentation import MMSegCompatibleModel
+from otx.core.metrics.dice import DiceCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.segmentation import MMSegCompatibleModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class LiteHRNet(MMSegCompatibleModel):
     """LiteHRNet Model."""
 
-    def __init__(self, num_classes: int, variant: Literal["18", 18, "s", "x"]) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        variant: Literal["18", 18, "s", "x"],
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = DiceCallable,
+        torch_compile: bool = False,
+    ) -> None:
         self.model_name = f"litehrnet_{variant}"
         config = read_mmconfig(model_name=self.model_name)
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -42,7 +64,7 @@ class LiteHRNet(MMSegCompatibleModel):
     @property
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for LiteHRNet."""
-        # TODO(Kirill): check PTQ without adding the whole backbone to ignored_scope #noqa: TD003
+        # TODO(Kirill): check PTQ without adding the whole backbone to ignored_scope
         ignored_scope = self._obtain_ignored_scope()
         optim_config = {
             "advanced_parameters": {

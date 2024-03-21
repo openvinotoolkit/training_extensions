@@ -9,21 +9,80 @@ from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetBatchPredEntity
-from otx.core.data.entity.base import OTXBatchLossEntity, T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.action_detection import (
+    ActionDetBatchDataEntity,
+    ActionDetBatchPredEntity,
+    ActionDetBatchPredEntityWithXAI,
+)
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
-from otx.core.model.entity.base import OTXModel
+from otx.core.metrics import MetricInput
+from otx.core.metrics.mean_ap import MeanAPCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from omegaconf import DictConfig
     from torch import nn
 
+    from otx.core.metrics import MetricCallable
+
 
 class OTXActionDetModel(
-    OTXModel[ActionDetBatchDataEntity, ActionDetBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
+    OTXModel[
+        ActionDetBatchDataEntity,
+        ActionDetBatchPredEntity,
+        ActionDetBatchPredEntityWithXAI,
+        T_OTXTileBatchDataEntity,
+    ],
 ):
     """Base class for the action detection models used in OTX."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ActionDetBatchPredEntity | ActionDetBatchPredEntityWithXAI,
+        inputs: ActionDetBatchDataEntity,
+    ) -> MetricInput:
+        return {
+            "preds": [
+                {
+                    "boxes": bboxes.data,
+                    "scores": scores,
+                    "labels": labels,
+                }
+                for bboxes, scores, labels in zip(
+                    preds.bboxes,
+                    preds.scores,
+                    preds.labels,
+                )
+            ],
+            "target": [
+                {
+                    "boxes": bboxes.data,
+                    "labels": labels.argmax(-1),  # NOTE: It is an one-hot vector,
+                    # so that we need to change it to an integer vector [0, num_classes -1]
+                    # well-fitted for our default metric, MeanAveragePrecision
+                }
+                for bboxes, labels in zip(inputs.bboxes, inputs.labels)
+            ],
+        }
 
 
 class MMActionCompatibleModel(OTXActionDetModel):
@@ -34,11 +93,25 @@ class MMActionCompatibleModel(OTXActionDetModel):
     compatible for OTX pipelines.
     """
 
-    def __init__(self, num_classes: int, config: DictConfig) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        config: DictConfig,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
         self.load_from = config.pop("load_from", None)
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         from .utils.mmaction import create_model

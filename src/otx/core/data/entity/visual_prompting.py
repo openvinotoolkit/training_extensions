@@ -10,7 +10,14 @@ from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity, Points
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
+    OTXDataEntity,
+    OTXPredEntity,
+    Points,
+)
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
@@ -119,6 +126,11 @@ class VisualPromptingBatchPredEntity(VisualPromptingBatchDataEntity, OTXBatchPre
     """Data entity to represent model output predictions for visual prompting task."""
 
 
+@dataclass
+class VisualPromptingBatchPredEntityWithXAI(VisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for visual prompting task."""
+
+
 @register_pytree_node
 @dataclass
 class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
@@ -204,3 +216,8 @@ class ZeroShotVisualPromptingBatchPredEntity(ZeroShotVisualPromptingBatchDataEnt
     """Data entity to represent model output predictions for zero-shot visual prompting task."""
 
     prompts: list[Points]  # type: ignore[assignment]
+
+
+@dataclass
+class ZeroShotVisualPromptingBatchPredEntityWithXAI(ZeroShotVisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for visual prompting task."""

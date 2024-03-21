@@ -5,14 +5,19 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pycocotools.mask as mask_utils
 import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
+from otx.core.data.dataset.base import LabelInfo
 
-class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
+if TYPE_CHECKING:
+    from torchmetrics import Metric
+
+
+class MaskRLEMeanAveragePrecision(MeanAveragePrecision):
     """Customised MAP metric for instance segmentation.
 
     This metric computes RLE directly to accelerate the computation.
@@ -65,3 +70,20 @@ class OTXMaskRLEMeanAveragePrecision(MeanAveragePrecision):
                     rle["counts"] = mask_utils.frPyObjects(rle, *rle["size"])["counts"]
                 masks.append((tuple(rle["size"]), rle["counts"]))
         return None, tuple(masks)
+
+
+def _mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
+    return MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
+
+
+MeanAPCallable = _mean_ap_callable
+
+
+def _mask_rle_mean_ap_callable(label_info: LabelInfo) -> Metric:  # noqa: ARG001
+    return MaskRLEMeanAveragePrecision(
+        box_format="xyxy",
+        iou_type="segm",
+    )
+
+
+MaskRLEMeanAPCallable = _mask_rle_mean_ap_callable

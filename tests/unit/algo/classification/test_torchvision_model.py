@@ -25,7 +25,7 @@ def fxt_inputs():
 
 class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
-        assert isinstance(fxt_tv_model._create_model(), TVModelWithLossComputation)
+        assert isinstance(fxt_tv_model.model, TVModelWithLossComputation)
 
     def test_customize_inputs(self, fxt_tv_model, fxt_inputs):
         outputs = fxt_tv_model._customize_inputs(fxt_inputs)

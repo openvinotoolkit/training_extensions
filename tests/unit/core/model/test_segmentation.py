@@ -11,7 +11,7 @@ import pytest
 import torch
 from importlib_resources import files
 from omegaconf import OmegaConf
-from otx.core.model.entity.segmentation import MMSegCompatibleModel
+from otx.core.model.segmentation import MMSegCompatibleModel
 
 if TYPE_CHECKING:
     from omegaconf.dictconfig import DictConfig
@@ -25,7 +25,7 @@ class TestOTXSegmentationModel:
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        return MMSegCompatibleModel(num_classes=1, config=config)
+        return MMSegCompatibleModel(num_classes=2, config=config)
 
     def test_create_model(self, model) -> None:
         mmseg_model = model._create_model()
@@ -59,3 +59,33 @@ class TestOTXSegmentationModel:
         model.training = False
         out = model._customize_outputs([data_sample], fxt_seg_data_entity[2])
         assert isinstance(out, SegBatchPredEntity)
+
+    def test_validation_step(self, mocker, model, fxt_seg_data_entity) -> None:
+        model.eval()
+        model.on_validation_start()
+        mocker_update_loss = mocker.patch.object(
+            model,
+            "_convert_pred_entity_to_compute_metric",
+            return_value=[{"preds": torch.randn(size=[3, 3, 3]), "target": torch.randint(0, 2, size=[3, 3])}],
+        )
+        model.validation_step(fxt_seg_data_entity[2], 0)
+        mocker_update_loss.assert_called_once()
+
+    def test_test_metric(self, mocker, model, fxt_seg_data_entity) -> None:
+        model.eval()
+        model.on_validation_start()
+        mocker_update_loss = mocker.patch.object(
+            model,
+            "_convert_pred_entity_to_compute_metric",
+            return_value=[{"preds": torch.randn(size=[3, 3, 3]), "target": torch.randint(0, 2, size=[3, 3])}],
+        )
+        model.test_step(fxt_seg_data_entity[2], 0)
+        mocker_update_loss.assert_called_once()
+
+    def test_convert_pred_entity_to_compute_metric(self, model, fxt_seg_data_entity) -> None:
+        pred_entity = fxt_seg_data_entity[2]
+        out = model._convert_pred_entity_to_compute_metric(pred_entity, fxt_seg_data_entity[2])
+        assert isinstance(out, list)
+        assert "preds" in out[-1]
+        assert "target" in out[-1]
+        assert out[-1]["preds"].sum() == out[-1]["target"].sum()

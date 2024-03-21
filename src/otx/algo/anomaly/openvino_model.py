@@ -2,6 +2,8 @@
 
 All anomaly models use the same AnomalyDetection model from ModelAPI.
 """
+# TODO(someone): Revisit mypy errors after OTXLitModule deprecation and anomaly refactoring
+# mypy: ignore-errors
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -12,8 +14,8 @@ from typing import TYPE_CHECKING, Any
 
 from lightning.pytorch import LightningModule
 
-from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.model.module.anomaly.anomaly_lightning import AnomalyModelInputs
+from otx.core.model.anomaly import AnomalyModelInputs
+from otx.core.model.base import OTXModel, OVModel
 
 if TYPE_CHECKING:
     from openvino.model_api.models import Model
@@ -34,6 +36,7 @@ class AnomalyOpenVINO(OVModel, OTXModel, LightningModule):
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         num_classes: int = 2,
+        **kwargs,
     ) -> None:
         super().__init__(
             num_classes=num_classes,  # NOTE: Ideally this should be set to 2 always

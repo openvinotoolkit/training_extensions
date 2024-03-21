@@ -17,7 +17,7 @@ from lightning.pytorch.cli import instantiate_class
 from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
 from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OVModel
+from otx.core.model.base import OVModel
 from otx.core.types import PathLike
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
 
-    from otx.core.model.entity.base import OTXModel
+    from otx.core.model.base import OTXModel
 
 
 logger = logging.getLogger()
@@ -72,16 +72,16 @@ TASK_PER_DATA_FORMAT = {
 }
 
 OVMODEL_PER_TASK = {
-    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.entity.classification.OVMulticlassClassificationModel",
-    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.entity.classification.OVMultilabelClassificationModel",
-    OTXTaskType.H_LABEL_CLS: "otx.core.model.entity.classification.OVHlabelClassificationModel",
-    OTXTaskType.DETECTION: "otx.core.model.entity.detection.OVDetectionModel",
-    OTXTaskType.ROTATED_DETECTION: "otx.core.model.entity.rotated_detection.OVRotatedDetectionModel",
-    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel",
-    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.entity.segmentation.OVSegmentationModel",
-    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVVisualPromptingModel",
-    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.entity.visual_prompting.OVZeroShotVisualPromptingModel",
-    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.entity.action_classification.OVActionClsModel",
+    OTXTaskType.MULTI_CLASS_CLS: "otx.core.model.classification.OVMulticlassClassificationModel",
+    OTXTaskType.MULTI_LABEL_CLS: "otx.core.model.classification.OVMultilabelClassificationModel",
+    OTXTaskType.H_LABEL_CLS: "otx.core.model.classification.OVHlabelClassificationModel",
+    OTXTaskType.DETECTION: "otx.core.model.detection.OVDetectionModel",
+    OTXTaskType.ROTATED_DETECTION: "otx.core.model.rotated_detection.OVRotatedDetectionModel",
+    OTXTaskType.INSTANCE_SEGMENTATION: "otx.core.model.instance_segmentation.OVInstanceSegmentationModel",
+    OTXTaskType.SEMANTIC_SEGMENTATION: "otx.core.model.segmentation.OVSegmentationModel",
+    OTXTaskType.VISUAL_PROMPTING: "otx.core.model.visual_prompting.OVVisualPromptingModel",
+    OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.visual_prompting.OVZeroShotVisualPromptingModel",
+    OTXTaskType.ACTION_CLASSIFICATION: "otx.core.model.action_classification.OVActionClsModel",
     OTXTaskType.ANOMALY_CLASSIFICATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.ANOMALY_DETECTION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
     OTXTaskType.ANOMALY_SEGMENTATION: "otx.algo.anomaly.openvino_model.AnomalyOpenVINO",
