@@ -4,6 +4,13 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.5.2 (1Q24)
+-------------
+
+- Remove polygon clipping code
+- Hotfix default memcache size to 100MB
+
+
 v1.5.0 (4Q23)
 -------------
 
