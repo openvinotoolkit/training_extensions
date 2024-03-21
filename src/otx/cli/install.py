@@ -71,7 +71,7 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
 def otx_install(
     option: str | None = None,
     verbose: bool = False,
-    do_not_install_torch: bool = False
+    do_not_install_torch: bool = False,
 ) -> int:
     """Install OTX requirements.
 
