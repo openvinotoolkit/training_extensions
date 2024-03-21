@@ -540,7 +540,6 @@ class OVInstanceSegmentationModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "MaskRCNN",
         async_inference: bool = True,
@@ -552,7 +551,6 @@ class OVInstanceSegmentationModel(
     ) -> None:
         self.test_meta_info: dict[str, Any] = {}
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,

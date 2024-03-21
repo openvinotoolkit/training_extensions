@@ -21,6 +21,7 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
+from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 
@@ -410,6 +411,8 @@ class OTXCLI:
         from otx.core.model.base import OTXModel
         from otx.core.utils.instantiators import partial_instantiate_class
 
+        skip = set()
+
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
             num_classes = self.datamodule.label_info.num_classes
@@ -422,13 +425,10 @@ class OTXCLI:
                 warn(warning_msg, stacklevel=0)
                 model_config.init_args.num_classes = num_classes
 
-            # Hlabel classification
-            from otx.core.types.label import HLabelInfo
-
             if isinstance(self.datamodule.label_info, HLabelInfo):
                 hlabel_info = self.datamodule.label_info
-                model_config.init_args.num_multiclass_heads = hlabel_info.num_multiclass_heads
-                model_config.init_args.num_multilabel_classes = hlabel_info.num_multilabel_classes
+                model_config.init_args.hlabel_info = hlabel_info
+                skip.add("hlabel_info")
 
         optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
         optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
@@ -454,7 +454,7 @@ class OTXCLI:
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
-        model_parser.add_subclass_arguments(OTXModel, "model", required=False, fail_untyped=False)
+        model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
         model = model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
         self.config_init[self.subcommand]["model"] = model
 

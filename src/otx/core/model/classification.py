@@ -582,19 +582,21 @@ class OTXHlabelClsModel(
 
     def __init__(
         self,
-        num_classes: int,
+        hlabel_info: HLabelInfo,
         optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
+            num_classes=hlabel_info.num_classes,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
+        # NOTE: This should be behind of super().__init__() to avoid overwriting
+        self._label_info = hlabel_info
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -603,16 +605,7 @@ class OTXHlabelClsModel(
         hierarchical_config: dict = {}
 
         label_info: HLabelInfo = self.label_info  # type: ignore[assignment]
-        hierarchical_config["cls_heads_info"] = {
-            "num_multiclass_heads": label_info.num_multiclass_heads,
-            "num_multilabel_classes": label_info.num_multilabel_classes,
-            "head_idx_to_logits_range": label_info.head_idx_to_logits_range,
-            "num_single_label_classes": label_info.num_single_label_classes,
-            "class_to_group_idx": label_info.class_to_group_idx,
-            "all_groups": label_info.all_groups,
-            "label_to_idx": label_info.label_to_idx,
-            "empty_multiclass_head_indices": label_info.empty_multiclass_head_indices,
-        }
+        hierarchical_config["cls_heads_info"] = label_info.as_dict()
         hierarchical_config["label_tree_edges"] = label_info.label_tree_edges
 
         parameters["metadata"].update(
@@ -623,6 +616,9 @@ class OTXHlabelClsModel(
                 ("model_info", "hierarchical"): str(True),
                 ("model_info", "confidence_threshold"): str(0.5),
                 ("model_info", "hierarchical_config"): json.dumps(hierarchical_config),
+                # NOTE: There is currently too many channels for label related metadata.
+                # This should be clean up afterwards in ModelAPI side.
+                ("model_info", "label_info"): json.dumps(label_info.as_dict()),
             },
         )
         return parameters
@@ -632,9 +628,11 @@ class OTXHlabelClsModel(
         preds: HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI,
         inputs: HlabelClsBatchDataEntity,
     ) -> MetricInput:
-        if self.num_multilabel_classes > 0:
-            preds_multiclass = torch.stack(preds.labels)[:, : self.num_multiclass_heads]
-            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads :]
+        hlabel_info: HLabelInfo = self.label_info  # type: ignore[assignment]
+
+        if hlabel_info.num_multilabel_classes > 0:
+            preds_multiclass = torch.stack(preds.labels)[:, : hlabel_info.num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, hlabel_info.num_multiclass_heads :]
             pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
         else:
             pred_result = torch.stack(preds.labels)
@@ -642,20 +640,6 @@ class OTXHlabelClsModel(
             "preds": pred_result,
             "target": torch.stack(inputs.labels),
         }
-
-    @property  # type: ignore[override]
-    def label_info(self) -> HLabelInfo:
-        """Get the hierarchical model label information."""
-        return self._label_info  # type: ignore[return-value]
-
-    @label_info.setter
-    def label_info(self, label_info: HLabelInfo) -> None:
-        """Set the hierarchical model label information.
-
-        Args:
-            hierarchical_info: the label information represents the hierarchy.
-        """
-        self._label_info = label_info
 
 
 class MMPretrainHlabelClsModel(OTXHlabelClsModel):
@@ -668,34 +652,31 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
 
     def __init__(
         self,
-        num_classes: int,
+        hlabel_info: HLabelInfo,
         config: DictConfig,
         optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
-        config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config = inplace_num_classes(cfg=config, num_classes=hlabel_info.num_classes)
+
+        if (head_config := getattr(config, "head", None)) is None:
+            msg = 'Config should have "head" section'
+            raise ValueError(msg)
+
+        head_config.update(**hlabel_info.as_head_config_dict())
+
         self.config = config
         self.load_from = config.pop("load_from", None)
         self.image_size = (1, 3, 224, 224)
         super().__init__(
-            num_classes=num_classes,
+            hlabel_info=hlabel_info,
             optimizer=optimizer,
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    @OTXHlabelClsModel.label_info.setter  # type: ignore[attr-defined]
-    def label_info(self, label_info: HLabelInfo) -> None:
-        """Set the hierarchical model label information and update the model head as well.
-
-        Args:
-            hierarchical_info: the label information represents the hierarchy.
-        """
-        self._label_info = label_info
-        self.model.head.set_hlabel_info(label_info)
 
     def _create_model(self) -> nn.Module:
         from .utils.mmpretrain import create_model
@@ -821,7 +802,6 @@ class OVMulticlassClassificationModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Classification",
         async_inference: bool = True,
@@ -832,7 +812,6 @@ class OVMulticlassClassificationModel(
         **kwargs,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -898,7 +877,6 @@ class OVMultilabelClassificationModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Classification",
         async_inference: bool = True,
@@ -911,7 +889,6 @@ class OVMultilabelClassificationModel(
         model_api_configuration = model_api_configuration if model_api_configuration else {}
         model_api_configuration.update({"multilabel": True, "confidence_threshold": 0.0})
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -974,24 +951,18 @@ class OVHlabelClassificationModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Classification",
         async_inference: bool = True,
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        num_multiclass_heads: int = 1,
-        num_multilabel_classes: int = 0,
         metric: MetricCallable = HLabelClsMetricCallble,
         **kwargs,
     ) -> None:
-        self.num_multiclass_heads = num_multiclass_heads
-        self.num_multilabel_classes = num_multilabel_classes
         model_api_configuration = model_api_configuration if model_api_configuration else {}
         model_api_configuration.update({"hierarchical": True, "output_raw_scores": True})
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -1000,16 +971,6 @@ class OVHlabelClassificationModel(
             model_api_configuration=model_api_configuration,
             metric=metric,
         )
-
-    def set_hlabel_info(self, hierarchical_info: HLabelInfo) -> None:
-        """Set hierarchical information in model head.
-
-        Since OV IR model consist of all required hierarchy information,
-        this method serves as placeholder
-        """
-        if not hasattr(self.model, "hierarchical_info") or not self.model.hierarchical_info:
-            msg = "OpenVINO IR model should have hierarchical config embedded in rt_info of the model"
-            raise ValueError(msg)
 
     def _customize_outputs(
         self,
@@ -1073,9 +1034,12 @@ class OVHlabelClassificationModel(
         preds: HlabelClsBatchPredEntity | HlabelClsBatchPredEntityWithXAI,
         inputs: HlabelClsBatchDataEntity,
     ) -> MetricInput:
-        if self.num_multilabel_classes > 0:
-            preds_multiclass = torch.stack(preds.labels)[:, : self.num_multiclass_heads]
-            preds_multilabel = torch.stack(preds.scores)[:, self.num_multiclass_heads :]
+        cls_heads_info = self.model.hierarchical_info["cls_heads_info"]
+        num_multilabel_classes = cls_heads_info["num_multilabel_classes"]
+        num_multiclass_heads = cls_heads_info["num_multiclass_heads"]
+        if num_multilabel_classes > 0:
+            preds_multiclass = torch.stack(preds.labels)[:, :num_multiclass_heads]
+            preds_multilabel = torch.stack(preds.scores)[:, num_multiclass_heads:]
             pred_result = torch.cat([preds_multiclass, preds_multilabel], dim=1)
         else:
             pred_result = torch.stack(preds.labels)
@@ -1083,3 +1047,13 @@ class OVHlabelClassificationModel(
             "preds": pred_result,
             "target": torch.stack(inputs.labels),
         }
+
+    def _create_label_info_from_ov_ir(self) -> HLabelInfo:
+        ov_model = self.model.get_model()
+
+        if ov_model.has_rt_info(["model_info", "label_info"]):
+            serialized = ov_model.get_rt_info(["model_info", "label_info"]).value
+            return HLabelInfo.from_json(serialized)
+
+        msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
+        raise ValueError(msg)

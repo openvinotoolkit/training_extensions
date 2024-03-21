@@ -15,6 +15,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.types.label import HLabelInfo
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -27,22 +28,16 @@ class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
 
     def __init__(
         self,
-        num_classes: int,
-        num_multiclass_heads: int,
-        num_multilabel_classes: int,
+        hlabel_info: HLabelInfo,
         optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
-        self.num_multiclass_heads = num_multiclass_heads
-        self.num_multilabel_classes = num_multilabel_classes
-
         config = read_mmconfig(model_name="efficientnet_b0_light", subdir_name="hlabel_classification")
-        config.head.num_multiclass_heads = num_multiclass_heads
-        config.head.num_multilabel_classes = num_multilabel_classes
+
         super().__init__(
-            num_classes=num_classes,
+            hlabel_info=hlabel_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

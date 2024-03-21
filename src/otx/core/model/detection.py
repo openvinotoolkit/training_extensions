@@ -494,7 +494,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "SSD",
         async_inference: bool = True,
@@ -506,7 +505,6 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
     ) -> None:
         self.test_meta_info: dict[str, Any] = {}
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,

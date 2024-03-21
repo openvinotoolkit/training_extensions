@@ -5,16 +5,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import torch
 from mmengine.model import BaseModule, constant_init, normal_init
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from torch import nn
-
-if TYPE_CHECKING:
-    from otx.core.types.label import HLabelInfo
 
 
 @MODELS.register_module()
@@ -24,6 +19,10 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
     Args:
         num_multiclass_heads (int): Number of multi-class heads.
         num_multilabel_classes (int): Number of multi-label classes.
+        head_idx_to_logits_range: the logit range of each heads
+        num_single_label_classes: the number of single label classes
+        empty_multiclass_head_indices: the index of head that doesn't include any label
+            due to the label removing
         in_channels (int): Number of channels in the input feature map.
         num_classes (int): Number of total classes.
         multiclass_loss (dict | None): Config of multi-class loss.
@@ -40,6 +39,9 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         self,
         num_multiclass_heads: int,
         num_multilabel_classes: int,
+        head_idx_to_logits_range: dict[str, tuple[int, int]],
+        num_single_label_classes: int,
+        empty_multiclass_head_indices: list[int],
         in_channels: int,
         num_classes: int,
         multiclass_loss_cfg: dict | None = None,
@@ -53,6 +55,9 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         super().__init__()
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
+        self.head_idx_to_logits_range = head_idx_to_logits_range
+        self.num_single_label_classes = num_single_label_classes
+        self.empty_multiclass_head_indices = empty_multiclass_head_indices
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.thr = thr
@@ -105,19 +110,15 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)
 
-    def set_hlabel_info(self, hlabel_info: HLabelInfo) -> None:
-        """Set hlabel information."""
-        self.hlabel_info = hlabel_info
-
     def _get_gt_label(self, data_samples: list[DataSample]) -> torch.Tensor:
         """Get gt labels from data samples."""
         return torch.stack([data_sample.gt_label for data_sample in data_samples])
 
-    def _get_head_idx_to_logits_range(self, hlabel_info: HLabelInfo, idx: int) -> tuple[int, int]:
+    def _get_head_idx_to_logits_range(self, idx: int) -> tuple[int, int]:
         """Get head_idx_to_logits_range information from hlabel information."""
         return (
-            hlabel_info.head_idx_to_logits_range[str(idx)][0],
-            hlabel_info.head_idx_to_logits_range[str(idx)][1],
+            self.head_idx_to_logits_range[str(idx)][0],
+            self.head_idx_to_logits_range[str(idx)][1],
         )
 
     def loss(self, feats: tuple[torch.Tensor], data_samples: list[DataSample], **kwargs) -> dict:
@@ -144,9 +145,9 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         # Multiclass loss
         num_effective_heads_in_batch = 0  # consider the label removal case
         for i in range(self.num_multiclass_heads):
-            if i not in self.hlabel_info.empty_multiclass_head_indices:
+            if i not in self.empty_multiclass_head_indices:
                 head_gt = gt_labels[:, i]
-                logit_range = self._get_head_idx_to_logits_range(self.hlabel_info, i)
+                logit_range = self._get_head_idx_to_logits_range(i)
                 head_logits = cls_scores[:, logit_range[0] : logit_range[1]]
                 valid_mask = head_gt >= 0
 
@@ -161,15 +162,15 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
 
         # Multilabel loss
         if self.num_multilabel_classes > 0:
-            head_gt = gt_labels[:, self.hlabel_info.num_multiclass_heads :]
-            head_logits = cls_scores[:, self.hlabel_info.num_single_label_classes :]
+            head_gt = gt_labels[:, self.num_multiclass_heads :]
+            head_logits = cls_scores[:, self.num_single_label_classes :]
             valid_mask = head_gt > 0
             head_gt = head_gt[valid_mask]
             if len(head_gt) > 0:
                 img_metas = [data_sample.metainfo for data_sample in data_samples]
                 head_logits = head_logits[valid_mask]
                 valid_label_mask = self.get_valid_label_mask(img_metas).to(head_logits.device)
-                valid_label_mask = valid_label_mask[:, self.hlabel_info.num_single_label_classes :]
+                valid_label_mask = valid_label_mask[:, self.num_single_label_classes :]
                 valid_label_mask = valid_label_mask[valid_mask]
                 losses["loss"] += self.multilabel_loss(head_logits, head_gt, valid_label_mask=valid_label_mask)
 
@@ -214,7 +215,7 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         multiclass_pred_scores = []
         multiclass_pred_labels = []
         for i in range(self.num_multiclass_heads):
-            logit_range = self._get_head_idx_to_logits_range(self.hlabel_info, i)
+            logit_range = self._get_head_idx_to_logits_range(i)
             multiclass_logit = cls_scores[:, logit_range[0] : logit_range[1]]
             multiclass_pred = torch.softmax(multiclass_logit, dim=1)
             multiclass_pred_score, multiclass_pred_label = torch.max(multiclass_pred, dim=1)
@@ -226,7 +227,7 @@ class CustomHierarchicalNonLinearClsHead(BaseModule):
         multiclass_pred_labels = torch.cat(multiclass_pred_labels, dim=1)
 
         if self.num_multilabel_classes > 0:
-            multilabel_logits = cls_scores[:, self.hlabel_info.num_single_label_classes :]
+            multilabel_logits = cls_scores[:, self.num_single_label_classes :]
 
             multilabel_pred_scores = torch.sigmoid(multilabel_logits)
             multilabel_pred_labels = (multilabel_pred_scores >= self.thr).int()

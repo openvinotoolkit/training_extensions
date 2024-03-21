@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
@@ -18,6 +19,7 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import DiceCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.types.label import SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
@@ -226,7 +228,6 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Segmentation",
         async_inference: bool = True,
@@ -237,7 +238,6 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
         **kwargs,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -285,3 +285,13 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
             }
             for pred_mask, target_mask in zip(preds.masks, inputs.masks)
         ]
+
+    def _create_label_info_from_ov_ir(self) -> SegLabelInfo:
+        ov_model = self.model.get_model()
+
+        if ov_model.has_rt_info(["model_info", "label_info"]):
+            label_info = json.loads(ov_model.get_rt_info(["model_info", "label_info"]).value)
+            return SegLabelInfo(**label_info)
+
+        msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
+        raise ValueError(msg)

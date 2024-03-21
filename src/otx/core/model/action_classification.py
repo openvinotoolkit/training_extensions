@@ -210,7 +210,6 @@ class OVActionClsModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Action Classification",
         async_inference: bool = True,
@@ -221,7 +220,6 @@ class OVActionClsModel(
         **kwargs,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,

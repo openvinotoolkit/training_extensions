@@ -1,9 +1,5 @@
 model:
   class_path: otx.algo.classification.deit_tiny.DeitTinyForHLabelCls
-  init_args:
-    num_classes: 1000
-    num_multiclass_heads: 0
-    num_multilabel_classes: 0
 
 optimizer:
   class_path: torch.optim.AdamW
