@@ -403,8 +403,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
             output_dict[idx] = result
 
         numpy_inputs = self._customize_inputs(inputs)["inputs"]
-        start_time = time.time()
-        num_samples = len(numpy_inputs)
         if self.async_inference:
             output_dict: dict[int, NamedTuple] = {}
             self.model.set_callback(_callback)
@@ -413,8 +411,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
                     self.model.await_any()
                 self.model.infer_async(im, user_data=idx)
             self.model.await_all()
-            print("FPS:", num_samples / (time.time() - start_time))
-            print("Time per sample:", (time.time() - start_time) / num_samples)
             outputs = [out[1] for out in sorted(output_dict.items())]
         else:
             outputs = [self.model(im) for im in numpy_inputs]
