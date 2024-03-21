@@ -425,7 +425,7 @@ def pad_points(
 ) -> tuple[torch.Tensor, tuple[int, int]]:
     """Pad points."""
     if padding_mode not in ["constant"]:
-        # TODO(sungchul): add support of other padding modes # noqa: TD003
+        # TODO(sungchul): add support of other padding modes
         raise ValueError(f"Padding mode '{padding_mode}' is not supported with bounding boxes")  # noqa: EM102, TRY003
 
     left, right, top, bottom = F._geometry._parse_pad_padding(padding)  # noqa: SLF001
@@ -639,18 +639,6 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         return self
 
 
-T_OTXBatchPredEntity = TypeVar(
-    "T_OTXBatchPredEntity",
-    bound="OTXBatchPredEntity",
-)
-
-
-T_OTXBatchPredEntityWithXAI = TypeVar(
-    "T_OTXBatchPredEntityWithXAI",
-    bound="OTXBatchPredEntityWithXAI",
-)
-
-
 @dataclass
 class OTXBatchPredEntity(OTXBatchDataEntity):
     """Data entity to represent model output predictions."""
@@ -666,11 +654,23 @@ class OTXBatchPredEntityWithXAI(OTXBatchPredEntity):
     feature_vectors: list[np.ndarray] | list[Tensor]
 
 
-T_OTXBatchLossEntity = TypeVar(
-    "T_OTXBatchLossEntity",
-    bound="OTXBatchLossEntity",
+class OTXBatchLossEntity(Dict[str, Tensor]):
+    """Data entity to represent model output losses."""
+
+
+T_OTXBatchPredEntity = TypeVar(
+    "T_OTXBatchPredEntity",
+    bound=OTXBatchPredEntity,
 )
 
 
-class OTXBatchLossEntity(Dict[str, Tensor]):
-    """Data entity to represent model output losses."""
+T_OTXBatchPredEntityWithXAI = TypeVar(
+    "T_OTXBatchPredEntityWithXAI",
+    bound=OTXBatchPredEntityWithXAI,
+)
+
+
+T_OTXBatchLossEntity = TypeVar(
+    "T_OTXBatchLossEntity",
+    bound=OTXBatchLossEntity,
+)

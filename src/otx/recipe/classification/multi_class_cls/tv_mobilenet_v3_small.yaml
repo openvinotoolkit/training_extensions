@@ -17,12 +17,6 @@ scheduler:
     T_max: 100000
     eta_min: 0
 
-metric:
-  class_path: torchmetrics.classification.accuracy.Accuracy
-  init_args:
-    task: multiclass
-    num_classes: 1000
-
 engine:
   task: MULTI_CLASS_CLS
   device: auto

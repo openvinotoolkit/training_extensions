@@ -25,7 +25,7 @@ def fxt_inputs():
 
 class TestOTXTVModel:
     def test_create_model(self, fxt_tv_model):
-        assert isinstance(fxt_tv_model._create_model(), TVModelWithLossComputation)
+        assert isinstance(fxt_tv_model.model, TVModelWithLossComputation)
 
     def test_customize_inputs(self, fxt_tv_model, fxt_inputs):
         outputs = fxt_tv_model._customize_inputs(fxt_inputs)
@@ -68,3 +68,8 @@ class TestOTXTVModel:
         x = torch.randn(16, 2048)
         output = fxt_tv_model.head_forward_fn(x)
         assert output.shape == (16, 10)
+
+    def test_freeze_backbone(self):
+        freezed_model = OTXTVModel(backbone="resnet50", num_classes=10, freeze_backbone=True)
+        for param in freezed_model.model.backbone.parameters():
+            assert not param.requires_grad

@@ -47,7 +47,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
     def __init__(self, with_point: bool = False, **kwargs):
         super().__init__(**kwargs)
         if with_point:
-            # TODO(sungchul): add point prompts in mmx # noqa: TD003
+            # TODO(sungchul): add point prompts in mmx
             log.info("with_point for mmx is not supported yet, changed to False.")
             with_point = False
         self.with_point = with_point
@@ -76,7 +76,7 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_masks = self._generate_gt_masks(otx_data_entity, height, width)
             results["gt_masks"] = gt_masks
         if self.with_point and isinstance(otx_data_entity, (VisualPromptingDataEntity)):
-            # TODO(sungchul): add point prompts in mmx # noqa: TD003
+            # TODO(sungchul): add point prompts in mmx
             # gt_points = otx_data_entity.points.numpy()
             # results["gt_points"] = gt_points
             pass

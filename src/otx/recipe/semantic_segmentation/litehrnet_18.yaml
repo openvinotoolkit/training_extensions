@@ -24,11 +24,6 @@ scheduler:
       patience: 4
       monitor: val/Dice
 
-metric:
-  class_path: torchmetrics.Dice
-  init_args:
-    num_classes: 2
-
 engine:
   task: SEMANTIC_SEGMENTATION
   device: auto

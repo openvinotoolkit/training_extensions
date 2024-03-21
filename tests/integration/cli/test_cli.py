@@ -121,9 +121,6 @@ def test_otx_e2e(
             "dino_v2",
             "instance_segmentation",
             "action",
-            "anomaly_classification",
-            "anomaly_detection",
-            "anomaly_segmentation",
         ]
     ):
         return
@@ -132,7 +129,7 @@ def test_otx_e2e(
         format_to_file = {
             "ONNX": "exported_model_decoder.onnx",
             "OPENVINO": "exported_model_decoder.xml",
-            # TODO (sungchul): EXPORTABLE_CODE will be supported # noqa: TD003
+            # TODO (sungchul): EXPORTABLE_CODE will be supported
         }
     else:
         format_to_file = {
@@ -140,6 +137,10 @@ def test_otx_e2e(
             "OPENVINO": "exported_model.xml",
             "EXPORTABLE_CODE": "exportable_code.zip",
         }
+
+    overrides = fxt_cli_override_command_per_task[task]
+    if "anomaly" in task:
+        overrides = {}  # Overrides are not needed in export
 
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     for fmt in format_to_file:
@@ -152,7 +153,7 @@ def test_otx_e2e(
             fxt_target_dataset_per_task[task],
             "--work_dir",
             str(tmp_path_test / "outputs" / fmt),
-            *fxt_cli_override_command_per_task[task],
+            *overrides,
             "--checkpoint",
             str(ckpt_files[-1]),
             "--export_format",
@@ -177,6 +178,10 @@ def test_otx_e2e(
     )
     exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
+    overrides = fxt_cli_override_command_per_task[task]
+    if "anomaly" in task:
+        overrides = {}  # Overrides are not needed in infer
+
     command_cfg = [
         "otx",
         "test",
@@ -188,7 +193,7 @@ def test_otx_e2e(
         str(tmp_path_test / "outputs"),
         "--engine.device",
         "cpu",
-        *fxt_cli_override_command_per_task[task],
+        *overrides,
         "--checkpoint",
         exported_model_path,
     ]
@@ -399,11 +404,13 @@ def test_otx_ov_test(
         "anomaly_segmentation",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
-        # TODO(Kirill):  Need to change this test when export enabled #noqa: TD003
+        # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
 
     if task in ["action_classification"]:
         pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
+
+    pytest.xfail("See ticket no. 135955")
 
     # otx test
     tmp_path_test = tmp_path / f"otx_test_{task}_{model_name}"

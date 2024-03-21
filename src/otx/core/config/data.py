@@ -53,7 +53,7 @@ class SubsetConfig:
     batch_size: int
     subset_name: str
 
-    # TODO (vinnamki): Revisit data configuration objects to support a union type in structured config # noqa: TD003
+    # TODO (vinnamki): Revisit data configuration objects to support a union type in structured config
     # Omegaconf does not allow to have a union type, https://github.com/omry/omegaconf/issues/144
     transforms: list[dict[str, Any]]
 

@@ -411,7 +411,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        # TODO(gzalessk): Add unit tests # noqa: TD003
+        # TODO(gzalessk): Add unit tests
         batch_saliency_maps = []
         for prediction in predictions:
             class_averaged_masks = self.average_and_normalize(prediction, self.num_classes)

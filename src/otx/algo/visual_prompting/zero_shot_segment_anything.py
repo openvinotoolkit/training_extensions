@@ -30,10 +30,15 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
+from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
 
 if TYPE_CHECKING:
     import numpy as np
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class PromptGetter(nn.Module):
@@ -251,7 +256,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         largest_label = max(sum([[int(p) for p in prompt] for prompt in processed_prompts], []))
         reference_feats = self.expand_reference_info(reference_feats, largest_label)
         new_used_indices: list[Tensor] = []
-        # TODO (sungchul): consider how to handle multiple reference features, currently replace it # noqa: TD003
+        # TODO (sungchul): consider how to handle multiple reference features, currently replace it
 
         reference_masks: list[Tensor] = []
         for image, prompts, ori_shape in zip(images, processed_prompts, ori_shapes):
@@ -260,15 +265,13 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             ref_masks = torch.zeros(largest_label + 1, *map(int, ori_shape))
             for label, input_prompts in prompts.items():
-                # TODO (sungchul): how to skip background class # noqa: TD003
-                # TODO (sungchul): ensemble multi reference features (current : use merged masks) # noqa: TD003
+                # TODO (sungchul): how to skip background class
+                # TODO (sungchul): ensemble multi reference features (current : use merged masks)
                 ref_mask = torch.zeros(*map(int, ori_shape), dtype=torch.uint8, device=image.device)
                 for input_prompt in input_prompts:
                     if isinstance(input_prompt, tv_tensors.Mask):
                         # directly use annotation information as a mask
-                        ref_mask[
-                            input_prompt == 1
-                        ] += 1  # TODO (sungchul): check if the mask is bool or int # noqa: TD003
+                        ref_mask[input_prompt == 1] += 1  # TODO (sungchul): check if the mask is bool or int
                     else:
                         if isinstance(input_prompt, BoundingBoxes):
                             point_coords = input_prompt.reshape(-1, 2, 2)
@@ -279,8 +282,8 @@ class ZeroShotSegmentAnything(SegmentAnything):
                         elif isinstance(
                             input_prompt,
                             dmPolygon,
-                        ):  # TODO (sungchul): add other polygon types # noqa: TD003
-                            # TODO (sungchul): convert polygon to mask # noqa: TD003
+                        ):  # TODO (sungchul): add other polygon types
+                            # TODO (sungchul): convert polygon to mask
                             continue
                         else:
                             log.info(f"Current input prompt ({input_prompt.__class__.__name__}) is not supported.")
@@ -466,7 +469,16 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif i == 1:
                 # Cascaded Post-refinement-1
-                mask_input, best_masks = self._decide_cascade_results(masks, logits, scores, is_single=True)  # noqa: F821
+                # TODO (sungchul2): Fix the following ruff errors, ticket no. 135852
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:473:21: F821 Undefined name `masks`
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:474:21: F821 Undefined name `logits`
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:475:21: F821 Undefined name `scores`
+                mask_input, best_masks = self._decide_cascade_results(
+                    masks,  # noqa: F821
+                    logits,  # noqa: F821
+                    scores,  # noqa: F821
+                    is_single=True,
+                )
                 if best_masks.sum() == 0:
                     return best_masks
 
@@ -474,6 +486,10 @@ class ZeroShotSegmentAnything(SegmentAnything):
 
             elif i == 2:
                 # Cascaded Post-refinement-2
+                # TODO (sungchul2): Fix the following ruff errors, ticket no. 135852
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:475:21: F821 Undefined name `masks`
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:476:21: F821 Undefined name `logits`
+                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:477:21: F821 Undefined name `scores`
                 mask_input, best_masks = self._decide_cascade_results(masks, logits, scores)  # noqa: F821
                 if best_masks.sum() == 0:
                     return best_masks
@@ -600,7 +616,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
         return logits[:, [best_idx]], masks[0, best_idx]
 
 
-class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
+class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
     def __init__(
@@ -611,10 +627,20 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
         save_outputs: bool = True,
         pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
         pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
         **kwargs,
     ):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
         self.save_outputs = save_outputs
         self.root_reference_info: Path = Path(root_reference_info)
@@ -837,16 +863,20 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
         if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
             latest_reference_info = self.root_reference_info / latest_stamp / "reference_info.pt"
             reference_info = torch.load(latest_reference_info)
-            self.register_buffer(
-                "reference_feats",
-                reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device),
-                False,
-            )
-            self.register_buffer(
-                "used_indices",
-                reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device),
-                False,
-            )
+            retval = True
             log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
-            return True
-        return False
+        else:
+            reference_info = {}
+            retval = False
+
+        self.register_buffer(
+            "reference_feats",
+            reference_info.get("reference_feats", torch.zeros(0, 1, self.model.embed_dim)).to(device),
+            False,
+        )
+        self.register_buffer(
+            "used_indices",
+            reference_info.get("used_indices", torch.tensor([], dtype=torch.int64)).to(device),
+            False,
+        )
+        return retval
