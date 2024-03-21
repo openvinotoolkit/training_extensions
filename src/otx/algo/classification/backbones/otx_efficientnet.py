@@ -646,9 +646,13 @@ class OTXEfficientNet(EfficientNet):
         )
         self.init_weights(self.pretrained)
 
-    def forward(self, x):
+    def forward(self, x, return_featuremaps=True, get_embeddings=False):
         """Forward."""
-        return super().forward(x, return_featuremaps=True)
+        return super().forward(
+            x, 
+            return_featuremaps=return_featuremaps,
+            get_embeddings=get_embeddings
+        )
 
     def init_weights(self, pretrained=None):
         """Initialize weights."""
