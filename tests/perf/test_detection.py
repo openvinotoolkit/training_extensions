@@ -31,8 +31,6 @@ class TestPerfObjectDetection(PerfTestBase):
             name=f"pothole_small_{idx}",
             path=Path("detection/pothole_small") / f"{idx}",
             group="small",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -47,8 +45,6 @@ class TestPerfObjectDetection(PerfTestBase):
             name="pothole_medium",
             path=Path("detection/pothole_medium"),
             group="medium",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -61,8 +57,6 @@ class TestPerfObjectDetection(PerfTestBase):
             name="vitens_large",
             path=Path("detection/vitens_large"),
             group="large",
-            data_format="coco",
-            num_classes=1,
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
