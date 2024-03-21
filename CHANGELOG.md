@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 > **NOTES**
 >
-> OpenVINO™ Training Extension v1.5.1 does not include the latest functional and security updates. OpenVINO™ Training Extension v2.0.0 is targeted to be released in April 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+> OpenVINO™ Training Extension v1.5.2 does not include the latest functional and security updates. OpenVINO™ Training Extension v2.0.0 is targeted to be released in April 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
 ### Bug fixes
 
