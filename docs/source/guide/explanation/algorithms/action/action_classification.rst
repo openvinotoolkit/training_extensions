@@ -17,9 +17,9 @@ For supervised learning we use the following algorithms components:
 Dataset Format
 **************
 
-We support the popular action classification formats, such as `Jester <https://developer.qualcomm.com/software/ai-datasets/jester>`_, `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_, `UCF101 <https://www.crcv.ucf.edu/data/UCF101.php>`_. Specifically, these formats will be converted into our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/cvat_dataset/action_classification/train>`_ using the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+We support the popular action classification formats, `Kinetics <https://github.com/cvdfoundation/kinetics-dataset>`_ .
 
-The names of the annotations files and the overall dataset structure should be the same as the original dataset.
+The names of the annotations files and the overall dataset structure should be the same converted to Kinetics format from original dataset.
 
 Refer to our tutorial for more information on how to train, validate, and optimize action classification models.
 

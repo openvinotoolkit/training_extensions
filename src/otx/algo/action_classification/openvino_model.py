@@ -103,3 +103,7 @@ class OTXOVActionCls(Model):
         """Post-process."""
         logits = next(iter(outputs.values())).squeeze()
         return get_multiclass_predictions(logits)
+
+    def _change_layout(self, inputs: np.ndarray) -> np.ndarray:
+        """Action classification task do not require layout change."""
+        return inputs
