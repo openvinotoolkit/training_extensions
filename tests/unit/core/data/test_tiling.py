@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import create_autospec
 
 import numpy as np
 import pytest
@@ -20,10 +21,15 @@ from otx.core.data.dataset.tile import OTXTileTransform
 from otx.core.data.entity.detection import DetBatchDataEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
+from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.types.task import OTXTaskType
 
 
 class TestOTXTiling:
+    @pytest.fixture()
+    def mock_otx_det_model(self) -> OTXDetectionModel:
+        return create_autospec(OTXDetectionModel)
+
     @pytest.fixture()
     def fxt_mmcv_det_transform_config(self) -> list[DictConfig]:
         mmdet_base = OmegaConf.load("src/otx/recipe/_base_/data/mmdet_base.yaml")
@@ -147,5 +153,13 @@ class TestOTXTiling:
         for batch in tile_datamodule.val_dataloader():
             assert isinstance(batch, TileBatchDetDataEntity)
 
-    def test_tile_merge(self):
-        pytest.skip("Not implemented yet")
+    def test_tile_merge(self, fxt_det_data_config):
+        model = OTXDetectionModel(num_classes=3)
+        fxt_det_data_config.tile_config.enable_tiler = True
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            model.forward_tiles(batch)
