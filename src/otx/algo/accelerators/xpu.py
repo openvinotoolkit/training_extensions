@@ -10,7 +10,7 @@ import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
 
-from otx.utils.utils import is_xpu_available, patch_packages_xpu
+from otx.utils.utils import is_xpu_available, patch_packages_xpu, revert_packages_xpu
 
 
 class XPUAccelerator(Accelerator):
@@ -18,13 +18,13 @@ class XPUAccelerator(Accelerator):
 
     accelerator_name = "xpu"
 
-    def setup_device(self, device: torch.device) -> None:
+    def setup_device(self) -> None:
         """Sets up the specified device."""
-        if device.type != "xpu":
-            msg = f"Device should be xpu, got {device} instead"
+        if not is_xpu_available():
+            msg = f"XPU is not available. Please, check the environment."
             raise RuntimeError(msg)
 
-        torch.xpu.set_device(device)
+        torch.xpu.set_device("xpu:0")
         patch_packages_xpu()
 
 
@@ -56,6 +56,7 @@ class XPUAccelerator(Accelerator):
 
     def teardown(self) -> None:
         """Cleans-up XPU-related resources."""
+        revert_packages_xpu()
 
 
 AcceleratorRegistry.register(

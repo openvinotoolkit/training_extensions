@@ -145,10 +145,15 @@ def is_xpu_available() -> bool:
 def patch_packages_xpu(task: str | OTXTaskType, accelerator: str | DeviceType) -> None:
     """Patch packages when xpu is available."""
     import lightning.pytorch as pl
+    from lightning.pytorch.trainer.states import TrainerFn
+    from lightning.pytorch.core.optimizer import _init_optimizers_and_lr_schedulers
 
     def patched_setup_optimizers(self, trainer: pl.Trainer) -> None:
         """Sets up optimizers."""
-        super(SingleDeviceStrategy).setup_optimizers(trainer)
+        if trainer.state.fn != TrainerFn.FITTING:
+            return
+        assert self.lightning_module is not None
+        self.optimizers, self.lr_scheduler_configs = _init_optimizers_and_lr_schedulers(self.lightning_module)
         if len(self.optimizers) != 1:  # type: ignore[has-type]
             msg = "XPU strategy doesn't support multiple optimizers"
             raise RuntimeError(msg)
