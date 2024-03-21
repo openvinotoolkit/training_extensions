@@ -1,5 +1,5 @@
-Installation
-============
+:octicon:`package` Installation
+====================================
 
 **************
 Prerequisites
@@ -15,54 +15,46 @@ The current version of OpenVINO™ Training Extensions was tested in the followi
 Install OpenVINO™ Training Extensions for users
 ***********************************************
 
-1. Clone the training_extensions
-repository with the following command:
-
-.. code-block:: shell
-
-    git clone https://github.com/openvinotoolkit/training_extensions.git
-    cd training_extensions
-    git checkout develop
-
-2. Set up a
-virtual environment.
-
-.. code-block:: shell
-
-    # Create virtual env.
-    python -m venv .otx
-
-    # Activate virtual env.
-    source .otx/bin/activate
-
-3. Install OpenVINO™ Training Extensions package from either:
+1. Install OpenVINO™ Training Extensions package:
 
 * A local source in development mode
 
-.. code-block:: shell
+.. tab-set::
 
-    pip install -e .
+    .. tab-item:: PyPI
 
-* PyPI
+        .. code-block:: shell
 
-.. code-block:: shell
+            pip install otx
 
-    pip install otx
+    .. tab-item:: Source
 
-4. Install PyTorch & Requirements for training according to your system environment.
+        .. code-block:: shell
+
+            # Clone the training_extensions repository with the following command:
+            git clone https://github.com/openvinotoolkit/training_extensions.git
+            cd training_extensions
+
+            # Set up a virtual environment.
+            python -m venv .otx
+            source .otx/bin/activate
+
+            pip install -e .
+
+2. Install PyTorch & Requirements for training according to your system environment.
 
 .. code-block:: shell
 
     otx install -v
 
-[Optional] Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+[Optional] Refer to the `torch official installation guide <https://pytorch.org/get-started/previous-versions/>`_
 
 .. note::
 
     Currently, only torch==2.1.1 was fully validated. (older versions are not supported due to security issues).
 
 
-5. Once the package is installed in the virtual environment, you can use full
+3. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
 
 ****************************************************
@@ -141,7 +133,7 @@ Troubleshooting
 1. If you have problems when you try to use ``pip install`` command,
 please update pip version by following command:
 
-.. code-block::
+.. code-block:: shell
 
     python -m pip install --upgrade pip
 
@@ -155,3 +147,10 @@ please use pip with proxy call as demonstrated by command below:
 .. code-block:: shell
 
     python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+
+4. If you're facing a problem with CLI side of the OTX, please check the help message of the command by using ``--help`` option.
+If you still want to see more ``jsonargparse``-related messages, you can set the environment variables like below.
+
+.. code-block:: shell
+
+    export JSONARGPARSE_DEBUG=1 # 0: Off, 1: On
