@@ -382,7 +382,7 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
