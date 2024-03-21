@@ -98,7 +98,7 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
         num_multiclass_heads=3,
         num_multilabel_classes=3,
         head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
-        num_single_label_classes=3,
+        num_single_label_classes=6,
         empty_multiclass_head_indices=[],
         class_to_group_idx={
             "Heart": (0, 0),
