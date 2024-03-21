@@ -22,43 +22,43 @@ if TYPE_CHECKING:
     from lightning_fabric.utilities.types import _DEVICE
 
 
-# class SingleXPUStrategy(SingleDeviceStrategy):
-#     """Strategy for training on single XPU device."""
+class SingleXPUStrategy(SingleDeviceStrategy):
+    """Strategy for training on single XPU device."""
 
-#     strategy_name = "xpu_single"
+    strategy_name = "xpu_single"
 
-#     def __init__(
-#         self,
-#         device: _DEVICE = "xpu:0",
-#         accelerator: pl.accelerators.Accelerator | None = None,
-#         checkpoint_io: CheckpointIO | None = None,
-#         precision_plugin: PrecisionPlugin | None = None,
-#     ):
-#         if not is_xpu_available():
-#             msg = "`SingleXPUStrategy` requires XPU devices to run"
-#             raise MisconfigurationException(msg)
+    def __init__(
+        self,
+        device: _DEVICE = "xpu:0",
+        accelerator: pl.accelerators.Accelerator | None = None,
+        checkpoint_io: CheckpointIO | None = None,
+        precision_plugin: PrecisionPlugin | None = None,
+    ):
+        if not is_xpu_available():
+            msg = "`SingleXPUStrategy` requires XPU devices to run"
+            raise MisconfigurationException(msg)
 
-#         super().__init__(
-#             accelerator=accelerator,
-#             device=device,
-#             checkpoint_io=checkpoint_io,
-#             precision_plugin=precision_plugin,
-#         )
+        super().__init__(
+            accelerator=accelerator,
+            device=device,
+            checkpoint_io=checkpoint_io,
+            precision_plugin=precision_plugin,
+        )
 
-#     @property
-#     def is_distributed(self) -> bool:
-#         """Returns true if the strategy supports distributed training."""
-#         return False
+    @property
+    def is_distributed(self) -> bool:
+        """Returns true if the strategy supports distributed training."""
+        return False
 
-#     def setup_optimizers(self, trainer: pl.Trainer) -> None:
-#         """Sets up optimizers."""
-#         super().setup_optimizers(trainer)
-#         if len(self.optimizers) != 1:  # type: ignore[has-type]
-#             msg = "XPU strategy doesn't support multiple optimizers"
-#             raise RuntimeError(msg)
-#         model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
-#         self.optimizers = [optimizer]
-#         self.model = model
+    def setup_optimizers(self, trainer: pl.Trainer) -> None:
+        """Sets up optimizers."""
+        super().setup_optimizers(trainer)
+        if len(self.optimizers) != 1:  # type: ignore[has-type]
+            msg = "XPU strategy doesn't support multiple optimizers"
+            raise RuntimeError(msg)
+        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
+        self.optimizers = [optimizer]
+        self.model = model
 
 
 # StrategyRegistry.register(

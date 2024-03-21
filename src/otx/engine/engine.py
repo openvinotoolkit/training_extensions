@@ -26,6 +26,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
+from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
@@ -785,6 +786,8 @@ class Engine:
 
     @device.setter
     def device(self, device: DeviceType) -> None:
+        if is_xpu_available() and device == DeviceType.auto:
+            device = DeviceType.xpu
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
 

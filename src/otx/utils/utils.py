@@ -14,7 +14,6 @@ from mmengine.structures import instance_data
 from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
 
 from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
-
 import torch
 
 if TYPE_CHECKING:
@@ -173,6 +172,9 @@ def patch_packages_xpu(task: str | OTXTaskType, accelerator: str | DeviceType) -
 
 
 def revert_packages_xpu():
+    from mmcv.ops.nms import NMSop
+    from mmcv.ops.roi_align import RoIAlign
+    from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
     """Revert packages when xpu is available."""
     NMSop.forward = _nms_op_forward
     RoIAlign.forward = _roi_align_forward
