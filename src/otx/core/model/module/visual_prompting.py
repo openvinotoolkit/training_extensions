@@ -250,12 +250,13 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
         """Configure metrics."""
         self.test_metric = MetricCollection(
             {
-                "iou": BinaryJaccardIndex().to(self.device),
-                "f1-score": BinaryF1Score().to(self.device),
-                "dice": Dice().to(self.device),
-                "mAP": MeanAveragePrecision(iou_type="segm").to(self.device),
+                "iou": BinaryJaccardIndex(),
+                "f1-score": BinaryF1Score(),
+                "dice": Dice(),
+                "mAP": MeanAveragePrecision(iou_type="segm"),
             },
         )
+        self.test_metric.to(self.device)
 
     def on_train_start(self) -> None:
         """Initialize reference infos before learn."""

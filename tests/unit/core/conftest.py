@@ -177,7 +177,7 @@ def fxt_vpm_data_entity() -> (
     tuple[VisualPromptingDataEntity, VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]
 ):
     img_size = (1024, 1024)
-    fake_image = tv_tensors.Image(torch.rand(img_size))
+    fake_image = tv_tensors.Image(torch.ones(img_size))
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
     fake_bboxes = tv_tensors.BoundingBoxes(
         [[0, 0, 1, 1]],
@@ -186,9 +186,10 @@ def fxt_vpm_data_entity() -> (
         dtype=torch.float32,
     )
     fake_points = Points([[2, 2]], canvas_size=img_size, dtype=torch.float32)
-    fake_masks = tv_tensors.Mask(torch.rand(img_size))
+    fake_masks = tv_tensors.Mask(torch.ones(1, *img_size))
     fake_labels = {"bboxes": torch.as_tensor([1], dtype=torch.int64)}
     fake_polygons = [None]
+    fake_scores = torch.tensor([[1.0]])
     # define data entity
     single_data_entity = VisualPromptingDataEntity(
         image=fake_image,
@@ -218,7 +219,7 @@ def fxt_vpm_data_entity() -> (
         polygons=[fake_polygons],
         bboxes=[fake_bboxes],
         points=[fake_points],
-        scores=[],
+        scores=[fake_scores],
     )
 
     return single_data_entity, batch_data_entity, batch_pred_data_entity
@@ -233,7 +234,7 @@ def fxt_zero_shot_vpm_data_entity() -> (
     ]
 ):
     img_size = (1024, 1024)
-    fake_image = tv_tensors.Image(torch.rand(img_size))
+    fake_image = tv_tensors.Image(torch.ones(img_size))
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
     fake_bboxes = tv_tensors.BoundingBoxes(
         [[0, 0, 1, 1]],
@@ -242,9 +243,10 @@ def fxt_zero_shot_vpm_data_entity() -> (
         dtype=torch.float32,
     )
     fake_points = Points([[2, 2]], canvas_size=img_size, dtype=torch.float32)
-    fake_masks = tv_tensors.Mask(torch.rand(img_size))
-    fake_labels = torch.as_tensor([1], dtype=torch.int64)
+    fake_masks = tv_tensors.Mask(torch.ones(1, *img_size))
+    fake_labels = torch.as_tensor([[1]], dtype=torch.int64)
     fake_polygons = [None]
+    fake_scores = torch.tensor([[1.0]])
     # define data entity
     single_data_entity = ZeroShotVisualPromptingDataEntity(
         image=fake_image,
@@ -271,7 +273,7 @@ def fxt_zero_shot_vpm_data_entity() -> (
         labels=[fake_labels],
         polygons=[fake_polygons],
         prompts=[[fake_bboxes, fake_points]],
-        scores=[],
+        scores=[fake_scores],
     )
 
     return single_data_entity, batch_data_entity, batch_pred_data_entity
