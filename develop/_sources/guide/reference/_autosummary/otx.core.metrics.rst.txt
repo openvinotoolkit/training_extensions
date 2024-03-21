@@ -9,24 +9,21 @@ otx.core.metrics
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      NullMetricCallable
+   
+   
+
+   
+   
    
 
    
    
    
 
-   
-   
-   
 
-
-
-.. rubric:: Modules
-
-.. autosummary::
-   :toctree:
-   :recursive:
-
-   otx.core.metrics.accuracy
-   otx.core.metrics.fmeasure
 

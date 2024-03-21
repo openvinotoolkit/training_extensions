@@ -243,8 +243,9 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Literal</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -254,8 +255,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.config.explain</span> <span class="kn">import</span> <span class="n">ExplainConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.hpo</span> <span class="kn">import</span> <span class="n">HpoConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
-<span class="kn">from</span> <span class="nn">otx.core.model.entity.base</span> <span class="kn">import</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
-<span class="kn">from</span> <span class="nn">otx.core.model.module.base</span> <span class="kn">import</span> <span class="n">OTXLitModule</span>
+<span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.types</span> <span class="kn">import</span> <span class="n">PathLike</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
@@ -321,6 +321,8 @@
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">_EXPORTED_MODEL_BASE_NAME</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -381,7 +383,13 @@
             <span class="n">scheduler</span> <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_scheduler</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="n">_EXPORTED_MODEL_BASE_NAME</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span>
+        <span class="c1"># [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_anomaly_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------------ #</span>
     <span class="c1"># General OTX Entry Points</span>
@@ -467,14 +475,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="o">=</span> <span class="n">best_trial_weight</span>
                 <span class="n">resume</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="n">lit_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_lightning_module</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
-            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-
         <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -493,10 +493,19 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
             <span class="c1"># loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION</span>
-            <span class="n">lit_module</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Model label_info is not equal to the Datamodule label_info. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;It will be overriden: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">lit_module</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
             <span class="n">datamodule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span>
             <span class="o">**</span><span class="n">fit_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
@@ -554,24 +563,29 @@
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="n">label_info</span><span class="o">=</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
 
         <span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span> <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_metric</span><span class="p">()</span>
-        <span class="n">lit_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_lightning_module</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
-            <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
         <span class="c1"># NOTE, trainer.test takes only lightning based checkpoint.</span>
         <span class="c1"># So, it can&#39;t take the OTX1.x checkpoint.</span>
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
             <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">lit_module</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Model label_info is not equal to the Datamodule label_info. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;It will be overriden: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+
+            <span class="c1"># TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test</span>
+            <span class="c1"># raise ValueError()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">lit_module</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -634,23 +648,28 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="n">label_info</span><span class="o">=</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
 
-        <span class="n">lit_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_lightning_module</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
             <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">lit_module</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Model label_info is not equal to the Datamodule label_info. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;It will be overriden: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+
+            <span class="c1"># TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test</span>
+            <span class="c1"># raise ValueError()</span>
+
         <span class="n">predict_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">lit_module</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
             <span class="n">return_predictions</span><span class="o">=</span><span class="n">return_predictions</span><span class="p">,</span>
         <span class="p">)</span>
@@ -661,7 +680,7 @@
 
             <span class="n">predict_result</span> <span class="o">=</span> <span class="n">process_saliency_maps_in_pred_entity</span><span class="p">(</span><span class="n">predict_result</span><span class="p">,</span> <span class="n">explain_config</span><span class="p">)</span>
 
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">predict_result</span></div>
 
 
@@ -714,20 +733,14 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-        <span class="n">lit_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_lightning_module</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
-        <span class="p">)</span>
         <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">loaded_checkpoint</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">][</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">loaded_checkpoint</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">][</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span>
 
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
 
-        <span class="n">exported_model_path</span> <span class="o">=</span> <span class="n">lit_module</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
+        <span class="n">exported_model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
             <span class="n">output_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">),</span>
             <span class="n">base_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_EXPORTED_MODEL_BASE_NAME</span><span class="p">,</span>
             <span class="n">export_format</span><span class="o">=</span><span class="n">export_format</span><span class="p">,</span>
@@ -856,23 +869,18 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="n">label_info</span><span class="o">=</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
 
-        <span class="n">lit_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_lightning_module</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
             <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">lit_module</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="n">predict_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">lit_module</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -887,7 +895,7 @@
                 <span class="n">datamodule</span><span class="p">,</span>
                 <span class="n">output_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">),</span>
             <span class="p">)</span>
-        <span class="n">lit_module</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">predict_result</span></div>
 
 
@@ -1115,47 +1123,6 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datamodule</span>
 
-    <span class="k">def</span> <span class="nf">_build_lightning_module</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">scheduler</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">metric</span><span class="p">:</span> <span class="n">Metric</span> <span class="o">|</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXLitModule</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds a LightningModule for engine workflow.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            model (OTXModel): The OTXModel instance.</span>
-<span class="sd">            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.</span>
-<span class="sd">            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.</span>
-<span class="sd">            metric (Metric | MetricCallable | None): The metric for the validation and test.</span>
-<span class="sd">                                            It could be None at export, predict, etc.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            OTXLitModule | OTXModel: The built LightningModule instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
-            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
-            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
-        <span class="p">):</span>
-            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_anomaly_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">class_module</span><span class="p">,</span> <span class="n">class_name</span> <span class="o">=</span> <span class="n">LITMODULE_PER_TASK</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">module</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">class_module</span><span class="p">,</span> <span class="n">fromlist</span><span class="o">=</span><span class="p">[</span><span class="n">class_name</span><span class="p">])</span>
-            <span class="n">lightning_module</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
-            <span class="n">lightning_kwargs</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;otx_model&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
-                <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
-                <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler</span><span class="p">,</span>
-                <span class="s2">&quot;torch_compile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="p">}</span>
-            <span class="k">if</span> <span class="n">metric</span><span class="p">:</span>
-                <span class="n">lightning_kwargs</span><span class="p">[</span><span class="s2">&quot;metric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span>
-
-            <span class="n">model</span> <span class="o">=</span> <span class="n">lightning_module</span><span class="p">(</span><span class="o">**</span><span class="n">lightning_kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">model</span>
-
     <span class="k">def</span> <span class="nf">_get_anomaly_model</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
@@ -1164,8 +1131,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModel</span><span class="p">:</span>
         <span class="c1"># [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model</span>
         <span class="n">model</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">optimizer_callable</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">scheduler_callable</span> <span class="o">=</span> <span class="n">scheduler</span>
         <span class="k">return</span> <span class="n">model</span></div>
 
 </pre></div>

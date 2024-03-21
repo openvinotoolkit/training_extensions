@@ -27,6 +27,15 @@ otx.core.model
    :toctree:
    :recursive:
 
-   otx.core.model.entity
-   otx.core.model.module
+   otx.core.model.action_classification
+   otx.core.model.action_detection
+   otx.core.model.anomaly
+   otx.core.model.base
+   otx.core.model.classification
+   otx.core.model.detection
+   otx.core.model.instance_segmentation
+   otx.core.model.rotated_detection
+   otx.core.model.segmentation
+   otx.core.model.utils
+   otx.core.model.visual_prompting
 

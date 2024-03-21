@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.core.metrics &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>otx.core.model.utils &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.metrics';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model.utils';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.model" href="otx.core.model.html" />
-    <link rel="prev" title="otx.core.exporter.visual_prompting" href="otx.core.exporter.visual_prompting.html" />
+    <link rel="next" title="otx.core.model.utils.mmaction" href="otx.core.model.utils.mmaction.html" />
+    <link rel="prev" title="otx.core.model.segmentation" href="otx.core.model.segmentation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -310,8 +310,8 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.core.metrics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
 </ul>
@@ -366,14 +366,23 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.core.metrics">
-<span id="otx-core-metrics"></span><h1>otx.core.metrics<a class="headerlink" href="#module-otx.core.metrics" title="Link to this heading">#</a></h1>
-<p>Module for OTX custom metrices.</p>
-<p class="rubric">Functions</p>
+  <section id="module-otx.core.model.utils">
+<span id="otx-core-model-utils"></span><h1>otx.core.model.utils<a class="headerlink" href="#module-otx.core.model.utils" title="Link to this heading">#</a></h1>
+<p>Utility files for model entities used in OTX.</p>
+<p class="rubric">Modules</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">NullMetricCallable</span></code>(label_info)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.utils.mmaction.html#module-otx.core.model.utils.mmaction" title="otx.core.model.utils.mmaction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.utils.mmaction</span></code></a></p></td>
+<td><p>Utility files for the mmaction package.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.utils.mmdet.html#module-otx.core.model.utils.mmdet" title="otx.core.model.utils.mmdet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.utils.mmdet</span></code></a></p></td>
+<td><p>Utility files for the mmdet package.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.utils.mmpretrain.html#module-otx.core.model.utils.mmpretrain" title="otx.core.model.utils.mmpretrain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.utils.mmpretrain</span></code></a></p></td>
+<td><p>Utility files for the mmpretrain package.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.utils.mmseg.html#module-otx.core.model.utils.mmseg" title="otx.core.model.utils.mmseg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.utils.mmseg</span></code></a></p></td>
+<td><p>Utility files for the mmseg package.</p></td>
 </tr>
 </tbody>
 </table>
@@ -387,17 +396,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.exporter.visual_prompting.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.segmentation.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.exporter.visual_prompting</p>
+          <p class="prev-next-title">otx.core.model.segmentation</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.core.model.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.model.utils.mmaction.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.core.model</p>
+      <p class="prev-next-title">otx.core.model.utils.mmaction</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -422,7 +431,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.core.metrics.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.model.utils.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

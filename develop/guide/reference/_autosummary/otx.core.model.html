@@ -44,8 +44,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.model';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.core.model.entity" href="otx.core.model.entity.html" />
-    <link rel="prev" title="otx.core.metrics.fmeasure" href="otx.core.metrics.fmeasure.html" />
+    <link rel="next" title="otx.core.model.action_classification" href="otx.core.model.action_classification.html" />
+    <link rel="prev" title="otx.core.metrics" href="otx.core.metrics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -372,11 +372,38 @@
 <p class="rubric">Modules</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.entity.html#module-otx.core.model.entity" title="otx.core.model.entity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.entity</span></code></a></p></td>
-<td><p>Module for model entities used in OTX.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.action_classification.html#module-otx.core.model.action_classification" title="otx.core.model.action_classification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.action_classification</span></code></a></p></td>
+<td><p>Class definition for action_classification model entity used in OTX.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.module.html#module-otx.core.model.module" title="otx.core.model.module"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.module</span></code></a></p></td>
-<td><p>Module for base lightning module classes used in OTX.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.action_detection.html#module-otx.core.model.action_detection" title="otx.core.model.action_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.action_detection</span></code></a></p></td>
+<td><p>Class definition for action_detection model entity used in OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.anomaly.html#module-otx.core.model.anomaly" title="otx.core.model.anomaly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.anomaly</span></code></a></p></td>
+<td><p>Anomaly Lightning OTX model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.base.html#module-otx.core.model.base" title="otx.core.model.base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.base</span></code></a></p></td>
+<td><p>Class definition for base model entity used in OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.classification.html#module-otx.core.model.classification" title="otx.core.model.classification"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.classification</span></code></a></p></td>
+<td><p>Class definition for classification model entity used in OTX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.detection.html#module-otx.core.model.detection" title="otx.core.model.detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.detection</span></code></a></p></td>
+<td><p>Class definition for detection model entity used in OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.instance_segmentation.html#module-otx.core.model.instance_segmentation" title="otx.core.model.instance_segmentation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.instance_segmentation</span></code></a></p></td>
+<td><p>Class definition for instance segmentation model entity used in OTX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.rotated_detection.html#module-otx.core.model.rotated_detection" title="otx.core.model.rotated_detection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.rotated_detection</span></code></a></p></td>
+<td><p>Class definition for rotated detection model entity used in OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.segmentation.html#module-otx.core.model.segmentation" title="otx.core.model.segmentation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.segmentation</span></code></a></p></td>
+<td><p>Class definition for detection model entity used in OTX.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="otx.core.model.utils.html#module-otx.core.model.utils" title="otx.core.model.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.utils</span></code></a></p></td>
+<td><p>Utility files for model entities used in OTX.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="otx.core.model.visual_prompting.html#module-otx.core.model.visual_prompting" title="otx.core.model.visual_prompting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.core.model.visual_prompting</span></code></a></p></td>
+<td><p>Class definition for visual prompting model entity used in OTX.</p></td>
 </tr>
 </tbody>
 </table>
@@ -390,17 +417,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.core.metrics.fmeasure.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.metrics.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.core.metrics.fmeasure</p>
+          <p class="prev-next-title">otx.core.metrics</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.core.model.entity.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.model.action_classification.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.core.model.entity</p>
+      <p class="prev-next-title">otx.core.model.action_classification</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
