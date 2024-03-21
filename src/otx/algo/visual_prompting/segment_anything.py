@@ -481,8 +481,29 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
 
-    def __init__(self, backbone: Literal["tiny_vit", "vit_b"], num_classes: int = 0, **kwargs):
-        self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
+    def __init__(
+        self,
+        backbone: Literal["tiny_vit", "vit_b"],
+        num_classes: int = 0,
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = False,
+        use_stability_score: bool = False,
+        return_single_mask: bool = True,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        self.config = {
+            "backbone": backbone,
+            "freeze_image_encoder": freeze_image_encoder,
+            "freeze_prompt_encoder": freeze_prompt_encoder,
+            "freeze_mask_decoder": freeze_mask_decoder,
+            "use_stability_score": use_stability_score,
+            "return_single_mask": return_single_mask,
+            "return_extra_metrics": return_extra_metrics,
+            "stability_score_offset": stability_score_offset,
+            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
+        }
         super().__init__(num_classes=num_classes)
 
     def _create_model(self) -> nn.Module:

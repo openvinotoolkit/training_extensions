@@ -42,7 +42,6 @@ def cross_sigmoid_focal_loss(
         targets = F.one_hot(targets, num_classes=inputs_size + 1)
         targets = targets[:, :inputs_size]
         calculate_loss_func = py_sigmoid_focal_loss
-
     loss = calculate_loss_func(
         inputs,
         targets,

@@ -5,10 +5,11 @@ model:
     variant: tiny
 
 optimizer:
-  class_path: torch.optim.AdamW
+  class_path: torch.optim.SGD
   init_args:
-    lr: 0.004
-    weight_decay: 0.05
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0001
 
 scheduler:
   - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
@@ -36,7 +37,7 @@ callback_monitor: val/map_50
 
 data: ../_base_/data/mmdet_base.yaml
 overrides:
-  precision: 32 # 16/"16-true" does not work
+  precision: 16
   max_epochs: 100
   gradient_clip_val: 35.0
   data:
@@ -45,7 +46,7 @@ overrides:
       include_polygons: true
       train_subset:
         batch_size: 4
-        num_workers: 10
+        num_workers: 8
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -67,6 +68,7 @@ overrides:
               - 0.5
               - 2.0
             keep_ratio: true
+            _scope_: mmdet
           - type: RandomCrop
             crop_size:
               - 640
@@ -97,8 +99,8 @@ overrides:
               - 1
           - type: PackDetInputs
       val_subset:
-        batch_size: 2
-        num_workers: 10
+        batch_size: 1
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null
@@ -121,8 +123,8 @@ overrides:
               - img_shape
               - scale_factor
       test_subset:
-        batch_size: 2
-        num_workers: 10
+        batch_size: 1
+        num_workers: 4
         transforms:
           - type: LoadImageFromFile
             backend_args: null

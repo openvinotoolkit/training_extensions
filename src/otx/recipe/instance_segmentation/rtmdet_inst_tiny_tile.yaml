@@ -1,0 +1,123 @@
+model:
+  class_path: otx.algo.instance_segmentation.rtmdet_inst.RTMDetInst
+  init_args:
+    num_classes: 80
+    variant: tiny
+
+optimizer:
+  class_path: torch.optim.SGD
+  init_args:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0001
+
+scheduler:
+  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
+    init_args:
+      num_warmup_steps: 20
+  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
+    init_args:
+      mode: max
+      factor: 0.1
+      patience: 9
+      monitor: val/map_50
+      min_lr: 4e-06
+
+metric:
+  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
+  init_args:
+    box_format: xyxy
+    iou_type: segm
+
+engine:
+  task: INSTANCE_SEGMENTATION
+  device: auto
+
+callback_monitor: val/map_50
+
+data: ../_base_/data/mmdet_base.yaml
+overrides:
+  precision: 32
+  max_epochs: 100
+  gradient_clip_val: 35.0
+  data:
+    task: INSTANCE_SEGMENTATION
+    config:
+      tile_config:
+        enable_tiler: true
+        enable_adaptive_tiling: true
+      include_polygons: true
+      train_subset:
+        batch_size: 4
+        num_workers: 8
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: false
+          - type: Pad
+            size:
+              - 640
+              - 640
+            pad_val: 114
+          - type: RandomFlip
+            prob: 0.5
+          - type: PackDetInputs
+      val_subset:
+        batch_size: 1
+        num_workers: 4
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            size:
+              - 640
+              - 640
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
+      test_subset:
+        batch_size: 1
+        num_workers: 4
+        transforms:
+          - type: LoadImageFromFile
+            backend_args: null
+          - type: Resize
+            scale:
+              - 640
+              - 640
+            keep_ratio: true
+          - type: Pad
+            size:
+              - 640
+              - 640
+            pad_val: 114
+          - type: LoadAnnotations
+            with_bbox: true
+            with_mask: true
+          - type: PackDetInputs
+            meta_keys:
+              - img_id
+              - img_path
+              - ori_shape
+              - img_shape
+              - scale_factor
