@@ -72,8 +72,6 @@ The list of supported templates for semantic segmentation is available with the 
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
-  We also can modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
-
 .. code-block::
 
   (otx) ...$ otx find --task segmentation

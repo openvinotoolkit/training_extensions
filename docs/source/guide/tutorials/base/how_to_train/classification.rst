@@ -101,8 +101,6 @@ The list of supported templates for classification is available with the command
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/classification/multi_class_classification>`.
 
-  You also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
-
 .. tab-set::
 
   .. tab-item:: CLI
@@ -149,7 +147,7 @@ The list of supported templates for classification is available with the command
       ]
       '''
 
-2. On this step we will prepare custom configuration
+1. On this step we will prepare custom configuration
 with:
 
 - all necessary configs for otx_efficientnet_b0
