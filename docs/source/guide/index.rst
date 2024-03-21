@@ -7,6 +7,7 @@ Guide
   :maxdepth: 3
   :caption: Get Started
 
+  get_started/introduction
   get_started/installation
   get_started/cli_commands
   get_started/api_tutorial
