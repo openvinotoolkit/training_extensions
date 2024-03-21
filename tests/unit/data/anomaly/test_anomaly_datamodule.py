@@ -5,7 +5,6 @@
 
 import pytest
 import torch
-
 from otx.core.types.task import OTXTaskType
 from otx.data.anomaly import AnomalyDataModule
 from torchvision.transforms.v2 import Normalize, Resize, ToDtype
