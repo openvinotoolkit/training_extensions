@@ -19,4 +19,3 @@ jobs:
       num-repeat: 0
       num-epoch: 0
       eval-upto: optimize
-      artifact-prefix: weekly-perf-benchmark
