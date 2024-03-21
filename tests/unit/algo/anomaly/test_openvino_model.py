@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 from anomalib import TaskType as AnomalibTaskType
 from openvino.model_api.models.anomaly import AnomalyResult
-
 from otx.algo.anomaly.openvino_model import AnomalyOpenVINO
 from otx.core.types.task import OTXTaskType
 
