@@ -295,8 +295,6 @@ def test_otx_explain_e2e(
         "explain",
         "--config",
         recipe,
-        "--model.num_classes",
-        "1000",
         "--data_root",
         fxt_target_dataset_per_task[task],
         "--work_dir",
