@@ -306,9 +306,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure metrics.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val_metric</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;IoU&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">(),</span>
-                <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">(),</span>
-                <span class="s2">&quot;Dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">(),</span>
+                <span class="s2">&quot;iou&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">(),</span>
+                <span class="s2">&quot;f1-score&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">(),</span>
+                <span class="s2">&quot;dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">(),</span>
                 <span class="s2">&quot;mAP&quot;</span><span class="p">:</span> <span class="n">MeanAveragePrecision</span><span class="p">(</span><span class="n">iou_type</span><span class="o">=</span><span class="s2">&quot;segm&quot;</span><span class="p">),</span>
             <span class="p">},</span>
         <span class="p">)</span>
@@ -316,9 +316,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">test_metric</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;IoU&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">(),</span>
-                <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">(),</span>
-                <span class="s2">&quot;Dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">(),</span>
+                <span class="s2">&quot;iou&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">(),</span>
+                <span class="s2">&quot;f1-score&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">(),</span>
+                <span class="s2">&quot;dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">(),</span>
                 <span class="s2">&quot;mAP&quot;</span><span class="p">:</span> <span class="n">MeanAveragePrecision</span><span class="p">(</span><span class="n">iou_type</span><span class="o">=</span><span class="s2">&quot;segm&quot;</span><span class="p">),</span>
             <span class="p">},</span>
         <span class="p">)</span>
@@ -474,7 +474,7 @@
             <span class="n">inputs</span><span class="o">.</span><span class="n">polygons</span><span class="p">,</span>
             <span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="n">bit_masks</span> <span class="o">=</span> <span class="n">masks</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span> <span class="k">else</span> <span class="n">polygon_to_bitmap</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="o">*</span><span class="n">imgs_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">)</span>
+            <span class="n">bit_masks</span> <span class="o">=</span> <span class="n">masks</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span> <span class="k">else</span> <span class="n">polygon_to_bitmap</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="o">*</span><span class="n">imgs_info</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
             <span class="n">target_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">bit_masks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
@@ -506,7 +506,7 @@
                 <span class="p">]</span>
                 <span class="n">_target</span> <span class="o">=</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span>
                 <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IoU&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;Dice&quot;</span><span class="p">]:</span>
+            <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
                 <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
                 <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
                     <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">],</span> <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">])</span></div>
@@ -524,12 +524,13 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure metrics.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_metric</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;IoU&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
-                <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
-                <span class="s2">&quot;Dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
-                <span class="s2">&quot;mAP&quot;</span><span class="p">:</span> <span class="n">MeanAveragePrecision</span><span class="p">(</span><span class="n">iou_type</span><span class="o">=</span><span class="s2">&quot;segm&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                <span class="s2">&quot;iou&quot;</span><span class="p">:</span> <span class="n">BinaryJaccardIndex</span><span class="p">(),</span>
+                <span class="s2">&quot;f1-score&quot;</span><span class="p">:</span> <span class="n">BinaryF1Score</span><span class="p">(),</span>
+                <span class="s2">&quot;dice&quot;</span><span class="p">:</span> <span class="n">Dice</span><span class="p">(),</span>
+                <span class="s2">&quot;mAP&quot;</span><span class="p">:</span> <span class="n">MeanAveragePrecision</span><span class="p">(</span><span class="n">iou_type</span><span class="o">=</span><span class="s2">&quot;segm&quot;</span><span class="p">),</span>
             <span class="p">},</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_metric</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXZeroShotVisualPromptingLitModule.on_train_start">
@@ -545,7 +546,6 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_test_start</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
-            <span class="c1"># TODO (sungchul): check fit_loop for OVModel # noqa: TD003</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically excuted first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -563,7 +563,6 @@
     <span class="k">def</span> <span class="nf">on_predict_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load previously saved reference info.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_latest_reference_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
-            <span class="c1"># TODO (sungchul): check fit_loop for OVModel # noqa: TD003</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No reference info found. `Learn` will be automatically excuted first.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lightning_module</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit_loop</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -689,7 +688,7 @@
                         <span class="n">_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_preds</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">_preds</span><span class="p">)</span> <span class="k">else</span> <span class="n">pad_prediction</span><span class="p">)</span>
 
                 <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IoU&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;Dice&quot;</span><span class="p">]:</span>
+            <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
                 <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
                 <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
                     <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>

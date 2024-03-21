@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.algo.segmentation &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>Class-Incremental Sampler &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.algo.segmentation';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/class_incremental_sampler';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.algo.segmentation.backbones" href="otx.algo.segmentation.backbones.html" />
-    <link rel="prev" title="otx.algo.detection.losses" href="otx.algo.detection.losses.html" />
+    <link rel="next" title="API reference" href="../../reference/index.html" />
+    <link rel="prev" title="Improve Small Object Detection with Image Tiling" href="tiling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -248,86 +248,86 @@
 </li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/object_detection/object_detection.html">Object Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/object_detection/object_detection.html">Object Detection</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/algorithms/anomaly/index.html">Anomaly Detection</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/action/action_classification.html">Action Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/action/action_detection.html">Action Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/action/action_detection.html">Action Detection</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../explanation/algorithms/visual_prompting/index.html">Visual Prompting</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/visual_prompting/fine_tuning.html">Visual Prompting (Fine-tuning)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/algorithms/visual_prompting/zero_shot.html">Visual Prompting (Zero-shot learning)</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../algorithms/visual_prompting/index.html">Visual Prompting</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/visual_prompting/fine_tuning.html">Visual Prompting (Fine-tuning)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../algorithms/visual_prompting/zero_shot.html">Visual Prompting (Zero-shot learning)</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../explanation/additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/adaptive_training.html">Adaptive Training</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/fast_data_loading.html">Fast Data Loading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../explanation/additional_features/class_incremental_sampler.html">Class-Incremental Sampler</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Additional Features</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adaptive_training.html">Adaptive Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Class-Incremental Sampler</a></li>
 
 </ul>
 </li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="otx.html">otx</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.algo.html">otx.algo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.action_classification.html">otx.algo.action_classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.classification.html">otx.algo.classification</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.detection.html">otx.algo.detection</a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.algo.segmentation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.cli.cli.html">otx.cli.cli</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.cli.install.html">otx.cli.install</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.cli.utils.html">otx.cli.utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.cli.html">otx.cli.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.install.html">otx.cli.install</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.cli.utils.html">otx.cli.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.config.html">otx.core.config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.data.html">otx.core.data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.types.html">otx.core.types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.data.html">otx.data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
-<li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.data.html">otx.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="otx.utils.html">otx.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/_autosummary/otx.utils.html">otx.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -369,23 +369,64 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.algo.segmentation">
-<span id="otx-algo-segmentation"></span><h1>otx.algo.segmentation<a class="headerlink" href="#module-otx.algo.segmentation" title="Link to this heading">#</a></h1>
-<p>Module for OTX segmentation models, hooks, utils, etc.</p>
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.segmentation.backbones.html#module-otx.algo.segmentation.backbones" title="otx.algo.segmentation.backbones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.segmentation.backbones</span></code></a></p></td>
-<td><p>Backbone modules for OTX segmentation model.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.algo.segmentation.heads.html#module-otx.algo.segmentation.heads" title="otx.algo.segmentation.heads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.segmentation.heads</span></code></a></p></td>
-<td><p>Head modules for OTX segmentation model.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.algo.segmentation.losses.html#module-otx.algo.segmentation.losses" title="otx.algo.segmentation.losses"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.algo.segmentation.losses</span></code></a></p></td>
-<td><p>Custom Losses for OTX segmentation model.</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="class-incremental-sampler">
+<h1>Class-Incremental Sampler<a class="headerlink" href="#class-incremental-sampler" title="Link to this heading">#</a></h1>
+<p>This sampler is a sampler that creates an effective batch.
+For default setting, the square root of (number of old data/number of new data) is used as the ratio of old data.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.algo.samplers.class_incremental_sampler</span> <span class="kn">import</span> <span class="n">ClassIncrementalSampler</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">OTXDataset</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">class_incr_sampler</span> <span class="o">=</span> <span class="n">ClassIncrementalSampler</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">old_classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;car&quot;</span><span class="p">,</span> <span class="s2">&quot;truck&quot;</span><span class="p">],</span>
+    <span class="n">new_classes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;bus&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--data.config.train_subset.sampler.class_path<span class="w"> </span>otx.algo.samplers.class_incremental_sampler.ClassIncrementalSampler<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--data.config.train_subset.sampler.init_args.old_classes<span class="w"> </span><span class="s1">&#39;[car,truck]&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--data.config.train_subset.sampler.init_args.new_classes<span class="w"> </span><span class="s1">&#39;[bus]&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="balanced-sampler">
+<h1>Balanced Sampler<a class="headerlink" href="#balanced-sampler" title="Link to this heading">#</a></h1>
+<p>This sampler is a sampler that creates an effective batch.
+It helps ensure balanced sampling by class based on the distribution of class labels during supervised learning.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.algo.samplers.balanced_sampler</span> <span class="kn">import</span> <span class="n">BalancedSampler</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">OTXDataset</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">class_incr_sampler</span> <span class="o">=</span> <span class="n">BalancedSampler</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--data.config.train_subset.sampler.class_path<span class="w"> </span>otx.algo.samplers.balanced_sampler.BalancedSampler
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 
 
@@ -396,17 +437,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.algo.detection.losses.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="tiling.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.algo.detection.losses</p>
+          <p class="prev-next-title">Improve Small Object Detection with Image Tiling</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.algo.segmentation.backbones.html" title="next page">
+  <a class='right-next' id="next-link" href="../../reference/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.algo.segmentation.backbones</p>
+      <p class="prev-next-title">API reference</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -421,6 +462,28 @@
               
 <div class="toc-item">
   
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Class-Incremental Sampler
+  </a>
+ </li>
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#balanced-sampler">
+   Balanced Sampler
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
 <div id="searchbox"></div>
 </div>
 
@@ -431,7 +494,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.algo.segmentation.rst.txt">
+    <a href="../../../_sources/guide/explanation/additional_features/class_incremental_sampler.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

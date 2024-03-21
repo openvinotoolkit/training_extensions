@@ -249,7 +249,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
+<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.dataset.classification</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
@@ -289,7 +289,7 @@
 <span class="k">class</span> <span class="nc">ExplainableOTXClsModel</span><span class="p">(</span>
     <span class="n">OTXModel</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntityWithXAI</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span><span class="p">],</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX classification model which can attach a XAI hook.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX classification model which can attach a XAI (Explainable AI) branch.&quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">has_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -376,9 +376,9 @@
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.entity.classification.html#otx.core.model.entity.classification.ExplainableOTXClsModel.get_explain_fn">[docs]</a>
     <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">ReciproCAMHook</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">ReciproCAM</span>
 
-        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAMHook</span><span class="p">(</span>
+        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAM</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">head_forward_fn</span><span class="p">,</span>
             <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">optimize_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">has_gap</span><span class="p">,</span>
