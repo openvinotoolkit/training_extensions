@@ -10,7 +10,7 @@ import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
 
-from otx.utils.utils import is_xpu_available
+from otx.utils.utils import is_xpu_available, patch_packages_xpu
 
 
 class XPUAccelerator(Accelerator):
@@ -25,6 +25,8 @@ class XPUAccelerator(Accelerator):
             raise RuntimeError(msg)
 
         torch.xpu.set_device(device)
+        patch_packages_xpu()
+
 
     @staticmethod
     def parse_devices(devices: str | list | torch.device) -> list:

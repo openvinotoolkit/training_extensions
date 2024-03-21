@@ -7,6 +7,13 @@ from __future__ import annotations
 
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Union
+import numpy as np
+from mmcv.ops.nms import NMSop
+from mmcv.ops.roi_align import RoIAlign
+from mmengine.structures import instance_data
+from lightning.pytorch.strategies.single_device import SingleDeviceStrategy
+
+from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
 
 import torch
 
@@ -138,16 +145,35 @@ def is_xpu_available() -> bool:
 
 def patch_packages_xpu(task: str | OTXTaskType, accelerator: str | DeviceType) -> None:
     """Patch packages when xpu is available."""
-    if accelerator == "xpu" and ("DETECTION" in task or "INSTANCE_SEGMENTATION" in task):
-        import numpy as np
-        from mmcv.ops.nms import NMSop
-        from mmcv.ops.roi_align import RoIAlign
-        from mmengine.structures import instance_data
+    import lightning.pytorch as pl
 
-        from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
+    def patched_setup_optimizers(self, trainer: pl.Trainer) -> None:
+        """Sets up optimizers."""
+        super(SingleDeviceStrategy).setup_optimizers(trainer)
+        if len(self.optimizers) != 1:  # type: ignore[has-type]
+            msg = "XPU strategy doesn't support multiple optimizers"
+            raise RuntimeError(msg)
+        model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
+        self.optimizers = [optimizer]
+        self.model = model
 
-        long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
-        bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
-        instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
-        NMSop.forward = monkey_patched_nms
-        RoIAlign.forward = monkey_patched_roi_align
+    # patch instance_data from mmengie
+    long_type_tensor = Union[torch.LongTensor, torch.xpu.LongTensor]
+    bool_type_tensor = Union[torch.BoolTensor, torch.xpu.BoolTensor]
+    instance_data.IndexType = Union[str, slice, int, list, long_type_tensor, bool_type_tensor, np.ndarray]
+
+    # patch nms, roi_align and setup_optimizers for the lightning strategy
+    global _nms_op_forward, _roi_align_forward, _setup_optimizers
+    _nms_op_forward = NMSop.forward
+    _roi_align_forward = RoIAlign.forward
+    _setup_optimizers = SingleDeviceStrategy.setup_optimizers
+    NMSop.forward = monkey_patched_nms
+    RoIAlign.forward = monkey_patched_roi_align
+    SingleDeviceStrategy.setup_optimizers = patched_setup_optimizers
+
+
+def revert_packages_xpu():
+    """Revert packages when xpu is available."""
+    NMSop.forward = _nms_op_forward
+    RoIAlign.forward = _roi_align_forward
+    SingleDeviceStrategy.setup_optimizers = _setup_optimizers

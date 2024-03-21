@@ -109,7 +109,7 @@ excluding Pytorch and MMCV.
 
 .. code-block:: shell
 
-    otx install -v --do-not-install-torch --do-no-install-mmcv
+    otx install -v --do-not-install-torch --do-not-install-mmcv
 
 6. Activate OneAPI environment
 and export required IPEX system variables
