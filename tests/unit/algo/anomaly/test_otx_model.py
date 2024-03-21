@@ -5,8 +5,6 @@
 
 import pytest
 import torch
-from torchvision import tv_tensors
-
 from otx.algo.anomaly.draem import Draem
 from otx.algo.anomaly.padim import Padim
 from otx.algo.anomaly.stfpm import Stfpm
@@ -22,6 +20,7 @@ from otx.core.data.entity.base import ImageInfo
 from otx.core.model.entity.base import OTXModel
 from otx.core.model.module.anomaly import AnomalyModelInputs, OTXAnomaly
 from otx.core.types.task import OTXTaskType
+from torchvision import tv_tensors
 
 
 class _DummyModel(OTXAnomaly, OTXModel):
