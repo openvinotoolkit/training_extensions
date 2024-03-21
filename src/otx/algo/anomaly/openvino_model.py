@@ -18,7 +18,7 @@ from anomalib.metrics.threshold import BaseThreshold, F1AdaptiveThreshold
 from lightning.pytorch import LightningModule
 
 from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.model.module.anomaly.anomaly_lightning import AnomalyModelInputs
+from otx.core.model.module.anomaly import AnomalyModelInputs
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
