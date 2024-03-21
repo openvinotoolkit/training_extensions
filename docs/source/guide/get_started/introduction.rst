@@ -127,6 +127,8 @@ Documentation content
         Learn how to train an action detection model
 
     .. grid-item-card:: Visual Prompting
+        :link: ../tutorials/base/how_to_train/visual_prompting
+        :link-type: doc
         :text-align: center
 
         Learn how to train a visual prompting model

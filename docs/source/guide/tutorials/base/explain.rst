@@ -1,4 +1,4 @@
-How to explain the model behavior
+XAI Tutorial
 =================================
 
 This guide explains the model behavior, which is trained through :doc:`previous stage <how_to_train/index>`.
