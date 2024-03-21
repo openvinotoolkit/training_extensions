@@ -819,6 +819,7 @@ class Engine:
 
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
+            self._trainer.task = self.task
             self.work_dir = self._trainer.default_root_dir
 
     @property

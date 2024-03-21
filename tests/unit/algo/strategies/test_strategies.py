@@ -42,6 +42,7 @@ class TestSingleXPUStrategy:
             return_value=(mocker.MagicMock(), mocker.MagicMock()),
         )
         trainer = pl.Trainer()
+        trainer.task = "CLASSIFICATION"
         # Create mock optimizers and models for testing
         model = torch.nn.Linear(10, 2)
         strategy._optimizers = [torch.optim.Adam(model.parameters(), lr=0.001)]
