@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from datumaro import Label, LabelCategories
 
-__all__ = ["LabelInfo", "HLabelInfo"]
+__all__ = ["LabelInfo", "HLabelInfo", "SegLabelInfo", "NullLabelInfo"]
 
 
 @dataclass
