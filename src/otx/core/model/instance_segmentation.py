@@ -5,11 +5,10 @@
 
 from __future__ import annotations
 
-import json
 import logging as log
 import types
 from copy import copy
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import numpy as np
 import torch
@@ -46,6 +45,7 @@ if TYPE_CHECKING:
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
     from torch import nn
+    from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
 
@@ -76,7 +76,6 @@ class OTXInstanceSegModel(
             torch_compile=torch_compile,
         )
         self.tile_config = TileConfig()
-        self.test_meta_info: dict[str, Any] = {}
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -122,9 +121,10 @@ class OTXInstanceSegModel(
             {
                 ("model_info", "model_type"): "MaskRCNN",
                 ("model_info", "task_type"): "instance_segmentation",
-                ("model_info", "confidence_threshold"): str(0.0),  # it was able to be set in OTX 1.X
+                ("model_info", "confidence_threshold"): str(
+                    self.hparams.get("best_confidence_threshold", 0.0),
+                ),  # it was able to be set in OTX 1.X
                 ("model_info", "iou_threshold"): str(0.5),
-                ("model_info", "test_meta_info"): json.dumps(self.test_meta_info),
             },
         )
 
@@ -155,20 +155,33 @@ class OTXInstanceSegModel(
         For detection, it is need to update confidence threshold information when
         the metric is FMeasure.
         """
-        if "confidence_threshold" in ckpt:
-            self.test_meta_info["best_confidence_threshold"] = ckpt["confidence_threshold"]
-            self.test_meta_info["vary_confidence_threshold"] = False
-        elif "confidence_threshold" in ckpt["hyper_parameters"]:
-            self.test_meta_info["best_confidence_threshold"] = ckpt["hyper_parameters"]["confidence_threshold"]
-            self.test_meta_info["vary_confidence_threshold"] = False
+        if best_confidence_threshold := ckpt.get("confidence_threshold", None) or (
+            (hyper_parameters := ckpt.get("hyper_parameters", None))
+            and (best_confidence_threshold := hyper_parameters.get("best_confidence_threshold", None))
+        ):
+            self.hparams["best_confidence_threshold"] = best_confidence_threshold
         super().load_state_dict(ckpt, *args, **kwargs)
 
-    def configure_metric(self) -> None:
-        """Configure the metric."""
-        super().configure_metric()
-        for key, value in self.test_meta_info.items():
-            if hasattr(self.metric, key):
-                setattr(self.metric, key, value)
+    def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
+        if key == "val":
+            retval = super()._log_metrics(meter, key)
+
+            # NOTE: Validation metric logging can update `best_confidence_threshold`
+            if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
+                self.hparams["best_confidence_threshold"] = best_confidence_threshold
+
+            return retval
+
+        if key == "test":
+            # NOTE: Test metric logging should use `best_confidence_threshold` found previously.
+            best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
+            compute_kwargs = (
+                {"best_confidence_threshold": best_confidence_threshold} if best_confidence_threshold else {}
+            )
+
+            return super()._log_metrics(meter, key, **compute_kwargs)
+
+        raise ValueError(key)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -549,7 +562,6 @@ class OVInstanceSegmentationModel(
         metric: MetricCallable = MaskRLEMeanAPCallable,
         **kwargs,
     ) -> None:
-        self.test_meta_info: dict[str, Any] = {}
         super().__init__(
             model_name=model_name,
             model_type=model_type,
@@ -586,10 +598,20 @@ class OVInstanceSegmentationModel(
             plugin_config=plugin_config,
             model_parameters=self.model_adapter_parameters,
         )
-        for name, info in model_adapter.model.rt_info["model_info"].items():
-            if name == "test_meta_info":
-                for key, value in json.loads(info.value).items():
-                    self.test_meta_info[key] = value
+
+        if model_adapter.model.has_rt_info(["model_info", "confidence_threshold"]):
+            best_confidence_threshold = model_adapter.model.get_rt_info(["model_info", "confidence_threshold"]).value
+            self.hparams["best_confidence_threshold"] = best_confidence_threshold
+        else:
+            msg = (
+                "Cannot get best_confidence_threshold from OpenVINO IR's rt_info. "
+                "Please check whether this model is trained by OTX or not. "
+                "Without this information, it can produce a wrong F1 metric score. "
+                "At this time, it will be set as the default value = 0.0."
+            )
+            log.warning(msg)
+            self.hparams["best_confidence_threshold"] = 0.0
+
         return Model.create_model(model_adapter, model_type=self.model_type, configuration=self.model_api_configuration)
 
     def _customize_outputs(
@@ -709,3 +731,8 @@ class OVInstanceSegmentationModel(
                 },
             )
         return {"preds": pred_info, "target": target_info}
+
+    def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
+        best_confidence_threshold = self.hparams.get("best_confidence_threshold", 0.0)
+        compute_kwargs = {"best_confidence_threshold": best_confidence_threshold}
+        return super()._log_metrics(meter, key, **compute_kwargs)

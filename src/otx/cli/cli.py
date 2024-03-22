@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import dataclasses
 import sys
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 from warnings import warn
@@ -28,7 +29,6 @@ from otx.core.utils.imports import get_otx_root_path
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
-    from otx.core.metrics import MetricCallable
 
 _ENGINE_AVAILABLE = True
 try:
@@ -157,7 +157,7 @@ class OTXCLI:
             OTXModel,
             "model",
             required=False,
-            skip={"optimizer", "scheduler", "metric"},
+            skip={"optimizer", "scheduler"},
             **model_kwargs,
         )
         # Datamodule Settings
@@ -345,7 +345,6 @@ class OTXCLI:
         if self.subcommand in self.engine_subcommands():
             # For num_classes update, Model and Metric are instantiated separately.
             model_config = self.config[self.subcommand].pop("model")
-            metric_config = self.config[self.subcommand].get("metric")
 
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
@@ -353,10 +352,7 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
 
             # Instantiate the model and needed components
-            self.model, self.optimizer, self.scheduler = self.instantiate_model(
-                model_config=model_config,
-                metric_config=metric_config,
-            )
+            self.model, self.optimizer, self.scheduler = self.instantiate_model(model_config=model_config)
 
             if instantiate_engine:
                 self.engine = self.instantiate_engine()
@@ -377,26 +373,7 @@ class OTXCLI:
             **engine_kwargs,
         )
 
-    def instantiate_metric(self, metric_config: Namespace) -> MetricCallable | None:
-        """Instantiate the metric based on the metric_config.
-
-        It also pathces the num_classes according to the model classes information.
-
-        Args:
-            metric_config (Namespace): The metric configuration.
-        """
-        from otx.core.utils.instantiators import partial_instantiate_class
-
-        if metric_config and self.subcommand in ["train", "test"]:
-            metric_kwargs = self.get_config_value(metric_config, "metric", namespace_to_dict(metric_config))
-            metric = partial_instantiate_class(metric_kwargs)
-            return metric[0] if isinstance(metric, list) else metric
-
-        msg = "The configuration of metric is None."
-        warn(msg, stacklevel=2)
-        return None
-
-    def instantiate_model(self, model_config: Namespace, metric_config: Namespace) -> tuple:
+    def instantiate_model(self, model_config: Namespace) -> tuple:
         """Instantiate the model based on the subcommand.
 
         This method checks if the subcommand is one of the engine subcommands.
@@ -436,7 +413,7 @@ class OTXCLI:
         if optimizers:
             # Updates the instantiated optimizer.
             model_config.init_args.optimizer = optimizers
-            self.config_init[self.subcommand]["optimizer"] = optimizers
+            self.config_init[self.subcommand]["optimizer"] = optimizer_kwargs
 
         scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
         scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
@@ -444,13 +421,7 @@ class OTXCLI:
         if schedulers:
             # Updates the instantiated scheduler.
             model_config.init_args.scheduler = schedulers
-            self.config_init[self.subcommand]["scheduler"] = schedulers
-
-        # Instantiate the metric with changing the num_classes
-        metric = self.instantiate_metric(metric_config)
-        if metric:
-            model_config.init_args.metric = metric
-            self.config_init[self.subcommand]["metric"] = metric
+            self.config_init[self.subcommand]["scheduler"] = scheduler_kwargs
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
@@ -520,18 +491,18 @@ class OTXCLI:
         The configuration is saved as a YAML file in the engine's working directory.
         """
         self.config[self.subcommand].pop("workspace", None)
-        # TODO(vinnamki): Do not save for now.
-        # Revisit it after changing the optimizer and scheduler instantiating.
-        # self.get_subcommand_parser(self.subcommand).save(
-        #     cfg=self.config.get(str(self.subcommand), self.config),
-        #     path=work_dir / "configs.yaml",
-        #     overwrite=True,
-        #     multifile=False,
-        #     skip_check=True,
-        # )
-        # For assert statement in the test
-        with (work_dir / "configs.yaml").open("w") as fp:
-            yaml.safe_dump({"model": None, "engine": None, "data": None}, fp)
+        # TODO(vinnamki): Revisit it after changing the optimizer and scheduler instantiating.
+        cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
+        cfg.model.init_args.pop("optimizer")
+        cfg.model.init_args.pop("scheduler")
+
+        self.get_subcommand_parser(self.subcommand).save(
+            cfg=cfg,
+            path=work_dir / "configs.yaml",
+            overwrite=True,
+            multifile=False,
+            skip_check=True,
+        )
 
         # if train -> Update `.latest` folder
         self.update_latest(work_dir=work_dir)
