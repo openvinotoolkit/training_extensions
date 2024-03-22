@@ -17,8 +17,7 @@ For better transfer learning we use the following algorithm components:
 Dataset Format
 **************
 
-For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. Since current Datumaro does not support `AVA dataset <http://research.google.com/ava/>`_ format, therefore conversion to `CVAT dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ is needed. Currently, we offer conversion code from the AVA dataset format to the CVAT dataset format. Please refer
-`this script <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_
+We support the popular action classification formats, `AVA dataset <http://research.google.com/ava/>`_ format.
 
 
 ******

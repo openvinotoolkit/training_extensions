@@ -290,6 +290,7 @@
 
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../explanation/product_design.html">Product Design</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="nav bd-sidenav">
@@ -398,23 +399,26 @@ environment:</p>
 </section>
 <section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Link to this heading">#</a></h2>
-<p>Although we offer conversion codes from <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md">ava dataset format</a> to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">cvat dataset format</a> from <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this code</a>, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from <a class="reference external" href="https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link">this link</a>.</p>
+<p>For action detection task, you need to prepare dataset whose format is <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/main/tools/data/ava/README.md">AVA</a> dataset.
+For easy beginning, we provide <a class="reference external" href="https://drive.google.com/file/d/1758dyPeFv4wS0gqL42sSXZSHWysL0Xr8/view?usp=drive_link">sample dataset</a></p>
 <p>If you download data from link and extract to <code class="docutils literal notranslate"><span class="pre">training_extensions/data</span></code> folder(you should make data folder at first), you can see the structure below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>training_extensions
 └── data
-    └── JHMDB_5%
-        ├── train
-        │    └── brush_hair_Brushing_Hair_with_Beth_brush_hair_h_nm_np1_le_goo_0
-        │        ├── annotations.xml
-        │        └── images [40 frames]
+    └── JHMDB_10%
+        ├── annotations
+        │    └── ava_action_list_v2.2.pbtxt
+        │    └── ava_test.csv
+        │    └── ava_train.csv
+        │    └── ava_val.csv
+        │    └── test.pkl
+        │    └── train.pkl
+        │    └── val.pkl
         │
-        │── test
-        │    └── brush_hair_Aussie_Brunette_Brushing_Long_Hair_brush_hair_u_nm_np1_fr_med_0
-        │        ├── annotations.xml
-        │        └── images [40 frames]
-        │
-        │── train.pkl
-        └── test.pkl
+        └── frames
+            │── train_video001
+            │   └── train_video001_0001.jpg
+            └── test_video001
+                └── test_video001_0001.jpg
 </pre></div>
 </div>
 </section>
@@ -436,114 +440,189 @@ The list of supported templates for action detection is available with the comma
 </pre></div>
 </div>
 <p>To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It’s a light model, that achieves competitive accuracy while keeping the inference fast.</p>
-<p>2. Next, we need to create workspace
-for various tasks we provide.</p>
-<p>Let’s prepare an OpenVINO™ Training Extensions action detection workspace running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build x3d_fast_rcnn --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test
+<p>2. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template)
+on a dataset and results:</p>
+<p>Here are the main outputs can expect with CLI:
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt</span></code> - a model checkpoint file.
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/configs.yaml</span></code> - The configuration file used in the training can be reused to reproduce the training.
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/.latest</span></code> - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+CLI (auto-config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>data/JHMDB_10%
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI (with config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml<span class="w"> </span>--data_root<span class="w"> </span>data/JHMDB_10%
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+API (from_config)</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
-[*] Workspace Path: otx-workspace-ACTION_DETECTION
-[*] Load Model Template ID: Custom_Action_Detection_X3D_FAST_RCNN
-[*] Load Model Name: X3D_FAST_RCNN
-[*]     - Updated: otx-workspace-ACTION_DETECTION/model.py
-[*]     - Updated: otx-workspace-ACTION_DETECTION/data_pipeline.py
-[*] Update data configuration file to: otx-workspace-ACTION_DETECTION/data.yaml
+<span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/JHMDB_10%&quot;</span>
+<span class="n">recipe</span> <span class="o">=</span> <span class="s2">&quot;src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml&quot;</span>
 
-(otx) ...$ cd ./otx-workspace-ACTION_DETECTION
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+          <span class="n">config_path</span><span class="o">=</span><span class="n">recipe</span><span class="p">,</span>
+          <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+          <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>It will create <strong>otx-workspace-ACTION_DETECTION</strong> with all necessary configs for X3D_FAST_RCNN, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch and splitted dataset.</p>
-<p>3. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
-command in our workspace:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/JHMDB_10%&quot;</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span>
+          <span class="n">model</span><span class="o">=</span><span class="s2">&quot;x3d&quot;</span><span class="p">,</span>
+          <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+          <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
-<p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 70 minutes.</p>
-<p>After that, we have the PyTorch action detection model trained with OpenVINO™ Training Extensions.</p>
-</section>
-<section id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h2>
-<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
-model on a specific dataset.</p>
-<p>The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a mAP score for spatio-temporal action detection.</p>
-<p>2. The command below will run validation on our dataset
-and save performance results in <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
-                    --load-weights models/weights.pth \
-                    --output outputs
+</div>
+</div>
+<p>3. <code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--help</span> <span class="pre">-v</span></code> or <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">--help</span> <span class="pre">-vv</span></code>.</p>
+<p>For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">                         </span>--max_epochs<span class="w"> </span><span class="m">100</span>
 </pre></div>
 </div>
-<p>We will get a similar to this validation output after some validation time (about 2 minutes):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span><span class="mi">540</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Loaded</span> <span class="n">model</span> <span class="n">weights</span> <span class="kn">from</span> <span class="nn">Task</span> <span class="n">Environment</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span><span class="mi">540</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Model</span> <span class="n">architecture</span><span class="p">:</span> <span class="n">X3D_FAST_RCNN</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span><span class="mi">739</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Patching</span> <span class="n">pre</span> <span class="n">proposals</span><span class="o">...</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span><span class="mi">749</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Done</span><span class="o">.</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">345</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Inference</span> <span class="n">completed</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">347</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">349</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span><span class="p">:</span> <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5086285195277019</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">349</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Evaluation</span> <span class="n">completed</span>
-<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5086285195277019</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-5">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+<span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">train_subset</span><span class="o">=</span><span class="n">SubsetConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
+<p>4. The training result <code class="docutils literal notranslate"><span class="pre">checkpoints/*.ckpt</span></code> file is located in <code class="docutils literal notranslate"><span class="pre">{work_dir}</span></code> folder,
+while training logs can be found in the <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}</span></code> dir.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently we don’t support export and optimize task in action detection. We will support these features very near future.</p>
+<p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/tensorboard</span></code>.</p>
 </div>
-</section>
-<section id="export">
-<h2>Export<a class="headerlink" href="#export" title="Link to this heading">#</a></h2>
-<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
-<p>2. Run the command line below to export the trained model
-and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export
-
-2023-03-24 15:03:35,993 - mmdeploy - INFO - Export PyTorch model to ONNX: /tmp/OTX-task-ffw8llin/openvino.onnx.
-2023-03-24 15:03:44,450 - mmdeploy - INFO - Args for Model Optimizer: mo --input_model=&quot;/tmp/OTX-task-ffw8llin/openvino.onnx&quot; --output_dir=&quot;/tmp/OTX-task-ffw8llin/&quot; --output=&quot;bboxes,labels&quot; --input=&quot;input&quot; --input_shape=&quot;[1, 3, 32, 256, 256]&quot; --mean_values=&quot;[123.675, 116.28, 103.53]&quot; --scale_values=&quot;[58.395, 57.12, 57.375]&quot; --source_layout=bctwh
-2023-03-24 15:03:46,707 - mmdeploy - INFO - [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
-Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html
-[ SUCCESS ] Generated IR version 11 model.
-[ SUCCESS ] XML file: /tmp/OTX-task-ffw8llin/openvino.xml
-[ SUCCESS ] BIN file: /tmp/OTX-task-ffw8llin/openvino.bin
-</pre></div>
-</div>
-<p>2023-03-24 15:03:46,707 - mmdeploy - INFO - Successfully exported OpenVINO model: /tmp/OTX-task-ffw8llin/openvino.xml
-2023-03-24 15:03:46,756 - mmaction - INFO - Exporting completed</p>
-<p>3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
-using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
-                    --load-weights model-exported/openvino.xml \
-                    --save-performance model-exported/performance.json
-
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace
+├── outputs/
+    ├── 20240403_134256/
+        ├── csv/
+        ├── checkpoints/
+        |   └── epoch_*.pth
+        ├── tensorboard/
+        └── configs.yaml
+    └── .latest
+        └── train/
 ...
-
-Performance(score: 0.47351524879614754, dashboard: (3 metric groups))
 </pre></div>
 </div>
+<p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.</p>
+<p>After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
 </section>
-<section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Link to this heading">#</a></h2>
-<p>1. You can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-Currently, only PTQ is supported for action detection. NNCF will be supported in near future.</p>
-<p>The optimized model will be quantized to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.
-Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
-<p>2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                        --save-model-to ptq_model
-
-...
-
-[*] Update data configuration file to: data.yaml
-Statistics collection: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [04:16&lt;00:00,  1.17it/s]Biases correction: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 168/168 [00:15&lt;00:00, 10.63it/s][&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;] 1572/1572, 7.3 task/s, elapsed: 216s, ETA:     0s
-Performance(score: 0.4621155288822204, dashboard: (1 metric groups))
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Link to this heading">#</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> runs evaluation of a
+trained model on a particular dataset.</p>
+<p>Test function receives test annotation information and model snapshot, trained in previous step.</p>
+<p>The default metric is mAP_50 measure.</p>
+<p>2. That’s how we can evaluate the snapshot in <code class="docutils literal notranslate"><span class="pre">otx-workspace</span></code>
+folder on JHMDB_10% dataset and save results to <code class="docutils literal notranslate"><span class="pre">otx-workspace</span></code>:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-6">
+CLI (with work_dir)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
+<span class="w">  </span>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+<span class="w">  </span>┃<span class="w">        </span>Test<span class="w"> </span>metric<span class="w">        </span>┃<span class="w">       </span>DataLoader<span class="w"> </span><span class="m">0</span><span class="w">        </span>┃
+<span class="w">  </span>┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+<span class="w">  </span>│<span class="w">      </span>test/data_time<span class="w">       </span>│<span class="w">   </span><span class="m">0</span>.006367621477693319<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/iter_time<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.02698644995689392<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">         </span>test/map<span class="w">          </span>│<span class="w">    </span><span class="m">0</span>.10247182101011276<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">        </span>test/map_50<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.3779516816139221<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">        </span>test/map_75<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.03639398142695427<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_large<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.11831618845462799<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_medium<span class="w">      </span>│<span class="w">    </span><span class="m">0</span>.02958027645945549<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">    </span>test/map_per_class<span class="w">     </span>│<span class="w">           </span>-1.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_small<span class="w">       </span>│<span class="w">            </span><span class="m">0</span>.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">        </span>test/mar_1<span class="w">         </span>│<span class="w">    </span><span class="m">0</span>.12753313779830933<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">        </span>test/mar_10<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.1305265873670578<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">       </span>test/mar_100<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.1305265873670578<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">  </span>test/mar_100_per_class<span class="w">   </span>│<span class="w">           </span>-1.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_large<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.14978596568107605<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_medium<span class="w">      </span>│<span class="w">    </span><span class="m">0</span>.06217033043503761<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_small<span class="w">       </span>│<span class="w">            </span><span class="m">0</span>.0<span class="w">            </span>│
+<span class="w">  </span>└───────────────────────────┴───────────────────────────┘
 </pre></div>
 </div>
-<p>Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
-<p>3. Now, you have fully trained, optimized and exported an
-efficient model representation ready-to-use action detection model.</p>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-7">
+CLI (with config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--config<span class="w">  </span>src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--data_root<span class="w"> </span>data/JHMDB_10%<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
+<span class="w">  </span>┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+<span class="w">  </span>┃<span class="w">        </span>Test<span class="w"> </span>metric<span class="w">        </span>┃<span class="w">       </span>DataLoader<span class="w"> </span><span class="m">0</span><span class="w">        </span>┃
+<span class="w">  </span>┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+<span class="w">  </span>│<span class="w">      </span>test/data_time<span class="w">       </span>│<span class="w">   </span><span class="m">0</span>.006367621477693319<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/iter_time<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.02698644995689392<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">         </span>test/map<span class="w">          </span>│<span class="w">    </span><span class="m">0</span>.10247182101011276<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">        </span>test/map_50<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.3779516816139221<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">        </span>test/map_75<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.03639398142695427<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_large<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.11831618845462799<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_medium<span class="w">      </span>│<span class="w">    </span><span class="m">0</span>.02958027645945549<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">    </span>test/map_per_class<span class="w">     </span>│<span class="w">           </span>-1.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">      </span>test/map_small<span class="w">       </span>│<span class="w">            </span><span class="m">0</span>.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">        </span>test/mar_1<span class="w">         </span>│<span class="w">    </span><span class="m">0</span>.12753313779830933<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">        </span>test/mar_10<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.1305265873670578<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">       </span>test/mar_100<span class="w">        </span>│<span class="w">    </span><span class="m">0</span>.1305265873670578<span class="w">     </span>│
+<span class="w">  </span>│<span class="w">  </span>test/mar_100_per_class<span class="w">   </span>│<span class="w">           </span>-1.0<span class="w">            </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_large<span class="w">       </span>│<span class="w">    </span><span class="m">0</span>.14978596568107605<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_medium<span class="w">      </span>│<span class="w">    </span><span class="m">0</span>.06217033043503761<span class="w">    </span>│
+<span class="w">  </span>│<span class="w">      </span>test/mar_small<span class="w">       </span>│<span class="w">            </span><span class="m">0</span>.0<span class="w">            </span>│
+<span class="w">  </span>└───────────────────────────┴───────────────────────────┘
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-8">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>3. The output of <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/csv/version_0/metrics.csv</span></code> consists of
+a dict with target metric name and its value.</p>
 </section>
 </section>
 
@@ -601,18 +680,8 @@ efficient model representation ready-to-use action detection model.</p>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#validation">
-   Validation
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#export">
-   Export
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#optimization">
-   Optimization
+  <a class="reference internal nav-link" href="#evaluation">
+   Evaluation
   </a>
  </li>
 </ul>
