@@ -118,7 +118,7 @@ class MMdeployExporter(OTXModelExporter):
         onnx_path.unlink()
         log.info("Converting to OpenVINO is done.")
 
-        return Path(save_path)
+        return save_path
 
     def to_onnx(
         self,
