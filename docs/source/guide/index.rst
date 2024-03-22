@@ -27,6 +27,7 @@ Guide
 
   explanation/algorithms/index
   explanation/additional_features/index
+  explanation/product_design
 
 
 .. toctree::
