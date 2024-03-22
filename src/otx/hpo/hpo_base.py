@@ -36,7 +36,6 @@ class HpoBase(ABC):
         num_trials (int | None, optional): How many training to conduct for HPO.
         num_workers (int, optional): How many trains are executed in parallel.
         num_full_iterations (int, optional): epoch for traninig after HPO.
-        non_pure_train_ratio (float, optional): ratio of validation time to (train time + validation time)
         full_dataset_size (int, optional): train dataset size
         expected_time_ratio (int | float | None, optional): Time to use for HPO.
                                                             If HPO is configured automatically,
@@ -64,7 +63,6 @@ class HpoBase(ABC):
         num_trials: int | None = None,
         num_workers: int = 1,
         num_full_iterations: int | float = 1,
-        non_pure_train_ratio: float = 0.2,
         full_dataset_size: int = 0,
         expected_time_ratio: int | float | None = None,
         maximum_resource: int | float | None = None,
@@ -78,12 +76,6 @@ class HpoBase(ABC):
         check_mode_input(mode)
         check_positive(full_dataset_size, "full_dataset_size")
         check_positive(num_full_iterations, "num_full_iterations")
-        if not 0 < non_pure_train_ratio <= 1:
-            error_msg = (
-                "non_pure_train_ratio should be greater than 0 and lesser than or equal to 1."
-                f"Your value is {subset_ratio}"
-            )
-            raise ValueError(error_msg)
         if maximum_resource is not None:
             check_positive(maximum_resource, "maximum_resource")
         if num_trials is not None:
@@ -103,7 +95,6 @@ class HpoBase(ABC):
         self.num_trials = num_trials
         self.num_workers = num_workers
         self.num_full_iterations = num_full_iterations
-        self.non_pure_train_ratio = non_pure_train_ratio
         self.full_dataset_size = full_dataset_size
         self.expected_time_ratio = expected_time_ratio
         self.maximum_resource: int | float | None = maximum_resource
