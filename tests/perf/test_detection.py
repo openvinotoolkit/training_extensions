@@ -48,6 +48,24 @@ class TestPerfDetection:
             ],
             "num_repeat": 5,
         },
+        "large_1": {
+            "tags": {
+                "task": "detection",
+            },
+            "datasets": [
+                "pascal_tiny/coco_otx",
+            ],
+            "num_repeat": 5,
+        },
+        "large_2": {
+            "tags": {
+                "task": "detection",
+            },
+            "datasets": [
+                "CITY_COCO/coco_otx",
+            ],
+            "num_repeat": 5,
+        },
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)

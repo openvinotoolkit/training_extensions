@@ -48,6 +48,24 @@ class TestPerfSingleLabelClassification:
             ],
             "num_repeat": 5,
         },
+        "large_1": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "flowers",
+            ],
+            "num_repeat": 5,
+        },
+        "large_2": {
+            "tags": {
+                "task": "single_label_classification",
+            },
+            "datasets": [
+                "car_data/car_data",
+            ],
+            "num_repeat": 5,
+        },
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)

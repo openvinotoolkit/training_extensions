@@ -51,6 +51,26 @@ class TestPerfSemanticSegmentation:
             "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
             "num_repeat": 5,
         },
+        "large_1": {
+            "tags": {
+                "task": "semantic_segmentation",
+            },
+            "datasets": [
+                "kitti_full",
+            ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
+            "num_repeat": 5,
+        },
+        "large_2": {
+            "tags": {
+                "task": "semantic_segmentation",
+            },
+            "datasets": [
+                "VOC_2012_OTX",
+            ],
+            "subset_dir_names": {"train": "train", "val": "val", "test": "test"},
+            "num_repeat": 5,
+        },
     }
 
     @pytest.mark.parametrize("fxt_model_id", MODEL_TEMPLATES, ids=MODEL_IDS, indirect=True)
