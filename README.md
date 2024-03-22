@@ -235,3 +235,15 @@ See Intel's [Global Human Rights Principles](https://www.intel.com/content/www/u
 Intel's products and software are intended only to be used in applications that do not cause or contribute to a violation of an internationally recognized human right.
 
 ---
+
+## Contributing
+
+For those who would like to contribute to the library, see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+Thank you to all of the people who have already made a contribution - we appreciate your support!
+
+<a href="https://github.com/openvinotoolkit/training_extensions/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=openvinotoolkit/training_extensions" />
+</a>
+
+---
