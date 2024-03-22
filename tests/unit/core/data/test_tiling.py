@@ -9,6 +9,7 @@ from unittest.mock import create_autospec
 
 import numpy as np
 import pytest
+import torch
 from datumaro import Dataset as DmDataset
 from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
@@ -18,11 +19,14 @@ from otx.core.config.data import (
     VisualPromptingConfig,
 )
 from otx.core.data.dataset.tile import OTXTileTransform
-from otx.core.data.entity.detection import DetBatchDataEntity
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.detection import OTXDetectionModel
 from otx.core.types.task import OTXTaskType
+from torchvision import tv_tensors
+
+from tests.test_helpers import generate_random_bboxes
 
 
 class TestOTXTiling:
@@ -154,12 +158,61 @@ class TestOTXTiling:
             assert isinstance(batch, TileBatchDetDataEntity)
 
     def test_tile_merge(self, fxt_det_data_config):
+        def dummy_forward(x: DetBatchDataEntity) -> DetBatchPredEntity:
+            """Dummy forward function for testing.
+
+            This function creates random bounding boxes for each image in the batch.
+            Args:
+                x (DetBatchDataEntity): Input batch data entity.
+
+            Returns:
+                DetBatchPredEntity: Output batch prediction entity.
+            """
+            bboxes = []
+            labels = []
+            scores = []
+            for img_info in x.imgs_info:
+                img_h, img_w = img_info.ori_shape
+                img_bboxes = generate_random_bboxes(
+                    image_width=img_w,
+                    image_height=img_h,
+                    num_boxes=100,
+                )
+                bboxes.append(
+                    tv_tensors.BoundingBoxes(
+                        img_bboxes,
+                        canvas_size=img_info.ori_shape,
+                        format=tv_tensors.BoundingBoxFormat.XYXY,
+                        dtype=torch.float64,
+                    ),
+                )
+                labels.append(
+                    torch.LongTensor(len(img_bboxes)).random_(3),
+                )
+                scores.append(
+                    torch.rand(len(img_bboxes), dtype=torch.float64),
+                )
+
+            return DetBatchPredEntity(
+                batch_size=x.batch_size,
+                images=x.images,
+                imgs_info=x.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                labels=labels,
+            )
+
         model = OTXDetectionModel(num_classes=3)
         fxt_det_data_config.tile_config.enable_tiler = True
+        fxt_det_data_config.tile_config.tile_size = (800, 800)
+        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
+        fxt_det_data_config.tile_config.overlap = 0.0
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             config=fxt_det_data_config,
         )
+        model.forward = dummy_forward
+
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
