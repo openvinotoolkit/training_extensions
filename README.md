@@ -22,7 +22,6 @@
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/openvinotoolkit/training_extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/openvinotoolkit/training_extensions)
 [![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml)
-[![Nightly Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml)
 [![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Downloads](https://static.pepy.tech/personalized-badge/otx?period=total&units=international_system&left_color=grey&right_color=green&left_text=PyPI%20Downloads)](https://pepy.tech/project/otx)
@@ -240,7 +239,7 @@ Intel's products and software are intended only to be used in applications that 
 
 For those who would like to contribute to the library, see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-Thank you to all of the people who have already made a contribution - we appreciate your support!
+Thank you! we appreciate your support!
 
 <a href="https://github.com/openvinotoolkit/training_extensions/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=openvinotoolkit/training_extensions" />
