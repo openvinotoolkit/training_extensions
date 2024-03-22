@@ -289,3 +289,8 @@ class NullLabelInfo(LabelInfo):
 
     def __init__(self) -> None:
         super().__init__(label_names=[], label_groups=[[]])
+
+    @classmethod
+    def from_json(cls, _: str) -> LabelInfo:
+        """Reconstruct it from the JSON serialized string."""
+        return cls()
