@@ -140,7 +140,8 @@ class HpoLoop:
             if not trial.process.is_alive():
                 if trial.process.exitcode != 0:
                     self._terminate_all_running_processes()
-                    raise RuntimeError("A HPO trial exited abnormally.")
+                    msg = "One of HPO trials exit abnormally."
+                    raise RuntimeError(msg)
                 trial.queue.close()
                 trial.process.join()
                 trial_to_remove.append(uid)
