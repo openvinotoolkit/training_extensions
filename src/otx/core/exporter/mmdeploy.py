@@ -9,7 +9,6 @@ import importlib
 import logging as log
 from contextlib import contextmanager
 from copy import copy
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterator, Literal
 
 import numpy as np
@@ -26,6 +25,8 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from omegaconf import DictConfig
 
 
@@ -118,7 +119,7 @@ class MMdeployExporter(OTXModelExporter):
         onnx_path.unlink()
         log.info("Converting to OpenVINO is done.")
 
-        return Path(save_path)
+        return save_path
 
     def to_onnx(
         self,
