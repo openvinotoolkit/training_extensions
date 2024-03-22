@@ -5,13 +5,12 @@
 
 from __future__ import annotations
 
-from functools import partial
 from unittest.mock import create_autospec
 
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
 from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
-from otx.core.metrics.fmeasure import FMeasure
+from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import OTXDetectionModel
 from torch.optim import Optimizer
 
@@ -32,7 +31,7 @@ class TestOTXDetectionModel:
                 "state_dict": {},
             },
             {
-                "hyper_parameters": {"confidence_threshold": 0.35},
+                "hyper_parameters": {"best_confidence_threshold": 0.35},
                 "state_dict": {},
             },
         ],
@@ -52,12 +51,9 @@ class TestOTXDetectionModel:
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
-            metric=partial(FMeasure),
+            metric=FMeasureCallable,
         )
 
         model.load_state_dict(mock_ckpt)
 
-        assert model.test_meta_info["best_confidence_threshold"] == 0.35
-
-        model.configure_metric()
-        assert model.metric.best_confidence_threshold == 0.35
+        assert model.hparams["best_confidence_threshold"] == 0.35

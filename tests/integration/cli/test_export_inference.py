@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from tests.integration.cli.utils import run_main
+from tests.utils import run_main
 
 log = logging.getLogger(__name__)
 

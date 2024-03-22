@@ -8,7 +8,7 @@ import pytest
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
-from tests.integration.cli.utils import run_main
+from tests.utils import run_main
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)

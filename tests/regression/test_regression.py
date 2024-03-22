@@ -8,10 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-from otx.cli.cli import OTXCLI
-from unittest.mock import patch
-
+from tests.utils import run_main
 import mlflow
+import pandas as pd
 
 
 @dataclass
@@ -69,13 +68,20 @@ class BaseTest:
             )
             with mlflow.start_run(tags=tags, run_name=run_name):
                 command_cfg = [
-                    "otx", "train",
-                    "--config", f"src/otx/recipe/{test_case.model.task}/{test_case.model.name}.yaml",
-                    "--model.num_classes", str(test_case.dataset.num_classes),
-                    "--data_root", str(data_root),
-                    "--data.config.data_format", test_case.dataset.data_format,
-                    "--work_dir", str(test_case.output_dir),
-                    "--engine.device", fxt_accelerator,
+                    "otx",
+                    "train",
+                    "--config",
+                    f"src/otx/recipe/{test_case.model.task}/{test_case.model.name}.yaml",
+                    "--model.num_classes",
+                    str(test_case.dataset.num_classes),
+                    "--data_root",
+                    str(data_root),
+                    "--data.config.data_format",
+                    test_case.dataset.data_format,
+                    "--work_dir",
+                    str(test_case.output_dir),
+                    "--engine.device",
+                    fxt_accelerator,
                 ]
                 deterministic = test_case.dataset.extra_overrides.pop("deterministic", "False")
                 for key, value in test_case.dataset.extra_overrides.items():
@@ -84,19 +90,40 @@ class BaseTest:
                 train_cfg = command_cfg.copy()
                 train_cfg.extend(["--seed", str(seed)])
                 train_cfg.extend(["--deterministic", deterministic])
-                with patch("sys.argv", train_cfg):
-                    cli = OTXCLI()
-                    train_metrics = cli.engine.trainer.callback_metrics
-                    checkpoint = cli.engine.checkpoint
-                command_cfg[1] = "test"
-                command_cfg += ["--checkpoint", checkpoint]
-                with patch("sys.argv", command_cfg):
-                    cli = OTXCLI()
-                    test_metrics = cli.engine.trainer.callback_metrics
-                metrics = {**train_metrics, **test_metrics}
+
+                run_main(command_cfg=train_cfg, open_subprocess=True)
+                checkpoint = test_case.output_dir / ".latest" / "train" / "best_checkpoint.ckpt"
+                assert checkpoint.exists()
+
+                test_cfg = command_cfg.copy()
+                test_cfg[1] = "test"
+                test_cfg += ["--checkpoint", str(checkpoint)]
+
+                # TODO(harimkang): This command cannot create `metrics.csv`` file under test output directory
+                # Without fixing this, we cannot submit the test metrics from the csv logged file
+                run_main(command_cfg=test_cfg, open_subprocess=True)
+
+                # This is also not working. It produces an empty dictionary for test_metrics = {}
+                # with patch("sys.argv", test_cfg):
+                #     cli = OTXCLI()
+                #     test_metrics = cli.engine.trainer.callback_metrics
+                # mlflow.log_metrics(test_metrics)
 
                 # Submit metrics to MLFlow Tracker server
-                mlflow.log_metrics(metrics)
+                for metric_csv_file in test_case.output_dir.glob("**/metrics.csv"):
+                    self._submit_metric(metric_csv_file)
+
+    def _submit_metric(self, metric_csv_file: Path) -> None:
+        df = pd.read_csv(metric_csv_file)
+        for step, sub_df in df.groupby("step"):
+            sub_df = sub_df.drop("step", axis=1)
+
+            for _, row in sub_df.iterrows():
+                row = row.dropna()
+                metrics = row.to_dict()
+                mlflow.log_metrics(metrics=metrics, step=step)
+
+        mlflow.log_artifact(local_path=str(metric_csv_file), artifact_path="metrics")
 
 
 class TestMultiClassCls(BaseTest):
@@ -118,7 +145,7 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
-            }
+            },
         )
         for idx in range(1, 4)
     ] + [
@@ -130,7 +157,7 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
-            }
+            },
         ),
         DatasetTestCase(
             name=f"multiclass_food101_large",
@@ -140,8 +167,8 @@ class TestMultiClassCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MulticlassAccuracywithLabelGroup",
-            }
-        )
+            },
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -193,7 +220,7 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
-            }
+            },
         )
         for idx in range(1, 4)
     ] + [
@@ -205,7 +232,7 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
-            }
+            },
         ),
         DatasetTestCase(
             name=f"multilabel_food101_large",
@@ -215,8 +242,8 @@ class TestMultilabelCls(BaseTest):
             extra_overrides={
                 "deterministic": "True",
                 "metric": "otx.core.metrics.accuracy.MultilabelAccuracywithLabelGroup",
-            }
-        )
+            },
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -282,7 +309,6 @@ class TestHlabelCls(BaseTest):
                 "metric": "otx.core.metrics.accuracy.HlabelAccuracy",
             },
         )
-
     ]
 
     @pytest.mark.parametrize(
@@ -336,7 +362,7 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -350,7 +376,7 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -362,11 +388,11 @@ class TestObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -398,6 +424,7 @@ class TestObjectDetection(BaseTest):
             fxt_accelerator=fxt_accelerator,
             tmpdir=tmpdir,
         )
+
 
 class TestSemanticSegmentation(BaseTest):
     # Test case parametrization for model
@@ -434,7 +461,7 @@ class TestSemanticSegmentation(BaseTest):
             data_format="common_semantic_segmentation_with_subset_dirs",
             num_classes=2,
             extra_overrides={},
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -467,6 +494,7 @@ class TestSemanticSegmentation(BaseTest):
             tmpdir=tmpdir,
         )
 
+
 class TestInstanceSegmentation(BaseTest):
     # Test case parametrization for model
     MODEL_TEST_CASES = [  # noqa: RUF012
@@ -483,7 +511,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -497,7 +525,7 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=2,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -509,11 +537,11 @@ class TestInstanceSegmentation(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -577,7 +605,7 @@ class TestVisualPrompting(BaseTest):
             data_format="coco",
             num_classes=1,
             extra_overrides={"deterministic": "warn"},
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -624,10 +652,7 @@ class TestZeroShotVisualPrompting(BaseTest):
             data_root=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
             data_format="datumaro",
             num_classes=2,
-            extra_overrides={
-                "max_epochs": "1",
-                "deterministic": "warn"
-            }
+            extra_overrides={"max_epochs": "1", "deterministic": "warn"},
         ),
     ]
 
@@ -681,7 +706,7 @@ class TestTileObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -693,11 +718,11 @@ class TestTileObjectDetection(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -747,7 +772,7 @@ class TestTileInstanceSegmentation(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -759,11 +784,11 @@ class TestTileInstanceSegmentation(BaseTest):
             num_classes=1,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
-        )
+        ),
     ]
 
     @pytest.mark.parametrize(
@@ -809,14 +834,14 @@ class TestActionClassification(BaseTest):
             data_root=Path("action_classification/ucf-kinetics-5percent"),
             data_format="kinetics",
             num_classes=101,
-            extra_overrides={"max_epochs": "10", "deterministic": "True"}
+            extra_overrides={"max_epochs": "10", "deterministic": "True"},
         ),
         DatasetTestCase(
             name="ucf-30percent",
             data_root=Path("action_classification/ucf-kinetics-30percent"),
             data_format="kinetics",
             num_classes=101,
-            extra_overrides={"max_epochs": "10", "deterministic": "True"}
+            extra_overrides={"max_epochs": "10", "deterministic": "True"},
         ),
     ]
 

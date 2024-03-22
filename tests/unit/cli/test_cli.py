@@ -166,7 +166,7 @@ class TestOTXCLI:
             "--data_root",
             "tests/assets/car_tree_bug",
             "--metric",
-            "otx.core.metrics.fmeasure.FMeasure",
+            "otx.core.metrics.fmeasure.FMeasureCallable",
             "--print_config",
         ]
         monkeypatch.setattr("sys.argv", argv)
@@ -177,9 +177,4 @@ class TestOTXCLI:
             OTXCLI()
         out, _ = capfd.readouterr()
         result_config = yaml.safe_load(out)
-        expected_str = """
-        metric:
-        - class_path: otx.core.metrics.fmeasure.FMeasure
-        """
-        expected_config = yaml.safe_load(expected_str)
-        assert expected_config["metric"][0]["class_path"] == result_config["metric"]["class_path"]
+        assert result_config["metric"] == "otx.core.metrics.fmeasure._f_measure_callable"
