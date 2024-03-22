@@ -20,9 +20,11 @@ from otx.core.config.data import (
 )
 from otx.core.data.dataset.tile import OTXTileTransform
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.detection import OTXDetectionModel
+from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.types.task import OTXTaskType
 from torchvision import tv_tensors
 
@@ -42,6 +44,44 @@ class TestOTXTiling:
     @pytest.fixture()
     def fxt_det_data_config(self, fxt_mmcv_det_transform_config) -> OTXDataModule:
         data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
+
+        batch_size = 8
+        num_workers = 0
+        return DataModuleConfig(
+            data_format="coco_instances",
+            data_root=data_root,
+            train_subset=SubsetConfig(
+                subset_name="train",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            val_subset=SubsetConfig(
+                subset_name="val",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            test_subset=SubsetConfig(
+                subset_name="test",
+                batch_size=batch_size,
+                num_workers=num_workers,
+                transform_lib_type="MMDET",
+                transforms=fxt_mmcv_det_transform_config,
+            ),
+            tile_config=TileConfig(),
+            vpm_config=VisualPromptingConfig(),
+        )
+
+    @pytest.fixture()
+    def fxt_instseg_data_config(self, fxt_mmcv_det_transform_config) -> OTXDataModule:
+        data_root = Path(__file__).parent.parent.parent.parent / "assets" / "car_tree_bug"
+
+        for transform in fxt_mmcv_det_transform_config:
+            if transform.type == "LoadAnnotations":
+                transform.with_mask = True
 
         batch_size = 8
         num_workers = 0
@@ -157,7 +197,7 @@ class TestOTXTiling:
         for batch in tile_datamodule.val_dataloader():
             assert isinstance(batch, TileBatchDetDataEntity)
 
-    def test_tile_merge(self, fxt_det_data_config):
+    def test_det_tile_merge(self, fxt_det_data_config):
         def dummy_forward(x: DetBatchDataEntity) -> DetBatchPredEntity:
             """Dummy forward function for testing.
 
@@ -204,12 +244,75 @@ class TestOTXTiling:
 
         model = OTXDetectionModel(num_classes=3)
         fxt_det_data_config.tile_config.enable_tiler = True
-        fxt_det_data_config.tile_config.tile_size = (800, 800)
-        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
-        fxt_det_data_config.tile_config.overlap = 0.0
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             config=fxt_det_data_config,
+        )
+        model.forward = dummy_forward
+
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            model.forward_tiles(batch)
+
+    def test_instseg_tile_merge(self, fxt_instseg_data_config):
+        def dummy_forward(x: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
+            """Dummy forward function for testing.
+
+            This function creates random bounding boxes/masks for each image in the batch.
+            Args:
+                x (InstanceSegBatchDataEntity): Input batch data entity.
+
+            Returns:
+                InstanceSegBatchPredEntity: Output batch prediction entity.
+            """
+            bboxes = []
+            labels = []
+            scores = []
+            masks = []
+            for img_info in x.imgs_info:
+                img_h, img_w = img_info.ori_shape
+                img_bboxes = generate_random_bboxes(
+                    image_width=img_w,
+                    image_height=img_h,
+                    num_boxes=100,
+                )
+                bboxes.append(
+                    tv_tensors.BoundingBoxes(
+                        img_bboxes,
+                        canvas_size=img_info.ori_shape,
+                        format=tv_tensors.BoundingBoxFormat.XYXY,
+                        dtype=torch.float64,
+                    ),
+                )
+                labels.append(
+                    torch.LongTensor(len(img_bboxes)).random_(3),
+                )
+                scores.append(
+                    torch.rand(len(img_bboxes), dtype=torch.float64),
+                )
+                masks.append(
+                    tv_tensors.Mask(
+                        torch.randint(0, 2, (len(img_bboxes), img_h, img_w)),
+                        dtype=torch.bool,
+                    ),
+                )
+
+            return InstanceSegBatchPredEntity(
+                batch_size=x.batch_size,
+                images=x.images,
+                imgs_info=x.imgs_info,
+                scores=scores,
+                bboxes=bboxes,
+                masks=masks,
+                labels=labels,
+                polygons=x.polygons,
+            )
+
+        model = OTXInstanceSegModel(num_classes=3)
+        fxt_instseg_data_config.tile_config.enable_tiler = True
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.INSTANCE_SEGMENTATION,
+            config=fxt_instseg_data_config,
         )
         model.forward = dummy_forward
 
