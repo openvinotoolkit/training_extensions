@@ -557,6 +557,7 @@ class OTXCLI:
                 fn(**fn_kwargs)
             except Exception:
                 self.console.print_exception(width=self.console.width)
+                raise
             self.save_config(work_dir=Path(self.engine.work_dir))
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
