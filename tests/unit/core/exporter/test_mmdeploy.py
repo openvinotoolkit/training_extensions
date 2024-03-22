@@ -2,16 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit test for mmdeploy exporter."""
 
+from __future__ import annotations
+
 from unittest.mock import MagicMock
 
 import pytest
-
 from otx.core.exporter import mmdeploy as target_file
 from otx.core.exporter.mmdeploy import (
     MMdeployExporter,
+    load_mmconfig_from_pkg,
     mmdeploy_init_model_helper,
     patch_input_shape,
-    load_mmconfig_from_pkg,
     use_temporary_default_scope,
 )
 from otx.core.types.precision import OTXPrecisionType
@@ -24,7 +25,11 @@ class TestMMdeployExporter:
     def setup(self, mocker):
         mocker.patch.object(target_file, "convert_conf_to_mmconfig_dict", return_value=MagicMock())
 
-    def get_exporter(self, max_num_detections: int | None = 0, output_names: list[str] | None = None) -> MMdeployExporter:
+    def get_exporter(
+        self,
+        max_num_detections: int | None = 0,
+        output_names: list[str] | None = None,
+    ) -> MMdeployExporter:
         return MMdeployExporter(
             model_builder=MagicMock(),
             model_cfg=MagicMock(),
@@ -32,7 +37,7 @@ class TestMMdeployExporter:
             test_pipeline=MagicMock(),
             input_size=(1, 3, 256, 256),
             max_num_detections=max_num_detections,
-            output_names=output_names
+            output_names=output_names,
         )
 
     def test_init(self):
@@ -43,52 +48,55 @@ class TestMMdeployExporter:
         # check attributes are set well
         for val in output_names:
             assert val in exporter.output_names
-        assert exporter._deploy_cfg["codebase_config"]["post_processing"]["max_output_boxes_per_class"] == max_num_detections
+        assert (
+            exporter._deploy_cfg["codebase_config"]["post_processing"]["max_output_boxes_per_class"]
+            == max_num_detections
+        )
         assert exporter._deploy_cfg["codebase_config"]["post_processing"]["keep_top_k"] == max_num_detections
         assert exporter._deploy_cfg["codebase_config"]["post_processing"]["pre_top_k"] == max_num_detections * 10
 
-    @pytest.fixture
+    @pytest.fixture()
     def exported_model(self) -> MagicMock:
         return MagicMock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_openvino(self, mocker, exported_model) -> MagicMock:
         mock_openvino = mocker.patch.object(target_file, "openvino")
         mock_openvino.convert_model.return_value = exported_model
         return mock_openvino
 
-    @pytest.fixture
+    @pytest.fixture()
     def onnx_path(self) -> MagicMock:
         return MagicMock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_cvt2onnx(self, mocker, onnx_path) -> MagicMock:
-        mock_cvt2onnx = mocker.patch.object(MMdeployExporter, "_cvt2onnx", return_value=onnx_path)
-        return mock_cvt2onnx
+        return mocker.patch.object(MMdeployExporter, "_cvt2onnx", return_value=onnx_path)
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_postprocess_openvino_model(self, mocker) -> MagicMock:
-        mock_postprocess_openvino_model = mocker.patch.object(
-            MMdeployExporter, "_postprocess_openvino_model", side_effect=lambda x : x
+        return mocker.patch.object(
+            MMdeployExporter,
+            "_postprocess_openvino_model",
+            side_effect=lambda x: x,
         )
-        return mock_postprocess_openvino_model
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_model(self) -> MagicMock:
         return MagicMock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def output_dir(self) -> MagicMock:
         return MagicMock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def base_model_name(self) -> str:
         return "fake"
 
-    @pytest.fixture
+    @pytest.fixture()
     def save_path(self, output_dir, base_model_name) -> MagicMock:
-        return output_dir / (base_model_name  + ".xml")
-        
+        return output_dir / (base_model_name + ".xml")
+
     @pytest.mark.parametrize("precision", [OTXPrecisionType.FP16, OTXPrecisionType.FP32])
     def test_to_openvino(
         self,
@@ -101,7 +109,7 @@ class TestMMdeployExporter:
         mock_model,
         output_dir,
         base_model_name,
-        save_path
+        save_path,
     ):
         exporter = self.get_exporter()
 
@@ -114,26 +122,26 @@ class TestMMdeployExporter:
         mock_openvino.save_model.assert_called_once_with(
             exported_model,
             save_path,
-            compress_to_fp16=(precision==OTXPrecisionType.FP16)
+            compress_to_fp16=(precision == OTXPrecisionType.FP16),
         )
         onnx_path.unlink.assert_called_once()
 
-    @pytest.fixture
+    @pytest.fixture()
     def onnx_model(self) -> MagicMock:
         return MagicMock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_onnx(self, mocker, onnx_model) -> MagicMock:
         mock_onnx = mocker.patch.object(target_file, "onnx")
         mock_onnx.load.return_value = onnx_model
         return mock_onnx
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_postprocess_onnx_model(self, mocker) -> MagicMock:
-        def func(*args):
+        def func(*args):  # noqa: ANN202
             return args[0]
-        mock_postprocess_onnx_model = mocker.patch.object(MMdeployExporter, "_postprocess_onnx_model", side_effect=func)
-        return mock_postprocess_onnx_model
+
+        return mocker.patch.object(MMdeployExporter, "_postprocess_onnx_model", side_effect=func)
 
     @pytest.mark.parametrize("precision", [OTXPrecisionType.FP16, OTXPrecisionType.FP32])
     def test_to_onnx(
@@ -146,24 +154,24 @@ class TestMMdeployExporter:
         mock_cvt2onnx,
         mock_onnx,
         onnx_model,
-        mock_postprocess_onnx_model
+        mock_postprocess_onnx_model,
     ):
         exporter = self.get_exporter()
 
         assert onnx_path == exporter.to_onnx(mock_model, output_dir, base_model_name, precision)
 
         mock_cvt2onnx.assert_called_once()
-        mock_cvt2onnx.call_args.args[0] == mock_model
-        mock_cvt2onnx.call_args.args[1] == output_dir
-        mock_cvt2onnx.call_args.args[2] == base_model_name
+        assert mock_cvt2onnx.call_args.args[0] == mock_model
+        assert mock_cvt2onnx.call_args.args[1] == output_dir
+        assert mock_cvt2onnx.call_args.args[2] == base_model_name
         assert mock_cvt2onnx.call_args.args[3]["backend_config"]["type"] == "onnxruntime"
         mock_onnx.load.assert_called_once_with(str(onnx_path))
         mock_postprocess_onnx_model.assert_called_once()
         assert mock_postprocess_onnx_model.call_args.args[0] == onnx_model
         mock_onnx.save.assert_called_once_with(onnx_model, str(onnx_path))
 
-    @pytest.fixture
-    def mock_torch(self, mocker):
+    @pytest.fixture()
+    def mock_torch(self, mocker) -> MagicMock:
         return mocker.patch.object(target_file, "torch")
 
     def test_cvt2onnx(self, mocker, mock_model, output_dir, base_model_name, mock_torch):
@@ -174,7 +182,7 @@ class TestMMdeployExporter:
 
         assert output_dir / f"{base_model_name}.onnx" == exporter._cvt2onnx(mock_model, output_dir, base_model_name)
         mock_torch.save.assert_called_once()
-        mock_torch.save.call_cargs.args[0] == mock_model.state_dict()
+        assert mock_torch.save.call_args.args[0] == mock_model.state_dict()
         mock_use_temporary_default_scope.assert_called_once()
         mock_build_task_processor.assert_called_once()
         mock_torch2onnx.assert_called_once()
@@ -202,14 +210,14 @@ def test_patch_input_shape():
 
     assert mock_deploy_cfg.ir_config.input_shape == (width, height)
 
-    
+
 def test_load_mmconfig_from_pkg(mocker):
     mock_mmconfig = mocker.patch.object(target_file, "MMConfig")
     assert mock_mmconfig.fromfile.return_value == load_mmconfig_from_pkg("otx")
     mock_mmconfig.fromfile.assert_called_once()
     assert "otx/__init__.py" in mock_mmconfig.fromfile.call_args.args[0]
 
-    
+
 def test_use_temporary_default_scope(mocker):
     mock_default_scope = mocker.patch.object(target_file, "DefaultScope")
     mock_default_scope._instance_dict = {}
