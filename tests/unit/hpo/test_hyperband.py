@@ -74,7 +74,6 @@ def good_hyperband_args():
             "mode": "max",
             "num_workers": 1,
             "num_full_iterations": 64,
-            "non_pure_train_ratio": 0.2,
             "full_dataset_size": 100,
             "maximum_resource": 64,
             "minimum_resource": 1,
