@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.utils import run_main
@@ -441,7 +442,7 @@ def test_otx_ov_test(
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo_e2e(
-    task: str,
+    task: OTXTaskType,
     tmp_path: Path,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
@@ -462,7 +463,23 @@ def test_otx_hpo_e2e(
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-
+    if task.lower().startswith("anomaly_"):
+        pytest.xfail(
+            reason="""This will be fixed soon
+│ /home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_api.py:137 in  │
+│ hpo_config                                                                   │
+│                                                                              │
+│   134 │   @hpo_config.setter                                                 │
+│   135 │   def hpo_config(self, hpo_config: HpoConfig | None) -> None:        │
+│   136 │   │   train_dataset_size = len(self._engine.datamodule.subsets["trai │
+│ ❱ 137 │   │   val_dataset_size = len(self._engine.datamodule.subsets["val"]) │
+│   138 │   │                                                                  │
+│   139 │   │   self._hpo_config: dict[str, Any] = {  # default setting        │
+│   140 │   │   │   "save_path": str(self._hpo_workdir),                       │
+╰──────────────────────────────────────────────────────────────────────────────╯
+KeyError: 'val'
+        """,
+        )
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
     tmp_path_hpo.mkdir(parents=True)

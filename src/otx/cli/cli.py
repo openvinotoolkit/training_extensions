@@ -495,6 +495,7 @@ class OTXCLI:
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")
         cfg.model.init_args.pop("scheduler")
+        cfg.model.init_args.pop("hlabel_info")
 
         self.get_subcommand_parser(self.subcommand).save(
             cfg=cfg,
