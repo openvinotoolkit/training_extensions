@@ -67,7 +67,6 @@ class HpoLoop:
         self._mp = multiprocessing.get_context("spawn")
         self._report_queue = self._mp.Queue()
         self._uid_index = 0
-        self._trial_fault_count = 0
         self._resource_manager = get_resource_manager(
             resource_type,
             num_parallel_trial,
@@ -83,7 +82,7 @@ class HpoLoop:
         """Run a HPO loop."""
         logger.info("HPO loop starts.")
         try:
-            while not self._hpo_algo.is_done() and self._trial_fault_count < 3:
+            while not self._hpo_algo.is_done():
                 if self._resource_manager.have_available_resource():
                     trial = self._hpo_algo.get_next_sample()
                     if trial is not None:
@@ -97,9 +96,6 @@ class HpoLoop:
             self._terminate_all_running_processes()
             raise e  # noqa: TRY201
         logger.info("HPO loop is done.")
-
-        if self._trial_fault_count >= 3:
-            logger.warning("HPO trials exited abnormally more than three times. HPO is suspended.")
 
         self._get_reports()
         self._join_all_processes()
@@ -143,7 +139,8 @@ class HpoLoop:
         for uid, trial in self._running_trials.items():
             if not trial.process.is_alive():
                 if trial.process.exitcode != 0:
-                    self._trial_fault_count += 1
+                    self._terminate_all_running_processes()
+                    raise RuntimeError("A HPO trial exited abnormally.")
                 trial.queue.close()
                 trial.process.join()
                 trial_to_remove.append(uid)
