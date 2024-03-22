@@ -270,6 +270,25 @@ class MMDetectionTask(OTXDetectionTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
+        from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+        meta_state = NNCFMetaState(
+            state_to_build=cfg.runner.nncf_meta.state_to_build,
+            data_to_build=cfg.runner.nncf_meta.data_to_build,
+            compression_ctrl=cfg.custom_hooks[-1]["compression_ctrl"].get_compression_state()
+        )
+        temp = {
+            "model" : {
+                "state_dict" : model.state_dict(),
+                "meta" : {
+                    "nncf_meta" : meta_state,
+                    "nncf_enable_compression" : True
+                }
+            },
+            "meta" : {
+                "nncf_enable_compression" : True
+            }
+        }
+        torch.save(temp, "/home/eunwoosh/work/val_bef_train/exp/a.pth")
         train_detector(
             model,
             datasets,
