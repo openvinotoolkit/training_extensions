@@ -28,9 +28,7 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name=f"multiclass_CUB_small_{idx}",
             path=Path("multiclass_classification/multiclass_CUB_small") / f"{idx}",
-            size="small",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=2,
+            group="small",
             num_repeat=5,
             extra_overrides={},
         )
@@ -39,18 +37,14 @@ class TestPerfSingleLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="multiclass_CUB_medium",
             path=Path("multiclass_classification/multiclass_CUB_medium"),
-            size="medium",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=67,
+            group="medium",
             num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="multiclass_food101_large",
             path=Path("multiclass_classification/multiclass_food101_large"),
-            size="large",
-            data_format="imagenet_with_subset_dirs",
-            num_classes=20,
+            group="large",
             num_repeat=5,
             extra_overrides={},
         ),
@@ -109,9 +103,7 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name=f"multilabel_CUB_small_{idx}",
             path=Path("multilabel_classification/multilabel_CUB_small") / f"{idx}",
-            size="small",
-            data_format="datumaro",
-            num_classes=3,
+            group="small",
             num_repeat=5,
             extra_overrides={},
         )
@@ -120,18 +112,14 @@ class TestPerfMultiLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="multilabel_CUB_medium",
             path=Path("multilabel_classification/multilabel_CUB_medium"),
-            size="medium",
-            data_format="datumaro",
-            num_classes=68,
+            group="medium",
             num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="multilabel_food101_large",
             path=Path("multilabel_classification/multilabel_food101_large"),
-            size="large",
-            data_format="datumaro",
-            num_classes=21,
+            group="large",
             num_repeat=5,
             extra_overrides={},
         ),
@@ -190,9 +178,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name=f"hlabel_CUB_small_{idx}",
             path=Path("hlabel_classification/hlabel_CUB_small") / f"{idx}",
-            size="small",
-            data_format="datumaro",
-            num_classes=6,
+            group="small",
             num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "3",
@@ -204,9 +190,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
         Benchmark.Dataset(
             name="hlabel_CUB_medium",
             path=Path("hlabel_classification/hlabel_CUB_medium"),
-            size="medium",
-            data_format="datumaro",
-            num_classes=102,
+            group="medium",
             num_repeat=5,
             extra_overrides={
                 "model.num_multiclass_heads": "23",

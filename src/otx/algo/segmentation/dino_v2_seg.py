@@ -4,19 +4,40 @@
 """DinoV2Seg model implementations."""
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
-from otx.core.model.entity.segmentation import MMSegCompatibleModel
+from otx.core.metrics.dice import DiceCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.segmentation import MMSegCompatibleModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class DinoV2Seg(MMSegCompatibleModel):
     """DinoV2Seg Model."""
 
-    def __init__(self, num_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = DiceCallable,
+        torch_compile: bool = False,
+    ) -> None:
         model_name = "dino_v2_seg"
         config = read_mmconfig(model_name=model_name)
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

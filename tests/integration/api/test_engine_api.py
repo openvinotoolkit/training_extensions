@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from openvino.model_api.tilers import Tiler
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel
+from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
@@ -96,7 +96,7 @@ def test_engine_from_config(
     if task not in [
         OTXTaskType.MULTI_CLASS_CLS,
         OTXTaskType.MULTI_LABEL_CLS,
-        # Will be supported after merging PR#2997
+        # Restore these models after fixing undetermined CI failures for ATSS and Mask RCNN
         # OTXTaskType.DETECTION,
         # OTXTaskType.ROTATED_DETECTION,
         # OTXTaskType.INSTANCE_SEGMENTATION,

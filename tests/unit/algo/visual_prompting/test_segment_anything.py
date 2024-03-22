@@ -335,7 +335,7 @@ class TestOTXSegmentAnything:
 
     def test_inspect_prompts(self, model) -> None:
         """Test _inspect_prompts."""
-        # TODO(sungchul): Add point prompts # noqa: TD003
+        # TODO(sungchul): Add point prompts
         prompts: list[tv_tensors.BoundingBoxes] = [
             tv_tensors.BoundingBoxes(
                 [[0, 0, 1, 1]],

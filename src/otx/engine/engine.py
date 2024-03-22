@@ -6,8 +6,9 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterable, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Literal
 from warnings import warn
 
 import torch
@@ -17,8 +18,7 @@ from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.base import OTXModel, OVModel
-from otx.core.model.module.base import OTXLitModule
+from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
 from otx.core.types.device import DeviceType
 from otx.core.types.export import OTXExportFormatType
@@ -27,7 +27,7 @@ from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
 
 from .hpo import execute_hpo, update_hyper_parameter
-from .utils.auto_configurator import AutoConfigurator
+from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
@@ -81,6 +81,8 @@ class Engine:
         ...     datamodule = OTXDataModule(...),
         ... )
     """
+
+    _EXPORTED_MODEL_BASE_NAME: ClassVar[str] = "exported_model"
 
     def __init__(
         self,
@@ -142,7 +144,13 @@ class Engine:
             scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
         )
 
-    _EXPORTED_MODEL_BASE_NAME = "exported_model"
+        # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
+        if self.task in (
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ):
+            self._model = self._get_anomaly_model(self._model, self.optimizer, self.scheduler)
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -226,14 +234,6 @@ class Engine:
                 self.checkpoint = best_trial_weight
                 resume = True
 
-        lit_module = self._build_lightning_module(
-            model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-            metric=metric,
-        )
-        lit_module.label_info = self.datamodule.label_info
-
         if seed is not None:
             seed_everything(seed, workers=True)
 
@@ -252,10 +252,19 @@ class Engine:
         elif self.checkpoint is not None:
             loaded_checkpoint = torch.load(self.checkpoint)
             # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
-            lit_module.load_state_dict(loaded_checkpoint)
+            self.model.load_state_dict(loaded_checkpoint)
+
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
 
         self.trainer.fit(
-            model=lit_module,
+            model=self.model,
             datamodule=self.datamodule,
             **fit_kwargs,
         )
@@ -306,28 +315,33 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
-        lit_module = self._build_lightning_module(
-            model=model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-            metric=metric,
-        )
-        lit_module.label_info = datamodule.label_info
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
-            lit_module.load_state_dict(loaded_checkpoint)
+            model.load_state_dict(loaded_checkpoint)
 
         self._build_trainer(**kwargs)
 
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         self.trainer.test(
-            model=lit_module,
+            model=model,
             dataloaders=datamodule,
         )
 
@@ -384,26 +398,31 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
-
-        lit_module = self._build_lightning_module(
-            model=model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-        )
-        lit_module.label_info = datamodule.label_info
 
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
-            lit_module.load_state_dict(loaded_checkpoint)
+            model.load_state_dict(loaded_checkpoint)
 
-        lit_module.model.explain_mode = explain
+        model.explain_mode = explain
 
         self._build_trainer(**kwargs)
 
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         predict_result = self.trainer.predict(
-            model=lit_module,
+            model=model,
             dataloaders=datamodule,
             return_predictions=return_predictions,
         )
@@ -414,7 +433,7 @@ class Engine:
 
             predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
 
-        lit_module.model.explain_mode = False
+        model.explain_mode = False
         return predict_result
 
     def export(
@@ -464,20 +483,14 @@ class Engine:
             raise RuntimeError(msg)
 
         self.model.eval()
-        lit_module = self._build_lightning_module(
-            model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-        )
         loaded_checkpoint = torch.load(ckpt_path)
-        lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
-        self.model.label_info = lit_module.label_info
+        self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
 
-        lit_module.load_state_dict(loaded_checkpoint)
+        self.model.load_state_dict(loaded_checkpoint)
 
         self.model.explain_mode = explain
 
-        exported_model_path = lit_module.export(
+        exported_model_path = self.model.export(
             output_dir=Path(self.work_dir),
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
@@ -533,7 +546,10 @@ class Engine:
 
         model = self.model
         if not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            optimize_datamodule = self._auto_configurator.update_ov_subset_pipeline(
+                datamodule=optimize_datamodule,
+                subset="train",
+            )
             model = self._auto_configurator.get_ov_model(
                 model_name=str(checkpoint),
                 label_info=optimize_datamodule.label_info,
@@ -594,26 +610,21 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.get_ov_datamodule()
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        lit_module = self._build_lightning_module(
-            model=model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-        )
-        lit_module.label_info = datamodule.label_info
+        model.label_info = datamodule.label_info
 
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
-            lit_module.load_state_dict(loaded_checkpoint)
+            model.load_state_dict(loaded_checkpoint)
 
-        lit_module.model.explain_mode = True
+        model.explain_mode = True
 
         self._build_trainer(**kwargs)
 
         predict_result = self.trainer.predict(
-            model=lit_module,
+            model=model,
             datamodule=datamodule,
         )
 
@@ -628,7 +639,7 @@ class Engine:
                 datamodule,
                 output_dir=Path(self.work_dir),
             )
-        lit_module.model.explain_mode = False
+        model.explain_mode = False
         return predict_result
 
     @classmethod
@@ -695,6 +706,68 @@ class Engine:
             optimizer=instantiated_config.get("optimizer"),
             scheduler=instantiated_config.get("scheduler"),
             **engine_kwargs,
+        )
+
+    @classmethod
+    def from_model_name(
+        cls,
+        model_name: str,
+        task: OTXTaskType,
+        data_root: PathLike | None = None,
+        work_dir: PathLike | None = None,
+        **kwargs,
+    ) -> Engine:
+        """Builds the engine from a model name.
+
+        Args:
+            model_name (str): The model name.
+            task (OTXTaskType): The type of OTX task.
+            data_root (PathLike | None): Root directory for the data.
+                Defaults to None. If data_root is None, use the data_root from the configuration file.
+            work_dir (PathLike | None, optional): Working directory for the engine.
+                Defaults to None. If work_dir is None, use the work_dir from the configuration file.
+            kwargs: Arguments that can override the engine's arguments.
+
+        Returns:
+            Engine: An instance of the Engine class.
+
+        Example:
+            >>> engine = Engine.from_model_name(
+            ...     model_name="atss_mobilenetv2",
+            ...     task="DETECTION",
+            ...     data_root=<dataset/path>,
+            ... )
+
+            If you want to override configuration from default config
+            >>> overriding = {
+            ...     "data.config.train_subset.batch_size": 2,
+            ...     "data.config.test_subset.subset_name": "TESTING",
+            ... }
+            >>> engine = Engine(
+            ...     model_name="atss_mobilenetv2",
+            ...     task="DETECTION",
+            ...     data_root=<dataset/path>,
+            ...     **overriding,
+            ... )
+        """
+        default_config = DEFAULT_CONFIG_PER_TASK.get(task)
+        model_path = str(default_config).split("/")
+        model_path[-1] = f"{model_name}.yaml"
+        config = Path("/".join(model_path))
+        if not config.exists():
+            candidate_list = [model.stem for model in config.parent.glob("*")]
+            msg = (
+                f"Model config file not found: {config}, please check the model name. "
+                f"Available models for {task} task are {candidate_list}"
+            )
+            raise FileNotFoundError(msg)
+
+        return cls.from_config(
+            config_path=config,
+            data_root=data_root,
+            work_dir=work_dir,
+            task=task,
+            **kwargs,
         )
 
     # ------------------------------------------------------------------------ #
@@ -787,47 +860,6 @@ class Engine:
             raise RuntimeError(msg)
         return self._datamodule
 
-    def _build_lightning_module(
-        self,
-        model: OTXModel,
-        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-        metric: Metric | MetricCallable | None = None,
-    ) -> OTXLitModule:
-        """Builds a LightningModule for engine workflow.
-
-        Args:
-            model (OTXModel): The OTXModel instance.
-            optimizer (list[OptimizerCallable] | OptimizerCallable | None): The optimizer callable.
-            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None): The learning rate scheduler callable.
-            metric (Metric | MetricCallable | None): The metric for the validation and test.
-                                            It could be None at export, predict, etc.
-
-        Returns:
-            OTXLitModule | OTXModel: The built LightningModule instance.
-        """
-        if self.task in (
-            OTXTaskType.ANOMALY_CLASSIFICATION,
-            OTXTaskType.ANOMALY_DETECTION,
-            OTXTaskType.ANOMALY_SEGMENTATION,
-        ):
-            model = self._get_anomaly_model(model, optimizer, scheduler)
-        else:
-            class_module, class_name = LITMODULE_PER_TASK[self.task].rsplit(".", 1)
-            module = __import__(class_module, fromlist=[class_name])
-            lightning_module = getattr(module, class_name)
-            lightning_kwargs = {
-                "otx_model": model,
-                "optimizer": optimizer,
-                "scheduler": scheduler,
-                "torch_compile": False,
-            }
-            if metric:
-                lightning_kwargs["metric"] = metric
-
-            model = lightning_module(**lightning_kwargs)
-        return model
-
     def _get_anomaly_model(
         self,
         model: OTXModel,
@@ -836,6 +868,6 @@ class Engine:
     ) -> OTXModel:
         # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
         model.task = self.task
-        model.optimizer = optimizer
-        model.scheduler = scheduler
+        model.optimizer_callable = optimizer
+        model.scheduler_callable = scheduler
         return model

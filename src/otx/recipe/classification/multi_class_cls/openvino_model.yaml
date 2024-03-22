@@ -1,5 +1,5 @@
 model:
-  class_path: otx.core.model.entity.classification.OVMulticlassClassificationModel
+  class_path: otx.core.model.classification.OVMulticlassClassificationModel
   init_args:
     num_classes: 1000
     model_name: efficientnet-b0-pytorch

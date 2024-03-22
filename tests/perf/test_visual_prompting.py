@@ -25,9 +25,7 @@ class TestPerfVisualPrompting(PerfTestBase):
         Benchmark.Dataset(
             name=f"wgisd_small_{idx}",
             path=Path("visual_prompting/wgisd_small") / f"{idx}",
-            size="small",
-            data_format="coco",
-            num_classes=5,
+            group="small",
             num_repeat=5,
             extra_overrides={},
         )
@@ -36,18 +34,14 @@ class TestPerfVisualPrompting(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium",
             path=Path("visual_prompting/coco_car_person_medium"),
-            size="medium",
-            data_format="coco",
-            num_classes=2,
+            group="medium",
             num_repeat=5,
             extra_overrides={},
         ),
         Benchmark.Dataset(
             name="vitens_coliform",
             path=Path("visual_prompting/Vitens-Coliform-coco"),
-            size="large",
-            data_format="coco",
-            num_classes=1,
+            group="large",
             num_repeat=5,
             extra_overrides={},
         ),
@@ -104,9 +98,7 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium_datumaro",
             path=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
-            size="medium",
-            data_format="datumaro",
-            num_classes=2,
+            group="medium",
             num_repeat=5,
             extra_overrides={"max_epochs": "1"},
         ),

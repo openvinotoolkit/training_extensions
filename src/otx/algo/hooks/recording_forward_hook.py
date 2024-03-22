@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING, Callable, Sequence
 import numpy as np
 import torch
 
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI
-
 if TYPE_CHECKING:
+    from mmengine.structures.instance_data import InstanceData
     from torch.utils.hooks import RemovableHandle
 
 
@@ -333,54 +332,33 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
 
     def __init__(
         self,
-        cls_head_forward_fn: Callable,
         num_classes: int,
         num_anchors: list[int],
         normalize: bool = True,
         use_cls_softmax: bool = True,
     ) -> None:
-        super().__init__(cls_head_forward_fn, normalize)
+        super().__init__(head_forward_fn=None, normalize=normalize)
         # SSD-like heads also have background class
         self._num_classes = num_classes
         self._num_anchors = num_anchors
         # Should be switched off for tiling
         self.use_cls_softmax = use_cls_softmax
 
-    @classmethod
-    def create_and_register_hook(
-        cls,
-        backbone: torch.nn.Module,
-        cls_head_forward_fn: Callable,
-        num_classes: int,
-        num_anchors: list[int],
-    ) -> BaseRecordingForwardHook:
-        """Create this object and register it to the module forward hook."""
-        hook = cls(
-            cls_head_forward_fn,
-            num_classes=num_classes,
-            num_anchors=num_anchors,
-        )
-        hook.handle = backbone.register_forward_hook(hook.recording_forward)
-        return hook
-
     def func(
         self,
-        feature_map: torch.Tensor | Sequence[torch.Tensor],
+        cls_scores: torch.Tensor | Sequence[torch.Tensor],
         _: int = -1,
     ) -> torch.Tensor:
         """Generate the saliency map from raw classification head output, then normalizing to (0, 255).
 
         Args:
-            feature_map (torch.Tensor | Sequence[torch.Tensor]): Feature maps from backbone/FPN or
-            classification scores from cls_head.
+            cls_scores (torch.Tensor | Sequence[torch.Tensor]): Classification scores from cls_head.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        cls_scores = self._head_forward_fn(feature_map) if self._head_forward_fn else feature_map
-
         middle_idx = len(cls_scores) // 2
-        # resize to the middle feature map
+        # Resize to the middle feature map
         batch_size, _, height, width = cls_scores[middle_idx].size()
         saliency_maps = torch.empty(batch_size, self._num_classes, height, width)
         for batch_idx in range(batch_size):
@@ -420,55 +398,45 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         super().__init__()
         self.num_classes = num_classes
 
-    @classmethod
-    def create_and_register_hook(cls, num_classes: int) -> BaseRecordingForwardHook:
-        """Create this object and register it to the module forward hook."""
-        return cls(num_classes)
-
     def func(
         self,
-        preds: list[InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI],
+        predictions: list[InstanceData],
         _: int = -1,
     ) -> list[np.array]:
         """Generate saliency maps from predicted masks by averaging and normalizing them per-class.
 
         Args:
-            preds (List[InstanceSegBatchPredEntity]): Predictions of Instance Segmentation model.
+            predictions (list[InstanceData]): Predictions of Instance Segmentation model.
 
         Returns:
-            list[np.array]: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
         """
-        # TODO(gzalessk): Add unit tests # noqa: TD003
-        batch_size = len(preds)
-        batch_saliency_maps = list(range(batch_size))
-
-        for batch, pred in enumerate(preds):
-            class_averaged_masks = self.average_and_normalize(pred, self.num_classes)
-            batch_saliency_maps[batch] = class_averaged_masks
-        return batch_saliency_maps
+        # TODO(gzalessk): Add unit tests
+        batch_saliency_maps = []
+        for prediction in predictions:
+            class_averaged_masks = self.average_and_normalize(prediction, self.num_classes)
+            batch_saliency_maps.append(class_averaged_masks)
+        return torch.stack(batch_saliency_maps)
 
     @classmethod
     def average_and_normalize(
         cls,
-        pred: InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI,
+        pred: InstanceData,
         num_classes: int,
     ) -> np.array:
         """Average and normalize masks in prediction per-class.
 
         Args:
-            preds (InstanceSegBatchPredEntity): Predictions of Instance Segmentation model.
+            preds (InstanceData): Predictions of Instance Segmentation model.
             num_classes (int): Num classes that model can predict.
 
         Returns:
-            np.array: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+            np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        _, height, width = pred.masks[0].data.shape
-        masks, scores, labels = (
-            pred.masks[0].data,
-            pred.scores[0].data,
-            pred.labels[0].data,
-        )
-        saliency_maps = torch.zeros((num_classes, height, width), dtype=torch.float32)
+        masks, scores, labels = (pred.masks, pred.scores, pred.labels)
+        _, height, width = masks.shape
+
+        saliency_maps = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)
         class_objects = [0 for _ in range(num_classes)]
 
         for confidence, class_ind, raw_mask in zip(scores, labels, masks):
@@ -482,6 +450,5 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
 
         saliency_maps = saliency_maps.reshape((num_classes, -1))
         saliency_maps = cls._normalize_map(saliency_maps)
-        saliency_maps = saliency_maps.reshape(num_classes, height, width)
 
-        return saliency_maps.numpy()
+        return saliency_maps.reshape(num_classes, height, width)

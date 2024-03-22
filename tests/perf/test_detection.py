@@ -30,9 +30,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name=f"pothole_small_{idx}",
             path=Path("detection/pothole_small") / f"{idx}",
-            size="small",
-            data_format="coco",
-            num_classes=1,
+            group="small",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -46,9 +44,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="pothole_medium",
             path=Path("detection/pothole_medium"),
-            size="medium",
-            data_format="coco",
-            num_classes=1,
+            group="medium",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -60,9 +56,7 @@ class TestPerfObjectDetection(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_large",
             path=Path("detection/vitens_large"),
-            size="large",
-            data_format="coco",
-            num_classes=1,
+            group="large",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",

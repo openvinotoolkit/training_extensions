@@ -56,7 +56,7 @@ def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: 
         warnings.warn(msg, stacklevel=2)
         return False
     if isinstance(annotation, Polygon):
-        # TODO(JaegukHyun): This process is computationally intensive.  # noqa: TD003
+        # TODO(JaegukHyun): This process is computationally intensive.
         # We should make pre-filtering user-configurable.
         x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
         y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]

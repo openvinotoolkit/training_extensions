@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor, nn
@@ -17,7 +17,14 @@ from otx.algo.visual_prompting.decoders import SAMMaskDecoder
 from otx.algo.visual_prompting.encoders import SAMImageEncoder, SAMPromptEncoder
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.visual_prompting import VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity
-from otx.core.model.entity.visual_prompting import OTXVisualPromptingModel
+from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.visual_prompting import OTXVisualPromptingModel
+
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 DEFAULT_CONFIG_SEGMENT_ANYTHING: dict[str, dict[str, Any]] = {
     "tiny_vit": {
@@ -481,9 +488,24 @@ class SegmentAnything(nn.Module):
 class OTXSegmentAnything(OTXVisualPromptingModel):
     """Visual Prompting model."""
 
-    def __init__(self, backbone: Literal["tiny_vit", "vit_b"], num_classes: int = 0, **kwargs):
+    def __init__(
+        self,
+        backbone: Literal["tiny_vit", "vit_b"],
+        num_classes: int = 0,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
+        **kwargs,
+    ):
         self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     def _create_model(self) -> nn.Module:
         """Create a PyTorch model for this class."""
@@ -499,9 +521,11 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
             "gt_masks": inputs.masks,
             "bboxes": self._inspect_prompts(inputs.bboxes),
             "points": [
-                (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
-                if point is not None
-                else None
+                (
+                    (tv_tensors.wrap(point.unsqueeze(1), like=point), torch.ones(len(point), 1, device=point.device))
+                    if point is not None
+                    else None
+                )
                 for point in self._inspect_prompts(inputs.points)
             ],
         }

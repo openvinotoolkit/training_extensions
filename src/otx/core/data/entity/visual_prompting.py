@@ -10,7 +10,14 @@ from typing import TYPE_CHECKING
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity, Points
+from otx.core.data.entity.base import (
+    OTXBatchDataEntity,
+    OTXBatchPredEntity,
+    OTXBatchPredEntityWithXAI,
+    OTXDataEntity,
+    OTXPredEntity,
+    Points,
+)
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
 
@@ -119,6 +126,11 @@ class VisualPromptingBatchPredEntity(VisualPromptingBatchDataEntity, OTXBatchPre
     """Data entity to represent model output predictions for visual prompting task."""
 
 
+@dataclass
+class VisualPromptingBatchPredEntityWithXAI(VisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for visual prompting task."""
+
+
 @register_pytree_node
 @dataclass
 class ZeroShotVisualPromptingDataEntity(OTXDataEntity):
@@ -192,8 +204,7 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
         """Pin memory for member tensor variables."""
         super().pin_memory()
         self.prompts = [
-            [tv_tensors.wrap(prompt.pin_memory(), like=prompt) if prompt is not None else prompt for prompt in prompts]
-            for prompts in self.prompts
+            [tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in prompts] for prompts in self.prompts
         ]
         self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
         self.labels = [label.pin_memory() for label in self.labels]
@@ -205,3 +216,8 @@ class ZeroShotVisualPromptingBatchPredEntity(ZeroShotVisualPromptingBatchDataEnt
     """Data entity to represent model output predictions for zero-shot visual prompting task."""
 
     prompts: list[Points]  # type: ignore[assignment]
+
+
+@dataclass
+class ZeroShotVisualPromptingBatchPredEntityWithXAI(ZeroShotVisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
+    """Data entity to represent model output predictions for visual prompting task."""

@@ -4,28 +4,51 @@
 """MobileNetV3 model implementation."""
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.model.entity.classification import (
+from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.model.classification import (
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
 
+if TYPE_CHECKING:
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
+
 
 class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
     """MobileNetV3 Model for hierarchical label classification task."""
 
-    def __init__(self, num_classes: int, num_multiclass_heads: int, num_multilabel_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = HLabelClsMetricCallble,
+        torch_compile: bool = False,
+    ) -> None:
         self.num_multiclass_heads = num_multiclass_heads
         self.num_multilabel_classes = num_multilabel_classes
 
         config = read_mmconfig(model_name="mobilenet_v3_large_light", subdir_name="hlabel_classification")
         config.head.num_multiclass_heads = num_multiclass_heads
         config.head.num_multilabel_classes = num_multilabel_classes
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -42,10 +65,25 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
 class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
     """MobileNetV3 Model for multi-label classification task."""
 
-    def __init__(self, num_classes: int, light: bool = False) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        light: bool = False,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiClassClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         model_name = "mobilenet_v3_large_light" if light else "mobilenet_v3_large"
         config = read_mmconfig(model_name=model_name, subdir_name="multiclass_classification")
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -62,9 +100,23 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
 class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
     """MobileNetV3 Model for multi-class classification task."""
 
-    def __init__(self, num_classes: int) -> None:
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MultiLabelClsMetricCallable,
+        torch_compile: bool = False,
+    ) -> None:
         config = read_mmconfig("mobilenet_v3_large_light", subdir_name="multilabel_classification")
-        super().__init__(num_classes=num_classes, config=config)
+        super().__init__(
+            num_classes=num_classes,
+            config=config,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

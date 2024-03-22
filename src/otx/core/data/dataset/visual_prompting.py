@@ -227,7 +227,7 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
                 gt_masks.append(mask)
                 gt_polygons.append(annotation)
 
-            # TODO(sungchul): for mask, bounding box, and point annotation # noqa: TD003
+            # TODO(sungchul): for mask, bounding box, and point annotation
             elif isinstance(annotation, (dmBbox, dmMask, dmPoints)):
                 pass
 

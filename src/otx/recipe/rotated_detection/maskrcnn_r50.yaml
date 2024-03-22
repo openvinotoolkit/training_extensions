@@ -22,12 +22,6 @@ scheduler:
       patience: 9
       monitor: val/map_50
 
-metric:
-  class_path: otx.algo.instance_segmentation.otx_instseg_evaluation.OTXMaskRLEMeanAveragePrecision
-  init_args:
-    box_format: xyxy
-    iou_type: segm
-
 engine:
   task: ROTATED_DETECTION
   device: auto

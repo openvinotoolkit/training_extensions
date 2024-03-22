@@ -26,9 +26,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"wgisd_small_{idx}",
             path=Path("instance_seg/wgisd_small") / f"{idx}",
-            size="small",
-            data_format="coco",
-            num_classes=5,
+            group="small",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -42,9 +40,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="coco_car_person_medium",
             path=Path("instance_seg/coco_car_person_medium"),
-            size="medium",
-            data_format="coco",
-            num_classes=2,
+            group="medium",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -56,9 +52,7 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_coliform",
             path=Path("instance_seg/Vitens-Coliform-coco"),
-            size="large",
-            data_format="coco",
-            num_classes=1,
+            group="large",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -121,9 +115,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name=f"vitens_aeromonas_small_{idx}",
             path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
-            size="small",
-            data_format="coco",
-            num_classes=1,
+            group="small",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
@@ -137,9 +129,7 @@ class TestPerfTilingInstanceSegmentation(PerfTestBase):
         Benchmark.Dataset(
             name="vitens_aeromonas_medium",
             path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
-            size="medium",
-            data_format="coco",
-            num_classes=1,
+            group="medium",
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",

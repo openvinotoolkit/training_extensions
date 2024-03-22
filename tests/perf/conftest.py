@@ -9,17 +9,14 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
+import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
-
-if TYPE_CHECKING:
-    import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -30,11 +27,11 @@ def pytest_addoption(parser):
         "--model-category",
         action="store",
         default="all",
-        choices=("default", "all"),
-        help="Choose default|all. Defaults to all.",
+        choices=("speed", "balance", "accuracy", "default", "other", "all"),
+        help="Choose speed|balcence|accuracy|default|other|all. Defaults to all.",
     )
     parser.addoption(
-        "--data-size",
+        "--data-group",
         action="store",
         default="all",
         choices=("small", "medium", "large", "all"),
@@ -44,7 +41,7 @@ def pytest_addoption(parser):
         "--num-repeat",
         action="store",
         default=0,
-        help="Overrides default per-data-size number of repeat setting. "
+        help="Overrides default per-data-group number of repeat setting. "
         "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
         "Defaults to 0 (small=3, medium=3, large=1).",
     )
@@ -101,6 +98,14 @@ def pytest_addoption(parser):
         type=str,
         help="URI for MLFlow Tracking server to store the regression test results.",
     )
+    parser.addoption(
+        "--otx-ref",
+        type=str,
+        default="__CURRENT_BRANCH_COMMIT__",
+        help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
+        "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
+        "and reverted after run. Works only for v2.x assuming CLI compatibility.",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -113,12 +118,12 @@ def fxt_model_category(request: pytest.FixtureRequest) -> str:
 
 
 @pytest.fixture(scope="session")
-def fxt_data_size(request: pytest.FixtureRequest) -> str:
-    """Data size to run the benchmark."""
-    data_size = request.config.getoption("--data-size")
-    msg = f"{data_size = }"
+def fxt_data_group(request: pytest.FixtureRequest) -> str:
+    """Data group to run the benchmark."""
+    data_group = request.config.getoption("--data-group")
+    msg = f"{data_group = }"
     log.info(msg)
-    return data_size
+    return data_group
 
 
 @pytest.fixture(scope="session")
@@ -180,11 +185,37 @@ def fxt_output_root(
 
 
 @pytest.fixture(scope="session")
-def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
-    """Version / branch / commit info."""
-    import otx
+def fxt_otx_ref(request: pytest.FixtureRequest) -> str | None:
+    otx_ref = request.config.getoption("--otx-ref")
+    if otx_ref == "__CURRENT_BRANCH_COMMIT__":
+        otx_ref = None
 
-    version_str = otx.__version__
+    if otx_ref:
+        # Install specific version
+        cmd = ["pip", "install", f"otx@git+https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+        cmd = ["otx", "install"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+
+    msg = f"{otx_ref = }"
+    log.info(msg)
+    yield otx_ref
+
+    if otx_ref:
+        # Restore the current version
+        cmd = ["pip", "install", "-e", "."]
+        subprocess.run(cmd, check=True)  # noqa: S603
+        cmd = ["otx", "install"]
+        subprocess.run(cmd, check=True)  # noqa: S603
+
+
+@pytest.fixture(scope="session")
+def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
+    """Version / branch / commit info."""
+    try:
+        version_str = subprocess.check_output(["otx", "--version"]).decode("ascii").strip()[4:]  # noqa: S603, S607
+    except Exception:
+        version_str = "unknown"
     try:
         branch_str = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("ascii").strip()  # noqa: S603, S607
     except Exception:
@@ -194,9 +225,10 @@ def fxt_version_tags(fxt_current_date: str) -> dict[str, str]:
     except Exception:
         commit_str = os.environ.get("GH_CTX_SHA", "unknown")
     version_tags = {
-        "version": version_str,
-        "branch": branch_str,
-        "commit": commit_str,
+        "otx_version": version_str,
+        "otx_ref": fxt_otx_ref or commit_str,
+        "test_branch": branch_str,
+        "test_commit": commit_str,
         "date": fxt_current_date,
     }
     msg = f"{version_tags = }"
@@ -258,17 +290,19 @@ def fxt_mlflow_client(request: pytest.FixtureRequest) -> MlflowClient:
 def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.Model:
     """Skip models according to user options."""
     model: Benchmark.Model = request.param
-    if fxt_model_category == "default" and model.category == "other":
+    if fxt_model_category == "all":
+        return model
+    if (fxt_model_category == "default" and model.category == "other") or fxt_model_category != model.category:
         pytest.skip(f"{model.category} category model")
     return model
 
 
 @pytest.fixture()
-def fxt_dataset(request: pytest.FixtureRequest, fxt_data_size) -> Benchmark.Data:
+def fxt_dataset(request: pytest.FixtureRequest, fxt_data_group) -> Benchmark.Data:
     """Skip datasets according to user options."""
     dataset: Benchmark.Dataset = request.param
-    if fxt_data_size not in {"all", dataset.size}:
-        pytest.skip(f"{dataset.size} size dataset")
+    if fxt_data_group not in {"all", dataset.group}:
+        pytest.skip(f"{dataset.group} group dataset")
     return dataset
 
 
@@ -302,6 +336,7 @@ def fxt_benchmark(
     fxt_dry_run: bool,
     fxt_deterministic: bool,
     fxt_accelerator: str,
+    fxt_benchmark_reference: pd.DataFrame | None,
 ) -> Benchmark:
     """Configure benchmark."""
     return Benchmark(
@@ -314,6 +349,7 @@ def fxt_benchmark(
         dry_run=fxt_dry_run,
         deterministic=fxt_deterministic,
         accelerator=fxt_accelerator,
+        reference_results=fxt_benchmark_reference,
     )
 
 
@@ -326,38 +362,67 @@ def fxt_benchmark_summary(
 ):
     """Summarize all results at the end of test session."""
     yield
-    all_results = Benchmark.load_result(fxt_output_root)
-    if all_results is not None:
-        print("=" * 20, "[Benchmark summary]")
-        print(all_results)
-        fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
-        all_results.to_csv(fxt_summary_csv)
-        print(f"  -> Saved to {fxt_summary_csv}.")
 
-        if fxt_mlflow_client:
-            _log_benchmark_results_to_mlflow(all_results, fxt_mlflow_client, fxt_tags)
+    raw_results = Benchmark.load_result(fxt_output_root)
+    if raw_results is None:
+        print("No benchmark results loaded in ", fxt_output_root)
+        return
+
+    summary_results = [
+        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
+        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
+        Benchmark.average_result(raw_results, ["task", "model"]),
+        Benchmark.average_result(raw_results, ["task"]),
+    ]
+    summary_results = pd.concat(summary_results)
+
+    print("=" * 20, "[Benchmark summary]")
+    print(summary_results)
+    fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
+    summary_results.to_csv(fxt_summary_csv)
+    raw_results.to_csv(fxt_summary_csv.parent / "benchmark-raw.csv")
+    print(f"  -> Saved to {fxt_summary_csv}.")
+
+    if fxt_mlflow_client:
+        try:
+            _log_benchmark_results_to_mlflow(summary_results, fxt_mlflow_client, fxt_tags)
+        except Exception as e:
+            print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
-    for index, data in results.iterrows():
-        task, data_size, model = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_size}"
+    for index, result in results.iterrows():
+        task, model, data_group, data = index
+        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
         exp_tags = {
             "task": task,
             "model": model,
-            "data_size": data_size,
+            "data_group": data_group,
+            "data": data,
         }
         exp = client.get_experiment_by_name(exp_name)
-        exp_id = client.create_experiment(exp_name, tags=exp_tags) if not exp else exp.experiment_id
-        if exp.lifecycle_stage != "active":
-            client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['version']} | {tags['branch']} | {tags['commit']}"
-        run_tags = {k: v for k, v in data.items() if isinstance(v, str)}
+        if not exp:
+            exp_id = client.create_experiment(exp_name, tags=exp_tags)
+        else:
+            exp_id = exp.experiment_id
+            if exp.lifecycle_stage != "active":
+                client.restore_experiment(exp_id)
+        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
+        run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
-        run_metrics = {k: v for k, v in data.items() if not isinstance(v, str)}
+        run_metrics = {k: v for k, v in result.items() if not isinstance(v, str)}
         for k, v in run_metrics.items():
             client.log_metric(run.info.run_id, k, v)
+
+
+@pytest.fixture(scope="session")
+def fxt_benchmark_reference() -> pd.DataFrame | None:
+    """Load reference benchmark results with index."""
+    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    if ref is not None:
+        ref = ref.set_index(["task", "model", "data_group", "data"])
+    return ref
 
 
 class PerfTestBase:
@@ -375,5 +440,7 @@ class PerfTestBase:
             dataset=dataset,
             criteria=criteria,
         )
-        print(result)
-        # Check results
+        benchmark.check(
+            result=result,
+            criteria=criteria,
+        )
