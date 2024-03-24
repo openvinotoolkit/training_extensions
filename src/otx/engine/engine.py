@@ -15,6 +15,7 @@ from warnings import warn
 import torch
 from lightning import Trainer, seed_everything
 
+from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
@@ -26,6 +27,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
+from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
@@ -830,6 +832,8 @@ class Engine:
 
     @device.setter
     def device(self, device: DeviceType) -> None:
+        if is_xpu_available() and device == DeviceType.auto:
+            device = DeviceType.xpu
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
         self._cache.is_trainer_args_identical = False
@@ -852,6 +856,14 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
+            # set up xpu device
+            if self._device.accelerator == DeviceType.xpu:
+                self._cache.update(strategy="xpu_single")
+                # add plugin for Automatic Mixed Precision on XPU
+                if self._cache.args["precision"] == 16:
+                    self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
+                    self._cache.args["precision"] = None
+
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
             self._cache.is_trainer_args_identical = True
