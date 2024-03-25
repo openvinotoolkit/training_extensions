@@ -12,6 +12,7 @@ For the supervised training we use the following algorithms components:
 
 - ``Additional training techniques``
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting.
+    - `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/algo/samplers/balanced_sampler.py#L11>`_: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
 
 **************
 Dataset Format
