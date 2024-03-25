@@ -46,7 +46,7 @@ neck:
     type: SiLU
     inplace: true
 bbox_head:
-  type: RTMDetInsSepBNHead
+  type: CustomRTMDetInsSepBNHead
   num_classes: 80
   in_channels: 96
   stacked_convs: 2
