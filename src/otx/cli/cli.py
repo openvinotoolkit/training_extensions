@@ -22,6 +22,7 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
+from otx.core.model.base import OVModel
 from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
@@ -430,7 +431,7 @@ class OTXCLI:
         self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
-        if self.datamodule.config.tile_config.enable_tiler:
+        if not isinstance(model, OVModel) and self.datamodule.config.tile_config.enable_tiler:
             if not hasattr(model, "tile_config"):
                 msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
                 raise AttributeError(msg)
