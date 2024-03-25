@@ -3,7 +3,7 @@
 """Test of OTX SSD architecture."""
 
 import pytest
-from otx.algo.detection.atss import ATSS, ATSSR50FPN
+from otx.algo.detection.atss import ATSS
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 
 
@@ -12,9 +12,7 @@ class TestATSS:
         "model",
         [
             ATSS(num_classes=2, variant="mobilenetv2"),
-            ATSS(num_classes=2, variant="r50_fpn"),
             ATSS(num_classes=2, variant="resnext101"),
-            ATSSR50FPN(num_classes=2),
         ],
     )
     def test(self, model, mocker) -> None:
