@@ -111,13 +111,13 @@ def _inference_step(
             ]
             _target = converted_entities["target"]
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(cvt_preds["masks"], cvt_target["masks"])
 
 
-def _inference_step_for_zeroshot(
+def _inference_step_for_zero_shot(
     model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
     metric: MetricCollection,
     inputs: ZeroShotVisualPromptingBatchDataEntity,
@@ -159,7 +159,7 @@ def _inference_step_for_zeroshot(
                     _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
 
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(
@@ -436,7 +436,7 @@ class OTXZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -1405,7 +1405,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,

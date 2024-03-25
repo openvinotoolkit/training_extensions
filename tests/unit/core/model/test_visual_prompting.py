@@ -12,22 +12,128 @@ import numpy as np
 import pytest
 import torch
 from otx.core.data.entity.base import Points
-from otx.core.data.entity.visual_prompting import VisualPromptingBatchPredEntity, ZeroShotVisualPromptingBatchPredEntity
+from otx.core.data.entity.visual_prompting import (
+    VisualPromptingBatchPredEntity,
+    ZeroShotVisualPromptingBatchDataEntity,
+    ZeroShotVisualPromptingBatchPredEntity,
+)
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.model.visual_prompting import (
     OTXVisualPromptingModel,
+    OTXZeroShotVisualPromptingModel,
     OVVisualPromptingModel,
     OVZeroShotVisualPromptingModel,
+    _inference_step,
+    _inference_step_for_zero_shot,
 )
 from torchvision import tv_tensors
 
 
-class TestOTXVisualPromptingModel:
-    @pytest.fixture()
-    def otx_visual_prompting_model(self, mocker) -> OTXVisualPromptingModel:
-        mocker.patch.object(OTXVisualPromptingModel, "_create_model")
-        return OTXVisualPromptingModel(num_classes=1)
+@pytest.fixture()
+def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
+    mocker.patch.object(OTXVisualPromptingModel, "_create_model")
+    return OTXVisualPromptingModel(num_classes=1)
 
+
+@pytest.fixture()
+def otx_zero_shot_visual_prompting_model(mocker) -> OTXZeroShotVisualPromptingModel:
+    mocker.patch.object(OTXZeroShotVisualPromptingModel, "_create_model")
+    return OTXZeroShotVisualPromptingModel(num_classes=1)
+
+
+def test_inference_step(mocker, otx_visual_prompting_model, fxt_vpm_data_entity) -> None:
+    """Test _inference_step."""
+    otx_visual_prompting_model.configure_metric()
+    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=fxt_vpm_data_entity[2])
+    mocker_updates = {}
+    for k, v in otx_visual_prompting_model.metric.items():
+        mocker_updates[k] = mocker.patch.object(v, "update")
+
+    _inference_step(otx_visual_prompting_model, otx_visual_prompting_model.metric, fxt_vpm_data_entity[1])
+
+    for v in mocker_updates.values():
+        v.assert_called_once()
+
+
+def test_inference_step_for_zero_shot(mocker, otx_visual_prompting_model, fxt_zero_shot_vpm_data_entity) -> None:
+    """Test _inference_step_for_zero_shot."""
+    otx_visual_prompting_model.configure_metric()
+    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=fxt_zero_shot_vpm_data_entity[2])
+    mocker_updates = {}
+    for k, v in otx_visual_prompting_model.metric.items():
+        mocker_updates[k] = mocker.patch.object(v, "update")
+
+    _inference_step_for_zero_shot(
+        otx_visual_prompting_model,
+        otx_visual_prompting_model.metric,
+        fxt_zero_shot_vpm_data_entity[1],
+    )
+
+    for v in mocker_updates.values():
+        v.assert_called_once()
+
+
+def test_inference_step_for_zero_shot_with_more_preds(
+    mocker,
+    otx_visual_prompting_model,
+    fxt_zero_shot_vpm_data_entity,
+) -> None:
+    """Test _inference_step_for_zero_shot with more preds."""
+    otx_visual_prompting_model.configure_metric()
+    preds = {}
+    for k, v in fxt_zero_shot_vpm_data_entity[2].__dict__.items():
+        if k in ["batch_size", "polygons"]:
+            preds[k] = v
+        else:
+            preds[k] = v * 2
+    mocker.patch.object(
+        otx_visual_prompting_model,
+        "forward",
+        return_value=ZeroShotVisualPromptingBatchPredEntity(**preds),
+    )
+    mocker_updates = {}
+    for k, v in otx_visual_prompting_model.metric.items():
+        mocker_updates[k] = mocker.patch.object(v, "update")
+
+    _inference_step_for_zero_shot(
+        otx_visual_prompting_model,
+        otx_visual_prompting_model.metric,
+        fxt_zero_shot_vpm_data_entity[1],
+    )
+
+    for v in mocker_updates.values():
+        v.assert_called_once()
+
+
+def test_inference_step_for_zero_shot_with_more_target(
+    mocker,
+    otx_visual_prompting_model,
+    fxt_zero_shot_vpm_data_entity,
+) -> None:
+    """Test _inference_step_for_zero_shot with more target."""
+    otx_visual_prompting_model.configure_metric()
+    mocker.patch.object(otx_visual_prompting_model, "forward", return_value=fxt_zero_shot_vpm_data_entity[2])
+    mocker_updates = {}
+    for k, v in otx_visual_prompting_model.metric.items():
+        mocker_updates[k] = mocker.patch.object(v, "update")
+    target = {}
+    for k, v in fxt_zero_shot_vpm_data_entity[1].__dict__.items():
+        if k in ["batch_size"]:
+            target[k] = v
+        else:
+            target[k] = v * 2
+
+    _inference_step_for_zero_shot(
+        otx_visual_prompting_model,
+        otx_visual_prompting_model.metric,
+        ZeroShotVisualPromptingBatchDataEntity(**target),
+    )
+
+    for v in mocker_updates.values():
+        v.assert_called_once()
+
+
+class TestOTXVisualPromptingModel:
     def test_exporter(self, otx_visual_prompting_model) -> None:
         """Test _exporter."""
         assert isinstance(otx_visual_prompting_model._exporter, OTXVisualPromptingModelExporter)
@@ -64,6 +170,96 @@ class TestOTXVisualPromptingModel:
                 },
             },
         }
+
+
+class TestOTXZeroShotVisualPromptingModel:
+    def test_exporter(self, otx_zero_shot_visual_prompting_model) -> None:
+        """Test _exporter."""
+        assert isinstance(otx_zero_shot_visual_prompting_model._exporter, OTXVisualPromptingModelExporter)
+
+    def test_export_parameters(self, otx_zero_shot_visual_prompting_model) -> None:
+        """Test _export_parameters."""
+        otx_zero_shot_visual_prompting_model.model.image_size = 1024
+
+        export_parameters = otx_zero_shot_visual_prompting_model._export_parameters
+
+        assert export_parameters["input_size"] == (1, 3, 1024, 1024)
+        assert export_parameters["resize_mode"] == "fit_to_window"
+        assert export_parameters["mean"] == (123.675, 116.28, 103.53)
+        assert export_parameters["std"] == (58.395, 57.12, 57.375)
+
+    def test_optimization_config(self, otx_zero_shot_visual_prompting_model) -> None:
+        """Test _optimization_config."""
+        optimization_config = otx_zero_shot_visual_prompting_model._optimization_config
+
+        assert optimization_config == {
+            "model_type": "transformer",
+            "advanced_parameters": {
+                "activations_range_estimator_params": {
+                    "min": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MIN",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                    "max": {
+                        "statistics_type": "QUANTILE",
+                        "aggregator_type": "MAX",
+                        "quantile_outlier_prob": "1e-4",
+                    },
+                },
+            },
+        }
+
+    def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
+        """Test on_test_start."""
+        otx_zero_shot_visual_prompting_model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.trainer = Mock()
+        mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
+        mocker_setup_data = mocker.patch.object(
+            otx_zero_shot_visual_prompting_model.trainer._evaluation_loop,
+            "setup_data",
+        )
+        mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer._evaluation_loop, "reset")
+
+        otx_zero_shot_visual_prompting_model.on_test_start()
+
+        mocker_run.assert_called_once()
+        mocker_setup_data.assert_called_once()
+        mocker_reset.assert_called_once()
+
+    def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
+        """Test on_predict_start."""
+        otx_zero_shot_visual_prompting_model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.trainer = Mock()
+        mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
+        mocker_setup_data = mocker.patch.object(
+            otx_zero_shot_visual_prompting_model.trainer._evaluation_loop,
+            "setup_data",
+        )
+        mocker_reset = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer._evaluation_loop, "reset")
+
+        otx_zero_shot_visual_prompting_model.on_predict_start()
+
+        mocker_run.assert_called_once()
+        mocker_setup_data.assert_called_once()
+        mocker_reset.assert_called_once()
+
+    def test_on_train_epoch_end(self, mocker, tmpdir, otx_zero_shot_visual_prompting_model) -> None:
+        """Test on_train_epoch_end."""
+        otx_zero_shot_visual_prompting_model.save_outputs = True
+        otx_zero_shot_visual_prompting_model.root_reference_info = tmpdir
+        otx_zero_shot_visual_prompting_model.reference_feats = torch.tensor(1)
+        otx_zero_shot_visual_prompting_model.used_indices = torch.tensor(1)
+        mocker_mkdir = mocker.patch("otx.core.model.visual_prompting.Path.mkdir")
+        mocker.patch("otx.core.model.visual_prompting.Path.open")
+        mocker_torch_save = mocker.patch("otx.core.model.visual_prompting.torch.save")
+        mocker_pickle_dump = mocker.patch("otx.core.model.visual_prompting.pickle.dump")
+
+        otx_zero_shot_visual_prompting_model.on_train_epoch_end()
+
+        mocker_mkdir.assert_called_once()
+        mocker_torch_save.assert_called_once()
+        mocker_pickle_dump.assert_called_once()
 
 
 class TestOVVisualPromptingModel:

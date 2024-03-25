@@ -27,15 +27,10 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
-from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
 
 if TYPE_CHECKING:
     import numpy as np
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
 
 
 class PromptGetter(nn.Module):
