@@ -340,7 +340,7 @@ class Engine:
         datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
-        if is_ir_ckpt and not isinstance(model, OVModel):
+        if is_ir_ckpt:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 

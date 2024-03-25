@@ -347,6 +347,7 @@ class AutoConfigurator:
         data_configuration = datamodule.config
         ov_test_config = self._load_default_config(model_name="openvino_model")["data"]["config"][f"{subset}_subset"]
         subset_config = getattr(data_configuration, f"{subset}_subset")
+        subset_config.batch_size = ov_test_config["batch_size"]
         subset_config.transform_lib_type = ov_test_config["transform_lib_type"]
         subset_config.transforms = ov_test_config["transforms"]
         data_configuration.tile_config.enable_tiler = False
