@@ -72,7 +72,7 @@ base = [
     "pytorchcv",
     "timm",
     "openvino==2023.3.0",
-    "openvino-dev==2023.3.0",
+    "openvino-dev==2024.0.0",
     "openvino-model-api==0.1.9",
     "onnx==1.15.0",
     "onnxconverter-common==1.14.0",
