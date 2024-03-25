@@ -35,9 +35,6 @@ jobs:
       - name: Install pypa/build
         run: |
           pip install --require-hashes --no-deps -r requirements/gh-actions.txt
-          pip-compile --generate-hashes -o /tmp/otx-publish-requirements.txt requirements/publish.txt
-          pip install --require-hashes --no-deps -r /tmp/otx-publish-requirements.txt
-          rm /tmp/otx-publish-requirements.txt
       - name: Build sdist
         run: python -m build --sdist
       - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
