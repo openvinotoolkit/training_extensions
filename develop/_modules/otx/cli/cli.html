@@ -258,6 +258,7 @@
 <span class="kn">from</span> <span class="nn">otx.cli.utils.help_formatter</span> <span class="kn">import</span> <span class="n">CustomHelpFormatter</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">add_list_type_arguments</span><span class="p">,</span> <span class="n">get_short_docstring</span><span class="p">,</span> <span class="n">patch_update_configs</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.workspace</span> <span class="kn">import</span> <span class="n">Workspace</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.imports</span> <span class="kn">import</span> <span class="n">get_otx_root_path</span>
 
@@ -672,6 +673,8 @@
         <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
         <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">partial_instantiate_class</span>
 
+        <span class="n">skip</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
         <span class="c1"># Update num_classes</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="n">num_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">num_classes</span>
@@ -684,13 +687,10 @@
                 <span class="n">warn</span><span class="p">(</span><span class="n">warning_msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
 
-            <span class="c1"># Hlabel classification</span>
-            <span class="kn">from</span> <span class="nn">otx.core.data.dataset.classification</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
-
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">,</span> <span class="n">HLabelInfo</span><span class="p">):</span>
                 <span class="n">hlabel_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="o">=</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span>
-                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">=</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multilabel_classes</span>
+                <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">hlabel_info</span> <span class="o">=</span> <span class="n">hlabel_info</span>
+                <span class="n">skip</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;hlabel_info&quot;</span><span class="p">)</span>
 
         <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">optimizer_kwargs</span><span class="p">]</span>
@@ -716,7 +716,7 @@
 
         <span class="c1"># Parses the OTXModel separately to update num_classes.</span>
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
-        <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">model_parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">model_parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
 

@@ -243,6 +243,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
@@ -255,6 +256,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.dice</span> <span class="kn">import</span> <span class="n">DiceCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">SegLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">inplace_num_classes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">get_mean_std_from_data_processing</span>
 
@@ -471,7 +473,6 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Segmentation&quot;</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -482,7 +483,6 @@
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
             <span class="n">async_inference</span><span class="o">=</span><span class="n">async_inference</span><span class="p">,</span>
@@ -529,7 +529,17 @@
                 <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target_mask</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="k">for</span> <span class="n">pred_mask</span><span class="p">,</span> <span class="n">target_mask</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">masks</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">masks</span><span class="p">)</span>
-        <span class="p">]</span></div>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SegLabelInfo</span><span class="p">:</span>
+        <span class="n">ov_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">has_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">]):</span>
+            <span class="n">label_info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ov_model</span><span class="o">.</span><span class="n">get_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">SegLabelInfo</span><span class="p">(</span><span class="o">**</span><span class="n">label_info</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 
 </pre></div>
 

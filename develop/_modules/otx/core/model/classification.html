@@ -251,7 +251,6 @@
 <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Accuracy</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.dataset.classification</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
     <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
@@ -279,6 +278,7 @@
     <span class="n">MultiLabelClsMetricCallable</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">inplace_num_classes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">get_mean_std_from_data_processing</span>
 
@@ -845,19 +845,21 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">hlabel_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">LRSchedulerCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">HLabelClsMetricCallble</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="c1"># NOTE: This should be behind of super().__init__() to avoid overwriting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">hlabel_info</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -866,16 +868,7 @@
         <span class="n">hierarchical_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">label_info</span><span class="p">:</span> <span class="n">HLabelInfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>  <span class="c1"># type: ignore[assignment]</span>
-        <span class="n">hierarchical_config</span><span class="p">[</span><span class="s2">&quot;cls_heads_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;num_multiclass_heads&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">,</span>
-            <span class="s2">&quot;num_multilabel_classes&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">num_multilabel_classes</span><span class="p">,</span>
-            <span class="s2">&quot;head_idx_to_logits_range&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span><span class="p">,</span>
-            <span class="s2">&quot;num_single_label_classes&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">num_single_label_classes</span><span class="p">,</span>
-            <span class="s2">&quot;class_to_group_idx&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">class_to_group_idx</span><span class="p">,</span>
-            <span class="s2">&quot;all_groups&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">all_groups</span><span class="p">,</span>
-            <span class="s2">&quot;label_to_idx&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">label_to_idx</span><span class="p">,</span>
-            <span class="s2">&quot;empty_multiclass_head_indices&quot;</span><span class="p">:</span> <span class="n">label_info</span><span class="o">.</span><span class="n">empty_multiclass_head_indices</span><span class="p">,</span>
-        <span class="p">}</span>
+        <span class="n">hierarchical_config</span><span class="p">[</span><span class="s2">&quot;cls_heads_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_info</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
         <span class="n">hierarchical_config</span><span class="p">[</span><span class="s2">&quot;label_tree_edges&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_info</span><span class="o">.</span><span class="n">label_tree_edges</span>
 
         <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -886,6 +879,9 @@
                 <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;hierarchical&quot;</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
                 <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;confidence_threshold&quot;</span><span class="p">):</span> <span class="nb">str</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span>
                 <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;hierarchical_config&quot;</span><span class="p">):</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">hierarchical_config</span><span class="p">),</span>
+                <span class="c1"># NOTE: There is currently too many channels for label related metadata.</span>
+                <span class="c1"># This should be clean up afterwards in ModelAPI side.</span>
+                <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">):</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">label_info</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()),</span>
             <span class="p">},</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">parameters</span>
@@ -895,30 +891,18 @@
         <span class="n">preds</span><span class="p">:</span> <span class="n">HlabelClsBatchPredEntity</span> <span class="o">|</span> <span class="n">HlabelClsBatchPredEntityWithXAI</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricInput</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">preds_multiclass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">]</span>
-            <span class="n">preds_multilabel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">)[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="p">:]</span>
+        <span class="n">hlabel_info</span><span class="p">:</span> <span class="n">HLabelInfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>  <span class="c1"># type: ignore[assignment]</span>
+
+        <span class="k">if</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">preds_multiclass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)[:,</span> <span class="p">:</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">]</span>
+            <span class="n">preds_multilabel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">)[:,</span> <span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="p">:]</span>
             <span class="n">pred_result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">preds_multiclass</span><span class="p">,</span> <span class="n">preds_multilabel</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pred_result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">pred_result</span><span class="p">,</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">),</span>
-        <span class="p">}</span>
-
-    <span class="nd">@property</span>  <span class="c1"># type: ignore[override]</span>
-    <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HLabelInfo</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the hierarchical model label information.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span>  <span class="c1"># type: ignore[return-value]</span>
-
-    <span class="nd">@label_info</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the hierarchical model label information.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            hierarchical_info: the label information represents the hierarchy.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">label_info</span></div>
+        <span class="p">}</span></div>
 
 
 
@@ -934,34 +918,31 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">hlabel_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">,</span>
         <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">LRSchedulerCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">HLabelClsMetricCallble</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">inplace_num_classes</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">inplace_num_classes</span><span class="p">(</span><span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">head_config</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Config should have &quot;head&quot; section&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">head_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">as_head_config_dict</span><span class="p">())</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_from</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;load_from&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">hlabel_info</span><span class="o">=</span><span class="n">hlabel_info</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
-
-    <span class="nd">@OTXHlabelClsModel</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">setter</span>  <span class="c1"># type: ignore[attr-defined]</span>
-    <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the hierarchical model label information and update the model head as well.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            hierarchical_info: the label information represents the hierarchy.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">label_info</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">set_hlabel_info</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">.utils.mmpretrain</span> <span class="kn">import</span> <span class="n">create_model</span>
@@ -1090,7 +1071,6 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1101,7 +1081,6 @@
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
             <span class="n">async_inference</span><span class="o">=</span><span class="n">async_inference</span><span class="p">,</span>
@@ -1170,7 +1149,6 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1183,7 +1161,6 @@
         <span class="n">model_api_configuration</span> <span class="o">=</span> <span class="n">model_api_configuration</span> <span class="k">if</span> <span class="n">model_api_configuration</span> <span class="k">else</span> <span class="p">{}</span>
         <span class="n">model_api_configuration</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;multilabel&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;confidence_threshold&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">})</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
             <span class="n">async_inference</span><span class="o">=</span><span class="n">async_inference</span><span class="p">,</span>
@@ -1249,24 +1226,18 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">max_num_requests</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">use_throughput_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">model_api_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">num_multiclass_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">num_multilabel_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">HLabelClsMetricCallble</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="o">=</span> <span class="n">num_multiclass_heads</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">=</span> <span class="n">num_multilabel_classes</span>
         <span class="n">model_api_configuration</span> <span class="o">=</span> <span class="n">model_api_configuration</span> <span class="k">if</span> <span class="n">model_api_configuration</span> <span class="k">else</span> <span class="p">{}</span>
         <span class="n">model_api_configuration</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;hierarchical&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;output_raw_scores&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
             <span class="n">model_type</span><span class="o">=</span><span class="n">model_type</span><span class="p">,</span>
             <span class="n">async_inference</span><span class="o">=</span><span class="n">async_inference</span><span class="p">,</span>
@@ -1275,19 +1246,6 @@
             <span class="n">model_api_configuration</span><span class="o">=</span><span class="n">model_api_configuration</span><span class="p">,</span>
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
         <span class="p">)</span>
-
-<div class="viewcode-block" id="OVHlabelClassificationModel.set_hlabel_info">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OVHlabelClassificationModel.set_hlabel_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hierarchical_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set hierarchical information in model head.</span>
-
-<span class="sd">        Since OV IR model consist of all required hierarchy information,</span>
-<span class="sd">        this method serves as placeholder</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;hierarchical_info&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hierarchical_info</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OpenVINO IR model should have hierarchical config embedded in rt_info of the model&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
-
 
     <span class="k">def</span> <span class="nf">_customize_outputs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1351,16 +1309,29 @@
         <span class="n">preds</span><span class="p">:</span> <span class="n">HlabelClsBatchPredEntity</span> <span class="o">|</span> <span class="n">HlabelClsBatchPredEntityWithXAI</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricInput</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">preds_multiclass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">]</span>
-            <span class="n">preds_multilabel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">)[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="p">:]</span>
+        <span class="n">cls_heads_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">hierarchical_info</span><span class="p">[</span><span class="s2">&quot;cls_heads_info&quot;</span><span class="p">]</span>
+        <span class="n">num_multilabel_classes</span> <span class="o">=</span> <span class="n">cls_heads_info</span><span class="p">[</span><span class="s2">&quot;num_multilabel_classes&quot;</span><span class="p">]</span>
+        <span class="n">num_multiclass_heads</span> <span class="o">=</span> <span class="n">cls_heads_info</span><span class="p">[</span><span class="s2">&quot;num_multiclass_heads&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">preds_multiclass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)[:,</span> <span class="p">:</span><span class="n">num_multiclass_heads</span><span class="p">]</span>
+            <span class="n">preds_multilabel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">scores</span><span class="p">)[:,</span> <span class="n">num_multiclass_heads</span><span class="p">:]</span>
             <span class="n">pred_result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">preds_multiclass</span><span class="p">,</span> <span class="n">preds_multilabel</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pred_result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;preds&quot;</span><span class="p">:</span> <span class="n">pred_result</span><span class="p">,</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">labels</span><span class="p">),</span>
-        <span class="p">}</span></div>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HLabelInfo</span><span class="p">:</span>
+        <span class="n">ov_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">has_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">]):</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">get_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">HLabelInfo</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 
 </pre></div>
 

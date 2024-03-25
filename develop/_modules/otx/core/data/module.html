@@ -250,7 +250,6 @@
 <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">RandomSampler</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.data.dataset.base</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.dataset.tile</span> <span class="kn">import</span> <span class="n">OTXTileDatasetFactory</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.factory</span> <span class="kn">import</span> <span class="n">OTXDatasetFactory</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.mem_cache</span> <span class="kn">import</span> <span class="p">(</span>
@@ -260,6 +259,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.data.pre_filtering</span> <span class="kn">import</span> <span class="n">pre_filtering</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.tile_adaptor</span> <span class="kn">import</span> <span class="n">adapt_tile_config</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.device</span> <span class="kn">import</span> <span class="n">DeviceType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">instantiate_sampler</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">get_adaptive_num_workers</span>

@@ -242,16 +242,11 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
-
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">mmengine.model</span> <span class="kn">import</span> <span class="n">BaseModule</span><span class="p">,</span> <span class="n">constant_init</span><span class="p">,</span> <span class="n">normal_init</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.structures</span> <span class="kn">import</span> <span class="n">DataSample</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">otx.core.data.dataset.classification</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 
 
 <div class="viewcode-block" id="CustomHierarchicalNonLinearClsHead">
@@ -263,6 +258,10 @@
 <span class="sd">    Args:</span>
 <span class="sd">        num_multiclass_heads (int): Number of multi-class heads.</span>
 <span class="sd">        num_multilabel_classes (int): Number of multi-label classes.</span>
+<span class="sd">        head_idx_to_logits_range: the logit range of each heads</span>
+<span class="sd">        num_single_label_classes: the number of single label classes</span>
+<span class="sd">        empty_multiclass_head_indices: the index of head that doesn&#39;t include any label</span>
+<span class="sd">            due to the label removing</span>
 <span class="sd">        in_channels (int): Number of channels in the input feature map.</span>
 <span class="sd">        num_classes (int): Number of total classes.</span>
 <span class="sd">        multiclass_loss (dict | None): Config of multi-class loss.</span>
@@ -279,6 +278,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_multiclass_heads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">num_multilabel_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">head_idx_to_logits_range</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">num_single_label_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">empty_multiclass_head_indices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">multiclass_loss_cfg</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -292,6 +294,9 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="o">=</span> <span class="n">num_multiclass_heads</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">=</span> <span class="n">num_multilabel_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span> <span class="o">=</span> <span class="n">head_idx_to_logits_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="o">=</span> <span class="n">num_single_label_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">empty_multiclass_head_indices</span> <span class="o">=</span> <span class="n">empty_multiclass_head_indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thr</span> <span class="o">=</span> <span class="n">thr</span>
@@ -350,22 +355,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">pre_logits</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="CustomHierarchicalNonLinearClsHead.set_hlabel_info">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.classification.heads.html#otx.algo.classification.heads.CustomHierarchicalNonLinearClsHead.set_hlabel_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_hlabel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hlabel_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set hlabel information.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span> <span class="o">=</span> <span class="n">hlabel_info</span></div>
-
-
     <span class="k">def</span> <span class="nf">_get_gt_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataSample</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get gt labels from data samples.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">data_sample</span><span class="o">.</span><span class="n">gt_label</span> <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_samples</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hlabel_info</span><span class="p">:</span> <span class="n">HLabelInfo</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get head_idx_to_logits_range information from hlabel information.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">hlabel_info</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)][</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">hlabel_info</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)][</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_idx_to_logits_range</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">)][</span><span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="CustomHierarchicalNonLinearClsHead.loss">
@@ -394,9 +392,9 @@
         <span class="c1"># Multiclass loss</span>
         <span class="n">num_effective_heads_in_batch</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># consider the label removal case</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">empty_multiclass_head_indices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">empty_multiclass_head_indices</span><span class="p">:</span>
                 <span class="n">head_gt</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
-                <span class="n">logit_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">logit_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
                 <span class="n">head_logits</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="n">logit_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">logit_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
                 <span class="n">valid_mask</span> <span class="o">=</span> <span class="n">head_gt</span> <span class="o">&gt;=</span> <span class="mi">0</span>
 
@@ -411,15 +409,15 @@
 
         <span class="c1"># Multilabel loss</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">head_gt</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="p">:]</span>
-            <span class="n">head_logits</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
+            <span class="n">head_gt</span> <span class="o">=</span> <span class="n">gt_labels</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span> <span class="p">:]</span>
+            <span class="n">head_logits</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
             <span class="n">valid_mask</span> <span class="o">=</span> <span class="n">head_gt</span> <span class="o">&gt;</span> <span class="mi">0</span>
             <span class="n">head_gt</span> <span class="o">=</span> <span class="n">head_gt</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">head_gt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">img_metas</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_sample</span><span class="o">.</span><span class="n">metainfo</span> <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_samples</span><span class="p">]</span>
                 <span class="n">head_logits</span> <span class="o">=</span> <span class="n">head_logits</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>
                 <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_valid_label_mask</span><span class="p">(</span><span class="n">img_metas</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">head_logits</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="n">valid_label_mask</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
+                <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="n">valid_label_mask</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
                 <span class="n">valid_label_mask</span> <span class="o">=</span> <span class="n">valid_label_mask</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span>
                 <span class="n">losses</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multilabel_loss</span><span class="p">(</span><span class="n">head_logits</span><span class="p">,</span> <span class="n">head_gt</span><span class="p">,</span> <span class="n">valid_label_mask</span><span class="o">=</span><span class="n">valid_label_mask</span><span class="p">)</span>
 
@@ -468,7 +466,7 @@
         <span class="n">multiclass_pred_scores</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">multiclass_pred_labels</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_multiclass_heads</span><span class="p">):</span>
-            <span class="n">logit_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">logit_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_head_idx_to_logits_range</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
             <span class="n">multiclass_logit</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="n">logit_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">logit_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
             <span class="n">multiclass_pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">multiclass_logit</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">multiclass_pred_score</span><span class="p">,</span> <span class="n">multiclass_pred_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">multiclass_pred</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -480,7 +478,7 @@
         <span class="n">multiclass_pred_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">multiclass_pred_labels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_multilabel_classes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">multilabel_logits</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hlabel_info</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
+            <span class="n">multilabel_logits</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_single_label_classes</span> <span class="p">:]</span>
 
             <span class="n">multilabel_pred_scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">multilabel_logits</span><span class="p">)</span>
             <span class="n">multilabel_pred_labels</span> <span class="o">=</span> <span class="p">(</span><span class="n">multilabel_pred_scores</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thr</span><span class="p">)</span><span class="o">.</span><span class="n">int</span><span class="p">()</span>

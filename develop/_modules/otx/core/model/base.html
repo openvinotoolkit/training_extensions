@@ -260,7 +260,6 @@
 <span class="kn">from</span> <span class="nn">torch.optim.sgd</span> <span class="kn">import</span> <span class="n">SGD</span>
 <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">MetricCollection</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.data.dataset.base</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
     <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
@@ -271,6 +270,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span><span class="p">,</span> <span class="n">NullMetricCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">NullLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">get_default_num_async_infer_requests</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">is_ckpt_for_finetuning</span><span class="p">,</span> <span class="n">is_ckpt_from_otx_v1</span>
@@ -319,7 +319,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="o">.</span><span class="n">from_num_classes</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="o">.</span><span class="n">from_num_classes</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span> <span class="k">if</span> <span class="n">num_classes</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span>
@@ -656,6 +656,13 @@
     <span class="nd">@label_info</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfo</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set this model label information.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_label_info</span><span class="p">(</span><span class="n">label_info</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfo</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Actual implementation for set this model label information.</span>
+
+<span class="sd">        Derived classes should override this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label_info</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="p">(</span><span class="n">label_names</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span> <span class="n">label_groups</span><span class="o">=</span><span class="p">[</span><span class="n">label_info</span><span class="p">])</span>
 
@@ -910,6 +917,7 @@
             <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">):</span> <span class="n">all_labels</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
             <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_ids&quot;</span><span class="p">):</span> <span class="n">all_label_ids</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
             <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;optimization_config&quot;</span><span class="p">):</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">optimization_config</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">parameters</span>
@@ -945,7 +953,6 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">async_inference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -960,7 +967,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_requests</span> <span class="o">=</span> <span class="n">max_num_requests</span> <span class="k">if</span> <span class="n">max_num_requests</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_default_num_async_infer_requests</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_throughput_mode</span> <span class="o">=</span> <span class="n">use_throughput_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_api_configuration</span> <span class="o">=</span> <span class="n">model_api_configuration</span> <span class="k">if</span> <span class="n">model_api_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+        <span class="c1"># NOTE: num_classes and label_info comes from the IR metadata</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_label_info_from_ov_ir</span><span class="p">()</span>
 
         <span class="n">tile_enabled</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
@@ -1133,75 +1142,39 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model parameters for export.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">{}</span>
 
-    <span class="k">def</span> <span class="nf">_reset_prediction_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset its prediction layer with a given number of classes.</span>
+    <span class="k">def</span> <span class="nf">_set_label_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label_info</span><span class="p">:</span> <span class="n">LabelInfo</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set this model label information.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">label_info</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="p">(</span><span class="n">label_names</span><span class="o">=</span><span class="n">label_info</span><span class="p">,</span> <span class="n">label_groups</span><span class="o">=</span><span class="p">[</span><span class="n">label_info</span><span class="p">])</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            num_classes: Number of classes</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">!=</span> <span class="n">label_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;OVModel strictly does not allow overwrite label_info if they are different each other.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="c1"># TODO(vinnamki): See the following link</span>
-        <span class="c1"># https://github.com/openvinotoolkit/training_extensions/actions/runs/8339199693/job/22821020564?pr=3155#step:5:3966</span>
-        <span class="c1"># This is because this test is trying to launch the test pipeline with giving 80 num_classes to OV model</span>
-        <span class="c1"># which is really trained for 21 classes.</span>
-        <span class="c1"># Indeed, it should be failed at initialization but the current code allows it.</span>
-        <span class="c1"># Without this function overriding, it fails at label_info injection</span>
-        <span class="c1">#</span>
-        <span class="c1"># ╭───────────────────── Traceback (most recent call last) ──────────────────────╮</span>
-        <span class="c1"># │ /home/vinnamki/otx/training_extensions/src/otx/cli/cli.py:586 in run         │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │   583 │   │   │   fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand │</span>
-        <span class="c1"># │   584 │   │   │   fn = getattr(self.engine, self.subcommand)                 │</span>
-        <span class="c1"># │   585 │   │   │   try:                                                       │</span>
-        <span class="c1"># │ ❱ 586 │   │   │   │   fn(**fn_kwargs)                                        │</span>
-        <span class="c1"># │   587 │   │   │   except Exception:                                          │</span>
-        <span class="c1"># │   588 │   │   │   │   self.console.print_exception(width=self.console.width) │</span>
-        <span class="c1"># │   589 │   │   │   self.save_config(work_dir=Path(self.engine.work_dir))      │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │ /home/vinnamki/otx/training_extensions/src/otx/engine/engine.py:338 in test  │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │   335 │   │   │   │   f&quot;It will be overriden: {self.model.label_info} =&gt; {se │</span>
-        <span class="c1"># │   336 │   │   │   )                                                          │</span>
-        <span class="c1"># │   337 │   │   │   logging.warning(msg)                                       │</span>
-        <span class="c1"># │ ❱ 338 │   │   │   self.model.label_info = self.datamodule.label_info         │</span>
-        <span class="c1"># │   339 │   │   │                                                              │</span>
-        <span class="c1"># │   340 │   │   │   # TODO (vinnamki): This should be changed to raise an erro │</span>
-        <span class="c1"># │   341 │   │   │   # raise ValueError()                                       │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │ /home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/site-packages/torch/nn/ │</span>
-        <span class="c1"># │ modules/module.py:1754 in __setattr__                                        │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │   1751 │   │   │   │   │   │   │   value = output                            │</span>
-        <span class="c1"># │   1752 │   │   │   │   │   buffers[name] = value                             │</span>
-        <span class="c1"># │   1753 │   │   │   │   else:                                                 │</span>
-        <span class="c1"># │ ❱ 1754 │   │   │   │   │   super().__setattr__(name, value)                  │</span>
-        <span class="c1"># │   1755 │                                                                     │</span>
-        <span class="c1"># │   1756 │   def __delattr__(self, name):                                      │</span>
-        <span class="c1"># │   1757 │   │   if name in self._parameters:                                  │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:386 in     │</span>
-        <span class="c1"># │ label_info                                                                   │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │   383 │   │   │   │   f&quot;(={new_num_classes}).&quot;                               │</span>
-        <span class="c1"># │   384 │   │   │   )                                                          │</span>
-        <span class="c1"># │   385 │   │   │   warnings.warn(msg, stacklevel=0)                           │</span>
-        <span class="c1"># │ ❱ 386 │   │   │   self._reset_prediction_layer(num_classes=label_info.num_cl │</span>
-        <span class="c1"># │   387 │   │                                                                  │</span>
-        <span class="c1"># │   388 │   │   self._label_info = label_info                                  │</span>
-        <span class="c1"># │   389                                                                        │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:609 in     │</span>
-        <span class="c1"># │ _reset_prediction_layer                                                      │</span>
-        <span class="c1"># │                                                                              │</span>
-        <span class="c1"># │   606 │   │   Args:                                                          │</span>
-        <span class="c1"># │   607 │   │   │   num_classes: Number of classes                             │</span>
-        <span class="c1"># │   608 │   │   &quot;&quot;&quot;                                                            │</span>
-        <span class="c1"># │ ❱ 609 │   │   raise NotImplementedError                                      │</span>
-        <span class="c1"># │   610 │                                                                      │</span>
-        <span class="c1"># │   611 │   @property                                                          │</span>
-        <span class="c1"># │   612 │   def _optimization_config(self) -&gt; dict[str, str]:                  │</span>
-        <span class="c1"># ╰──────────────────────────────────────────────────────────────────────────────╯</span>
-        <span class="c1"># NotImplementedError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">label_info</span>
+
+    <span class="k">def</span> <span class="nf">_create_label_info_from_ov_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelInfo</span><span class="p">:</span>
+        <span class="n">ov_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">has_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">]):</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="n">ov_model</span><span class="o">.</span><span class="n">get_rt_info</span><span class="p">([</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">return</span> <span class="n">LabelInfo</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
+
+        <span class="n">mapi_model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="k">if</span> <span class="n">label_names</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mapi_model</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;Cannot find &quot;label_info&quot; from OpenVINO IR. &#39;</span>
+                <span class="s2">&quot;However, we found labels attributes from ModelAPI. &quot;</span>
+                <span class="s2">&quot;Construct LabelInfo from it.&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">LabelInfo</span><span class="p">(</span><span class="n">label_names</span><span class="o">=</span><span class="n">label_names</span><span class="p">,</span> <span class="n">label_groups</span><span class="o">=</span><span class="p">[</span><span class="n">label_names</span><span class="p">])</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
 </pre></div>
 
             </article>
