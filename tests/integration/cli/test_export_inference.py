@@ -199,7 +199,7 @@ def test_otx_export_infer(
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     if "_cls" in recipe:
         export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
-    elif "action" in recipe:
+    elif "action_classification" in recipe:
         export_test_recipe = f"src/otx/recipe/action/{task}/openvino_model.yaml"
     else:
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
