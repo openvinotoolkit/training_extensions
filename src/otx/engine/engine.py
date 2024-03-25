@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import inspect
 import logging
+from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
 from warnings import warn
 
 import torch
@@ -35,7 +36,6 @@ if TYPE_CHECKING:
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
-    from torchmetrics import Metric
 
     from otx.core.metrics import MetricCallable
 
@@ -53,6 +53,24 @@ LITMODULE_PER_TASK = {
     OTXTaskType.VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule",
     OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING: "otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule",  # noqa: E501
 }
+
+
+@contextmanager
+def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallable | None) -> Iterator[OTXModel]:
+    """Override `OTXModel.metric_callable` to change the evaluation metric.
+
+    Args:
+        model: Model to override its metric callable
+        new_metric_callable: If not None, override the model's one with this. Otherwise, do not override.
+    """
+    if new_metric_callable is None:
+        yield model
+        return
+
+    orig_metric_callable = model.metric_callable
+    model.metric_callable = new_metric_callable
+    yield model
+    model.metric_callable = orig_metric_callable
 
 
 class Engine:
@@ -166,7 +184,7 @@ class Engine:
         callbacks: list[Callback] | Callback | None = None,
         logger: Logger | Iterable[Logger] | bool | None = None,
         resume: bool = False,
-        metric: Metric | MetricCallable | None = None,
+        metric: MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig | None = None,
         **kwargs,
@@ -184,8 +202,8 @@ class Engine:
             callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.
             logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.
             resume (bool, optional): If True, tries to resume training from existing checkpoint.
-            metric (Metric | MetricCallable | None): The metric for the validation and test.
-                                            It could be None at export, predict, etc.
+            metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given
+                metric callable. It will temporarilly change the evaluation metric for the validation and test.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
@@ -223,7 +241,6 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
-        metric = metric if metric is not None else self._auto_configurator.get_metric()
         if run_hpo:
             if hpo_config is None:
                 hpo_config = HpoConfig()
@@ -263,19 +280,28 @@ class Engine:
             logging.warning(msg)
             self.model.label_info = self.datamodule.label_info
 
-        self.trainer.fit(
-            model=self.model,
-            datamodule=self.datamodule,
-            **fit_kwargs,
-        )
+        with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
+            self.trainer.fit(
+                model=model,
+                datamodule=self.datamodule,
+                **fit_kwargs,
+            )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
+
+        if not isinstance(self.checkpoint, (Path, str)):
+            msg = "self.checkpoint should be Path or str at this time."
+            raise TypeError(msg)
+
+        best_checkpoint_symlink = Path(self.work_dir) / "best_checkpoint.ckpt"
+        best_checkpoint_symlink.symlink_to(self.checkpoint)
+
         return self.trainer.callback_metrics
 
     def test(
         self,
         checkpoint: PathLike | None = None,
         datamodule: EVAL_DATALOADERS | OTXDataModule | None = None,
-        metric: Metric | MetricCallable | None = None,
+        metric: MetricCallable | None = None,
         **kwargs,
     ) -> dict:
         """Run the testing phase of the engine.
@@ -284,8 +310,8 @@ class Engine:
             datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.
             checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.
                 Defaults to None.
-            metric (Metric | MetricCallable | None): The metric for the validation and test.
-                                            It could be None at export, predict, etc.
+            metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given
+                metric callable. It will temporarilly change the evaluation metric for the validation and test.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -318,8 +344,6 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        metric = metric if metric is not None else self._auto_configurator.get_metric()
-
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
@@ -340,10 +364,11 @@ class Engine:
             # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
             # raise ValueError()
 
-        self.trainer.test(
-            model=model,
-            dataloaders=datamodule,
-        )
+        with override_metric_callable(model=model, new_metric_callable=metric) as model:
+            self.trainer.test(
+                model=model,
+                dataloaders=datamodule,
+            )
 
         return self.trainer.callback_metrics
 

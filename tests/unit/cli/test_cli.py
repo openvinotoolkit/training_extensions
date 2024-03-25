@@ -113,6 +113,15 @@ class TestOTXCLI:
         assert cli.datamodule == cli.engine.datamodule
         assert cli.model == cli.engine.model
 
+    def test_raise_error_correctly(self, fxt_train_command, mocker) -> None:
+        mock_engine = mocker.patch("otx.cli.OTXCLI.instantiate_engine")
+        mock_engine.return_value.train.side_effect = RuntimeError("my_error")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            OTXCLI()
+
+        exc_info.match("my_error")
+
     @pytest.fixture()
     def fxt_print_config_scheduler_override_command(self, monkeypatch) -> None:
         argv = [
@@ -166,7 +175,7 @@ class TestOTXCLI:
             "--data_root",
             "tests/assets/car_tree_bug",
             "--metric",
-            "otx.core.metrics.fmeasure.FMeasure",
+            "otx.core.metrics.fmeasure.FMeasureCallable",
             "--print_config",
         ]
         monkeypatch.setattr("sys.argv", argv)
@@ -177,9 +186,4 @@ class TestOTXCLI:
             OTXCLI()
         out, _ = capfd.readouterr()
         result_config = yaml.safe_load(out)
-        expected_str = """
-        metric:
-        - class_path: otx.core.metrics.fmeasure.FMeasure
-        """
-        expected_config = yaml.safe_load(expected_str)
-        assert expected_config["metric"][0]["class_path"] == result_config["metric"]["class_path"]
+        assert result_config["metric"] == "otx.core.metrics.fmeasure._f_measure_callable"

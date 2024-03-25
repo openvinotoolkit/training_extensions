@@ -6,11 +6,12 @@
 from __future__ import annotations
 
 import contextlib
+import inspect
 import json
 import logging
 import warnings
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, Generic, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, Generic, Literal, NamedTuple
 
 import numpy as np
 import openvino
@@ -290,8 +291,14 @@ class OTXModel(
         """Convert given inputs to a Python dictionary for the metric computation."""
         raise NotImplementedError
 
-    def _log_metrics(self, meter: Metric, key: str) -> None:
-        results: dict[str, Tensor] = meter.compute()
+    def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
+        sig = inspect.signature(meter.compute)
+        filtered_kwargs = {key: value for key, value in compute_kwargs.items() if key in sig.parameters}
+        if removed_kwargs := set(compute_kwargs.keys()).difference(filtered_kwargs.keys()):
+            msg = f"These keyword arguments are removed since they are not in the function signature: {removed_kwargs}"
+            logger.debug(msg)
+
+        results: dict[str, Tensor] = meter.compute(**filtered_kwargs)
 
         if not isinstance(results, dict):
             raise TypeError(results)

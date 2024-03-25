@@ -34,7 +34,7 @@ class TestPerfObjectDetection(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -48,7 +48,7 @@ class TestPerfObjectDetection(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },
@@ -60,7 +60,7 @@ class TestPerfObjectDetection(PerfTestBase):
             num_repeat=5,
             extra_overrides={
                 "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
+                "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 "callback_monitor": "val/f1-score",
                 "scheduler.monitor": "val/f1-score",
             },

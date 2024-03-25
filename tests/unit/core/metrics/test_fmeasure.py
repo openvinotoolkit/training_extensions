@@ -8,6 +8,7 @@ from __future__ import annotations
 import pytest
 import torch
 from otx.core.metrics.fmeasure import FMeasure
+from otx.core.types.label import LabelInfo
 
 
 class TestFMeasure:
@@ -41,16 +42,26 @@ class TestFMeasure:
 
     def test_fmeasure(self, fxt_preds, fxt_targets) -> None:
         """Check whether f1 score is same with OTX1.x version."""
-        metric = FMeasure(num_classes=1)
+        metric = FMeasure(label_info=LabelInfo.from_num_classes(1))
         metric.update(fxt_preds, fxt_targets)
         result = metric.compute()
         assert result["f1-score"] == 0.5
+        best_confidence_threshold = metric.best_confidence_threshold
+        assert isinstance(best_confidence_threshold, float)
+
+        metric.reset()
+        assert metric.preds == []
+        assert metric.targets == []
+
+        # TODO(jaegukhyun): Add the following scenario
+        # 1. Prepare preds and targets which can produce f1-score < 0.5
+        # 2. Execute metric.compute()
+        # 3. Assert best_confidence_threshold == metric.best_confidence_threshold
 
     def test_fmeasure_with_fixed_threshold(self, fxt_preds, fxt_targets) -> None:
         """Check fmeasure can compute f1 score given confidence threshold."""
-        metric = FMeasure(num_classes=1)
+        metric = FMeasure(label_info=LabelInfo.from_num_classes(1))
 
-        metric.best_confidence_threshold = 0.85
         metric.update(fxt_preds, fxt_targets)
-        result = metric.compute()
+        result = metric.compute(best_confidence_threshold=0.85)
         assert result["f1-score"] == 0.3333333432674408

@@ -11,6 +11,8 @@ import numpy as np
 from torch import Tensor
 from torchmetrics import Metric
 
+from otx.core.types.label import LabelInfo
+
 logger = logging.getLogger()
 ALL_CLASSES_NAME = "All Classes"
 
@@ -632,9 +634,7 @@ class FMeasure(Metric):
     to True.
 
     Args:
-        num_classes (int): The number of classes.
-        best_confidence_threshold (float | None): Pre-defined best confidence threshold. If this value is None, then
-        FMeasure will find best confidence threshold. Defaults to None.
+        label_info (int): Dataclass including label information.
         vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
             values. Defaults to False.
         cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
@@ -643,22 +643,31 @@ class FMeasure(Metric):
 
     def __init__(
         self,
-        num_classes: int,
-        best_confidence_threshold: float | None = None,
+        label_info: LabelInfo,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
     ):
         super().__init__()
         self.vary_nms_threshold = vary_nms_threshold
         self.cross_class_nms = cross_class_nms
-        self.preds: list[list[tuple]] = []
-        self.targets: list[list[tuple]] = []
-        self.num_classes: int = num_classes
+        self.label_info: LabelInfo = label_info
 
         self._f_measure_per_confidence: dict | None = None
         self._f_measure_per_nms: dict | None = None
-        self._best_confidence_threshold: float | None = best_confidence_threshold
+        self._best_confidence_threshold: float | None = None
         self._best_nms_threshold: float | None = None
+        self._f_measure = 0.0
+
+        self.reset()
+
+    def reset(self) -> None:
+        """Reset for every validation and test epoch.
+
+        Please be careful that some variables should not be reset for each epoch.
+        """
+        super().reset()
+        self.preds: list[list[tuple]] = []
+        self.targets: list[list[tuple]] = []
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update total predictions and targets from given batch predicitons and targets."""
@@ -680,8 +689,14 @@ class FMeasure(Metric):
                 ],
             )
 
-    def compute(self) -> dict:
-        """Compute f1 score metric."""
+    def compute(self, best_confidence_threshold: float | None = None) -> dict:
+        """Compute f1 score metric.
+
+        Args:
+            best_confidence_threshold (float | None): Pre-defined best confidence threshold.
+                If this value is None, then FMeasure will find best confidence threshold and
+                store it as member variable. Defaults to None.
+        """
         boxes_pair = _FMeasureCalculator(self.targets, self.preds)
         result = boxes_pair.evaluate_detections(
             result_based_nms_threshold=self.vary_nms_threshold,
@@ -690,26 +705,37 @@ class FMeasure(Metric):
         )
         self._f_measure_per_label = {label: result.best_f_measure_per_class[label] for label in self.classes}
 
-        if self.best_confidence_threshold is not None:
+        if best_confidence_threshold is not None:
             (index,) = np.where(
-                np.isclose(list(np.arange(*boxes_pair.confidence_range)), self.best_confidence_threshold),
+                np.isclose(list(np.arange(*boxes_pair.confidence_range)), best_confidence_threshold),
             )
-            self._f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
+            computed_f_measure = result.per_confidence.all_classes_f_measure_curve[int(index)]
         else:
             self._f_measure_per_confidence = {
                 "xs": list(np.arange(*boxes_pair.confidence_range)),
                 "ys": result.per_confidence.all_classes_f_measure_curve,
             }
-            self._best_confidence_threshold = result.per_confidence.best_threshold
-            self._f_measure = result.best_f_measure
+            computed_f_measure = result.best_f_measure
+            best_confidence_threshold = result.per_confidence.best_threshold
 
-        if self.vary_nms_threshold and result.per_nms is not None:
-            self._f_measure_per_nms = {
-                "xs": list(np.arange(*boxes_pair.nms_range)),
-                "ys": result.per_nms.all_classes_f_measure_curve,
-            }
-            self._best_nms_threshold = result.per_nms.best_threshold
-        return {"f1-score": Tensor([self.f_measure])}
+        # TODO(jaegukhyun): There was no reset() function in this metric
+        # There are some variables dependent on the best F1 metric, e.g., best_confidence_threshold
+        # Now we added reset() function and revise some mechanism about it. However,
+        # It is still unsure that it is correctly working with the implemented reset function.
+        # Need to revisit. See other metric implement and this to learn how they work
+        # https://github.com/Lightning-AI/torchmetrics/blob/v1.2.1/src/torchmetrics/metric.py
+        if self._f_measure < computed_f_measure:
+            self._f_measure = result.best_f_measure
+            self._best_confidence_threshold = best_confidence_threshold
+
+            if self.vary_nms_threshold and result.per_nms is not None:
+                self._f_measure_per_nms = {
+                    "xs": list(np.arange(*boxes_pair.nms_range)),
+                    "ys": result.per_nms.all_classes_f_measure_curve,
+                }
+                self._best_nms_threshold = result.per_nms.best_threshold
+
+        return {"f1-score": Tensor([computed_f_measure])}
 
     @property
     def f_measure(self) -> float:
@@ -727,14 +753,15 @@ class FMeasure(Metric):
         return self._f_measure_per_confidence
 
     @property
-    def best_confidence_threshold(self) -> None | float:
+    def best_confidence_threshold(self) -> float:
         """Returns best confidence threshold as ScoreMetric if exists."""
+        if self._best_confidence_threshold is None:
+            msg = (
+                "Cannot obtain best_confidence_threshold updated previously. "
+                "Please execute self.update(best_confidence_threshold=None) first."
+            )
+            raise RuntimeError(msg)
         return self._best_confidence_threshold
-
-    @best_confidence_threshold.setter
-    def best_confidence_threshold(self, value: float) -> None:
-        """Setter for best_confidence_threshold."""
-        self._best_confidence_threshold = value
 
     @property
     def f_measure_per_nms(self) -> None | dict:
@@ -749,7 +776,11 @@ class FMeasure(Metric):
     @property
     def classes(self) -> list[str]:
         """Class information of dataset."""
-        if self.num_classes is None:
-            msg = "classes is called before num_classes is set."
-            raise ValueError(msg)
-        return [str(idx) for idx in range(self.num_classes)]
+        return self.label_info.label_names
+
+
+def _f_measure_callable(label_info: LabelInfo) -> FMeasure:
+    return FMeasure(label_info=label_info)
+
+
+FMeasureCallable = _f_measure_callable
