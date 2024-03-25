@@ -1,5 +1,5 @@
 model:
-  class_path: otx.core.model.instance_segmentation.OVInstanceSegmentationModel
+  class_path: otx.core.model.entity.instance_segmentation.OVInstanceSegmentationModel
   init_args:
     num_classes: 80
     model_name: openvino.xml
@@ -35,4 +35,4 @@ overrides:
       image_color_channel: RGB
       data_format: coco_instances
       test_subset:
-        batch_size: 2
+        batch_size: 64
