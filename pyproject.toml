@@ -71,7 +71,7 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
-    "openvino==2023.3.0",
+    "openvino==2024.0.0",
     "openvino-dev==2023.3.0",
     "openvino-model-api==0.1.9",
     "onnx==1.15.0",
