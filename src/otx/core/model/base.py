@@ -294,6 +294,9 @@ class OTXModel(
     def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
         sig = inspect.signature(meter.compute)
         filtered_kwargs = {key: value for key, value in compute_kwargs.items() if key in sig.parameters}
+        if removed_kwargs := set(compute_kwargs.keys()).difference(filtered_kwargs.keys()):
+            msg = f"These keyword arguments are removed since they are not in the function signature: {removed_kwargs}"
+            logger.debug(msg)
 
         results: dict[str, Tensor] = meter.compute(**filtered_kwargs)
 
