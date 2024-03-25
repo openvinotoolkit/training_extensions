@@ -15,10 +15,10 @@ import datumaro
 from lightning.pytorch.cli import instantiate_class
 
 from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OVModel
 from otx.core.types import PathLike
+from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
@@ -262,7 +262,7 @@ class AutoConfigurator:
             num_classes = label_info.num_classes
             self.config["model"]["init_args"]["num_classes"] = num_classes
 
-            from otx.core.data.dataset.classification import HLabelInfo
+            from otx.core.types.label import HLabelInfo
 
             if isinstance(label_info, HLabelInfo):
                 init_args = self.config["model"]["init_args"]

@@ -23,7 +23,6 @@ from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
 from torchmetrics import Metric, MetricCollection
 
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -34,6 +33,7 @@ from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchData
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.types.export import OTXExportFormatType
+from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
@@ -80,7 +80,7 @@ class OTXModel(
     ) -> None:
         super().__init__()
 
-        self._label_info = LabelInfo.from_num_classes(num_classes)
+        self._label_info = LabelInfo.from_num_classes(num_classes) if num_classes > 0 else NullLabelInfo()
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self.original_model_forward = None
@@ -369,6 +369,13 @@ class OTXModel(
     @label_info.setter
     def label_info(self, label_info: LabelInfo | list[str]) -> None:
         """Set this model label information."""
+        self._set_label_info(label_info)
+
+    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Actual implementation for set this model label information.
+
+        Derived classes should override this function.
+        """
         if isinstance(label_info, list):
             label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
 
@@ -596,6 +603,7 @@ class OTXModel(
             ("model_info", "labels"): all_labels.strip(),
             ("model_info", "label_ids"): all_label_ids.strip(),
             ("model_info", "optimization_config"): json.dumps(optimization_config),
+            ("model_info", "label_info"): self.label_info.to_json(),
         }
 
         return parameters
@@ -628,7 +636,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str,
         async_inference: bool = True,
@@ -643,7 +650,9 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         self.num_requests = max_num_requests if max_num_requests is not None else get_default_num_async_infer_requests()
         self.use_throughput_mode = use_throughput_mode
         self.model_api_configuration = model_api_configuration if model_api_configuration is not None else {}
-        super().__init__(num_classes=num_classes, metric=metric)
+        # NOTE: num_classes and label_info comes from the IR metadata
+        super().__init__(num_classes=-1, metric=metric)
+        self._label_info = self._create_label_info_from_ov_ir()
 
         tile_enabled = False
         with contextlib.suppress(RuntimeError):
@@ -807,71 +816,35 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         """Model parameters for export."""
         return {}
 
-    def _reset_prediction_layer(self, num_classes: int) -> None:
-        """Reset its prediction layer with a given number of classes.
+    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Set this model label information."""
+        if isinstance(label_info, list):
+            label_info = LabelInfo(label_names=label_info, label_groups=[label_info])
 
-        Args:
-            num_classes: Number of classes
-        """
-        # TODO(vinnamki): See the following link
-        # https://github.com/openvinotoolkit/training_extensions/actions/runs/8339199693/job/22821020564?pr=3155#step:5:3966
-        # This is because this test is trying to launch the test pipeline with giving 80 num_classes to OV model
-        # which is really trained for 21 classes.
-        # Indeed, it should be failed at initialization but the current code allows it.
-        # Without this function overriding, it fails at label_info injection
-        #
-        # ╭───────────────────── Traceback (most recent call last) ──────────────────────╮
-        # │ /home/vinnamki/otx/training_extensions/src/otx/cli/cli.py:586 in run         │
-        # │                                                                              │
-        # │   583 │   │   │   fn_kwargs = self.prepare_subcommand_kwargs(self.subcommand │
-        # │   584 │   │   │   fn = getattr(self.engine, self.subcommand)                 │
-        # │   585 │   │   │   try:                                                       │
-        # │ ❱ 586 │   │   │   │   fn(**fn_kwargs)                                        │
-        # │   587 │   │   │   except Exception:                                          │
-        # │   588 │   │   │   │   self.console.print_exception(width=self.console.width) │
-        # │   589 │   │   │   self.save_config(work_dir=Path(self.engine.work_dir))      │
-        # │                                                                              │
-        # │ /home/vinnamki/otx/training_extensions/src/otx/engine/engine.py:338 in test  │
-        # │                                                                              │
-        # │   335 │   │   │   │   f"It will be overriden: {self.model.label_info} => {se │
-        # │   336 │   │   │   )                                                          │
-        # │   337 │   │   │   logging.warning(msg)                                       │
-        # │ ❱ 338 │   │   │   self.model.label_info = self.datamodule.label_info         │
-        # │   339 │   │   │                                                              │
-        # │   340 │   │   │   # TODO (vinnamki): This should be changed to raise an erro │
-        # │   341 │   │   │   # raise ValueError()                                       │
-        # │                                                                              │
-        # │ /home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/site-packages/torch/nn/ │
-        # │ modules/module.py:1754 in __setattr__                                        │
-        # │                                                                              │
-        # │   1751 │   │   │   │   │   │   │   value = output                            │
-        # │   1752 │   │   │   │   │   buffers[name] = value                             │
-        # │   1753 │   │   │   │   else:                                                 │
-        # │ ❱ 1754 │   │   │   │   │   super().__setattr__(name, value)                  │
-        # │   1755 │                                                                     │
-        # │   1756 │   def __delattr__(self, name):                                      │
-        # │   1757 │   │   if name in self._parameters:                                  │
-        # │                                                                              │
-        # │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:386 in     │
-        # │ label_info                                                                   │
-        # │                                                                              │
-        # │   383 │   │   │   │   f"(={new_num_classes})."                               │
-        # │   384 │   │   │   )                                                          │
-        # │   385 │   │   │   warnings.warn(msg, stacklevel=0)                           │
-        # │ ❱ 386 │   │   │   self._reset_prediction_layer(num_classes=label_info.num_cl │
-        # │   387 │   │                                                                  │
-        # │   388 │   │   self._label_info = label_info                                  │
-        # │   389                                                                        │
-        # │                                                                              │
-        # │ /home/vinnamki/otx/training_extensions/src/otx/core/model/base.py:609 in     │
-        # │ _reset_prediction_layer                                                      │
-        # │                                                                              │
-        # │   606 │   │   Args:                                                          │
-        # │   607 │   │   │   num_classes: Number of classes                             │
-        # │   608 │   │   """                                                            │
-        # │ ❱ 609 │   │   raise NotImplementedError                                      │
-        # │   610 │                                                                      │
-        # │   611 │   @property                                                          │
-        # │   612 │   def _optimization_config(self) -> dict[str, str]:                  │
-        # ╰──────────────────────────────────────────────────────────────────────────────╯
-        # NotImplementedError
+        if self._label_info != label_info:
+            msg = "OVModel strictly does not allow overwrite label_info if they are different each other."
+            raise ValueError(msg)
+
+        self._label_info = label_info
+
+    def _create_label_info_from_ov_ir(self) -> LabelInfo:
+        ov_model = self.model.get_model()
+
+        if ov_model.has_rt_info(["model_info", "label_info"]):
+            serialized = ov_model.get_rt_info(["model_info", "label_info"]).value
+            return LabelInfo.from_json(serialized)
+
+        mapi_model: Model = self.model
+
+        if label_names := getattr(mapi_model, "labels", None):
+            msg = (
+                'Cannot find "label_info" from OpenVINO IR. '
+                "However, we found labels attributes from ModelAPI. "
+                "Construct LabelInfo from it."
+            )
+
+            logger.warning(msg)
+            return LabelInfo(label_names=label_names, label_groups=[label_names])
+
+        msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
+        raise ValueError(msg)

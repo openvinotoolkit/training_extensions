@@ -10,8 +10,6 @@ from datumaro.components.annotation import AnnotationType, LabelCategories
 from datumaro.components.dataset import Dataset, DatasetItem
 from datumaro.components.media import Image
 from otx.core.config import register_configs
-from otx.core.data.dataset.base import LabelInfo
-from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.base import ImageInfo, Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
@@ -21,12 +19,30 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchPredEntity,
     ZeroShotVisualPromptingDataEntity,
 )
+from otx.core.types.label import HLabelInfo, LabelInfo, NullLabelInfo, SegLabelInfo
 from torchvision import tv_tensors
 
 
 @pytest.fixture(scope="session", autouse=True)
 def fxt_register_configs() -> None:
     register_configs()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_null_label_info() -> LabelInfo:
+    return NullLabelInfo()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fxt_seg_label_info() -> SegLabelInfo:
+    label_names = ["class1", "class2", "class3"]
+    return SegLabelInfo(
+        label_names=label_names,
+        label_groups=[
+            label_names,
+            ["class2", "class3"],
+        ],
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)

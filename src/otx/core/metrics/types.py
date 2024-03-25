@@ -8,7 +8,7 @@ from typing import Callable
 from torch import Tensor
 from torchmetrics import Metric, MetricCollection
 
-from otx.core.data.dataset.base import LabelInfo
+from otx.core.types.label import LabelInfo
 
 MetricCallable = Callable[[LabelInfo], Metric | MetricCollection]
 NullMetricCallable: MetricCallable = lambda label_info: Metric()  # noqa: ARG005

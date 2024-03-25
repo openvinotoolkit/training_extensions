@@ -7,8 +7,9 @@ import pytest
 import torch
 from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
-from otx.core.data.dataset.classification import HLabelInfo, MulticlassClsBatchDataEntity
+from otx.core.data.dataset.classification import MulticlassClsBatchDataEntity
 from otx.core.data.entity.base import ImageInfo
+from otx.core.types.label import HLabelInfo
 from torchvision import tv_tensors
 
 
@@ -97,7 +98,7 @@ def fxt_hlabel_multilabel_info() -> HLabelInfo:
         num_multiclass_heads=3,
         num_multilabel_classes=3,
         head_idx_to_logits_range={"0": (0, 2), "1": (2, 4), "2": (4, 6)},
-        num_single_label_classes=3,
+        num_single_label_classes=6,
         empty_multiclass_head_indices=[],
         class_to_group_idx={
             "Heart": (0, 0),

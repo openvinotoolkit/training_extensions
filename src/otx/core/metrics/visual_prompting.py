@@ -8,7 +8,7 @@ from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from torchmetrics.detection import MeanAveragePrecision
 
-from otx.core.data.dataset.base import LabelInfo
+from otx.core.types.label import LabelInfo
 
 
 def _visual_prompting_metric_callable(label_info: LabelInfo) -> MetricCollection:  # noqa: ARG001

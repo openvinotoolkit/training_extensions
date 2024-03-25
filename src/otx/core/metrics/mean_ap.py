@@ -11,7 +11,7 @@ import pycocotools.mask as mask_utils
 import torch
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
-from otx.core.data.dataset.base import LabelInfo
+from otx.core.types.label import LabelInfo
 
 if TYPE_CHECKING:
     from torchmetrics import Metric

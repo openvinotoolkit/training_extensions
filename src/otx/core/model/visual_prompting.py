@@ -40,6 +40,7 @@ from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
@@ -274,6 +275,10 @@ class OTXVisualPromptingModel(
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
 
+    def _set_label_info(self, _: LabelInfo | list[str]) -> None:
+        msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
+        log.warning(msg)
+
 
 class OTXZeroShotVisualPromptingModel(
     OTXModel[
@@ -446,6 +451,10 @@ class OTXZeroShotVisualPromptingModel(
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
 
+    def _set_label_info(self, _: LabelInfo | list[str]) -> None:
+        msg = f"Reconfiguring label_info has no effect on {self.__class__.__name__}."
+        log.warning(msg)
+
 
 class OVVisualPromptingModel(
     OVModel[
@@ -462,7 +471,6 @@ class OVVisualPromptingModel(
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Visual_Prompting",
         async_inference: bool = False,
@@ -485,7 +493,6 @@ class OVVisualPromptingModel(
             for module in ["image_encoder", "decoder"]
         }
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -728,6 +735,17 @@ class OVVisualPromptingModel(
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
 
+    def _create_label_info_from_ov_ir(self) -> LabelInfo:
+        """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
+        return NullLabelInfo()
+
+    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Visual prompting task does not check label_info equivalance.
+
+        This is because it always has NullLabelInfo.
+        """
+        return
+
 
 class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     """Zero-shot visual prompting model compatible for OpenVINO IR inference.
@@ -738,7 +756,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
     def __init__(
         self,
-        num_classes: int,
         model_name: str,
         model_type: str = "Zero_Shot_Visual_Prompting",
         async_inference: bool = False,
@@ -751,7 +768,6 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         **kwargs,
     ) -> None:
         super().__init__(
-            num_classes=num_classes,
             model_name=model_name,
             model_type=model_type,
             async_inference=async_inference,
@@ -1412,3 +1428,14 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
         return _convert_pred_entity_to_compute_metric(preds=preds, inputs=inputs)
+
+    def _create_label_info_from_ov_ir(self) -> LabelInfo:
+        """Create NullLabelInfo since Visual Prompting tasks has no use of label information."""
+        return NullLabelInfo()
+
+    def _set_label_info(self, label_info: LabelInfo | list[str]) -> None:
+        """Visual prompting task does not check label_info equivalance.
+
+        This is because it always has NullLabelInfo.
+        """
+        return

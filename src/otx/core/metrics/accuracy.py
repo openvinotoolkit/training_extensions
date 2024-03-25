@@ -21,8 +21,7 @@ from otx.core.metrics.types import MetricCallable
 if TYPE_CHECKING:
     from torch import Tensor
 
-    from otx.core.data.dataset.base import LabelInfo
-    from otx.core.data.dataset.classification import HLabelInfo
+    from otx.core.types.label import HLabelInfo, LabelInfo
 
 
 class NamedConfusionMatrix(ConfusionMatrix):

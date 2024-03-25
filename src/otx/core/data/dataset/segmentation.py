@@ -5,8 +5,6 @@
 
 from __future__ import annotations
 
-import warnings
-from dataclasses import dataclass
 from functools import partial
 from typing import TYPE_CHECKING, Callable
 
@@ -15,32 +13,17 @@ import torch
 from datumaro.components.annotation import Image, Mask
 from torchvision import tv_tensors
 
-from otx.core.data.dataset.base import LabelInfo, Transforms
+from otx.core.data.dataset.base import Transforms
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegDataEntity
 from otx.core.data.mem_cache import NULL_MEM_CACHE_HANDLER, MemCacheHandlerBase
 from otx.core.types.image import ImageColorChannel
+from otx.core.types.label import SegLabelInfo
 
 from .base import OTXDataset
 
 if TYPE_CHECKING:
     from datumaro import DatasetSubset
-
-
-@dataclass
-class SegLabelInfo(LabelInfo):
-    """Meta information of Semantic Segmentation."""
-
-    def __init__(self, label_names: list[str], label_groups: list[list[str]]) -> None:
-        if not any(word.lower() == "background" for word in label_names):
-            msg = (
-                "Currently, no background label exists for `label_names`. "
-                "Segmentation requires a background label. "
-                "To do this, `Background` is added at index 0 of `label_names`."
-            )
-            warnings.warn(msg, stacklevel=2)
-            label_names.insert(0, "Background")
-        super().__init__(label_names, label_groups)
 
 
 class OTXSegmentationDataset(OTXDataset[SegDataEntity]):

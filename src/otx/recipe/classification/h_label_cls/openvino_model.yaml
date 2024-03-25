@@ -6,9 +6,6 @@ model:
     async_inference: True
     use_throughput_mode: False
     model_type: Classification
-    num_classes: 7
-    num_multiclass_heads: 0
-    num_multilabel_classes: 0
 
 optimizer:
   class_path: torch.optim.Adam

@@ -18,7 +18,6 @@ from anomalib.callbacks.post_processor import _PostProcessorCallback
 from anomalib.callbacks.thresholding import _ThresholdCallback
 from torch import nn
 
-from otx.core.data.dataset.base import LabelInfo
 from otx.core.data.entity.anomaly import (
     AnomalyClassificationBatchPrediction,
     AnomalyClassificationDataBatch,
@@ -29,6 +28,7 @@ from otx.core.data.entity.anomaly import (
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.types.export import OTXExportFormatType
+from otx.core.types.label import LabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 

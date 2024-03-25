@@ -5,6 +5,7 @@
 
 __version__ = "2.0.0"
 
+from otx.core.types import *  # noqa: F403
 
 OTX_LOGO: str = """
 
