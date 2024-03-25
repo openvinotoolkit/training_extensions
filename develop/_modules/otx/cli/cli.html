@@ -245,6 +245,7 @@
 
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
@@ -265,7 +266,6 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">jsonargparse._actions</span> <span class="kn">import</span> <span class="n">_ActionSubCommands</span>
 
-    <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 <span class="n">_ENGINE_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">try</span><span class="p">:</span>
@@ -401,7 +401,7 @@
             <span class="n">OTXModel</span><span class="p">,</span>
             <span class="s2">&quot;model&quot;</span><span class="p">,</span>
             <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="s2">&quot;metric&quot;</span><span class="p">},</span>
+            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">},</span>
             <span class="o">**</span><span class="n">model_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Datamodule Settings</span>
@@ -598,7 +598,6 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine_subcommands</span><span class="p">():</span>
             <span class="c1"># For num_classes update, Model and Metric are instantiated separately.</span>
             <span class="n">model_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
-            <span class="n">metric_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metric&quot;</span><span class="p">)</span>
 
             <span class="c1"># Instantiate the things that don&#39;t need to special handling</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
@@ -606,10 +605,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
 
             <span class="c1"># Instantiate the model and needed components</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span>
-                <span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">,</span>
-                <span class="n">metric_config</span><span class="o">=</span><span class="n">metric_config</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">instantiate_engine</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_engine</span><span class="p">()</span></div>
@@ -634,31 +630,9 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OTXCLI.instantiate_metric">
-<a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_metric">[docs]</a>
-    <span class="k">def</span> <span class="nf">instantiate_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the metric based on the metric_config.</span>
-
-<span class="sd">        It also pathces the num_classes according to the model classes information.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            metric_config (Namespace): The metric configuration.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">partial_instantiate_class</span>
-
-        <span class="k">if</span> <span class="n">metric_config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]:</span>
-            <span class="n">metric_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="n">metric_config</span><span class="p">,</span> <span class="s2">&quot;metric&quot;</span><span class="p">,</span> <span class="n">namespace_to_dict</span><span class="p">(</span><span class="n">metric_config</span><span class="p">))</span>
-            <span class="n">metric</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">(</span><span class="n">metric_kwargs</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">metric</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">metric</span>
-
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The configuration of metric is None.&quot;</span>
-        <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
-
-
 <div class="viewcode-block" id="OTXCLI.instantiate_model">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">metric_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the model based on the subcommand.</span>
 
 <span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
@@ -698,7 +672,7 @@
         <span class="k">if</span> <span class="n">optimizers</span><span class="p">:</span>
             <span class="c1"># Updates the instantiated optimizer.</span>
             <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizers</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimizers</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span>
 
         <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">scheduler_kwargs</span><span class="p">]</span>
@@ -706,13 +680,7 @@
         <span class="k">if</span> <span class="n">schedulers</span><span class="p">:</span>
             <span class="c1"># Updates the instantiated scheduler.</span>
             <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">schedulers</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schedulers</span>
-
-        <span class="c1"># Instantiate the metric with changing the num_classes</span>
-        <span class="n">metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_metric</span><span class="p">(</span><span class="n">metric_config</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">metric</span><span class="p">:</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span>
 
         <span class="c1"># Parses the OTXModel separately to update num_classes.</span>
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
@@ -794,18 +762,19 @@
 <span class="sd">        The configuration is saved as a YAML file in the engine&#39;s working directory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;workspace&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="c1"># TODO(vinnamki): Do not save for now.</span>
-        <span class="c1"># Revisit it after changing the optimizer and scheduler instantiating.</span>
-        <span class="c1"># self.get_subcommand_parser(self.subcommand).save(</span>
-        <span class="c1">#     cfg=self.config.get(str(self.subcommand), self.config),</span>
-        <span class="c1">#     path=work_dir / &quot;configs.yaml&quot;,</span>
-        <span class="c1">#     overwrite=True,</span>
-        <span class="c1">#     multifile=False,</span>
-        <span class="c1">#     skip_check=True,</span>
-        <span class="c1"># )</span>
-        <span class="c1"># For assert statement in the test</span>
-        <span class="k">with</span> <span class="p">(</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">({</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">fp</span><span class="p">)</span>
+        <span class="c1"># TODO(vinnamki): Revisit it after changing the optimizer and scheduler instantiating.</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">))</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;optimizer&quot;</span><span class="p">)</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;scheduler&quot;</span><span class="p">)</span>
+        <span class="n">cfg</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;hlabel_info&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">cfg</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">multifile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">skip_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># if train -&gt; Update `.latest` folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_latest</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">work_dir</span><span class="p">)</span></div>
@@ -869,6 +838,7 @@
                 <span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">fn_kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+                <span class="k">raise</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">work_dir</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unrecognized subcommand: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">&quot;</span>

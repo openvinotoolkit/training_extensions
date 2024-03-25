@@ -244,8 +244,9 @@
 
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span>
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -272,7 +273,6 @@
     <span class="kn">from</span> <span class="nn">lightning.pytorch.loggers</span> <span class="kn">import</span> <span class="n">Logger</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.types</span> <span class="kn">import</span> <span class="n">EVAL_DATALOADERS</span><span class="p">,</span> <span class="n">TRAIN_DATALOADERS</span>
     <span class="kn">from</span> <span class="nn">pytorch_lightning.trainer.connectors.accelerator_connector</span> <span class="kn">import</span> <span class="n">_PRECISION_INPUT</span>
-    <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Metric</span>
 
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
@@ -290,6 +290,24 @@
     <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">VISUAL_PROMPTING</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.visual_prompting.OTXVisualPromptingLitModule&quot;</span><span class="p">,</span>
     <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ZERO_SHOT_VISUAL_PROMPTING</span><span class="p">:</span> <span class="s2">&quot;otx.core.model.module.visual_prompting.OTXZeroShotVisualPromptingLitModule&quot;</span><span class="p">,</span>  <span class="c1"># noqa: E501</span>
 <span class="p">}</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">override_metric_callable</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">new_metric_callable</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">OTXModel</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Override `OTXModel.metric_callable` to change the evaluation metric.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: Model to override its metric callable</span>
+<span class="sd">        new_metric_callable: If not None, override the model&#39;s one with this. Otherwise, do not override.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">new_metric_callable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">model</span>
+        <span class="k">return</span>
+
+    <span class="n">orig_metric_callable</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">new_metric_callable</span>
+    <span class="k">yield</span> <span class="n">model</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">orig_metric_callable</span>
 
 
 <div class="viewcode-block" id="Engine">
@@ -407,7 +425,7 @@
         <span class="n">callbacks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callback</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Logger</span><span class="p">]</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">metric</span><span class="p">:</span> <span class="n">Metric</span> <span class="o">|</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">run_hpo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hpo_config</span><span class="p">:</span> <span class="n">HpoConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -425,8 +443,8 @@
 <span class="sd">            callbacks (list[Callback] | Callback | None, optional): The callbacks to be used during training.</span>
 <span class="sd">            logger (Logger | Iterable[Logger] | bool | None, optional): The logger(s) to be used. Defaults to None.</span>
 <span class="sd">            resume (bool, optional): If True, tries to resume training from existing checkpoint.</span>
-<span class="sd">            metric (Metric | MetricCallable | None): The metric for the validation and test.</span>
-<span class="sd">                                            It could be None at export, predict, etc.</span>
+<span class="sd">            metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given</span>
+<span class="sd">                metric callable. It will temporarilly change the evaluation metric for the validation and test.</span>
 <span class="sd">            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.</span>
 <span class="sd">            hpo_config (HpoConfig | None, optional): Configuration for HPO.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
@@ -464,7 +482,6 @@
 <span class="sd">                otx train --data_root &lt;DATASET_PATH&gt; --config &lt;CONFIG_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span> <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_metric</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">run_hpo</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">hpo_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">hpo_config</span> <span class="o">=</span> <span class="n">HpoConfig</span><span class="p">()</span>
@@ -504,12 +521,21 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">datamodule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">fit_kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">override_metric_callable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">new_metric_callable</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">datamodule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">fit_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">checkpoint_callback</span><span class="o">.</span><span class="n">best_model_path</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">,</span> <span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;self.checkpoint should be Path or str at this time.&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">best_checkpoint_symlink</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;best_checkpoint.ckpt&quot;</span>
+        <span class="n">best_checkpoint_symlink</span><span class="o">.</span><span class="n">symlink_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">callback_metrics</span></div>
 
 
@@ -519,7 +545,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">checkpoint</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">datamodule</span><span class="p">:</span> <span class="n">EVAL_DATALOADERS</span> <span class="o">|</span> <span class="n">OTXDataModule</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">metric</span><span class="p">:</span> <span class="n">Metric</span> <span class="o">|</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the testing phase of the engine.</span>
@@ -528,8 +554,8 @@
 <span class="sd">            datamodule (EVAL_DATALOADERS | OTXDataModule | None, optional): The data module containing the test data.</span>
 <span class="sd">            checkpoint (PathLike | None, optional): Path to the checkpoint file to load the model from.</span>
 <span class="sd">                Defaults to None.</span>
-<span class="sd">            metric (Metric | MetricCallable | None): The metric for the validation and test.</span>
-<span class="sd">                                            It could be None at export, predict, etc.</span>
+<span class="sd">            metric (MetricCallable | None): If not None, it will override `OTXModel.metric_callable` with the given</span>
+<span class="sd">                metric callable. It will temporarilly change the evaluation metric for the validation and test.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -562,8 +588,6 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="n">label_info</span><span class="o">=</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
 
-        <span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span> <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_metric</span><span class="p">()</span>
-
         <span class="c1"># NOTE, trainer.test takes only lightning based checkpoint.</span>
         <span class="c1"># So, it can&#39;t take the OTX1.x checkpoint.</span>
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
@@ -584,10 +608,11 @@
             <span class="c1"># TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test</span>
             <span class="c1"># raise ValueError()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">override_metric_callable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">new_metric_callable</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">callback_metrics</span></div>
 
