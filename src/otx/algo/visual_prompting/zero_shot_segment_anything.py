@@ -27,10 +27,15 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
 )
+from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
+from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
 
 if TYPE_CHECKING:
     import numpy as np
+    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+
+    from otx.core.metrics import MetricCallable
 
 
 class PromptGetter(nn.Module):
@@ -622,6 +627,10 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         num_classes: int = 0,
+        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = VisualPromptingMetricCallable,
+        torch_compile: bool = False,
         root_reference_info: Path | str = "vpm_zsl_reference_infos",
         save_outputs: bool = True,
         pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
@@ -649,7 +658,13 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
             "stability_score_offset": stability_score_offset,
             **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
         }
-        super().__init__(num_classes=num_classes)
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
 
         self.save_outputs = save_outputs
         self.root_reference_info: Path = Path(root_reference_info)
