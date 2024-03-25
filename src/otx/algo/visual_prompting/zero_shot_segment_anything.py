@@ -447,66 +447,73 @@ class ZeroShotSegmentAnything(SegmentAnything):
         masks: Tensor
         logits: Tensor
         scores: Tensor
-        num_iter = 3 if is_cascade else 1
-        for i in range(num_iter):
-            if i == 0:
-                # First-step prediction
-                mask_input = torch.zeros(
-                    1,
-                    1,
-                    *(x * 4 for x in image_embeddings.shape[2:]),
-                    device=image_embeddings.device,
+
+        # First-step prediction
+        mask_input = torch.zeros(
+            1,
+            1,
+            *(x * 4 for x in image_embeddings.shape[2:]),
+            device=image_embeddings.device,
+        )
+        has_mask_input = self.has_mask_inputs[0].to(mask_input.device)
+        high_res_masks, scores, logits = self(
+            mode=mode,
+            image_embeddings=image_embeddings,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            mask_input=mask_input,
+            has_mask_input=has_mask_input,
+            ori_shape=ori_shape,
+        )
+        masks = high_res_masks > self.mask_threshold
+
+        if is_cascade:
+            for i in range(2):
+                if i == 0:
+                    # Cascaded Post-refinement-1
+                    mask_input, best_masks = self._decide_cascade_results(
+                        masks,
+                        logits,
+                        scores,
+                        is_single=True,
+                    )
+                    if best_masks.sum() == 0:
+                        return best_masks
+
+                    has_mask_input = self.has_mask_inputs[1].to(mask_input.device)
+
+                else:
+                    # Cascaded Post-refinement-2
+                    mask_input, best_masks = self._decide_cascade_results(masks, logits, scores)
+                    if best_masks.sum() == 0:
+                        return best_masks
+
+                    has_mask_input = self.has_mask_inputs[1].to(mask_input.device)
+                    coords = torch.nonzero(best_masks)
+                    y, x = coords[:, 0], coords[:, 1]
+                    box_coords = self._preprocess_coords(
+                        torch.tensor(
+                            [[[x.min(), y.min()], [x.max(), y.max()]]],
+                            dtype=torch.float32,
+                            device=coords.device,
+                        ),
+                        ori_shape,
+                        self.image_size,
+                    )
+                    point_coords = torch.cat((point_coords, box_coords), dim=1)
+                    point_labels = torch.cat((point_labels, self.point_labels_box.to(point_labels.device)), dim=1)
+
+                high_res_masks, scores, logits = self(
+                    mode=mode,
+                    image_embeddings=image_embeddings,
+                    point_coords=point_coords,
+                    point_labels=point_labels,
+                    mask_input=mask_input,
+                    has_mask_input=has_mask_input,
+                    ori_shape=ori_shape,
                 )
-                has_mask_input = self.has_mask_inputs[0].to(mask_input.device)
+                masks = high_res_masks > self.mask_threshold
 
-            elif i == 1:
-                # Cascaded Post-refinement-1
-                # TODO (sungchul2): Fix the following ruff errors, ticket no. 135852
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:473:21: F821 Undefined name `masks`
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:474:21: F821 Undefined name `logits`
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:475:21: F821 Undefined name `scores`
-                mask_input, best_masks = self._decide_cascade_results(
-                    masks,  # noqa: F821
-                    logits,  # noqa: F821
-                    scores,  # noqa: F821
-                    is_single=True,
-                )
-                if best_masks.sum() == 0:
-                    return best_masks
-
-                has_mask_input = self.has_mask_inputs[1].to(mask_input.device)
-
-            elif i == 2:
-                # Cascaded Post-refinement-2
-                # TODO (sungchul2): Fix the following ruff errors, ticket no. 135852
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:475:21: F821 Undefined name `masks`
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:476:21: F821 Undefined name `logits`
-                # src/otx/algo/visual_prompting/zero_shot_segment_anything.py:477:21: F821 Undefined name `scores`
-                mask_input, best_masks = self._decide_cascade_results(masks, logits, scores)  # noqa: F821
-                if best_masks.sum() == 0:
-                    return best_masks
-
-                has_mask_input = self.has_mask_inputs[1].to(mask_input.device)
-                coords = torch.nonzero(best_masks)
-                y, x = coords[:, 0], coords[:, 1]
-                box_coords = self._preprocess_coords(
-                    torch.tensor([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=torch.float32, device=coords.device),
-                    ori_shape,
-                    self.image_size,
-                )
-                point_coords = torch.cat((point_coords, box_coords), dim=1)
-                point_labels = torch.cat((point_labels, self.point_labels_box.to(point_labels.device)), dim=1)
-
-            high_res_masks, scores, logits = self(
-                mode=mode,
-                image_embeddings=image_embeddings,
-                point_coords=point_coords,
-                point_labels=point_labels,
-                mask_input=mask_input,
-                has_mask_input=has_mask_input,
-                ori_shape=ori_shape,
-            )
-            masks = high_res_masks > self.mask_threshold
         _, best_masks = self._decide_cascade_results(masks, logits, scores)
         return best_masks
 
