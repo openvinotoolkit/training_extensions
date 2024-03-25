@@ -21,6 +21,14 @@ TEMPLATE_ID_DICT = {
         "task": OTXTaskType.MULTI_CLASS_CLS,
         "model_name": "otx_deit_tiny",
     },
+    "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "maskrcnn_r50",
+    },
+    "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "litehrnet_18",
+    },
 }
 
 
@@ -28,13 +36,12 @@ def convert(geti_config_path: str) -> None:
     """Convert Geti config to OTX recipe yaml file."""
     with Path(geti_config_path).open() as f:
         geti_config = json.load(f)
-        task_info = TEMPLATE_ID_DICT[geti_config["model_template_id"]]
-        default_config = AutoConfigurator(
-            task=task_info["task"],  # type: ignore[arg-type]
-            model_name=task_info["model_name"],
-        ).config
         hyperparameters = geti_config["hyperparameters"]
         param_dict = get_params(hyperparameters)
+        task_info = TEMPLATE_ID_DICT[geti_config["model_template_id"]]
+        if param_dict.get("enable_tiling", None):
+            task_info["model_name"] += "_tile"
+        default_config = AutoConfigurator(**task_info).config  # type: ignore[arg-type]
         update_params(default_config, param_dict)
         yaml_config = yaml.dump(default_config)
     with Path("converted_config.yaml").open("w") as f:
@@ -113,6 +120,20 @@ def update_params(config: dict, param_dict: dict) -> None:  # noqa: C901
             # and there's no AdaptiveTrainScheduling callback.
         elif param_name == "auto_num_workers":
             config["data"]["config"]["auto_num_workers"] = param_value
+        elif param_name == "enable_tiling":
+            config["data"]["config"]["tile_config"]["enable_tiler"] = param_value
+        elif param_name == "enable_adaptive_params":
+            config["data"]["config"]["tile_config"]["enable_adaptive_tiling"] = param_value
+        elif param_name == "tile_size":
+            config["data"]["config"]["tile_config"]["tile_size"] = (param_value, param_value)
+        elif param_name == "tile_overlap":
+            config["data"]["config"]["tile_config"]["overlap"] = param_value
+        elif param_name == "tile_max_number":
+            config["data"]["config"]["tile_config"]["max_num_instance"] = param_value
+        elif param_name == "tile_sampling_ratio":
+            config["data"]["config"]["tile_config"]["sampling_ratio"] = param_value
+        elif param_name == "object_tile_ratio":
+            config["data"]["config"]["tile_config"]["object_tile_ratio"] = param_value
         else:
             unused_params.append((param_name, param_value))
     print("Warning: These parameters are not updated")
