@@ -35,7 +35,7 @@ dependencies = [
     "ftfy==6.1.3",
     "regex==2023.12.25",
     "importlib_resources==6.1.3",
-    "docstring_parser==0.15", # CLI help-formatter
+    "docstring_parser==0.16", # CLI help-formatter
     "rich_argparse==1.4.0", # CLI help-formatter
 ]
 
