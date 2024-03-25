@@ -692,9 +692,10 @@ class FMeasure(Metric):
     def compute(self, best_confidence_threshold: float | None = None) -> dict:
         """Compute f1 score metric.
 
-        best_confidence_threshold (float | None): Pre-defined best confidence threshold.
-            If this value is None, then FMeasure will find best confidence threshold and store it as member variable.
-            Defaults to None.
+        Args:
+            best_confidence_threshold (float | None): Pre-defined best confidence threshold.
+                If this value is None, then FMeasure will find best confidence threshold and store it as member variable.
+                Defaults to None.
         """
         boxes_pair = _FMeasureCalculator(self.targets, self.preds)
         result = boxes_pair.evaluate_detections(
