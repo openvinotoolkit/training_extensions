@@ -41,8 +41,6 @@ How to train, validate, export and optimize the model
       :text-align: center
 
    .. grid-item-card:: Visual Prompting
-      :link: visual_prompting
-      :link-type: doc
       :text-align: center
 
 .. toctree::
@@ -56,4 +54,3 @@ How to train, validate, export and optimize the model
    anomaly_detection
    action_classification
    action_detection
-   visual_prompting
