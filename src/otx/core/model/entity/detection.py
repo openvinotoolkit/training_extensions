@@ -350,7 +350,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 tv_tensors.BoundingBoxes(
                     output.pred_instances.bboxes,
                     format="XYXY",
-                    canvas_size=output.img_shape,
+                    canvas_size=output.ori_shape,
                 ),
             )
             labels.append(output.pred_instances.labels)
