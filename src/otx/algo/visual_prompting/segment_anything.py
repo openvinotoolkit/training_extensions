@@ -496,9 +496,25 @@ class OTXSegmentAnything(OTXVisualPromptingModel):
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
-        **kwargs,
-    ):
-        self.config = {"backbone": backbone, **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone], **kwargs}
+        freeze_image_encoder: bool = True,
+        freeze_prompt_encoder: bool = True,
+        freeze_mask_decoder: bool = False,
+        use_stability_score: bool = False,
+        return_single_mask: bool = True,
+        return_extra_metrics: bool = False,
+        stability_score_offset: float = 1.0,
+    ) -> None:
+        self.config = {
+            "backbone": backbone,
+            "freeze_image_encoder": freeze_image_encoder,
+            "freeze_prompt_encoder": freeze_prompt_encoder,
+            "freeze_mask_decoder": freeze_mask_decoder,
+            "use_stability_score": use_stability_score,
+            "return_single_mask": return_single_mask,
+            "return_extra_metrics": return_extra_metrics,
+            "stability_score_offset": stability_score_offset,
+            **DEFAULT_CONFIG_SEGMENT_ANYTHING[backbone],
+        }
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
