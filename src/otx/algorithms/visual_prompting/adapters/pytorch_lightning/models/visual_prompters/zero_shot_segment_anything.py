@@ -5,7 +5,7 @@
 
 import json
 import os
-import pickle
+import pickle  # nosec B403
 import time
 from collections import OrderedDict, defaultdict
 from copy import deepcopy

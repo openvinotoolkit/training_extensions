@@ -5,7 +5,7 @@
 import importlib
 import os
 import platform
-import subprocess
+import subprocess  # nosec B404
 import re
 import shutil
 from datetime import datetime, timedelta, timezone

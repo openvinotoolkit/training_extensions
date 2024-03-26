@@ -145,7 +145,7 @@ class TestOTXSegAPI:
             items.append(DatasetItemEntity(media=image, annotation_scene=annotation))
         warnings.resetwarnings()
 
-        rng = random.Random()
+        rng = random.Random()  # nosec B311 used random for testing only
         rng.shuffle(items)
         for i, _ in enumerate(items):
             subset_region = i / number_of_images

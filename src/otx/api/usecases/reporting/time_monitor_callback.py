@@ -12,7 +12,7 @@ import time
 from copy import deepcopy
 from typing import List
 
-import dill
+import dill  # nosec B403 used dill.pickles only to pickle callback object creating internally
 
 from otx.api.entities.train_parameters import (
     UpdateProgressCallback,

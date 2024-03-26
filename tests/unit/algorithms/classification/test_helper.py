@@ -123,7 +123,8 @@ def generate_cls_dataset(hierarchical=False, number_of_images=10):
             annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
             items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
 
-    rng = random.Random()
+    # disable B311 random - used for the random sampling not for security/crypto
+    rng = random.Random()  # nosec B311
     rng.seed(100)
     rng.shuffle(items)
     for i, _ in enumerate(items):

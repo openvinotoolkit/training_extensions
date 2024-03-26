@@ -17,7 +17,7 @@
 import io
 import json
 import os
-import pickle
+import pickle  # nosec B403
 import random
 import tempfile
 import time
@@ -661,7 +661,8 @@ class OpenVINOZeroShotVisualPromptingInferencer(OpenVINOVisualPromptingInference
         if (latest_stamp := self._find_latest_reference_info(root)) is not None:
             # load previously saved reference info
             latest_reference_info = os.path.join(root, path_reference_info.format(latest_stamp))
-            reference_info = pickle.load(open(latest_reference_info, "rb"))
+            # pickle.load() used for getting the latest reference info from the previously dumped object
+            reference_info = pickle.load(open(latest_reference_info, "rb"))  # nosec B301
             return reference_info["reference_feats"], reference_info["used_indices"]
         return None, None
 
