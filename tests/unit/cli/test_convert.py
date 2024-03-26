@@ -1,11 +1,11 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from otx.cli.convert import convert
+from otx.cli.convert import BaseConverter
 
 
 def test_convert():
-    config = convert("tests/assets/geti-configs/det.json")
+    config = BaseConverter().convert("tests/assets/geti-configs/det.json")
     assert config["data"]["config"]["mem_cache_size"] == "0.1GB"
     assert config["data"]["config"]["train_subset"]["batch_size"] == 16
     assert config["data"]["config"]["val_subset"]["batch_size"] == 8
