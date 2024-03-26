@@ -293,7 +293,9 @@
 <span class="sd">        list[dict]: List of RLE masks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">polygons</span> <span class="o">=</span> <span class="p">[</span><span class="n">polygon</span><span class="o">.</span><span class="n">points</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">mask_utils</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">polygons</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">mask_utils</span><span class="o">.</span><span class="n">frPyObjects</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[]</span></div>
 
 
 

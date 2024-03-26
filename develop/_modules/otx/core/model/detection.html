@@ -703,7 +703,7 @@
                 <span class="n">tv_tensors</span><span class="o">.</span><span class="n">BoundingBoxes</span><span class="p">(</span>
                     <span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">bboxes</span><span class="p">,</span>
                     <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;XYXY&quot;</span><span class="p">,</span>
-                    <span class="n">canvas_size</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">img_shape</span><span class="p">,</span>
+                    <span class="n">canvas_size</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">ori_shape</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)</span>
             <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">pred_instances</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
