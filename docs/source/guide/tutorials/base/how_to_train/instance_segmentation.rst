@@ -47,13 +47,14 @@ Dataset preparation
 
 
 1. Clone a repository with
-`car-seg dataset <https://universe.roboflow.com/gianmarco-russo-vt9xr/car-seg-un1pm>`_.
+`WGISD dataset <https://github.com/thsant/wgisd>`_.
 
-.. code-block:: shell
+.. code-block::
 
   mkdir data ; cd data
-  wget https://ultralytics.com/assets/carparts-seg.zip
-  unzip carparts-seg.zip
+  git clone https://github.com/thsant/wgisd.git
+  cd wgisd
+  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
