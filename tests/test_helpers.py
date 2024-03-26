@@ -6,7 +6,7 @@
 
 import contextlib
 import tempfile
-import os
+from pathlib import Path
 from typing import Iterator
 
 import cv2
@@ -64,7 +64,7 @@ def generate_random_image_folder(width: int = 480, height: int = 360, number_of_
     temp_dir = tempfile.TemporaryDirectory()
 
     for n in range(number_of_images):
-        temp_file = os.path.join(temp_dir.name, f"{n}.jpg")
+        temp_file = str(Path(temp_dir.name) / f"{n}.jpg")
         _write_random_image(width, height, temp_file)
 
     try:
@@ -95,7 +95,7 @@ def generate_random_video_folder(
     temp_dir = tempfile.TemporaryDirectory()
 
     for n in range(number_of_videos):
-        temp_file = os.path.join(temp_dir.name, f"{n}.mp4")
+        temp_file = str(Path(temp_dir.name) / f"{n}.mp4")
         _write_random_video(width, height, number_of_frames, temp_file)
 
     try:
@@ -118,7 +118,7 @@ def generate_random_single_image(width: int = 480, height: int = 360) -> Iterato
     """
 
     temp_dir = tempfile.TemporaryDirectory()
-    temp_file = os.path.join(temp_dir.name, "temp_image.jpg")
+    temp_file = str(Path(temp_dir.name) / "temp_image.jpg")
     _write_random_image(width, height, temp_file)
 
     try:
@@ -141,7 +141,7 @@ def generate_random_single_video(width: int = 480, height: int = 360, number_of_
         Iterator[str]: Path to a video file
     """
     temp_dir = tempfile.TemporaryDirectory()
-    temp_file = os.path.join(temp_dir.name, "temp_video.mp4")
+    temp_file = str(Path(temp_dir.name) / "temp_video.mp4")
     _write_random_video(width, height, number_of_frames, temp_file)
 
     try:

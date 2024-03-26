@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from otx.core.exporter.exportable_code.demo.demo_package import model_wrapper as target_file
 from otx.core.exporter.exportable_code.demo.demo_package.model_wrapper import ModelWrapper, TaskType
 
@@ -19,24 +18,24 @@ class TestModelWrapper:
             target_file,
             "get_parameters",
             return_value={
-                "model_parameters" : {"labels" : "label"},
-                "converter_type" : "CLASSIFICATION",
-                "type_of_model" : "type_of_model",
-            }
+                "model_parameters": {"labels": "label"},
+                "converter_type": "CLASSIFICATION",
+                "type_of_model": "type_of_model",
+            },
         )
         mocker.patch.object(target_file, "get_model_path")
         self.mock_core_model = MagicMock()
         mocker.patch.object(target_file, "Model").create_model.return_value = self.mock_core_model
 
-    @pytest.fixture
+    @pytest.fixture()
     def model_dir(self, tmp_path):
         (tmp_path / "config.json").touch()
         return tmp_path
-    
+
     def test_init(self, model_dir):
         ModelWrapper(model_dir)
 
-    @pytest.fixture
+    @pytest.fixture()
     def model_wrapper(self, model_dir):
         return ModelWrapper(model_dir)
 
@@ -53,7 +52,7 @@ class TestModelWrapper:
         self.mock_core_model.assert_called_once_with(frame)
         assert pred == self.mock_core_model.return_value
         assert frame_meta == {"original_shape": frame.shape}
-        
+
     def test_call(self, mocker, model_wrapper):
         input_data = MagicMock()
         spy_infer = mocker.spy(model_wrapper, "infer")
