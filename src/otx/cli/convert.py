@@ -32,7 +32,7 @@ TEMPLATE_ID_DICT = {
 }
 
 
-def convert(geti_config_path: str) -> None:
+def convert(geti_config_path: str) -> dict:
     """Convert Geti config to OTX recipe yaml file."""
     with Path(geti_config_path).open() as f:
         geti_config = json.load(f)
@@ -43,9 +43,7 @@ def convert(geti_config_path: str) -> None:
             task_info["model_name"] += "_tile"
         default_config = AutoConfigurator(**task_info).config  # type: ignore[arg-type]
         update_params(default_config, param_dict)
-        yaml_config = yaml.dump(default_config)
-    with Path("converted_config.yaml").open("w") as f:
-        f.write(yaml_config)
+        return default_config
 
 
 def get_params(hyperparameters: dict) -> dict:
@@ -92,7 +90,7 @@ def update_params(config: dict, param_dict: dict) -> None:  # noqa: C901
             idx = get_callback_idx(config["callbacks"], "lightning.pytorch.callbacks.EarlyStopping")
             if not param_value:
                 if idx > 0:
-                    config["callback"].pop(idx)
+                    config["callbacks"].pop(idx)
                 else:
                     unused_params.append((param_name, param_value))
             # Add early stopping hook when enable_early_stopping is True
@@ -102,7 +100,7 @@ def update_params(config: dict, param_dict: dict) -> None:  # noqa: C901
             for callback in config["callbacks"]:
                 if callback["class_path"] == "lightning.pytorch.callbacks.EarlyStopping":
                     callback_found = True
-                    callback["patience"] = param_value
+                    callback["init_args"]["patience"] = param_value
                     break
             if not callback_found:
                 unused_params.append((param_name, param_value))
@@ -113,7 +111,7 @@ def update_params(config: dict, param_dict: dict) -> None:  # noqa: C901
             )
             if not param_value:
                 if idx > 0:
-                    config["callback"].pop(idx)
+                    config["callbacks"].pop(idx)
                 else:
                     unused_params.append((param_name, param_value))
             # Add adative scheduling hook when use_adaptive_interval is True
@@ -153,4 +151,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", help="Input Geti config")
     args = parser.parse_args()
-    convert(args.config)
+    default_config = convert(args.config)
+    yaml_config = yaml.dump(default_config)
+    with Path("converted_config.yaml").open("w") as f:
+        f.write(yaml_config)
