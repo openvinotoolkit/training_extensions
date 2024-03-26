@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Others
 
-- (<>)
+- Bump ONNX version to 1.16.0 to omit security issue at 1.5.2 (<https://github.com/openvinotoolkit/training_extensions/pull/3209>)
 
 ## \[v1.5.2\]
 
