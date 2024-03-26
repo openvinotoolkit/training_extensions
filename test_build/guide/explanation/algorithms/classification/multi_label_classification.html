@@ -303,6 +303,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -377,24 +380,17 @@
 <p>We solve this problem by optimizing small binary classification sub-tasks aimed to predict whether or not the specific category from the corpus is presented on the given image.</p>
 <p id="ml-cls-supervised-pipeline">For supervised learning we use the following algorithms components:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip and random rotate, we use <a class="reference external" href="https://arxiv.org/abs/1912.02781">Augmix</a>. This advanced type of augmentation helps to significantly expand the training distribution.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: <a class="reference external" href="https://arxiv.org/abs/2209.06585">Sharpness Aware Minimization (SAM)</a>. Wrapper upon the <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://arxiv.org/abs/1708.07120">One Cycle Learning Rate policy</a>. It is the combination of gradually increasing the learning rate and gradually decreasing the momentum during the first half of the cycle, then gradually decreasing the learning rate and increasing the momentum during the latter half of the cycle.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html">ReduceLROnPlateau</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use <strong>Asymmetric Angular Margin Loss</strong>. We can formulate this loss as follows: <span class="math notranslate nohighlight">\(L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}\)</span>, where <span class="math notranslate nohighlight">\(s\)</span> is a scale parameter, <span class="math notranslate nohighlight">\(m\)</span> is an angular margin, <span class="math notranslate nohighlight">\(k\)</span> is negative-positive weighting coefficient, <span class="math notranslate nohighlight">\(\gamma^+\)</span> and <span class="math notranslate nohighlight">\(\gamma^-\)</span> are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated <a class="reference external" href="https://arxiv.org/abs/2209.06585">paper</a>.</p></li>
-<li><p>Additionally, we use the <a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a> technique, <strong>Exponential Moving Average (EMA)</strong> for the model’s weights and adaptive <strong>early stopping</strong> to add adaptability and prevent overfitting.</p></li>
+<li><p>Additionally, we use the <strong>early stopping</strong> to add adaptability and prevent overfitting.</p></li>
 </ul>
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
-<p>As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection format: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.
-Specifically, this format should be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/multilabel_classification">internal representation</a>.</p>
+<p>The format should be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/multilabel_classification">internal representation</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Names of the annotations files and overall dataset structure should be the same as the original <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>. You need to convert train and validation sets separately.</p>
+<p>Names of the annotations files and overall dataset structure should be the same as above example. You need to convert train and validation sets separately.</p>
 <p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classification models.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For now, “___” is a symbol to distinguish the multi-label format. So, it must be included at the front of the label name.</p>
 </div>
 </section>
 <section id="models">

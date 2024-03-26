@@ -302,6 +302,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -375,15 +378,12 @@
 <p>Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:</p>
 <ul class="simple" id="mcl-cls-supervised-pipeline">
-<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip and random rotate, we use <a class="reference external" href="https://arxiv.org/abs/1912.02781">Augmix</a>. This advanced type of augmentations helps to significantly expand the training distribution.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: <a class="reference external" href="https://arxiv.org/abs/2209.06585">Sharpness Aware Minimization (SAM)</a>. Wrapper upon the <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://arxiv.org/abs/1608.03983v5">Cosine Annealing</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html">ReduceLROnPlateau</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standard <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model. However, for the class-incremental scenario we use <a class="reference external" href="https://arxiv.org/abs/2110.02444">Influence-Balanced Loss</a>. IB loss is a solution for the class imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.</p></li>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">training</span> <span class="pre">techniques</span></code></dt><dd><ul>
-<li><p><a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a>: To add adaptability to the training pipeline and prevent overfitting.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">stopping</span></code>: To add adaptability to the training pipeline and prevent overfitting.</p></li>
-<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
+<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/algo/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
 </ul>
 </dd>
 </dl>

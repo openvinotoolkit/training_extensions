@@ -302,6 +302,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -380,8 +383,8 @@
 <li><p>Python &gt;= 3.10</p></li>
 </ul>
 </section>
-<section id="install-openvino-training-extensions-for-users">
-<h2>Install OpenVINO™ Training Extensions for users<a class="headerlink" href="#install-openvino-training-extensions-for-users" title="Link to this heading">#</a></h2>
+<section id="install-openvino-training-extensions-for-users-cuda-cpu">
+<h2>Install OpenVINO™ Training Extensions for users (CUDA/CPU)<a class="headerlink" href="#install-openvino-training-extensions-for-users-cuda-cpu" title="Link to this heading">#</a></h2>
 <ol class="arabic simple">
 <li><p>Install OpenVINO™ Training Extensions package:</p></li>
 </ol>
@@ -425,6 +428,55 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </div>
 <p>3. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.</p>
+</section>
+<section id="install-openvino-training-extensions-for-users-xpu-devices">
+<h2>Install OpenVINO™ Training Extensions for users (XPU devices)<a class="headerlink" href="#install-openvino-training-extensions-for-users-xpu-devices" title="Link to this heading">#</a></h2>
+<p>1. Follow the first two steps from above instructions
+on cloning the repository and creating a virtual environment.</p>
+<p>2. Install Intel Extensions For Pytorch (IPEX).
+Follow the <a class="reference external" href="https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&amp;version=v2.1.10%2Bxpu">official documentation</a> to install prerequisites such as OneAPI and proper drivers.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.1.0a0<span class="w"> </span><span class="nv">torchvision</span><span class="o">==</span><span class="m">0</span>.16.0a0<span class="w"> </span><span class="nv">torchaudio</span><span class="o">==</span><span class="m">2</span>.1.0a0<span class="w"> </span>intel-extension-for-pytorch<span class="o">==</span><span class="m">2</span>.1.10+xpu<span class="w"> </span>--extra-index-url<span class="w"> </span>https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+</pre></div>
+</div>
+<p>3. Install MMCV.
+It is required to install mmcv from source to properly build it with IPEX.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/open-mmlab/mmcv
+<span class="nb">cd</span><span class="w"> </span>mmcv
+git<span class="w"> </span>checkout<span class="w"> </span>v2.1.0
+<span class="nv">MMCV_WITH_OPS</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>4. Install OpenVINO™ Training Extensions
+package from either:</p>
+<ul class="simple">
+<li><p>A local source in development mode</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>PyPI</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>otx
+</pre></div>
+</div>
+<p>5. Install requirements for training
+excluding Pytorch.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>install<span class="w"> </span>-v<span class="w"> </span>--do-not-install-torch
+</pre></div>
+</div>
+<p>6. Activate OneAPI environment
+and export required IPEX system variables</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>/path/to/intel/oneapi/setvars.sh
+<span class="nb">export</span><span class="w"> </span><span class="nv">LD_PRELOAD</span><span class="o">=</span>/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
+<span class="nb">export</span><span class="w"> </span><span class="nv">IPEX_FP32_MATH_MODE</span><span class="o">=</span>TF32
+</pre></div>
+</div>
+<p>7. Once the package is installed in the virtual environment, you can use full
+OpenVINO™ Training Extensions command line functionality.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>--help
+</pre></div>
+</div>
 </section>
 <section id="install-openvino-training-extensions-for-developers">
 <h2>Install OpenVINO™ Training Extensions for developers<a class="headerlink" href="#install-openvino-training-extensions-for-developers" title="Link to this heading">#</a></h2>
@@ -548,8 +600,13 @@ If you still want to see more <code class="docutils literal notranslate"><span c
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#install-openvino-training-extensions-for-users">
-   Install OpenVINO™ Training Extensions for users
+  <a class="reference internal nav-link" href="#install-openvino-training-extensions-for-users-cuda-cpu">
+   Install OpenVINO™ Training Extensions for users (CUDA/CPU)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#install-openvino-training-extensions-for-users-xpu-devices">
+   Install OpenVINO™ Training Extensions for users (XPU devices)
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">

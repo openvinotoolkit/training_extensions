@@ -250,6 +250,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">lightning</span> <span class="kn">import</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">seed_everything</span>
 
+<span class="kn">from</span> <span class="nn">otx.algo.plugins</span> <span class="kn">import</span> <span class="n">MixedPrecisionXPUPlugin</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.device</span> <span class="kn">import</span> <span class="n">DeviceConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.explain</span> <span class="kn">import</span> <span class="n">ExplainConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.hpo</span> <span class="kn">import</span> <span class="n">HpoConfig</span>
@@ -262,6 +263,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.cache</span> <span class="kn">import</span> <span class="n">TrainerArgumentsCache</span>
+<span class="kn">from</span> <span class="nn">otx.utils.utils</span> <span class="kn">import</span> <span class="n">is_xpu_available</span>
 
 <span class="kn">from</span> <span class="nn">.hpo</span> <span class="kn">import</span> <span class="n">execute_hpo</span><span class="p">,</span> <span class="n">update_hyper_parameter</span>
 <span class="kn">from</span> <span class="nn">.utils.auto_configurator</span> <span class="kn">import</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="p">,</span> <span class="n">AutoConfigurator</span>
@@ -374,6 +376,7 @@
                 <span class="n">label_info</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_datamodule</span><span class="o">.</span><span class="n">label_info</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datamodule</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">optimizer</span> <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_optimizer</span><span class="p">()</span>
         <span class="p">)</span>
@@ -1046,6 +1049,8 @@
 
     <span class="nd">@device</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">DeviceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_xpu_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">device</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">auto</span><span class="p">:</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">xpu</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="n">DeviceConfig</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">accelerator</span><span class="p">,</span> <span class="n">devices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">devices</span><span class="p">)</span>
 
@@ -1067,8 +1072,17 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the trainer based on the model parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">requires_update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="c1"># set up xpu device</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_device</span><span class="o">.</span><span class="n">accelerator</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">xpu</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;xpu_single&quot;</span><span class="p">)</span>
+                <span class="c1"># add plugin for Automatic Mixed Precision on XPU</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;precision&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">MixedPrecisionXPUPlugin</span><span class="p">()])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;precision&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
             <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">args</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trainer</span><span class="o">.</span><span class="n">default_root_dir</span>
 
     <span class="nd">@property</span>

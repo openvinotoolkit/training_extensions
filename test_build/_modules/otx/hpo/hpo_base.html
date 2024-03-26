@@ -273,7 +273,6 @@
 <span class="sd">        num_trials (int | None, optional): How many training to conduct for HPO.</span>
 <span class="sd">        num_workers (int, optional): How many trains are executed in parallel.</span>
 <span class="sd">        num_full_iterations (int, optional): epoch for traninig after HPO.</span>
-<span class="sd">        non_pure_train_ratio (float, optional): ratio of validation time to (train time + validation time)</span>
 <span class="sd">        full_dataset_size (int, optional): train dataset size</span>
 <span class="sd">        expected_time_ratio (int | float | None, optional): Time to use for HPO.</span>
 <span class="sd">                                                            If HPO is configured automatically,</span>
@@ -301,7 +300,6 @@
         <span class="n">num_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">num_full_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">non_pure_train_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
         <span class="n">full_dataset_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">expected_time_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">maximum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -315,12 +313,6 @@
         <span class="n">check_mode_input</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
         <span class="n">check_positive</span><span class="p">(</span><span class="n">full_dataset_size</span><span class="p">,</span> <span class="s2">&quot;full_dataset_size&quot;</span><span class="p">)</span>
         <span class="n">check_positive</span><span class="p">(</span><span class="n">num_full_iterations</span><span class="p">,</span> <span class="s2">&quot;num_full_iterations&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">non_pure_train_ratio</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;non_pure_train_ratio should be greater than 0 and lesser than or equal to 1.&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Your value is </span><span class="si">{</span><span class="n">subset_ratio</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">maximum_resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">check_positive</span><span class="p">(</span><span class="n">maximum_resource</span><span class="p">,</span> <span class="s2">&quot;maximum_resource&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">num_trials</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -340,7 +332,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_trials</span> <span class="o">=</span> <span class="n">num_trials</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="n">num_workers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_full_iterations</span> <span class="o">=</span> <span class="n">num_full_iterations</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">non_pure_train_ratio</span> <span class="o">=</span> <span class="n">non_pure_train_ratio</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">full_dataset_size</span> <span class="o">=</span> <span class="n">full_dataset_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="o">=</span> <span class="n">expected_time_ratio</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">maximum_resource</span>

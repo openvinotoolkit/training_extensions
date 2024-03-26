@@ -302,6 +302,9 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.strategies.html">otx.algo.strategies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.accelerators.html">otx.algo.accelerators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../reference/_autosummary/otx.algo.plugins.html">otx.algo.plugins</a></li>
 </ul>
 </li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -381,7 +384,7 @@ Specifically, we have a classifier that solves the multi-class classification pr
 <p>Assume, we have a label tree as below:</p>
 <a class="reference internal image-reference" href="../../../../_images/label_tree.png" id="hierarchical-image-example"><img alt="image uploaded from this `source &lt;https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076&gt;`_" id="hierarchical-image-example" src="../../../../_images/label_tree.png" style="width: 600px;" /></a>
 <p>The goal of our algorithm is to return the right branch of this tree. For example: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code></p>
-<p>At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.</p>
+<p>At the training / inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.</p>
 <p>Let’s say, we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.</p>
 <p>We perform an <strong>argmax</strong> operation and obtain, for example, class <code class="docutils literal notranslate"><span class="pre">Cats</span></code>. Then, we choose a classifier related to <code class="docutils literal notranslate"><span class="pre">{Siamse,</span> <span class="pre">Persian,</span> <span class="pre">Sphynx}</span></code> label group,
 obtain its predictions, and after performing the <strong>argmax</strong> operation we choose our last leaf label.</p>
@@ -389,7 +392,7 @@ obtain its predictions, and after performing the <strong>argmax</strong> operati
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
 <p id="hierarchical-dataset">For hierarchical image classification, we created our custom dataset format that is supported by <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
-An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_h-label">sample</a>.</p>
+An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/hlabel_classification">sample</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classification models.</p>

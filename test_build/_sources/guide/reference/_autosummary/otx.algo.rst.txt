@@ -32,4 +32,7 @@ otx.algo
    otx.algo.detection
    otx.algo.segmentation
    otx.algo.visual_prompting
+   otx.algo.strategies
+   otx.algo.accelerators
+   otx.algo.plugins
 

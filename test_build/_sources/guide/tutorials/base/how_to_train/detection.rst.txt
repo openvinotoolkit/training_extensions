@@ -136,7 +136,6 @@ The list of supported templates for object detection is available with the comma
             ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃                              
             ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                              
             │ DETECTION │ atss_mobilenetv2_tile │ src/otx/recipe/detection/atss_mobilenetv2_tile.yaml            │                              
-            │ DETECTION │ atss_r50_fpn          │ src/otx/recipe/detection/atss_r50_fpn.yaml                     │                              
             │ DETECTION │ atss_resnext101       │ src/otx/recipe/detection/atss_resnext101.yaml                  │                              
             │ DETECTION │ atss_mobilenetv2      │ src/otx/recipe/detection/atss_mobilenetv2.yaml                 │                              
             └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
@@ -151,7 +150,6 @@ The list of supported templates for object detection is available with the comma
             print(model_lists)
             '''
             [
-                'atss_r50_fpn',
                 'atss_mobilenetv2',
                 'atss_mobilenetv2_tile',
                 'atss_resnext101',
