@@ -4,5 +4,6 @@
 """Custom head architecture for OTX instance segmentation models."""
 
 from .custom_roi_head import CustomConvFCBBoxHead, CustomRoIHead
+from .custom_rtmdet_ins_head import CustomRTMDetInsSepBNHead
 
-__all__ = ["CustomRoIHead", "CustomConvFCBBoxHead"]
+__all__ = ["CustomRoIHead", "CustomConvFCBBoxHead", "CustomRTMDetInsSepBNHead"]
