@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.5.3\]
+
+### Others
+
+- (<>)
+
 ## \[v1.5.2\]
 
 > **NOTES**
