@@ -152,7 +152,7 @@ class ClassificationTaskAPIBase:
                 annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                 items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
 
-        rng = random.Random()
+        rng = random.Random()  # nosec B311 used random for testing only
         rng.seed(100)
         rng.shuffle(items)
         for i, _ in enumerate(items):

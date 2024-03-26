@@ -5,7 +5,7 @@
 # pylint: disable=import-error
 
 import os
-import subprocess
+import subprocess  # nosec B404
 import sys
 import time
 

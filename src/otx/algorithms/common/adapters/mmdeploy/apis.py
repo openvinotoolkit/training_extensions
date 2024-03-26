@@ -8,7 +8,7 @@ import time
 from collections.abc import Mapping
 from copy import deepcopy
 from functools import partial
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError  # nosec B404
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv

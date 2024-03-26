@@ -42,7 +42,7 @@ class ColorPalette:
         assert n > 0
 
         if rng is None:
-            rng = random.Random(0xACE)
+            rng = random.Random(0xACE)  # nosec B311 used rng only for generating general purpose numbers
 
         candidates_num = 100
         hsv_colors = [(1.0, 1.0, 1.0)]
