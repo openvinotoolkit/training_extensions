@@ -348,6 +348,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self._task_type,
             self.confidence_threshold,
             self._hyperparams.tiling_parameters,
+            self.use_ellipse_shapes,
         )
 
         if export_type == ExportType.ONNX:
