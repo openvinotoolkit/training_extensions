@@ -5,9 +5,8 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from otx.core.exporter.exportable_code.demo.demo_package import utils as target_file
-from otx.core.exporter.exportable_code.demo.demo_package.utils import get_model_path, get_parameters, create_visualizer
+from otx.core.exporter.exportable_code.demo.demo_package.utils import create_visualizer, get_model_path, get_parameters
 
 
 def test_get_model_path(mocker, tmp_path):
@@ -18,15 +17,16 @@ def test_get_model_path(mocker, tmp_path):
 
     assert ov_file == get_model_path(None)
 
+
 def test_get_model_path_no_model_file(mocker, tmp_path):
     fake_file = tmp_path / "fake_file.txt"
     mocker.patch.object(target_file, "__file__", str(fake_file))
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="model was not found"):
         get_model_path(None)
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_json(mocker):
     return mocker.patch.object(target_file, "json")
 
@@ -41,20 +41,19 @@ def test_get_parameters(mocker, tmp_path, mock_json):
     mock_json.load.assert_called()
 
 
-def test_get_parameters_no_cfg(mocker, tmp_path, mock_json):
+def test_get_parameters_no_cfg(mocker, tmp_path, mock_json):  # noqa: ARG001
     fake_file = tmp_path / "fake_file.txt"
     mocker.patch.object(target_file, "__file__", str(fake_file))
 
-    with pytest.raises(OSError):
+    with pytest.raises(OSError, match="config was not found"):
         get_parameters(None)
 
 
-
 TASK_VISUALIZER = {
-    "CLASSIFICATION" : "ClassificationVisualizer",
-    "DETECTION" : "ObjectDetectionVisualizer",
-    "SEGMENTATION" : "SemanticSegmentationVisualizer",
-    "INSTANCE_SEGMENTATION" : "InstanceSegmentationVisualizer",
+    "CLASSIFICATION": "ClassificationVisualizer",
+    "DETECTION": "ObjectDetectionVisualizer",
+    "SEGMENTATION": "SemanticSegmentationVisualizer",
+    "INSTANCE_SEGMENTATION": "InstanceSegmentationVisualizer",
 }
 
 
@@ -65,6 +64,6 @@ def test_create_visualizer(mocker, task_type):
     mock_visualizer.assert_called_once()
 
 
-def test_create_visualizer_not_implemented(mocker):
+def test_create_visualizer_not_implemented():
     with pytest.raises(NotImplementedError):
         create_visualizer("unsupported", MagicMock())

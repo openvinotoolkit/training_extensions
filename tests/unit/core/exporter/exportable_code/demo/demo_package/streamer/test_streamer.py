@@ -7,15 +7,15 @@ from pathlib import Path
 from time import sleep
 
 import pytest
-
 from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+    CameraStreamer,
+    DirStreamer,
+    ImageStreamer,
     ThreadedStreamer,
     VideoStreamer,
-    CameraStreamer,
-    ImageStreamer,
-    DirStreamer,
     get_streamer,
 )
+
 from tests.test_helpers import (
     generate_random_image_folder,
     generate_random_single_image,
@@ -26,7 +26,7 @@ from tests.test_helpers import (
 
 class TestStreamer:
     @staticmethod
-    def assert_streamer_element(streamer):
+    def assert_streamer_element(streamer) -> None:
         for element in streamer:
             assert element.shape == (360, 480, 3)
 
@@ -155,25 +155,17 @@ class TestStreamer:
             invalid_file = Path(temp_dir) / "not_valid.bin"
             invalid_file.touch()
 
-            with pytest.raises(Exception) as context:
+            with pytest.raises(Exception, match="Can't find the camera"):
                 get_streamer(str(invalid_file))
 
-        the_exception = context  # .exception
-        assert "Can't find" in str(the_exception), str(the_exception)
+        with tempfile.TemporaryDirectory() as empty_dir, pytest.raises(Exception, match="Can't find the camera"):
+            get_streamer(empty_dir)
 
-        with tempfile.TemporaryDirectory() as empty_dir:
-            with pytest.raises(Exception):
-                get_streamer(empty_dir)
+        with generate_random_video_folder() as path, pytest.raises(Exception, match="Can't find the camera"):
+            get_streamer(path)
 
-        with generate_random_video_folder() as path:
-            with pytest.raises(Exception):
-                get_streamer(path)
-
-        with pytest.raises(Exception) as context:
+        with pytest.raises(Exception, match="Can't find the camera"):
             get_streamer("not_a_file")
-
-        the_exception = context  # .exception
-        assert "Can't find" in str(the_exception), str(the_exception)
 
     def test_valid_inputs_to_get_streamer(self):
         """
@@ -227,9 +219,8 @@ class TestStreamer:
         <b>Steps</b>
         1. Attempt to create ImageStreamer
         """
-        with generate_random_single_video() as path:
-            with pytest.raises(RuntimeError):
-                ImageStreamer(path)
+        with generate_random_single_video() as path, pytest.raises(RuntimeError):
+            ImageStreamer(path)
 
     def test_camera_streamer(self):
         """
@@ -313,5 +304,3 @@ class TestStreamer:
                     break
 
             assert frame_count == 5
-
-
