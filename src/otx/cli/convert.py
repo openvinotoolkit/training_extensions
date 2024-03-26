@@ -5,6 +5,7 @@
 
 import argparse
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import yaml
@@ -61,81 +62,81 @@ def get_params(hyperparameters: dict) -> dict:
 
 def update_params(config: dict, param_dict: dict) -> None:  # noqa: C901
     """Update params of OTX recipe from Geit configurable params."""
-    unused_params = []
+    unused_params = deepcopy(param_dict)
     for param_name, param_value in param_dict.items():
         if param_name == "mem_cache_size":
             config["data"]["config"]["mem_cache_size"] = str(param_value / 1000000000) + "GB"
+            unused_params.pop(param_name)
         elif param_name == "batch_size":
             config["data"]["config"]["train_subset"]["batch_size"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "inference_batch_size":
             config["data"]["config"]["val_subset"]["batch_size"] = param_value
             config["data"]["config"]["test_subset"]["batch_size"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "learning_rate":
             config["optimizer"]["init_args"]["lr"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "learning_rate_warmup_iters":
-            scheduler_found = False
             for scheduler in config["scheduler"]:
                 if scheduler["class_path"] == "otx.algo.schedulers.LinearWarmupScheduler":
-                    scheduler_found = True
                     scheduler["init_args"]["num_warmup_steps"] = param_value
-            if not scheduler_found:
-                unused_params.append((param_name, param_value))
+                    unused_params.pop(param_name)
         elif param_name == "num_iters":
             config["max_epoch"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "num_workers":
             config["data"]["config"]["train_subset"]["num_workers"] = param_value
             config["data"]["config"]["val_subset"]["num_workers"] = param_value
             config["data"]["config"]["test_subset"]["num_workers"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "enable_early_stopping":
             idx = get_callback_idx(config["callbacks"], "lightning.pytorch.callbacks.EarlyStopping")
-            if not param_value:
-                if idx > 0:
-                    config["callbacks"].pop(idx)
-                else:
-                    unused_params.append((param_name, param_value))
+            if not param_value and idx > 0:
+                config["callbacks"].pop(idx)
+            unused_params.pop(param_name)
             # Add early stopping hook when enable_early_stopping is True
             # and there's no EarlyStopping callback.
         elif param_name == "early_stop_patience":
-            callback_found = False
             for callback in config["callbacks"]:
                 if callback["class_path"] == "lightning.pytorch.callbacks.EarlyStopping":
-                    callback_found = True
                     callback["init_args"]["patience"] = param_value
+                    unused_params.pop(param_name)
                     break
-            if not callback_found:
-                unused_params.append((param_name, param_value))
         elif param_name == "use_adaptive_interval":
             idx = get_callback_idx(
                 config["callbacks"],
                 "otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling",
             )
-            if not param_value:
-                if idx > 0:
-                    config["callbacks"].pop(idx)
-                else:
-                    unused_params.append((param_name, param_value))
+            if not param_value and idx > 0:
+                config["callbacks"].pop(idx)
+            unused_params.pop(param_name)
             # Add adative scheduling hook when use_adaptive_interval is True
             # and there's no AdaptiveTrainScheduling callback.
         elif param_name == "auto_num_workers":
             config["data"]["config"]["auto_num_workers"] = param_value
+            unused_params.pop(param_name)
         elif param_name == "enable_tiling":
             config["data"]["config"]["tile_config"]["enable_tiler"] = param_value
-        elif param_name == "enable_adaptive_params":
-            config["data"]["config"]["tile_config"]["enable_adaptive_tiling"] = param_value
-        elif param_name == "tile_size":
-            config["data"]["config"]["tile_config"]["tile_size"] = (param_value, param_value)
-        elif param_name == "tile_overlap":
-            config["data"]["config"]["tile_config"]["overlap"] = param_value
-        elif param_name == "tile_max_number":
-            config["data"]["config"]["tile_config"]["max_num_instance"] = param_value
-        elif param_name == "tile_sampling_ratio":
-            config["data"]["config"]["tile_config"]["sampling_ratio"] = param_value
-        elif param_name == "object_tile_ratio":
-            config["data"]["config"]["tile_config"]["object_tile_ratio"] = param_value
-        else:
-            unused_params.append((param_name, param_value))
+            if param_value:
+                config["data"]["config"]["tile_config"]["enable_adaptive_tiling"] = param_dict["enable_adaptive_params"]
+                config["data"]["config"]["tile_config"]["tile_size"] = (
+                    param_dict["tile_size"],
+                    param_dict["tile_size"],
+                )
+                config["data"]["config"]["tile_config"]["overlap"] = param_dict["tile_overlap"]
+                config["data"]["config"]["tile_config"]["max_num_instance"] = param_dict["tile_max_number"]
+                config["data"]["config"]["tile_config"]["sampling_ratio"] = param_dict["tile_sampling_ratio"]
+                config["data"]["config"]["tile_config"]["object_tile_ratio"] = param_dict["object_tile_ratio"]
+            unused_params.pop("enable_tiling")
+            unused_params.pop("enable_adaptive_params")
+            unused_params.pop("tile_size")
+            unused_params.pop("tile_overlap")
+            unused_params.pop("tile_max_number")
+            unused_params.pop("tile_sampling_ratio")
+            unused_params.pop("object_tile_ratio")
     print("Warning: These parameters are not updated")
-    for param_name, param_value in unused_params:
+    for param_name, param_value in unused_params.items():
         print("\t", param_name, ": ", param_value)
 
 
