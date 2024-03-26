@@ -349,13 +349,13 @@
             <span class="p">]</span>
             <span class="n">_target</span> <span class="o">=</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span>
             <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IoU&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;Dice&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
             <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
             <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
                 <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cvt_preds</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">],</span> <span class="n">cvt_target</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">])</span>
 
 
-<span class="k">def</span> <span class="nf">_inference_step_for_zeroshot</span><span class="p">(</span>
+<span class="k">def</span> <span class="nf">_inference_step_for_zero_shot</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">OTXZeroShotVisualPromptingModel</span> <span class="o">|</span> <span class="n">OVZeroShotVisualPromptingModel</span><span class="p">,</span>
     <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCollection</span><span class="p">,</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
@@ -397,7 +397,7 @@
                     <span class="n">_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_preds</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">_preds</span><span class="p">)</span> <span class="k">else</span> <span class="n">pad_prediction</span><span class="p">)</span>
 
             <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">_preds</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">_target</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;IoU&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;Dice&quot;</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="n">_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;iou&quot;</span><span class="p">,</span> <span class="s2">&quot;f1-score&quot;</span><span class="p">,</span> <span class="s2">&quot;dice&quot;</span><span class="p">]:</span>
             <span class="c1"># BinaryJaccardIndex, BinaryF1Score, Dice</span>
             <span class="k">for</span> <span class="n">cvt_preds</span><span class="p">,</span> <span class="n">cvt_target</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;preds&quot;</span><span class="p">],</span> <span class="n">converted_entities</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]):</span>
                 <span class="n">_metric</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -721,7 +721,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_inference_step_for_zeroshot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
+        <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
@@ -1090,6 +1090,7 @@
         <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
         <span class="n">reset_feat</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">default_threshold_reference</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">is_cascade</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;`Learn` for reference features.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">reset_feat</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_feats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1116,7 +1117,7 @@
                     <span class="k">if</span> <span class="s2">&quot;point_coords&quot;</span> <span class="ow">in</span> <span class="n">inputs_decoder</span><span class="p">:</span>
                         <span class="c1"># bboxes and points</span>
                         <span class="n">inputs_decoder</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">image_embeddings</span><span class="p">)</span>
-                        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_masks</span><span class="p">(</span><span class="n">inputs_decoder</span><span class="p">,</span> <span class="n">original_shape</span><span class="p">,</span> <span class="n">is_cascade</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_masks</span><span class="p">(</span><span class="n">inputs_decoder</span><span class="p">,</span> <span class="n">original_shape</span><span class="p">,</span> <span class="n">is_cascade</span><span class="o">=</span><span class="n">is_cascade</span><span class="p">)</span>
                         <span class="n">masks</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">[</span><span class="s2">&quot;upscaled_masks&quot;</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;annotation and polygon will be supported.&quot;</span><span class="p">)</span>
@@ -1151,7 +1152,7 @@
         <span class="n">inputs</span><span class="p">:</span> <span class="n">ZeroShotVisualPromptingBatchDataEntity</span><span class="p">,</span>
         <span class="n">reference_feats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">used_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">is_cascade</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_cascade</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">num_bg_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">default_threshold_target</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.65</span><span class="p">,</span>
@@ -1395,9 +1396,10 @@
                 <span class="n">has_mask_input</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_mask_inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
                 <span class="n">box_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;decoder&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply_coords</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()]]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-                    <span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                    <span class="n">original_size</span><span class="p">,</span>
                 <span class="p">)</span>
+                <span class="n">box_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">box_coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">inputs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
                     <span class="p">{</span>
                         <span class="s2">&quot;point_coords&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;point_coords&quot;</span><span class="p">],</span> <span class="n">box_coords</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
@@ -1741,7 +1743,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_inference_step_for_zeroshot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
+        <span class="n">_inference_step_for_zero_shot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
