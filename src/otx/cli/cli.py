@@ -22,7 +22,6 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
-from otx.core.model.base import OVModel
 from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
@@ -386,7 +385,7 @@ class OTXCLI:
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        from otx.core.model.base import OTXModel
+        from otx.core.model.base import OTXModel, OVModel
         from otx.core.utils.instantiators import partial_instantiate_class
 
         skip = set()
