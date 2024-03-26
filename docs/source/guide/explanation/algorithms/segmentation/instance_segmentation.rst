@@ -15,7 +15,7 @@ Instance segmentation is commonly used in applications such as self-driving cars
 
 |
 
-We integrate two prominent instance segmentation models within OpenVINO™ Training Extensions:: `Mask R-CNN <https://arxiv.org/abs/1703.06870>`_ and `RTMDet <https://arxiv.org/abs/2212.07784>`_.
+We integrate two types of instance segmentation architecture within OpenVINO™ Training Extensions:: `Mask R-CNN <https://arxiv.org/abs/1703.06870>`_ and `RTMDet <https://arxiv.org/abs/2212.07784>`_.
 
 Mask R-CNN, a widely adopted method, builds upon the Faster R-CNN architecture, known for its two-stage object detection mechanism. In the initial stage, it proposes regions of interest, while in the subsequent stage, it predicts the class and bounding box offsets for each proposal. Distinguishing itself, Mask R-CNN incorporates an additional branch dedicated to predicting object masks concurrently with the existing branches for bounding box regression and object classification.
 
