@@ -59,6 +59,18 @@ class TestLinearWarmupSchedulerCallable:
         mock_main_scheduler = mocker.MagicMock()
         mock_main_scheduler.monitor = "not_my_metric"
 
+        # If monitor None, do not override monitor.
+        scheduler_callable = LinearWarmupSchedulerCallable(
+            main_scheduler_callable=lambda _: mock_main_scheduler,
+            num_warmup_steps=10,
+            monitor=None,
+        )
+        schedulers = scheduler_callable(fxt_optimizer)
+
+        assert len(schedulers) == 2
+        assert schedulers[0].monitor == "not_my_metric"
+        assert isinstance(schedulers[1], LinearWarmupScheduler)
+
         # Set monitor from "not_my_metric" to "my_metric"
         scheduler_callable = LinearWarmupSchedulerCallable(
             main_scheduler_callable=lambda _: mock_main_scheduler,

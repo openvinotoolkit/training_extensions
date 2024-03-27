@@ -74,7 +74,7 @@ class LinearWarmupSchedulerCallable:
         """Create a list of lr schedulers."""
         main_scheduler = self.main_scheduler_callable(optimizer)
 
-        if hasattr(main_scheduler, "monitor"):
+        if self.monitor and hasattr(main_scheduler, "monitor"):
             main_scheduler.monitor = self.monitor
 
         schedulers = [main_scheduler]
