@@ -30,6 +30,7 @@ class ATSS(MMDetCompatibleModel):
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        confidence_threshold: float | None = None,
     ) -> None:
         model_name = f"atss_{variant}"
         config = read_mmconfig(model_name=model_name)
@@ -40,6 +41,7 @@ class ATSS(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            confidence_threshold=confidence_threshold,
         )
         self.image_size = (1, 3, 736, 992)
         self.tile_image_size = self.image_size
@@ -71,6 +73,7 @@ class ATSSR50FPN(MMDetCompatibleModel):
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        confidence_threshold: float | None = None,
     ) -> None:
         model_name = "atss_r50_fpn"
         config = read_mmconfig(model_name=model_name)
@@ -81,6 +84,7 @@ class ATSSR50FPN(MMDetCompatibleModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            confidence_threshold=confidence_threshold,
         )
         self.image_size = (1, 3, 800, 1333)
         self.tile_image_size = self.image_size

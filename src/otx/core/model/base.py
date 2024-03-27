@@ -198,14 +198,6 @@ class OTXModel(
 
         return outputs
 
-    def on_validation_start(self) -> None:
-        """Called at the beginning of validation."""
-        self.configure_metric()
-
-    def on_test_start(self) -> None:
-        """Called at the beginning of testing."""
-        self.configure_metric()
-
     def on_validation_epoch_start(self) -> None:
         """Callback triggered when the validation epoch starts."""
         self.metric.reset()
@@ -232,6 +224,7 @@ class OTXModel(
         """
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
+        self.configure_metric()
 
     def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict]]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
