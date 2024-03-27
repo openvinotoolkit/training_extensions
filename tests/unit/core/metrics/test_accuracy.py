@@ -47,6 +47,10 @@ class TestAccuracy:
         acc = result["accuracy"]
         assert round(acc.item(), 3) == 0.792
 
+        metric.reset()
+        assert metric.preds == []
+        assert metric.targets == []
+
     def test_multilabel_accuracy(self, fxt_multilabel_labelinfo: LabelInfo) -> None:
         """Check whether accuracy is same with OTX1.x version."""
         preds = [

@@ -81,8 +81,7 @@ class AccuracywithLabelGroup(Metric):
         self.threshold = threshold
         self._label_info: LabelInfo
 
-        self.preds: list[Tensor] = []
-        self.targets: list[Tensor] = []
+        self.reset()
 
     @property
     def label_info(self) -> LabelInfo:
@@ -92,6 +91,15 @@ class AccuracywithLabelGroup(Metric):
     @label_info.setter
     def label_info(self, label_info: LabelInfo) -> None:
         self._label_info = label_info
+
+    def reset(self) -> None:
+        """Reset for every validation and test epoch.
+
+        Please be careful that some variables should not be reset for each epoch.
+        """
+        super().reset()
+        self.preds: list[Tensor] = []
+        self.targets: list[Tensor] = []
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""

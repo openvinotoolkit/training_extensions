@@ -28,6 +28,21 @@ class TestFMeasure:
         ]
 
     @pytest.fixture()
+    def fxt_wrong_preds(self) -> list[dict[str, torch.Tensor]]:
+        return [
+            {
+                "boxes": torch.Tensor([[0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 1.0, 1.0]]),
+                "labels": torch.IntTensor([0, 0]),
+                "scores": torch.Tensor([0.9, 0.8]),
+            },
+            {
+                "boxes": torch.Tensor([[0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 1.0, 1.0]]),
+                "labels": torch.IntTensor([0, 0]),
+                "scores": torch.Tensor([0.9, 0.8]),
+            },
+        ]
+
+    @pytest.fixture()
     def fxt_targets(self) -> list[dict[str, torch.Tensor]]:
         return [
             {
@@ -40,7 +55,7 @@ class TestFMeasure:
             },
         ]
 
-    def test_fmeasure(self, fxt_preds, fxt_targets) -> None:
+    def test_fmeasure(self, fxt_preds, fxt_wrong_preds, fxt_targets) -> None:
         """Check whether f1 score is same with OTX1.x version."""
         metric = FMeasure(label_info=LabelInfo.from_num_classes(1))
         metric.update(fxt_preds, fxt_targets)
@@ -53,10 +68,10 @@ class TestFMeasure:
         assert metric.preds == []
         assert metric.targets == []
 
-        # TODO(jaegukhyun): Add the following scenario
-        # 1. Prepare preds and targets which can produce f1-score < 0.5
-        # 2. Execute metric.compute()
-        # 3. Assert best_confidence_threshold == metric.best_confidence_threshold
+        metric.update(fxt_wrong_preds, fxt_targets)
+        wrong_result = metric.compute()
+        assert wrong_result["f1-score"] < result["f1-score"]
+        assert metric.best_confidence_threshold == best_confidence_threshold
 
     def test_fmeasure_with_fixed_threshold(self, fxt_preds, fxt_targets) -> None:
         """Check fmeasure can compute f1 score given confidence threshold."""
