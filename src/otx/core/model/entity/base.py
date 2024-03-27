@@ -26,6 +26,8 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
+from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
@@ -247,6 +249,7 @@ class OTXModel(
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        path_to_already_exported_model: PathLike | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -255,6 +258,9 @@ class OTXModel(
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            path_to_already_exported_model (PathLike | None): Valid only for
+                export_format=OTXExportFormatType.EXPORTABLE_CODE.
+                Path to the already exported model to add it in exportable code
 
         Returns:
             Path: path to the exported model.
@@ -266,12 +272,14 @@ class OTXModel(
             base_name,
             export_format,
             precision,
+            path_to_already_exported_model,
         )
         self._restore_model_forward()
         return exported_model_path
 
     @property
     def _exporter(self) -> OTXModelExporter:
+        """Defines exporter of the model. Should be overridden in subclasses."""
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."
@@ -505,6 +513,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
+
+    @property
+    def _exporter(self) -> OTXNativeModelExporter:
+        """Exporter of the OVModel for exportable code."""
+        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
 
     @property
     def model_adapter_parameters(self) -> dict:

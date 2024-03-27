@@ -422,7 +422,7 @@ class Engine:
 
     def export(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
         explain: bool = False,
@@ -430,7 +430,7 @@ class Engine:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
@@ -461,22 +461,39 @@ class Engine:
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-
         if ckpt_path is None:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
 
-        self.model.eval()
+        is_ir_ckpt = Path(ckpt_path).suffix in [".xml"]
+        path_to_already_exported_model = ckpt_path if is_ir_ckpt else None
+
+        if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
+            msg = (
+                "Export format is automatically changed to EXPORTABLE_CODE, "
+                "since openvino IR model is passed as a checkpoint."
+            )
+            warn(msg, stacklevel=1)
+            export_format = OTXExportFormatType.EXPORTABLE_CODE
+
+        if is_ir_ckpt and not isinstance(self.model, OVModel):
+            # create OVModel
+            self.model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=self.datamodule.label_info,
+            )
+
         lit_module = self._build_lightning_module(
             model=self.model,
             optimizer=self.optimizer,
             scheduler=self.scheduler,
         )
-        loaded_checkpoint = torch.load(ckpt_path)
-        lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
-        self.model.label_info = lit_module.label_info
 
-        lit_module.load_state_dict(loaded_checkpoint)
+        if not is_ir_ckpt:
+            loaded_checkpoint = torch.load(ckpt_path)
+            lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
+            self.model.label_info = lit_module.label_info
+            lit_module.load_state_dict(loaded_checkpoint)
 
         self.model.explain_mode = explain
 
@@ -485,6 +502,7 @@ class Engine:
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
             precision=export_precision,
+            path_to_already_exported_model=path_to_already_exported_model,
         )
 
         self.model.explain_mode = False
