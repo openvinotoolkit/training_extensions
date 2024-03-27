@@ -27,6 +27,7 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationDataBatch,
 )
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import LabelInfo
 from otx.core.types.precision import OTXPrecisionType
@@ -409,6 +410,7 @@ class OTXAnomaly:
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        path_to_already_exported_model: PathLike | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -417,6 +419,10 @@ class OTXAnomaly:
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            path_to_already_exported_model (PathLike | None): Valid only for
+                export_format=OTXExportFormatType.EXPORTABLE_CODE.
+                Path to the already exported model.
+
         Returns:
             Path: path to the exported model.
         """
@@ -438,4 +444,5 @@ class OTXAnomaly:
             base_model_name=base_name,
             export_format=export_format,
             precision=precision,
+            path_to_already_exported_model=path_to_already_exported_model,
         )
