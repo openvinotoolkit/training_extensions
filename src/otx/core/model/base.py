@@ -33,16 +33,21 @@ from otx.core.data.entity.base import (
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
+from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
+from otx.core.utils.miscellaneous import ensure_callable
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
+    from lightning.pytorch.utilities.types import LRSchedulerTypeUnion, OptimizerLRScheduler
+    from torch.optim.lr_scheduler import LRScheduler
     from torch.optim.optimizer import Optimizer, params_t
 
     from otx.core.data.module import OTXDataModule
@@ -55,8 +60,19 @@ def _default_optimizer_callable(params: params_t) -> Optimizer:
     return SGD(params=params, lr=0.01)
 
 
+def _default_scheduler_callable(
+    optimizer: Optimizer,
+    interval: Literal["epoch", "step"] = "epoch",
+    **kwargs,
+) -> LRScheduler:
+    scheduler = ConstantLR(optimizer=optimizer, **kwargs)
+    # NOTE: "interval" attribute should be set to configure the scheduler's step interval correctly
+    scheduler.interval = interval
+    return scheduler
+
+
 DefaultOptimizerCallable = _default_optimizer_callable
-DefaultSchedulerCallable = ConstantLR
+DefaultSchedulerCallable = _default_scheduler_callable
 
 
 class OTXModel(
@@ -74,8 +90,8 @@ class OTXModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = NullMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -85,12 +101,13 @@ class OTXModel(
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
         self.original_model_forward = None
-        self._explain_mode = False
 
-        self.optimizer_callable = optimizer
-        self.scheduler_callable = scheduler
-        self.metric_callable = metric
+        self.optimizer_callable = ensure_callable(optimizer)
+        self.scheduler_callable = ensure_callable(scheduler)
+        self.metric_callable = ensure_callable(metric)
+
         self.torch_compile = torch_compile
+        self._explain_mode = False
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -233,36 +250,34 @@ class OTXModel(
         if self.torch_compile and stage == "fit":
             self.model = torch.compile(self.model)
 
-    def configure_optimizers(self) -> tuple[list[torch.optim.Optimizer], list[dict]]:
-        """Choose what optimizers and learning-rate schedulers to use in your optimization.
+    def configure_optimizers(self) -> OptimizerLRScheduler:
+        """Configure an optimizer and learning-rate schedulers.
 
-        Normally you'd need one. But in the case of GANs or similar you might have multiple.
+        Configure an optimizer and learning-rate schedulers
+        from the given optimizer and scheduler or scheduler list callable in the constructor.
+        Generally, there is two lr schedulers. One is for a linear warmup scheduler and
+        the other is the main scheduler working after the warmup period.
 
-        Examples:
-            https://lightning.ai/docs/pytorch/latest/common/lightning_module.html#configure-optimizers
-
-        :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.
+        Returns:
+            Two list. The former is a list that contains an optimizer
+            The latter is a list of lr scheduler configs which has a dictionary format.
         """
+        optimizer = self.optimizer_callable(self.parameters())
+        schedulers = self.scheduler_callable(optimizer)
 
         def ensure_list(item: Any) -> list:  # noqa: ANN401
             return item if isinstance(item, list) else [item]
 
-        optimizers = [
-            optimizer(params=self.parameters()) if callable(optimizer) else optimizer
-            for optimizer in ensure_list(self.optimizer_callable)
-        ]
-
-        lr_schedulers = []
-        for scheduler_config in ensure_list(self.scheduler_callable):
-            scheduler = scheduler_config(optimizers[0]) if callable(scheduler_config) else scheduler_config
+        lr_scheduler_configs = []
+        for scheduler in ensure_list(schedulers):
             lr_scheduler_config = {"scheduler": scheduler}
             if hasattr(scheduler, "interval"):
                 lr_scheduler_config["interval"] = scheduler.interval
             if hasattr(scheduler, "monitor"):
                 lr_scheduler_config["monitor"] = scheduler.monitor
-            lr_schedulers.append(lr_scheduler_config)
+            lr_scheduler_configs.append(lr_scheduler_config)
 
-        return optimizers, lr_schedulers
+        return [optimizer], lr_scheduler_configs
 
     def configure_metric(self) -> None:
         """Configure the metric."""
@@ -627,6 +642,37 @@ class OTXModel(
     def _optimization_config(self) -> dict[str, str]:
         return {}
 
+    def lr_scheduler_step(self, scheduler: LRSchedulerTypeUnion, metric: Tensor) -> None:
+        """It is required to prioritize the warmup lr scheduler than other lr scheduler during a warmup period.
+
+        It will ignore other lr scheduler's stepping if the warmup scheduler is currently activated.
+        """
+        warmup_schedulers = [
+            config.scheduler
+            for config in self.trainer.lr_scheduler_configs
+            if isinstance(config.scheduler, LinearWarmupScheduler)
+        ]
+
+        if not warmup_schedulers:
+            # There is no warmup scheduler
+            return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
+
+        if len(warmup_schedulers) != 1:
+            msg = "No more than two warmup schedulers coexist."
+            raise RuntimeError(msg)
+
+        warmup_scheduler = next(iter(warmup_schedulers))
+
+        if scheduler != warmup_scheduler and warmup_scheduler.activated:
+            msg = (
+                "Warmup lr scheduler is currently activated. "
+                "Ignore other schedulers until the warmup lr scheduler is finished"
+            )
+            logger.debug(msg)
+            return None
+
+        return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
+
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
     """Base class for the OpenVINO model.
@@ -650,6 +696,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = NullMetricCallable,
+        **kwargs,
     ) -> None:
         self.model_name = model_name
         self.model_type = model_type

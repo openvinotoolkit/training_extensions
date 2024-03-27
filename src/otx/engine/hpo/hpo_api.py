@@ -174,11 +174,12 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        if isinstance(self._engine.optimizer, list):
-            for i, optimizer in enumerate(self._engine.optimizer):
-                search_space[f"optimizer.{i}.keywords.lr"] = self._make_lr_search_space(optimizer)
-        elif isinstance(self._engine.optimizer, OptimizerCallable):
-            search_space["optimizer.keywords.lr"] = self._make_lr_search_space(self._engine.optimizer)
+        optimizer_conf = self._engine.model.optimizer_callable
+
+        if not isinstance(optimizer_conf, OptimizerCallable):
+            raise TypeError(optimizer_conf)
+
+        search_space["optimizer.keywords.lr"] = self._make_lr_search_space(optimizer_conf)
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {

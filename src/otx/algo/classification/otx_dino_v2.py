@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torch import nn
 
+from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     MulticlassClsBatchDataEntity,
@@ -20,11 +21,11 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from omegaconf import DictConfig
 
     from otx.core.metrics import MetricCallable
 
@@ -76,14 +77,18 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def __init__(
         self,
         num_classes: int,
-        config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
+        freeze_backbone: bool = False,
     ) -> None:
+        config = read_mmconfig(model_name="dino_v2", subdir_name="multiclass_classification")
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
+        config.backbone.frozen = freeze_backbone
+
         self.config = config
+
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
