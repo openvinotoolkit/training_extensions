@@ -1,18 +1,18 @@
 model:
   class_path: otx.algo.classification.efficientnet_b0.EfficientNetB0ForHLabelCls
-
-optimizer:
-  class_path: torch.optim.SGD
   init_args:
-    lr: 0.0049
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.0049
 
-scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
-  init_args:
-    mode: max
-    factor: 0.1
-    patience: 1
-    monitor: val/accuracy
+    scheduler:
+      class_path: lightning.pytorch.cli.ReduceLROnPlateau
+      init_args:
+        mode: max
+        factor: 0.1
+        patience: 1
+        monitor: val/accuracy
 
 engine:
   task: H_LABEL_CLS
