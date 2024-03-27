@@ -5,8 +5,20 @@
 from unittest.mock import MagicMock
 
 import pytest
-from otx.core.exporter.exportable_code.demo.demo_package.executors import synchronous as target_file
-from otx.core.exporter.exportable_code.demo.demo_package.executors.synchronous import SyncExecutor
+
+target_file = None
+SyncExecutor = None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global target_file  # noqa: PLW0603
+    global SyncExecutor  # noqa: PLW0603
+    from otx.core.exporter.exportable_code.demo.demo_package.executors import synchronous
+    from otx.core.exporter.exportable_code.demo.demo_package.executors.synchronous import SyncExecutor as Cls1
+
+    target_file = synchronous
+    SyncExecutor = Cls1
 
 
 class TestSyncExecutor:

@@ -5,8 +5,20 @@
 from unittest.mock import MagicMock
 
 import pytest
-from otx.core.exporter.exportable_code.demo.demo_package.executors import asynchronous as target_file
-from otx.core.exporter.exportable_code.demo.demo_package.executors.asynchronous import AsyncExecutor
+
+target_file = None
+AsyncExecutor = None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global target_file  # noqa: PLW0603
+    global AsyncExecutor  # noqa: PLW0603
+    from otx.core.exporter.exportable_code.demo.demo_package.executors import asynchronous
+    from otx.core.exporter.exportable_code.demo.demo_package.executors.asynchronous import AsyncExecutor as Cls1
+
+    target_file = asynchronous
+    AsyncExecutor = Cls1
 
 
 class MockAsyncPipeline:

@@ -6,14 +6,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
-    CameraStreamer,
-    DirStreamer,
-    ImageStreamer,
-    ThreadedStreamer,
-    VideoStreamer,
-    get_streamer,
-)
 
 from tests.test_helpers import (
     generate_random_image_folder,
@@ -21,6 +13,41 @@ from tests.test_helpers import (
     generate_random_single_video,
     generate_random_video_folder,
 )
+
+CameraStreamer = None
+DirStreamer = None
+ImageStreamer = None
+ThreadedStreamer = None
+VideoStreamer = None
+get_streamer = None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global CameraStreamer, DirStreamer, ImageStreamer, ThreadedStreamer, VideoStreamer, get_streamer  # noqa: PLW0603
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import CameraStreamer as Cls1
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+        DirStreamer as Cls2,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+        ImageStreamer as Cls3,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+        ThreadedStreamer as Cls4,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+        VideoStreamer as Cls5,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
+        get_streamer as func1,
+    )
+
+    CameraStreamer = Cls1
+    DirStreamer = Cls2
+    ImageStreamer = Cls3
+    ThreadedStreamer = Cls4
+    VideoStreamer = Cls5
+    get_streamer = func1
 
 
 class TestStreamer:

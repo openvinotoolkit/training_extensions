@@ -5,8 +5,21 @@
 from unittest.mock import MagicMock
 
 import pytest
-from otx.core.exporter.exportable_code.demo.demo_package import model_wrapper as target_file
-from otx.core.exporter.exportable_code.demo.demo_package.model_wrapper import ModelWrapper, TaskType
+
+target_file = None
+ModelWrapper, TaskType = None, None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global target_file  # noqa: PLW0603
+    global ModelWrapper, TaskType
+    from otx.core.exporter.exportable_code.demo.demo_package import model_wrapper
+    from otx.core.exporter.exportable_code.demo.demo_package.model_wrapper import ModelWrapper as Cls1
+    from otx.core.exporter.exportable_code.demo.demo_package.model_wrapper import TaskType as Cls2
+
+    target_file = model_wrapper
+    ModelWrapper, TaskType = Cls1, Cls2
 
 
 class TestModelWrapper:

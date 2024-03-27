@@ -5,8 +5,22 @@
 from unittest.mock import MagicMock
 
 import pytest
-from otx.core.exporter.exportable_code.demo.demo_package import utils as target_file
-from otx.core.exporter.exportable_code.demo.demo_package.utils import create_visualizer, get_model_path, get_parameters
+
+target_file = None
+create_visualizer, get_model_path, get_parameters = None, None, None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global target_file  # noqa: PLW0603
+    global create_visualizer, get_model_path, get_parameters
+    from otx.core.exporter.exportable_code.demo.demo_package import utils
+    from otx.core.exporter.exportable_code.demo.demo_package.utils import create_visualizer as func1
+    from otx.core.exporter.exportable_code.demo.demo_package.utils import get_model_path as func2
+    from otx.core.exporter.exportable_code.demo.demo_package.utils import get_parameters as func3
+
+    target_file = utils
+    create_visualizer, get_model_path, get_parameters = func1, func2, func3
 
 
 def test_get_model_path(mocker, tmp_path):
