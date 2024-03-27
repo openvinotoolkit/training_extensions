@@ -112,13 +112,13 @@ def _inference_step(
             ]
             _target = converted_entities["target"]
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(cvt_preds["masks"], cvt_target["masks"])
 
 
-def _inference_step_for_zeroshot(
+def _inference_step_for_zero_shot(
     model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
     metric: MetricCollection,
     inputs: ZeroShotVisualPromptingBatchDataEntity,
@@ -160,7 +160,7 @@ def _inference_step_for_zeroshot(
                     _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
 
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(
@@ -441,7 +441,7 @@ class OTXZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -789,6 +789,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reset_feat: bool = False,
         default_threshold_reference: float = 0.3,
+        is_cascade: bool = False,
     ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
         if reset_feat or self.reference_feats is None:
@@ -815,7 +816,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     if "point_coords" in inputs_decoder:
                         # bboxes and points
                         inputs_decoder.update(image_embeddings)
-                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=False)
+                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=is_cascade)
                         masks = prediction["upscaled_masks"]
                     else:
                         log.warning("annotation and polygon will be supported.")
@@ -847,7 +848,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
-        is_cascade: bool = False,
+        is_cascade: bool = True,
         threshold: float = 0.0,
         num_bg_points: int = 1,
         default_threshold_target: float = 0.65,
@@ -1087,9 +1088,10 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"].apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32),
-                    original_size[0],
+                    np.array([[x.min(), y.min()], [x.max(), y.max()]], dtype=np.float32),
+                    original_size,
                 )
+                box_coords = np.expand_dims(box_coords, axis=0)
                 inputs.update(
                     {
                         "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
@@ -1419,7 +1421,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
