@@ -18,6 +18,7 @@ from lightning import Trainer, seed_everything
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
+from otx.core.data.dataset.tile import OTXTileDataset
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
@@ -340,9 +341,13 @@ class Engine:
         datamodule = datamodule if datamodule is not None else self.datamodule
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
-        if is_ir_ckpt:
+        if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -425,6 +430,10 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
