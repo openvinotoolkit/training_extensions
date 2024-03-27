@@ -9,7 +9,6 @@ from unittest.mock import create_autospec
 
 import pytest
 from lightning.pytorch.cli import ReduceLROnPlateau
-from otx.algo.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import OTXDetectionModel
 from torch.optim import Optimizer
@@ -17,12 +16,12 @@ from torch.optim import Optimizer
 
 class TestOTXDetectionModel:
     @pytest.fixture()
-    def mock_optimizer(self) -> Optimizer:
-        return create_autospec(Optimizer)
+    def mock_optimizer(self):
+        return lambda _: create_autospec(Optimizer)
 
     @pytest.fixture()
-    def mock_scheduler(self) -> list[LinearWarmupScheduler | ReduceLROnPlateau]:
-        return create_autospec([LinearWarmupScheduler, ReduceLROnPlateau])
+    def mock_scheduler(self):
+        return lambda _: create_autospec([ReduceLROnPlateau])
 
     @pytest.fixture(
         params=[
