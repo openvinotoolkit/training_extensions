@@ -440,6 +440,63 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
+REASON = '''
+tests/integration/cli/test_cli.py:507:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/utils.py:18: in run_main
+    _run_main(command_cfg)
+tests/utils.py:37: in _run_main
+    main()
+src/otx/cli/__init__.py:17: in main
+    OTXCLI()
+src/otx/cli/cli.py:59: in __init__
+    self.run()
+src/otx/cli/cli.py:521: in run
+    fn(**fn_kwargs)
+src/otx/engine/engine.py:234: in train
+    best_config, best_trial_weight = execute_hpo(engine=self, **locals())
+src/otx/engine/hpo/hpo_api.py:67: in execute_hpo
+    hpo_configurator = HPOConfigurator(
+src/otx/engine/hpo/hpo_api.py:127: in __init__
+    self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
+src/otx/engine/hpo/hpo_api.py:168: in hpo_config
+    self._hpo_config["prior_hyper_parameters"] = {
+src/otx/engine/hpo/hpo_api.py:169: in <dictcomp>
+    hp: get_using_dot_delimited_key(hp, self._engine)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+key = 'model.optimizer_callable.keywords.lr'
+target = <function adapt_class_type.<locals>.partial_instance at 0x71faee3b9480>
+
+    def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
+        """Get values of attribute in target object using dot delimited key.
+
+        For example, if key is "a.b.c", then get a value of 'target.a.b.c'.
+        Target should be object having attributes, dictionary or list.
+        To get an element in a list, an integer that is the index of corresponding value can be set as a key.
+
+        Args:
+            key (str): dot delimited key.
+            val (Any): value to set.
+            target (Any): target to set value to.
+        """
+        splited_key = key.split(".")
+        for each_key in splited_key:
+            if isinstance(target, dict):
+                target = target[each_key]
+            elif isinstance(target, list):
+                if not each_key.isdigit():
+                    error_msg = f"Key should be integer but '{each_key}'."
+                    raise ValueError(error_msg)
+                target = target[int(each_key)]
+            else:
+>               target = getattr(target, each_key)
+E               AttributeError: 'function' object has no attribute 'keywords'
+
+src/otx/utils/utils.py:37: AttributeError
+'''
+
+
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo_e2e(
     task: OTXTaskType,
@@ -463,23 +520,9 @@ def test_otx_hpo_e2e(
         pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-    if task.lower().startswith("anomaly_"):
-        pytest.xfail(
-            reason="""This will be fixed soon
-│ /home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_api.py:137 in  │
-│ hpo_config                                                                   │
-│                                                                              │
-│   134 │   @hpo_config.setter                                                 │
-│   135 │   def hpo_config(self, hpo_config: HpoConfig | None) -> None:        │
-│   136 │   │   train_dataset_size = len(self._engine.datamodule.subsets["trai │
-│ ❱ 137 │   │   val_dataset_size = len(self._engine.datamodule.subsets["val"]) │
-│   138 │   │                                                                  │
-│   139 │   │   self._hpo_config: dict[str, Any] = {  # default setting        │
-│   140 │   │   │   "save_path": str(self._hpo_workdir),                       │
-╰──────────────────────────────────────────────────────────────────────────────╯
-KeyError: 'val'
-        """,
-        )
+
+    pytest.xfail(reason=REASON)
+
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
     tmp_path_hpo.mkdir(parents=True)
