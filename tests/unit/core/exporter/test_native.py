@@ -1,26 +1,24 @@
-import pytest
-from pathlib import Path
-import torch
 import onnx
+import pytest
+import torch
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types.precision import OTXPrecisionType
 
-class TestOTXNativeModelExporter:
 
-    @pytest.fixture
+class TestOTXNativeModelExporter:
+    @pytest.fixture()
     def exporter(self, mocker):
         input_size = (3, 224, 224)  # Example input size
         # Create an instance of OTXNativeModelExporter with default params
         return OTXNativeModelExporter(input_size=input_size)
 
-    @pytest.fixture
+    @pytest.fixture()
     def dummy_model(self):
         # Define a simple dummy torch model for testing
-        model = torch.nn.Sequential(
+        return torch.nn.Sequential(
             torch.nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1),
             torch.nn.ReLU(),
         )
-        return model
 
     def test_to_openvino_export(self, exporter, dummy_model, tmp_path):
         # Use tmp_path provided by pytest for temporary file creation
@@ -32,7 +30,7 @@ class TestOTXNativeModelExporter:
             model=dummy_model,
             output_dir=output_dir,
             base_model_name="test_model",
-            precision=OTXPrecisionType.FP32
+            precision=OTXPrecisionType.FP32,
         )
 
         # Check that the exported files exist
@@ -45,7 +43,7 @@ class TestOTXNativeModelExporter:
             model=dummy_model,
             output_dir=output_dir,
             base_model_name="test_model",
-            precision=OTXPrecisionType.FP32
+            precision=OTXPrecisionType.FP32,
         )
 
         assert exported_path.exists()
@@ -62,7 +60,7 @@ class TestOTXNativeModelExporter:
             model=dummy_model,
             output_dir=output_dir,
             base_model_name="test_onnx_model",
-            precision=OTXPrecisionType.FP32
+            precision=OTXPrecisionType.FP32,
         )
 
         # Check that the exported ONNX file exists

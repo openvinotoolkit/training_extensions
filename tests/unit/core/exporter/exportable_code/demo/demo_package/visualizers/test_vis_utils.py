@@ -1,16 +1,24 @@
-import numpy as np
-import cv2
-import pytest
-from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import get_actmap, dump_frames, ColorPalette
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import cv2
+import numpy as np
+import pytest
+from numpy.random import PCG64, Generator
+from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import (
+    ColorPalette,
+    dump_frames,
+    get_actmap,
+)
 
 
 def test_activation_map_shape():
-    saliency_map = np.random.rand(100, 100).astype(np.uint8)
+    generator = Generator(PCG64())
+    saliency_map = (generator.random((100, 100)) * 255).astype(np.uint8)
     output_res = (50, 50)
     result = get_actmap(saliency_map, output_res)
     assert result.shape == (50, 50, 3)
+
 
 def test_no_saved_frames():
     output = "output"
@@ -19,6 +27,7 @@ def test_no_saved_frames():
     saved_frames = []
     dump_frames(saved_frames, output, input_path, capture)
     assert not Path(output).exists()
+
 
 @patch("otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils.cv2.VideoWriter_fourcc")
 @patch("otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils.cv2.VideoWriter")
@@ -35,11 +44,13 @@ def test_video_input(mock_get_input_names_list, mock_video_writer, mock_video_wr
     mock_video_writer_fourcc.return_value = "mp4v"
     dump_frames(saved_frames, output, input_path, capture)
     mock_video_writer_fourcc.assert_called_once_with(*"mp4v")
+    mock_video_writer.assert_called_once()
+
 
 @patch("otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils.cv2.imwrite")
 @patch("otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils.get_input_names_list")
 @patch("otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils.cv2.cvtColor")
-def test_image_input(mock_imwrite, mock_get_input_names_list, mock_cvtColor, tmp_path):
+def test_image_input(mock_imwrite, mock_get_input_names_list, mock_cvtcolor, tmp_path):
     output = str(tmp_path / "output")
     input_path = "input"
     capture = MagicMock(spec=cv2.VideoCapture)
@@ -48,15 +59,16 @@ def test_image_input(mock_imwrite, mock_get_input_names_list, mock_cvtColor, tmp
     filenames = ["image1.jpeg", "image2.jpeg"]
     mock_get_input_names_list.return_value = filenames
     dump_frames(saved_frames, output, input_path, capture)
-    assert mock_cvtColor.call_count == 2
+    assert mock_cvtcolor.call_count == 2
     assert mock_imwrite.call_count == 2
 
 
 class TestColorPalette:
     def test_colorpalette_init_with_zero_classes(self):
-        with pytest.raises(ValueError):
+        expected_msg = "ColorPalette accepts only the positive number of colors"
+        with pytest.raises(ValueError, match=expected_msg):
             ColorPalette(num_classes=0)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=expected_msg):
             ColorPalette(num_classes=-5)
 
     def test_colorpalette_length(self):
@@ -68,7 +80,8 @@ class TestColorPalette:
         num_classes = 3
         palette = ColorPalette(num_classes)
         color = palette[1]  # assuming 0-based indexing
-        assert isinstance(color, tuple) and len(color) == 3
+        assert isinstance(color, tuple)
+        assert len(color) == 3
 
     def test_colorpalette_getitem_out_of_range(self):
         num_classes = 3

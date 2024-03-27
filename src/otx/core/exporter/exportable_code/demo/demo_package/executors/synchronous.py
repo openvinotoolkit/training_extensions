@@ -9,11 +9,11 @@ import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..model_wrapper import ModelWrapper
-    from ..visualizers import BaseVisualizer
+    from demo_package.model_wrapper import ModelWrapper
+    from demo_package.visualizers import BaseVisualizer
 
-from ..streamer.streamer import get_streamer
-from ..visualizers import dump_frames
+from demo_package.streamer.streamer import get_streamer
+from demo_package.visualizers import dump_frames
 
 
 class SyncExecutor:

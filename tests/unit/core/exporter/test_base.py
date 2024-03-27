@@ -1,9 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
-from otx.core.exporter.base import OTXModelExporter, OTXExportFormatType, OTXPrecisionType
-from otx.core.exporter.base import ZipFile
+
+import pytest
 from onnx import ModelProto
 from onnxconverter_common import float16
+from otx.core.exporter.base import OTXExportFormatType, OTXModelExporter, OTXPrecisionType, ZipFile
 
 
 class MockModelExporter(OTXModelExporter):
@@ -14,13 +14,12 @@ class MockModelExporter(OTXModelExporter):
         return output_dir / f"{base_model_name}.onnx"
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_model():
-    model = MagicMock()
-    return model
+    return MagicMock()
 
 
-@pytest.fixture
+@pytest.fixture()
 def exporter():
     ZipFile.write = MagicMock()
     return MockModelExporter(input_size=(224, 224), mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
@@ -31,19 +30,20 @@ class TestOTXModelExporter:
         output_dir = tmp_path
         base_model_name = "test_model"
         precision = OTXPrecisionType.FP32
-        result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.OPENVINO ,precision)
+        result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.OPENVINO, precision)
         assert result == output_dir / f"{base_model_name}.xml"
 
     def test_to_onnx(self, mock_model, exporter, tmp_path):
         output_dir = tmp_path
         base_model_name = "test_model"
         precision = OTXPrecisionType.FP32
-        result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.ONNX , precision)
+        result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.ONNX, precision)
         assert result == output_dir / f"{base_model_name}.onnx"
 
     def test_export_unsupported_format_raises(self, exporter, mock_model, tmp_path):
-        with pytest.raises(ValueError):
-            exporter.export(mock_model, tmp_path, export_format="unsupported_format")
+        export_format = "unsupported_format"
+        with pytest.raises(ValueError, match=f"Unsupported export format: {export_format}"):
+            exporter.export(mock_model, tmp_path, export_format=export_format)
 
     def test_to_exportable_code(self, mock_model, exporter, tmp_path):
         # Arrange
@@ -52,21 +52,20 @@ class TestOTXModelExporter:
         precision = OTXPrecisionType.FP32
 
         # Mock the existence of certain files that would be written to the zip
-        with patch("builtins.open", new_callable=MagicMock):
-            with patch("zipfile.ZipFile"):
-                # Act
-                result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
+        with patch("builtins.open", new_callable=MagicMock) and patch("zipfile.ZipFile"):
+            # Act
+            result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
 
         # Assert
         assert result == output_dir / "exportable_code.zip"  # The expected output path from the method
 
     def test_postprocess_openvino_model(self, mock_model, exporter):
         # test output names do not match exporter parameters
-        exporter.output_names = ['output1']
+        exporter.output_names = ["output1"]
         with pytest.raises(RuntimeError):
             exporter._postprocess_openvino_model(mock_model)
         # test output names match exporter parameters
-        exporter.output_names = ['output1', 'output2']
+        exporter.output_names = ["output1", "output2"]
         mock_model.outputs = [MagicMock(), MagicMock()]
         processed_model = exporter._postprocess_openvino_model(mock_model)
         # Verify the processed model is returned and the names are set correctly
@@ -79,7 +78,7 @@ class TestOTXModelExporter:
         exporter._embed_onnx_metadata = MagicMock(return_value=onnx_model)
         convert_float_to_float16_mock = MagicMock(return_value=onnx_model)
         with pytest.MonkeyPatch.context() as m:
-            m.setattr(float16, 'convert_float_to_float16', convert_float_to_float16_mock)
+            m.setattr(float16, "convert_float_to_float16", convert_float_to_float16_mock)
             result = exporter._postprocess_onnx_model(onnx_model, embed_metadata=True, precision=OTXPrecisionType.FP16)
             exporter._embed_onnx_metadata.assert_called_once()
             convert_float_to_float16_mock.assert_called_once_with(onnx_model)

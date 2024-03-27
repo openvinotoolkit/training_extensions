@@ -339,6 +339,10 @@ class InstanceSegmentationVisualizer(BaseVisualizer):
         Returns:
             np.ndarray - The input frame with the instance segmentation results drawn on it.
         """
+        if frame.size == 0 or frame is None:
+            msg = "The input frame is empty or None."
+            raise ValueError(msg)
+
         result = frame.copy()
         output_objects = predictions.segmentedObjects
         bboxes = [[output.xmin, output.ymin, output.xmax, output.ymax] for output in output_objects]
