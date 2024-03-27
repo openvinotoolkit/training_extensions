@@ -265,6 +265,8 @@ class Engine:
         )
         fit_kwargs: dict[str, Any] = {}
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
@@ -336,6 +338,8 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
@@ -417,6 +421,8 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
