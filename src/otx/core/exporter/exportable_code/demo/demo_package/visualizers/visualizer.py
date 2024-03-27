@@ -95,7 +95,6 @@ class BaseVisualizer:
         """
         if self.no_show:
             return
-        print(streamer.get_type())
         if "VIDEO" in str(streamer.get_type()):
             fps_num = streamer.fps()
             orig_frame_time = 1 / fps_num
