@@ -69,6 +69,9 @@ V1_V2_NAME_MAP = {
     "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR": "litehrnet_18",
     "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR": "litehrnet_s",
     "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR": "litehrnet_x",
+    "Custom_Semantic_Segmentation_SegNext_B": "segnext_b",
+    "Custom_Semantic_Segmentation_SegNext_s": "segnext_s",
+    "Custom_Semantic_Segmentation_SegNext_t": "segnext_t",
     # Dataset names
     "anomaly/mvtec/bottle_small/1": "mvtec_bottle_small_1",
     "anomaly/mvtec/bottle_small/2": "mvtec_bottle_small_2",
@@ -190,8 +193,8 @@ TASK_METRIC_MAP = {
 }
 
 
-def summarize_task(task: str):
-    """Summarize benchmark histoy by task."""
+def summarize_table(task: str):
+    """Summarize benchmark histoy table by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [f"{score_metric}", "train/e2e_time", "export/iter_time"]
     column_order = [
@@ -214,6 +217,20 @@ def summarize_task(task: str):
     # data = data.style.set_sticky(axis="index")
     data = data.reindex(column_order, axis=1)
     return data
+
+
+def summarize_graph(task: str):
+    """Summarize benchmark histoy graph by task."""
+    score_metric = TASK_METRIC_MAP[task]
+    metrics = [f"{score_metric}", "train/e2e_time", "export/iter_time"]
+    data = all_data.query(f"task == '{task}'")
+    graphs = []
+    for metric in metrics:
+        print(metric)
+        df = data.pivot_table(index=["otx_version"], columns=["model"], values=[metric], aggfunc="mean")
+        ax = df.plot(title=metric)
+        graphs.append(ax)
+    return graphs
 
 
 def summarize_meta():
