@@ -6,16 +6,19 @@
 from __future__ import annotations
 
 import time
+import sys
 from typing import TYPE_CHECKING, Any
 
 from openvino.model_api.pipelines import AsyncPipeline
+
 
 if TYPE_CHECKING:
     import numpy as np
     from demo_package.model_wrapper import ModelWrapper
 
-from demo_package.streamer import get_streamer
-from demo_package.visualizers import BaseVisualizer, dump_frames
+
+from ..streamer import get_streamer
+from ..visualizers import BaseVisualizer, dump_frames
 
 
 class AsyncExecutor:

@@ -95,6 +95,7 @@ class BaseVisualizer:
         """
         if self.no_show:
             return
+        print(streamer.get_type())
         if "VIDEO" in str(streamer.get_type()):
             fps_num = streamer.fps()
             orig_frame_time = 1 / fps_num
@@ -126,6 +127,10 @@ class ClassificationVisualizer(BaseVisualizer):
             Output image with annotations.
         """
         predictions = predictions.top_labels
+        if not any(predictions):
+            log.warning("There are no predictions.")
+            return frame
+
         class_label = predictions[0][1]
         font_scale = 0.7
         label_height = cv2.getTextSize(class_label, cv2.FONT_HERSHEY_COMPLEX, font_scale, 2)[0][1]
