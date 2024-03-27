@@ -46,18 +46,14 @@ class TestOTXModelExporter:
             exporter.export(mock_model, tmp_path, export_format=export_format)
 
     def test_to_exportable_code(self, mock_model, exporter, tmp_path):
-        # Arrange
         base_model_name = "test_model"
         output_dir = tmp_path / "exportable_code"
         precision = OTXPrecisionType.FP32
 
-        # Mock the existence of certain files that would be written to the zip
         with patch("builtins.open", new_callable=MagicMock) and patch("zipfile.ZipFile"):
-            # Act
             result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
 
-        # Assert
-        assert result == output_dir / "exportable_code.zip"  # The expected output path from the method
+        assert result == output_dir / "exportable_code.zip"
 
     def test_postprocess_openvino_model(self, mock_model, exporter):
         # test output names do not match exporter parameters

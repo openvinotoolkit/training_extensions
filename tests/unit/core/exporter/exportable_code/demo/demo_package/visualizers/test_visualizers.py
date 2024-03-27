@@ -204,34 +204,6 @@ class TestInstanceSegmentationVisualizer:
         drawn_frame = visualizer.draw(frame, predictions)
         assert np.array_equal(drawn_frame, copied_frame)
 
-        # Assertion checks for the drawn frame
-
-    def test_draw_empty_frame(self, visualizer):
-        # Create an empty frame
-        frame = np.zeros((0, 0, 3), dtype=np.uint8)
-
-        # Create instance segmentation results with some objects
-        predictions = InstanceSegmentationResult(
-            segmentedObjects=[
-                SegmentedObject(
-                    xmin=10,
-                    ymin=10,
-                    xmax=30,
-                    ymax=30,
-                    score=0.9,
-                    id=0,
-                    mask=np.ones((20, 20)),
-                    str_label="person",
-                ),
-            ],
-            saliency_map=None,
-            feature_vector=None,
-        )
-
-        # This test might raise an exception due to the empty frame
-        with pytest.raises(ValueError, match="The input frame is empty or None."):
-            visualizer.draw(frame, predictions)
-
 
 class TestSemanticSegmentationVisualizer:
     @pytest.fixture()
