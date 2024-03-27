@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[unreleased\]
+
+## \[v1.6.0\]
+
+### New features
+
+- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
+- Add support for the training and validation on the XPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
+
+### Enhancements
+
+- Upgrade OpenVINO to 2023.3 (<https://github.com/openvinotoolkit/training_extensions/pull/2879>)
+- Automate performance benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/2742>)
+- Bump ONNX version to 1.16.0 to resolve CVE-2022-25882 (<https://github.com/openvinotoolkit/training_extensions/pull/3205>)
+
 ## \[v1.5.2\]
 
 > **NOTES**
@@ -20,7 +35,7 @@ All notable changes to this project will be documented in this file.
 - Enable configurable confidence threshold for otx eval and export (<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 - Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
 - Enable FeatureVectorHook to support action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
-- Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add ONNX metadata to detection, instance segmentation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
 - Add a new feature to configure input size (<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
 - Add a new object detector Lite-DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2457>)

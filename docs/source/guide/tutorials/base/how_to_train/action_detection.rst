@@ -201,6 +201,8 @@ Optimization
 
 1. You can further optimize the model with ``otx optimize``.
 Currently, only PTQ is supported for action detection. NNCF will be supported in near future.
+
+The optimized model will be quantized to ``INT8`` format.
 Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Example command for optimizing
@@ -209,7 +211,7 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                          --save-model-to pot_model
+                          --save-model-to ptq_model
 
   ...
 

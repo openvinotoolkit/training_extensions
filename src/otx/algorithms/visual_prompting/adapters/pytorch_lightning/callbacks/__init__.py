@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import InferenceCallback  # noqa: F401
+from .inference import InferenceCallback, ZeroShotInferenceCallback  # noqa: F401

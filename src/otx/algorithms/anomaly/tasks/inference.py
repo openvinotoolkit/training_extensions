@@ -43,7 +43,6 @@ from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
 )
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
@@ -69,8 +68,9 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes

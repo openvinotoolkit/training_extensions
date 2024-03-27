@@ -43,8 +43,12 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                         ):
                             if self._is_normal_polygon(ann, image.width, image.height):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
-                        if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
-                            if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
+                            elif ann.type == DatumAnnotationType.ellipse:
+                                shapes.append(self._get_ellipse_entity(ann, image.width, image.height))
+                        elif self.task_type is TaskType.DETECTION:
+                            if ann.type == DatumAnnotationType.bbox and self._is_normal_bbox(
+                                ann.points[0], ann.points[1], ann.points[2], ann.points[3]
+                            ):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
                         if ann.label not in used_labels:

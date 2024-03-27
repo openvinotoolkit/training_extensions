@@ -27,11 +27,16 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
-from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
+from otx.algorithms.common.utils import (
+    UncopiableDefaultDict,
+    append_dist_rank_suffix,
+    is_hpu_available,
+    is_xpu_available,
+)
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -171,12 +176,16 @@ class BaseConfigurer:
         elif "gpu_ids" not in cfg:
             cfg.gpu_ids = range(1)
 
-        # consider "cuda" and "cpu" device only
-        if not torch.cuda.is_available():
+        # consider "cuda", "xpu", "hpu" and "cpu" device only
+        if is_hpu_available():
+            cfg.device = "hpu"
+        elif torch.cuda.is_available():
+            cfg.device = "cuda"
+        elif is_xpu_available():
+            cfg.device = "xpu"
+        else:
             cfg.device = "cpu"
             cfg.gpu_ids = range(-1, 0)
-        else:
-            cfg.device = "cuda"
 
     @staticmethod
     def configure_distributed(cfg: Config) -> None:
@@ -241,14 +250,27 @@ class BaseConfigurer:
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
         fp16_config = cfg.pop("fp16", None)
+        # workaround to forward FP16 config to mmapi.train funcitons
+        cfg.fp16_ = fp16_config
 
+        optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
+        distributed = getattr(cfg, "distributed", False)
+        opts: Dict[str, Any] = {}
         if fp16_config is not None:
-            if torch.cuda.is_available():
-                optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
-                opts: Dict[str, Any] = dict(
-                    distributed=getattr(cfg, "distributed", False),
-                    **fp16_config,
-                )
+            if is_hpu_available():
+                if optim_type == "SAMOptimizerHook":
+                    # TODO (sungchul): consider SAM optimizer
+                    logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
+                opts["type"] = "HPUOptimizerHook"
+                cfg.optimizer_config.update(opts)
+            elif is_xpu_available():
+                if optim_type == "SAMOptimizerHook":
+                    logger.warning("SAMOptimizerHook is not supported on XPU yet, changed to OptimizerHook.")
+                    opts["type"] = "OptimizerHook"
+                cfg.optimizer_config.update(opts)
+                logger.warning("XPU doesn't support mixed precision training currently.")
+            elif torch.cuda.is_available():
+                opts.update({"distributed": distributed, **fp16_config})
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
                 elif optim_type == "OptimizerHook":
@@ -261,6 +283,16 @@ class BaseConfigurer:
                 cfg.optimizer_config.update(opts)
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")
+
+        elif is_hpu_available():
+            if distributed:
+                opts["type"] = "HPUDistOptimizerHook"
+            else:
+                opts["type"] = "HPUOptimizerHook"
+            cfg.optimizer_config.update(opts)
+
+        else:
+            logger.info("Revert FP16 to FP32 on CPU device")
 
     def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
         """Configuration model config settings."""

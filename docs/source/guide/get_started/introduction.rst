@@ -34,6 +34,12 @@ OpenVINO™ Training Extensions supports the :doc:`following learning methods <.
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
+OpenVINO™ Training Extensions supports training and validation on the following devices:
+
+- **CPU**
+- **CUDA**
+- **XPU**
+
 OpenVINO™ Training Extensions will provide the :doc:`following features <../explanation/additional_features/index>` in coming releases:
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
@@ -42,9 +48,9 @@ OpenVINO™ Training Extensions will provide the :doc:`following features <../ex
 - OpenVINO™ Training Extensions uses `Datumaro <https://openvinotoolkit.github.io/datumaro/stable/index.html>`_ as the backend to handle datasets. On account of that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. In the future there will be more supported formats available to give more freedom of datasets format choice.
 - Improved :doc:`auto-configuration functionality <../explanation/additional_features/auto_configuration>`. OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
-************
+*********************
 Documentation content
-************
+*********************
 
 1. **Quick start guide**:
 

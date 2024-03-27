@@ -105,7 +105,11 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
 
 
 def get_det_model_api_configuration(
-    label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float, tiling_parameters: Any
+    label_schema: LabelSchemaEntity,
+    task_type: TaskType,
+    confidence_threshold: float,
+    tiling_parameters: Any,
+    use_ellipse_shapes: bool,
 ):
     """Get ModelAPI config."""
     omz_config = {}
@@ -131,6 +135,7 @@ def get_det_model_api_configuration(
 
     omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
     omz_config[("model_info", "iou_threshold")] = str(0.5)
+    omz_config[("model_info", "use_ellipse_shapes")] = str(use_ellipse_shapes)
 
     if tiling_parameters.enable_tiling:
         omz_config[("model_info", "tile_size")] = str(

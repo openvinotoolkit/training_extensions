@@ -357,7 +357,7 @@ def add_decomposed_rel_pos(
     q_size: Tuple[int, int],
     k_size: Tuple[int, int],
 ) -> Tensor:
-    """Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
+    """Calculate decomposed Relative Positional Embeddings from `mvitv2`.
 
     https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
 

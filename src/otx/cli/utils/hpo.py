@@ -5,21 +5,23 @@
 #
 
 import json
-import logging
 import os
 import re
 import shutil
+import time
 from copy import deepcopy
 from enum import Enum
 from functools import partial
 from inspect import isclass
 from math import floor
 from pathlib import Path
+from threading import Thread
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import yaml
 
+from otx.algorithms.common.utils import is_xpu_available
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -31,8 +33,10 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
 from otx.hpo import HyperBand, TrialStatus, run_hpo_loop
+from otx.hpo.hpo_base import HpoBase
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_hpo_enabled_task(task_type):
@@ -382,6 +386,7 @@ class HpoRunner:
         val_dataset_size (int): validation dataset size
         hpo_workdir (Union[str, Path]): work directory for HPO
         hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
+        progress_updater_callback (Optional[Callable[[Union[int, float]], None]]): callback to update progress
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -393,6 +398,7 @@ class HpoRunner:
         val_dataset_size: int,
         hpo_workdir: Union[str, Path],
         hpo_time_ratio: int = 4,
+        progress_updater_callback: Optional[Callable[[Union[int, float]], None]] = None,
     ):
         if train_dataset_size <= 0:
             raise ValueError(f"train_dataset_size should be bigger than 0. Your value is {train_dataset_size}")
@@ -409,6 +415,7 @@ class HpoRunner:
         self._val_dataset_size = val_dataset_size
         self._fixed_hp: Dict[str, Any] = {}
         self._initial_weight_name = "initial_weight.pth"
+        self._progress_updater_callback = progress_updater_callback
 
         self._align_batch_size_search_space_to_dataset_size()
 
@@ -426,12 +433,16 @@ class HpoRunner:
             if "range" in self._hpo_config["hp_space"][batch_size_name]:
                 max_val = self._hpo_config["hp_space"][batch_size_name]["range"][1]
                 min_val = self._hpo_config["hp_space"][batch_size_name]["range"][0]
+                step = 1
+                if self._hpo_config["hp_space"][batch_size_name]["param_type"] in ["quniform", "qloguniform"]:
+                    step = self._hpo_config["hp_space"][batch_size_name]["range"][2]
                 if max_val > self._train_dataset_size:
                     max_val = self._train_dataset_size
                     self._hpo_config["hp_space"][batch_size_name]["range"][1] = max_val
             else:
                 max_val = self._hpo_config["hp_space"][batch_size_name]["max"]
                 min_val = self._hpo_config["hp_space"][batch_size_name]["min"]
+                step = self._hpo_config["hp_space"][batch_size_name].get("step", 1)
 
                 if max_val > self._train_dataset_size:
                     max_val = self._train_dataset_size
@@ -439,10 +450,13 @@ class HpoRunner:
 
             # If trainset size is lower than min batch size range,
             # fix batch size to trainset size
+            reason_to_fix_bs = ""
             if min_val >= max_val:
-                logger.info(
-                    "Train set size is equal or lower than batch size range. Batch size is fixed to train set size."
-                )
+                reason_to_fix_bs = "Train set size is equal or lower than batch size range."
+            elif max_val - min_val < step:
+                reason_to_fix_bs = "Difference between min and train set size is lesser than step."
+            if reason_to_fix_bs:
+                logger.info(f"{reason_to_fix_bs} Batch size is fixed to train set size.")
                 del self._hpo_config["hp_space"][batch_size_name]
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
                 self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
@@ -459,7 +473,18 @@ class HpoRunner:
         """
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
-        resource_type = "gpu" if torch.cuda.is_available() else "cpu"
+
+        if self._progress_updater_callback is not None:
+            progress_updater_thread = Thread(target=self._update_hpo_progress, args=[hpo_algo], daemon=True)
+            progress_updater_thread.start()
+
+        if torch.cuda.is_available():
+            resource_type = "gpu"
+        elif is_xpu_available():
+            resource_type = "xpu"
+        else:
+            resource_type = "cpu"
+
         run_hpo_loop(
             hpo_algo,
             partial(
@@ -497,6 +522,11 @@ class HpoRunner:
         return hpo_algo
 
     def _prepare_asha(self):
+        if is_xpu_available():
+            asynchronous_sha = torch.xpu.device_count() != 1
+        else:
+            asynchronous_sha = torch.cuda.device_count() != 1
+
         args = {
             "search_space": self._hpo_config["hp_space"],
             "save_path": str(self._hpo_workdir),
@@ -511,7 +541,7 @@ class HpoRunner:
             "expected_time_ratio": self._hpo_time_ratio,
             "prior_hyper_parameters": self._get_default_hyper_parameters(),
             "asynchronous_bracket": True,
-            "asynchronous_sha": torch.cuda.device_count() != 1,
+            "asynchronous_sha": asynchronous_sha,
         }
 
         logger.debug(f"ASHA args = {args}")
@@ -536,9 +566,27 @@ class HpoRunner:
     def _get_initial_model_weight_path(self):
         return self._hpo_workdir / self._initial_weight_name
 
+    def _update_hpo_progress(self, hpo_algo: HpoBase):
+        """Function for a thread to report a HPO progress regularly.
+
+        Args:
+            hpo_algo (HpoBase): HPO algorithm class
+        """
+
+        while True:
+            if hpo_algo.is_done():
+                break
+            self._progress_updater_callback(hpo_algo.get_progress() * 100)
+            time.sleep(1)
+
 
 def run_hpo(
-    hpo_time_ratio: int, output: Path, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, Dict]
+    hpo_time_ratio: int,
+    output: Path,
+    environment: TaskEnvironment,
+    dataset: DatasetEntity,
+    data_roots: Dict[str, Dict],
+    progress_updater_callback: Optional[Callable[[Union[int, float]], None]] = None,
 ) -> Optional[TaskEnvironment]:
     """Run HPO and load optimized hyper parameter and best HPO model weight.
 
@@ -548,6 +596,7 @@ def run_hpo(
         environment (TaskEnvironment): otx task environment
         dataset (DatasetEntity): dataset to use for training
         data_roots (Dict[str, Dict]): dataset path of each dataset type
+        progress_updater_callback (Optional[Callable[[Union[int, float]], None]]): callback to update progress
     """
     task_type = environment.model_template.task_type
     if not _check_hpo_enabled_task(task_type):
@@ -568,6 +617,7 @@ def run_hpo(
         len(dataset.get_subset(Subset.VALIDATION)),
         hpo_save_path,
         hpo_time_ratio,
+        progress_updater_callback,
     )
 
     logger.info("started hyper-parameter optimization")
@@ -713,6 +763,7 @@ class Trainer:
         score_report_callback = self._prepare_score_report_callback(task)
         task.train(dataset=dataset, output_model=output_model, train_parameters=score_report_callback)
         self._finalize_trial(task)
+        self._delete_unused_model_weight()
 
     def _prepare_hyper_parameter(self):
         return create(self._model_template.hyper_parameters.data)
@@ -787,6 +838,21 @@ class Trainer:
 
     def _get_weight_dir_path(self) -> Path:
         return self._hpo_workdir / "weight" / self._hp_config["id"]
+
+    def _delete_unused_model_weight(self):
+        """Delete model weights except best and latest model weight."""
+        for json_file in self._hpo_workdir.rglob("*.json"):
+            if not json_file.stem.isnumeric():
+                continue
+            trial_num = json_file.stem
+            weight_dir = self._hpo_workdir / "weight" / trial_num
+            if not weight_dir.exists():
+                continue
+            latest_model_weight = self._task.get_latest_weight(weight_dir)
+            best_model_weight = get_best_hpo_weight(self._hpo_workdir, trial_num)
+            for each_model_weight in weight_dir.iterdir():
+                if str(each_model_weight) not in [latest_model_weight, best_model_weight]:
+                    each_model_weight.unlink()
 
 
 def run_trial(

@@ -6,7 +6,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../base/models/detector.py",
 ]
 

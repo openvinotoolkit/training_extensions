@@ -15,8 +15,6 @@
 # and limitations under the License.
 
 
-from sys import maxsize
-
 from attr import attrs
 
 from otx.algorithms.common.configs import (
@@ -102,7 +100,7 @@ class SegmentationConfig(BaseConfig):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize,
+            max_value=1000,
         )
 
         preset = selectable(

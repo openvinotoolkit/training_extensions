@@ -5,12 +5,15 @@
 #
 
 import numpy as np
+from typing import Callable
 import pytest
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from otx.algorithms.common.configs.training_base import TrainType
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataModule,
+    OTXZeroShotVisualPromptingDataset,
     OTXVisualPromptingDataset,
     convert_polygon_to_mask,
     generate_bbox,
@@ -150,7 +153,7 @@ class TestOTXVIsualPromptingDataset:
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
             return_value=transform,
         )
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, image_size, mean, std)
+        otx_dataset = OTXVisualPromptingDataset("testing", dataset_polygon, image_size, mean, std)
         assert len(otx_dataset) == 4
 
     @e2e_pytest_unit
@@ -164,7 +167,7 @@ class TestOTXVIsualPromptingDataset:
             return_value=transform,
         )
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVisualPromptingDataset(dataset, image_size, mean, std)
+        otx_dataset = OTXVisualPromptingDataset("testing", dataset, image_size, mean, std)
 
         item = otx_dataset[0]
 
@@ -175,28 +178,77 @@ class TestOTXVIsualPromptingDataset:
         # Check specific values in the item
         assert item["index"] == 0
         assert (item["images"] == dataset[0].media.numpy).all()
-        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
         assert item["path"] == dataset[0].media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)
-        assert item["points"] == []
+        assert len(item["points"]) == 0
+
+
+class TestOTXZeroShotVisualPromptingDataset:
+    """Test OTXZeroShotVisualPromptingDataset.
+
+    To be updated.
+    """
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("use_mask", [False, True])
+    def test_getitem(
+        self, mocker, dataset_polygon, dataset_mask, transform, image_size, mean, std, use_mask: bool
+    ) -> None:
+        """Test __getitem__."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=transform,
+        )
+        dataset = dataset_mask if use_mask else dataset_polygon
+        otx_dataset = OTXZeroShotVisualPromptingDataset("testing", dataset, image_size, mean, std)
+
+        item = otx_dataset[0]
+
+        # Check the returned item's keys
+        expected_keys = {"index", "original_size", "images", "path", "gt_masks", "bboxes", "points", "labels"}
+        assert set(item.keys()) == expected_keys
+
+        # Check specific values in the item
+        assert item["index"] == 0
+        assert (item["images"] == dataset[0].media.numpy).all()
+        assert np.all(item["original_size"] == dataset[0].media.numpy.shape[:2])
+        assert item["path"] == dataset[0].media.path
+        assert isinstance(item["gt_masks"], list)
+        assert isinstance(item["gt_masks"][0], np.ndarray)
+        assert isinstance(item["bboxes"], np.ndarray)
+        assert len(item["points"]) == 0
 
 
 class TestOTXVisualPromptingDataModule:
     @pytest.fixture
-    def datamodule(self) -> OTXVisualPromptingDataModule:
-        dataset = generate_visual_prompting_dataset()
+    def set_datamodule(self) -> Callable:
+        def datamodule(train_type: TrainType = TrainType.Incremental) -> OTXVisualPromptingDataModule:
+            dataset = generate_visual_prompting_dataset()
 
-        # Create a mock config
-        config = MockDatasetConfig()
+            # Create a mock config
+            config = MockDatasetConfig()
 
-        # Create an instance of OTXVisualPromptingDataModule
-        return OTXVisualPromptingDataModule(config, dataset)
+            # Create an instance of OTXVisualPromptingDataModule
+            return OTXVisualPromptingDataModule(config, dataset, train_type)
+
+        return datamodule
 
     @e2e_pytest_unit
-    def test_setup(self, mocker, datamodule) -> None:
+    def test_init_zeroshot(self, set_datamodule):
+        """Test __init__ when train_type is TrainType.Zeroshot."""
+        datamodule = set_datamodule(train_type=TrainType.Zeroshot)
+
+        assert datamodule.config.get("train_batch_size") == 1
+        assert "use_point" in datamodule.kwargs
+        assert "use_bbox" in datamodule.kwargs
+
+    @e2e_pytest_unit
+    def test_setup(self, mocker, set_datamodule) -> None:
         """Test setup."""
+        datamodule = set_datamodule()
         mocker.patch.object(datamodule, "summary", return_value=None)
 
         datamodule.setup()
@@ -205,8 +257,9 @@ class TestOTXVisualPromptingDataModule:
         assert isinstance(datamodule.val_dataset, OTXVisualPromptingDataset)
 
     @e2e_pytest_unit
-    def test_train_dataloader(self, mocker, datamodule) -> None:
+    def test_train_dataloader(self, mocker, set_datamodule) -> None:
         """Test train_dataloader."""
+        datamodule = set_datamodule()
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="fit")
 
@@ -219,8 +272,9 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_val_dataloader(self, mocker, datamodule) -> None:
+    def test_val_dataloader(self, mocker, set_datamodule) -> None:
         """Test val_dataloader."""
+        datamodule = set_datamodule()
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="fit")
 
@@ -233,8 +287,9 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_test_dataloader(self, mocker, datamodule) -> None:
+    def test_test_dataloader(self, mocker, set_datamodule) -> None:
         """Test test_dataloader."""
+        datamodule = set_datamodule()
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="test")
 
@@ -247,8 +302,9 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_predict_dataloader(self, datamodule) -> None:
+    def test_predict_dataloader(self, set_datamodule) -> None:
         """Test predict_dataloader."""
+        datamodule = set_datamodule()
         datamodule.setup(stage="predict")
 
         # Call the predict_dataloader method

@@ -6,7 +6,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../base/models/detector.py",
 ]
 
@@ -38,7 +38,7 @@ model = dict(
     ),
     neck=dict(type="FPN", in_channels=[96, 192, 384, 768], out_channels=256, num_outs=5),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(type="AnchorGenerator", scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4, 8, 16, 32, 64]),
@@ -153,7 +153,7 @@ lr_config = dict(min_lr=1e-08)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 
-fp16 = dict(loss_scale=dict(init_scale=512))
+fp16 = dict(loss_scale=dict(init_scale=512), bf16_training=False)
 
 load_from = (
     "https://download.openmmlab.com/mmdetection/v2.0/swin/"

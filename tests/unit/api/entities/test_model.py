@@ -341,8 +341,6 @@ class TestModelEntity:
             model_adapters=model_adapters,
         )
 
-        assert model_entity.weight_paths == {}
-
         # Adapter with key 0 not from file
         assert model_entity.model_adapters["0"].from_file_storage is False
 
@@ -374,10 +372,6 @@ class TestModelEntity:
 
         with pytest.raises(KeyError):
             model_entity.get_data("3")
-
-        # The presence of outdated code in ModelEntity "model_adapter.data_source.binary_url"
-        with pytest.raises(AttributeError):
-            assert model_entity.weight_paths == {"0": temp_file}
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

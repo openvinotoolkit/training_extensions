@@ -8,10 +8,10 @@ import functools
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.vfnet import VFNet
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin import DetLossDynamicsTrackingMixin
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
+from otx.utils.logger import get_logger
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin

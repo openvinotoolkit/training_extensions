@@ -13,7 +13,6 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
@@ -22,6 +21,7 @@ from otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixi
     DetLossDynamicsTrackingMixin,
 )
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
+from otx.utils.logger import get_logger
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin
@@ -55,6 +55,13 @@ class CustomYOLOX(SAMDetectorMixin, DetLossDynamicsTrackingMixin, L2SPDetectorMi
     def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=None, **kwargs):
         """Forward function for CustomYOLOX."""
         return super().forward_train(img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=gt_bboxes_ignore)
+
+    def extract_feat(self, img):
+        """Directly extract features from the backbone+neck."""
+        x = self.backbone(img)
+        if self.with_neck:
+            x = self.neck(x)
+        return x
 
     @staticmethod
     def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):

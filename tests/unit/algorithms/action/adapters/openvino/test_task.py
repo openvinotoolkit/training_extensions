@@ -347,7 +347,7 @@ class TestActionOVTask:
                 f.write(np.ndarray(1).tobytes())
 
         mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.Core.read_model", autospec=True)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.serialize", new=mock_save_model)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.save_model", new=mock_save_model)
         fake_quantize = mocker.patch("otx.algorithms.action.adapters.openvino.task.nncf.quantize", autospec=True)
 
         mocker.patch(

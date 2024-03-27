@@ -1,0 +1,3 @@
+TestToolsZeroShotVisualPrompting:
+  ptq:
+    number_of_fakequantizers: 89

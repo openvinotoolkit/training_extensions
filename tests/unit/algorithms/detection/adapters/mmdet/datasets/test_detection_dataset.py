@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import numpy as np
+from otx.algorithms.common.utils.utils import is_xpu_available
 import pytest
 
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset, get_annotation_mmdet_format
@@ -115,6 +116,8 @@ class TestOTXDetDataset:
         if task_type == TaskType.DETECTION:
             results = [[np.random.rand(1, 5)]]
         elif task_type == TaskType.INSTANCE_SEGMENTATION:
+            if is_xpu_available():
+                pytest.skip("Subprocess failure in XPU environment")
             results = [
                 (
                     [np.random.rand(1, 5)] * len(otx_dataset.get_labels()),
@@ -128,6 +131,8 @@ class TestOTXDetDataset:
     @e2e_pytest_unit
     def test_mask_evaluate(self) -> None:
         """Test evaluate method for instance segmentation"""
+        if is_xpu_available():
+            pytest.skip("Subprocess failure in XPU environment")
         otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
         dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()

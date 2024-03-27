@@ -49,6 +49,7 @@ train_pipeline = [
         ],
     ),
 ]
+
 val_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
@@ -67,6 +68,7 @@ val_pipeline = [
         ],
     ),
 ]
+
 test_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
     dict(

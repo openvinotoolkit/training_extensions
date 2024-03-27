@@ -36,11 +36,10 @@
 
    ```bash
    training_extensions$ .ci/start-runner.sh --help
-      USAGE: .ci/start-runner.sh <container-prefix> <github-token> <runner-prefix> [Options]
+      USAGE: $0 <container-prefix> <github-token> [Options]
       Positional args
-         <container-prefix>  Prefix to the ci container
+         <container-prefix>  Prefix to the ci container and actions-runner
          <github-token>      Github token string
-         <runner-prefix>     Prefix to the actions-runner
       Options
          -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
          -c|--cuda           Specify CUDA version
@@ -49,13 +48,15 @@
          -m|--mount          Dataset root path to be mounted to the started container (absolute path)
          -r|--reg            Specify docker registry URL <default: local>
          -d|--debug          Flag to start debugging CI container
+         -a|--attach-cache   Attach host path to the .cache on the container
+         -f|--fix-cpus       Specify the number of CPUs to set for the CI container
          -h|--help           Print this message
    ```
 
-   Below example starts a runner named as `otx-ci-container` with GPU ID 0
+   Below example starts a runner named as `<container-prefix>-0` with GPU ID 0 (GPU ID will be attached to both container and runner name)
 
    ```bash
-   training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> <instance-name> -g 0
+   training_extensions$ .ci/start-runner.sh <container-prefix> <github-token> -g 0
    ```
 
    If there exist the container named as same, it will be stopped before starting a new container.

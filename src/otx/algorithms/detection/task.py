@@ -20,8 +20,7 @@ from otx.algorithms.common.utils.callback import (
     TrainingProgressCallback,
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
-from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils.utils import embed_onnx_model_data
+from otx.algorithms.common.utils.utils import embed_onnx_model_data, get_cfg_based_on_device
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
@@ -56,6 +55,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -91,7 +91,7 @@ class OTXDetectionTask(OTXTask, ABC):
         if self._hyperparams.tiling_parameters.enable_tiling:
             self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
         else:
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+            self.data_pipeline_path = get_cfg_based_on_device(os.path.join(self._model_dir, "data_pipeline.py"))
 
         if hasattr(self._hyperparams.learning_parameters, "input_size"):
             input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
@@ -348,6 +348,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self._task_type,
             self.confidence_threshold,
             self._hyperparams.tiling_parameters,
+            self.use_ellipse_shapes,
         )
 
         if export_type == ExportType.ONNX:
@@ -446,8 +447,8 @@ class OTXDetectionTask(OTXTask, ABC):
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
         metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
         output_resultset.performance = metric.get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("Evaluation completed")
 
     def _add_predictions_to_dataset(

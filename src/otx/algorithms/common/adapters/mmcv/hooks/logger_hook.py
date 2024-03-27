@@ -10,7 +10,7 @@ from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

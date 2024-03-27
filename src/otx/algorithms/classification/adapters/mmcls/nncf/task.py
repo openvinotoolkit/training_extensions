@@ -13,7 +13,6 @@ from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
 )
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.metrics import (
     CurveMetric,
@@ -26,6 +25,7 @@ from otx.api.entities.metrics import (
 from otx.api.entities.model import ModelEntity  # ModelStatus
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

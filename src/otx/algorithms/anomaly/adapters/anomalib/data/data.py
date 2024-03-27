@@ -25,7 +25,6 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
@@ -36,8 +35,9 @@ from otx.api.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class OTXAnomalyDataset(Dataset):

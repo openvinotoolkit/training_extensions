@@ -25,7 +25,6 @@ from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -75,6 +74,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -376,12 +376,18 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
         self.inferencer = self.load_inferencer()
+        self._avg_time_per_image: Optional[float] = None
         logger.info("OpenVINO task initialization completed")
 
     @property
     def hparams(self):
         """Hparams of OpenVINO Detection Task."""
         return self.task_environment.get_hyper_parameters(DetectionConfig)
+
+    @property
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
+        return self._avg_time_per_image
 
     def load_config(self) -> ADDict:
         """Load configurable parameters from model adapter.
@@ -440,14 +446,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             ):
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
-        if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            if self.config.tiling_parameters.enable_tiling:
+        if self.task_type == TaskType.INSTANCE_SEGMENTATION or self.task_type == TaskType.ROTATED_DETECTION:
+            if not self.config.tiling_parameters.enable_tiling:
                 args.append({"resize_type": "standard"})
             else:
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 0})
-            inferencer = OpenVINOMaskInferencer(*args)
-        if self.task_type == TaskType.ROTATED_DETECTION:
-            inferencer = OpenVINORotatedRectInferencer(*args)
+
+            if self.task_type == TaskType.INSTANCE_SEGMENTATION:
+                inferencer = OpenVINOMaskInferencer(*args)
+            else:
+                inferencer = OpenVINORotatedRectInferencer(*args)
+
         if self.config.tiling_parameters.enable_tiling:
             logger.info("Tiling is enabled. Wrap inferencer with tile inference.")
             tile_classifier_model_file, tile_classifier_weight_file = None, None
@@ -546,7 +555,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
@@ -612,6 +622,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 f"Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead."
             )
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
+        logger.info(f"F-measure after evaluation: {output_resultset.performance}")
         logger.info("OpenVINO metric evaluation completed")
 
     def deploy(self, output_model: ModelEntity) -> None:
@@ -714,7 +725,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
-            ov.serialize(compressed_model, xml_path)
+            ov.save_model(compressed_model, xml_path)
             with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:

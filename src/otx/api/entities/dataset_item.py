@@ -9,12 +9,12 @@ import abc
 import copy
 from inspect import signature
 import itertools
-import logging
 from threading import Lock
 from typing import List, Optional, Sequence, Set, Tuple, TypeVar, Union
 from bson import ObjectId
 import numpy as np
 
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation, AnnotationSceneEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
@@ -26,7 +26,7 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 T = TypeVar("T", bound="DatasetItemEntity")

@@ -7,7 +7,6 @@ from functools import partial
 from typing import Optional, Union
 
 import torch
-from mmcls.utils import get_root_logger
 from mmcv.parallel import DataContainer
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
@@ -20,8 +19,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+from otx.utils.logger import get_logger
 
-logger = get_root_logger()
+logger = get_logger()
 
 
 def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statements

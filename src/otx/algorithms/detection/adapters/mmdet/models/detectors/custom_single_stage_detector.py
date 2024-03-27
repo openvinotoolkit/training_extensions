@@ -13,13 +13,13 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
 from otx.algorithms.detection.adapters.mmdet.models.detectors.loss_dynamics_mixin import DetLossDynamicsTrackingMixin
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
+from otx.utils.logger import get_logger
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin
@@ -38,7 +38,6 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
-
         # Hook for class-sensitive weight loading
         if task_adapt:
             self._register_load_state_dict_pre_hook(

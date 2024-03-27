@@ -107,5 +107,3 @@ class TestConstantV0:
         op = ConstantV0.from_ov(op_ov)
         assert isinstance(op, ConstantV0)
         assert op.attrs.shape == self.shape
-        assert op.attrs.is_parameter
-        assert isinstance(op.data, torch.nn.parameter.Parameter)

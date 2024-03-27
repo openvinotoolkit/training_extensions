@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 import multiprocessing as mp
 import os
 import time
@@ -15,12 +14,14 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 import psutil
 import yaml
 
+from otx.utils.logger import get_logger
+
 try:
     import pynvml
 except ImportError:
     pynvml = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 GIB = 1024**3
 AVAILABLE_RESOURCE_TYPE = ["cpu", "gpu"]
 
@@ -29,12 +30,16 @@ class ResourceTracker:
     """Class to track resources usage.
 
     Args:
+        output_path (Union[str, Path]): Output file path to save CPU & GPU utilization and max meory usage values.
         resource_type (str, optional): Which resource to track. Available values are cpu, gpu or all now.
                                         Defaults to "all".
         gpu_ids (Optional[str]): GPU indices to record.
     """
 
-    def __init__(self, resource_type: str = "all", gpu_ids: Optional[str] = None):
+    def __init__(self, output_path: Union[str, Path], resource_type: str = "all", gpu_ids: Optional[str] = None):
+        if isinstance(output_path, str):
+            output_path = Path(output_path)
+        self.output_path = output_path
         if resource_type == "all":
             self._resource_type = AVAILABLE_RESOURCE_TYPE
         else:
@@ -61,19 +66,12 @@ class ResourceTracker:
         )
         self._mem_check_proc.start()
 
-    def stop(self, output_path: Union[str, Path]):
-        """Terminate a process to record resources usage.
-
-        Args:
-            output_path (Union[str, Path]): Output file path to save CPU & GPU utilization and max meory usage values.
-        """
+    def stop(self):
+        """Terminate a process to record resources usage."""
         if self._mem_check_proc is None or not self._mem_check_proc.is_alive():
             return
 
-        if isinstance(output_path, str):
-            output_path = Path(output_path)
-
-        self._queue.put(output_path)
+        self._queue.put(self.output_path)
         self._mem_check_proc.join(10)
         if self._mem_check_proc.exitcode is None:
             self._mem_check_proc.terminate()

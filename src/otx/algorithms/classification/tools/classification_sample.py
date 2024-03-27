@@ -12,7 +12,6 @@ import sys
 
 import numpy as np
 import torch
-from mmcv.utils import get_logger
 
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
@@ -33,6 +32,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.utils.logger import get_logger
 
 SEED = 5
 random.seed(SEED)
@@ -42,18 +42,21 @@ torch.cuda.manual_seed_all(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-logger = get_logger(name="mmcls")
-
-parser = argparse.ArgumentParser(description="Sample showcasing the new API")
-parser.add_argument("template_file_path", help="path to template file")
-parser.add_argument("--export", action="store_true")
-parser.add_argument("--multilabel", action="store_true")
-parser.add_argument("--hierarchical", action="store_true")
-
-args = parser.parse_args()
+logger = get_logger()
 
 
-def load_test_dataset(data_type):
+def parse_args():
+    """Parse function for getting model template & check export."""
+    parser = argparse.ArgumentParser(description="Sample showcasing the new API")
+    parser.add_argument("template_file_path", help="path to template file")
+    parser.add_argument("--export", action="store_true")
+    parser.add_argument("--multilabel", action="store_true")
+    parser.add_argument("--hierarchical", action="store_true")
+
+    return parser.parse_args()
+
+
+def load_test_dataset(data_type, args):
     """Load test dataset."""
     import PIL
     from PIL import ImageDraw
@@ -221,11 +224,11 @@ def validate(task, validation_dataset, model):
     print(str(resultset.performance))
 
 
-def main():
+def main(args):
     """Main of Classification Sample Test."""
 
     logger.info("Train initial model with OLD dataset")
-    dataset, labels_list = load_test_dataset("old")
+    dataset, labels_list = load_test_dataset("old", args)
     labels_schema = get_label_schema(labels_list, multilabel=args.multilabel, hierarchical=args.hierarchical)
 
     logger.info(f"Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items")
@@ -363,4 +366,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(main(parse_args()) or 0)

@@ -327,7 +327,7 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``outputs/**_export/openvino`` folder.
@@ -354,7 +354,7 @@ Optimization
 *************
 
 1. We can further optimize the model with ``otx optimize``.
-It uses NNCF or POT depending on the model format.
+It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
 
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
@@ -371,13 +371,13 @@ a PyTorch model (`.pth`) with OpenVINO™ `NNCF <https://github.com/openvinotool
   (otx) ...$ otx optimize
 
 3.  Command example for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml
 
-Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 4. Now we have fully trained, optimized and exported an
 efficient model representation ready-to-use instance segmentation model.

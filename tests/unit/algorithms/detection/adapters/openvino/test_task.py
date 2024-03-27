@@ -235,7 +235,7 @@ class TestOpenVINODetectionTask:
         self.ov_task.model.set_data("openvino.bin", b"foo")
         self.ov_task.model.set_data("openvino.xml", b"bar")
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.ov.Core.read_model", autospec=True)
-        mocker.patch("otx.algorithms.detection.adapters.openvino.task.ov.serialize", new=patch_save_model)
+        mocker.patch("otx.algorithms.detection.adapters.openvino.task.ov.save_model", new=patch_save_model)
         fake_quantize = mocker.patch("otx.algorithms.detection.adapters.openvino.task.nncf.quantize", autospec=True)
         self.ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
 

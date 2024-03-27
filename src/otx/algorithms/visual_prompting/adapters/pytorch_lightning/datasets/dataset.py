@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict, List, Optional, Union
+from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -24,7 +25,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     MultipleInputsCompose,
     Pad,
@@ -39,6 +40,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -141,13 +143,32 @@ class OTXVisualPromptingDataset(Dataset):
     """
 
     def __init__(
-        self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float], offset_bbox: int = 0
+        self,
+        mode: Subset,
+        dataset: DatasetEntity,
+        image_size: int,
+        mean: List[float],
+        std: List[float],
+        offset_bbox: int = 0,
+        use_point: bool = False,
+        use_bbox: bool = False,
     ) -> None:
-
+        self.mode = mode
         self.dataset = dataset
         self.transform = get_transform(image_size, mean, std)
         self.offset_bbox = offset_bbox
         self.labels = dataset.get_labels()
+
+        if not use_bbox and not use_point:
+            # if both are False, use bbox as default
+            use_bbox = True
+        self.prob = 1.0  # if using only bbox prompt
+        if use_bbox and use_point:
+            # if using both prompts, divide prob into both
+            self.prob = 0.5
+        if not use_bbox and use_point:
+            # if using only point prompt
+            self.prob = 0.0
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -158,21 +179,28 @@ class OTXVisualPromptingDataset(Dataset):
         return len(self.dataset)
 
     @staticmethod
-    def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity]) -> Dict[str, Any]:
+    def get_prompts(
+        dataset_item: DatasetItemEntity,
+        dataset_labels: List[LabelEntity],
+        prob: float = 1.0,
+        mode: Subset = Subset.TESTING,
+    ) -> Dict[str, Any]:
         """Get propmts from dataset_item.
 
         Args:
             dataset_item (DatasetItemEntity): Dataset item entity.
             dataset_labels (List[LabelEntity]): Label information.
+            prob (float): Probability of which prompts will be generated.
+            mode (Subset): To check which mode is used between training, validation, and testing.
 
         Returns:
             Dict[str, Any]: Processed prompts with ground truths.
         """
         width, height = dataset_item.width, dataset_item.height
-        bboxes: List[List[int]] = []
-        points: List = []  # TBD
+        bboxes: List[np.ndarray] = []
+        points: List[np.ndarray] = []
         gt_masks: List[np.ndarray] = []
-        labels: List[ScoredLabel] = []
+        labels: DefaultDict[str, List[ScoredLabel]] = defaultdict(list)
         for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Image):
                 # use mask as-is
@@ -184,25 +212,36 @@ class OTXVisualPromptingDataset(Dataset):
                 continue
 
             if gt_mask.sum() == 0:
-                # pass no gt
+                # pass no gt or very small region
                 continue
+
             gt_masks.append(gt_mask)
 
-            # generate bbox based on gt_mask
-            bbox = generate_bbox_from_mask(gt_mask, width, height)
-            bboxes.append(bbox)
+            mask_points = np.nonzero(gt_mask)
+            if np.random.rand() < prob:
+                # generate bbox based on gt_mask
+                bbox = generate_bbox_from_mask(gt_mask, width, height)
+                bboxes.append(bbox)
+                labels["bboxes"].extend(annotation.get_labels(include_empty=False))
+            else:
+                # generate point based on gt_mask
+                if mode == Subset.TRAINING:
+                    # get random point from the mask
+                    idx_chosen = np.random.permutation(len(mask_points[0]))[0]  # noqa: NPY002
+                    point = np.array([mask_points[1][idx_chosen], mask_points[0][idx_chosen]])
+                else:
+                    # get averaged point
+                    point = np.array([mask_points[1].mean(), mask_points[0].mean()])
+                points.append(point)
+                labels["points"].extend(annotation.get_labels(include_empty=False))
 
-            # TODO (sungchul): generate random points from gt_mask
-
-            # add labels
-            labels.extend(annotation.get_labels(include_empty=False))
-
-        bboxes = np.array(bboxes)
+        bboxes = np.array(bboxes, dtype=np.float32) if len(bboxes) > 0 else np.zeros((0, 4), dtype=np.float32)
+        points = np.array(points, dtype=np.float32) if len(points) > 0 else np.zeros((0, 2), dtype=np.float32)
         return dict(
-            original_size=(height, width),
+            original_size=np.array((height, width), dtype=np.int64),
             gt_masks=gt_masks,
             bboxes=bboxes,
-            points=points,  # TODO (sungchul): update point information
+            points=points,
             labels=labels,
         )
 
@@ -218,7 +257,7 @@ class OTXVisualPromptingDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
 
-        prompts = self.get_prompts(dataset_item, self.labels)
+        prompts = self.get_prompts(dataset_item, self.labels, self.prob, self.mode)
         if len(prompts["gt_masks"]) == 0:
             return {
                 "images": [],
@@ -230,9 +269,29 @@ class OTXVisualPromptingDataset(Dataset):
                 "labels": [],
             }
 
-        prompts["bboxes"] = np.array(prompts["bboxes"])
         item.update({**prompts, "path": dataset_item.media.path})
         item = self.transform(item)
+        return item
+
+
+class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
+    """Visual Prompting for Zero-shot learning Dataset Adaptor."""
+
+    def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
+        """Get dataset item.
+
+        Args:
+            index (int): Index of the dataset sample.
+
+        Returns:
+            Dict[str, Union[int, List, Tensor]]: Dataset item.
+        """
+        dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
+
+        prompts = self.get_prompts(dataset_item, self.labels, self.prob)
+        item.update({**prompts, "path": dataset_item.media.path})
+
         return item
 
 
@@ -244,10 +303,39 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         dataset (DatasetEntity): Dataset entity.
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
+    DATASETS = {
+        TrainType.Incremental: OTXVisualPromptingDataset,
+        TrainType.Zeroshot: OTXZeroShotVisualPromptingDataset,
+    }
+
+    def __init__(
+        self,
+        config: Union[DictConfig, ListConfig],
+        dataset: DatasetEntity,
+        train_type: TrainType = TrainType.Incremental,
+    ) -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
+        self.train_type = train_type
+        self.kwargs = {}
+        if self.train_type == TrainType.Zeroshot:
+            # check zero-shot configs
+            if self.config.get("train_batch_size", 1) != 1:
+                logger.warning(
+                    (
+                        f"Zero-shot learning only supports single batch, "
+                        f"update {self.config.get('train_batch_size', 1)} to 1."
+                    )
+                )
+                self.config["train_batch_size"] = 1
+
+        self.kwargs.update(
+            {
+                "use_point": self.config.get("use_point", False),
+                "use_bbox": self.config.get("use_bbox", False),
+            }
+        )
 
         self.train_otx_dataset: DatasetEntity
         self.val_otx_dataset: DatasetEntity
@@ -267,21 +355,46 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         mean = self.config.normalize.mean
         std = self.config.normalize.std
         if stage == "fit" or stage is None:
-            train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
-            val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
-
-            self.train_dataset = OTXVisualPromptingDataset(
-                train_otx_dataset, image_size, mean, std, offset_bbox=self.config.offset_bbox
+            self.train_dataset = self.DATASETS[self.train_type](
+                mode=Subset.TRAINING,
+                dataset=self.dataset.get_subset(Subset.TRAINING),
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                offset_bbox=self.config.offset_bbox,
+                **self.kwargs,
             )
-            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size, mean, std)
+
+            # self.val_dataset = None
+            if self.train_type == TrainType.Incremental:
+                self.val_dataset = self.DATASETS[self.train_type](
+                    mode=Subset.VALIDATION,
+                    dataset=self.dataset.get_subset(Subset.VALIDATION),
+                    image_size=image_size,
+                    mean=mean,
+                    std=std,
+                    **self.kwargs,
+                )
 
         if stage == "test":
-            test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size, mean, std)
+            self.test_dataset = self.DATASETS[self.train_type](
+                mode=Subset.TESTING,
+                dataset=self.dataset.get_subset(Subset.TESTING),
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                **self.kwargs,
+            )
 
         if stage == "predict":
-            predict_otx_dataset = self.dataset
-            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size, mean, std)
+            self.predict_dataset = self.DATASETS[self.train_type](
+                mode=Subset.TESTING,
+                dataset=self.dataset.get_subset(Subset.TESTING),
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                **self.kwargs,
+            )
 
     def summary(self):
         """Print size of the dataset, number of images."""
@@ -294,58 +407,66 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 num_items,
             )
 
-    def train_dataloader(self) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
+    def train_dataloader(self) -> DataLoader:
         """Train Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
+            DataLoader: Train dataloader.
         """
         return DataLoader(
             self.train_dataset,
             shuffle=True,
             batch_size=self.config.train_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def val_dataloader(self) -> DataLoader:
         """Validation Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Validation Dataloader.
+            DataLoader: Validation Dataloader.
         """
         return DataLoader(
             self.val_dataset,
             shuffle=False,
             batch_size=self.config.val_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def test_dataloader(self) -> DataLoader:
         """Test Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Test Dataloader.
+            DataLoader: Test Dataloader.
         """
         return DataLoader(
             self.test_dataset,
             shuffle=False,
             batch_size=self.config.test_batch_size,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )
 
-    def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def predict_dataloader(self) -> DataLoader:
         """Predict Dataloader.
 
         Returns:
-            Union[DataLoader, List[DataLoader]]: Predict Dataloader.
+            DataLoader: Predict Dataloader.
         """
         return DataLoader(
             self.predict_dataset,
             shuffle=False,
             batch_size=1,
             num_workers=self.config.num_workers,
-            collate_fn=collate_fn,
+            collate_fn=collate_fn
+            if self.train_type != TrainType.Zeroshot
+            else lambda x: x,  # type: ignore[return-value]
         )

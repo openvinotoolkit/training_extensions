@@ -6,7 +6,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
     "../../base/models/detector.py",
 ]
@@ -22,7 +22,7 @@ model = dict(
         num_outs=5,
     ),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(

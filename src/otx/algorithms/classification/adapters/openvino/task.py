@@ -16,7 +16,6 @@
 
 import io
 import json
-import logging
 import os
 import tempfile
 import time
@@ -79,8 +78,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # TODO: refactoring to Sphinx style.
@@ -180,6 +180,12 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.inferencer = self.load_inferencer()
         template_file_path = self.task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
+        self._avg_time_per_image: Optional[float] = None
+
+    @property
+    def avg_time_per_image(self) -> Optional[float]:
+        """Average inference time per image."""
+        return self._avg_time_per_image
 
     def load_inferencer(self) -> ClassificationOpenVINOInferencer:
         """load_inferencer function of ClassificationOpenVINOTask."""
@@ -274,7 +280,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("Classification OpenVINO inference completed")
 
@@ -422,7 +429,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
-            ov.serialize(compressed_model, xml_path)
+            ov.save_model(compressed_model, xml_path)
             with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:

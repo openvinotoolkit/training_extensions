@@ -8,7 +8,7 @@ from mmcv.runner import HOOKS
 from otx.algorithms.common.adapters.mmcv.hooks.dual_model_ema_hook import (
     DualModelEMAHook,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -34,7 +34,7 @@ class MeanTeacherHook(DualModelEMAHook):
         logger.info(f"avr_ps_ratio: {average_pseudo_label_ratio}")
         self._get_model(runner).enable_unlabeled_loss(True)
         self.unlabeled_loss_enabled = True
-        logger.info("---------- Enabled unlabeled loss and EMA smoothing")
+        logger.info("---------- Enabled unlabeled loss and EMA smoothing ----------")
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
@@ -44,6 +44,7 @@ class MeanTeacherHook(DualModelEMAHook):
 
         if runner.epoch + 1 < self.start_epoch or self.unlabeled_loss_enabled is False:
             # Just copy parameters before enabled
+            self._copy_model()
             return
 
         # EMA

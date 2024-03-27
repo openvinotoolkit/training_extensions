@@ -33,6 +33,10 @@ on:
       toxenv-ptver:
         type: string
         default: "pt1"
+
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type
@@ -41,22 +45,31 @@ jobs:
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: ${{ inputs.python-version }}
       - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
       - name: Run Tests
+        env:
+          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha  }}
         run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}
           path: |
             .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}.csv
-            .tox/tests-reg_${{ inputs.task }}_*.csv
-            .tox/tests-reg_tiling_${{ inputs.task }}_*.csv
+            .tox/tests-reg_${{ inputs.task }}*.csv
+            .tox/perf-*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}

@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import json
-import logging
 import math
 import os
 from os import path as osp
@@ -30,8 +29,9 @@ from otx.hpo.utils import (
     check_positive,
     left_vlaue_is_better,
 )
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_reduction_factor_value(reduction_factor: int):

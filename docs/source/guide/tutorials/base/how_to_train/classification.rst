@@ -177,7 +177,7 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. You can run the below command line to export the trained model
 and save the exported model to the ``openvino_model`` folder:
@@ -212,7 +212,7 @@ Optimization
 *************
 
 1. You can further optimize the model with ``otx optimize``.
-It uses NNCF or POT depending on the model format.
+It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
 
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
@@ -235,18 +235,18 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
 
 3.  Command example for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --output pot_model
+                          --output ptq_model
 
   ...
 
   Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
 
-Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 4. Now you have fully trained, optimized and exported an
 efficient model representation ready-to-use classification model.

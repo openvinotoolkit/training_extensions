@@ -30,7 +30,6 @@ from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix, set_random_seed
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -46,6 +45,7 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.utils.logger import get_logger
 
 TRAIN_TYPE_DIR_PATH = {
     TrainType.Incremental.name: ".",

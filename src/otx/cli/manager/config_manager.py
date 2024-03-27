@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import logging
 import os
 import shutil
 from collections import defaultdict
@@ -30,6 +29,10 @@ from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
+from otx.utils.logger import get_logger
+from otx.utils.utils import add_suffix_to_filename
+
+logger = get_logger()
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -293,7 +296,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if all_unlabeled_images > 1:
                 return unlabeled_dir
 
-            logging.warning(
+            logger.warning(
                 "WARNING: There are none or too litle images to start Semi-SL training. "
                 "It should be more than relative threshold (at least 7% of labeled images) "
                 "Start Supervised training instead."
@@ -634,6 +637,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         ]
         for target_dir, file_name, dest_dir in config_files:
             self._copy_config_files(target_dir, file_name, dest_dir)
+
+            # check xpu file exists
+            xpu_file = add_suffix_to_filename(target_dir / file_name, "_xpu")
+            if xpu_file.exists():
+                self._copy_config_files(xpu_file.parent, xpu_file.name, dest_dir)
+
         (self.workspace_root / "template.yaml").write_text(OmegaConf.to_yaml(template_config))
 
         # Copy deployment_tile_classifier for Instance Segmentation

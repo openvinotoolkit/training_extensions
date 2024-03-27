@@ -16,7 +16,7 @@ import torch
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
-from mmdet.apis import single_gpu_test, train_detector
+from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
@@ -40,7 +40,8 @@ from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import get_cfg_based_on_device
+from otx.algorithms.detection.adapters.mmdet.apis.train import train_detector
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
     IncrDetectionConfigurer,
@@ -75,6 +76,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -93,7 +95,7 @@ class MMDetectionTask(OTXDetectionTask):
 
     def _init_task(self):  # noqa
         """Initialize task."""
-        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(get_cfg_based_on_device(os.path.join(self._model_dir, "model.py")))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
@@ -309,6 +311,8 @@ class MMDetectionTask(OTXDetectionTask):
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        if isinstance(self, NNCFBaseTask):
+            dump_saliency_map = False
 
         self._init_task()
 
@@ -346,7 +350,7 @@ class MMDetectionTask(OTXDetectionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
+        feature_model = model.model_t if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)

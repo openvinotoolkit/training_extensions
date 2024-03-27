@@ -1,0 +1,153 @@
+name: Performance Benchmark
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+    inputs:
+      model-category:
+        type: choice
+        description: Model category to run benchmark
+        options:
+          - default # speed, balance, accuracy models only
+          - all # default + other models
+        default: default
+      data-group:
+        type: choice
+        description: Data group to run benchmark
+        options:
+          - small
+          - medium
+          - large
+          - all
+        default: all
+      num-repeat:
+        description: Overrides default per-data-group number of repeat setting
+        default: 0
+      num-epoch:
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: choice
+        description: The last operation to evaluate. 'optimize' means all.
+        options:
+          - train
+          - export
+          - optimize
+        default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      data-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: /home/validation/data/v1/
+      otx-ref:
+        type: string
+        description: |
+          Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
+          `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
+          and reverted after run. Works only for v1.x assuming CLI compatibility.
+        default: __CURRENT_BRANCH_COMMIT__
+  workflow_call:
+    inputs:
+      model-category:
+        type: string
+        description: Model category to run benchmark [default, all]
+        default: default
+      data-group:
+        type: string
+        description: Data group to run benchmark [small, medium, large, all]
+        default: all
+      num-repeat:
+        type: number
+        description: Overrides default per-data-group number of repeat setting
+        default: 0
+      num-epoch:
+        type: number
+        description: Overrides default per-model number of epoch setting
+        default: 0
+      eval-upto:
+        type: string
+        description: The last operation to evaluate. 'optimize' means all. [train, export, optimize]
+        default: optimize
+      pytest-args:
+        type: string
+        description: |
+          Additional perf-benchmark pytest arguments.
+          "-k detection" -> detection task only
+          "--dry-run" -> print command w/o execution.
+      data-root:
+        type: string
+        description: Root directory containing validation data in CI server.
+        default: /home/validation/data/v1/
+      otx-ref:
+        type: string
+        description: |
+          Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch.
+          `pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run,
+          and reverted after run. Works only for v1.x assuming CLI compatibility.
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  Perf-Benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task-short: "ano"
+            task: "anomaly"
+          - task-short: "cls"
+            task: "classification"
+          - task-short: "det"
+            task: "detection"
+          - task-short: "isg"
+            task: "instance_segmentation"
+          - task-short: "ssg"
+            task: "semantic_segmentation"
+          - task-short: "vsp"
+            task: "visual_prompting"
+    name: Perf-Benchmark-${{ matrix.task-short }}
+    runs-on: [self-hosted, linux, x64, dmount-v2]
+    timeout-minutes: 8640
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
+      - name: Run Tests
+        env:
+          MLFLOW_TRACKING_SERVER_URI: ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          BENCHMARK_RESULTS_CLEAR: ${{ vars.BENCHMARK_RESULTS_CLEAR }}
+          GH_CTX_REF_NAME: ${{ github.ref_name }}
+          GH_CTX_SHA: ${{ github.sha }}
+        run: >
+          tox -vv -e perf-benchmark -- tests/perf/test_${{ matrix.task }}.py ${{ inputs.pytest-args }}
+          --model-category ${{ inputs.model-category }}
+          --data-root ${{ inputs.data-root }}
+          --data-group ${{ inputs.data-group }}
+          --num-repeat ${{ inputs.num-repeat }}
+          --num-epoch ${{ inputs.num-epoch }}
+          --eval-upto ${{ inputs.eval-upto }}
+          --summary-csv .tox/perf-benchmark-summary.csv
+          --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
+          --user-name ${{ github.triggering_actor }}
+          --otx-ref ${{ inputs.otx-ref }}
+      - name: Upload test results
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        with:
+          name: perf-benchmark-${{ matrix.task-short }}
+          path: .tox/perf-*.csv
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}

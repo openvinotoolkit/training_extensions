@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from ..utils import get_op_name  # type: ignore[attr-defined]
 from .builder import OPS
@@ -247,7 +247,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
                 node = in_port.get_node()
                 op_node_types.append(node.get_type_name())
 
-        # FIXME: need a better way to distinghish if it is parameter or no
+        # FIXME: need a better way to distinguish if it is parameter or not
         is_parameter = False
         # pylint: disable=too-many-boolean-expressions
         if (

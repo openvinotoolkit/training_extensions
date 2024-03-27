@@ -17,7 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/efficientnet_b2b.yaml",
     "../../base/models/detector.py",
 ]
@@ -28,7 +28,7 @@ model = dict(
     type="CustomMaskRCNN",  # Use CustomMaskRCNN for Incremental Learning
     neck=dict(type="FPN", in_channels=[24, 48, 120, 352], out_channels=80, num_outs=5),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=80,
         feat_channels=80,
         anchor_generator=dict(type="AnchorGenerator", scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4, 8, 16, 32, 64]),
@@ -127,5 +127,5 @@ openvino_training_extensions/models/instance_segmentation/\
 v2/efficientnet_b2b-mask_rcnn-576x576.pth"
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
-fp16 = dict(loss_scale=512.0)
+fp16 = dict(loss_scale=512.0, bf16_training=False)
 ignore = True

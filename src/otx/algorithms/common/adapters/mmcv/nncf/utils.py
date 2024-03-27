@@ -26,7 +26,7 @@ from otx.algorithms.common.adapters.nncf.utils import (
     no_nncf_trace,
 )
 from otx.algorithms.common.utils import get_arg_spec
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -56,6 +56,8 @@ def get_fake_input(
         data = scatter(collate([data], samples_per_gpu=1), [-1])[0]
     elif device.type == "cuda":
         data = scatter(collate([data], samples_per_gpu=1), [device.index])[0]
+    elif device.type == "xpu":
+        data = scatter(collate([data], samples_per_gpu=1), [-1])[0]
     else:
         raise NotImplementedError()
     return data

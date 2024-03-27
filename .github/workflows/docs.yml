@@ -5,6 +5,9 @@ on:
     branches:
       - develop
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   Build-Docs:
     runs-on: ubuntu-20.04
@@ -12,13 +15,17 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
           python-version: "3.10"
       - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
+        run: |
+          pip install --require-hashes --no-deps -r requirements/gh-actions.txt
+          pip-compile --generate-hashes -o /tmp/otx-dev-requirements.txt requirements/dev.txt
+          pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
+          rm /tmp/otx-dev-requirements.txt
       - name: Build-Docs
         run: tox -e build-doc
       - name: Create gh-pages branch
@@ -62,7 +69,7 @@ jobs:
           git add ./latest ${{ env.RELEASE_VERSION }}
           git commit -m "Update documentation" -a || true
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@fcea09907c44d7a7a3331c9c04080d55d87c95fe # master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages

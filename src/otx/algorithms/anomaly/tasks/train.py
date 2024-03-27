@@ -26,18 +26,21 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers.csv_logs import CSVLogger
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import IterationTimer, ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.adapters.anomalib.plugins.xpu_precision import MixedPrecisionXPUPlugin
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.utils.logger import get_logger
 
 from .inference import InferenceTask
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class TrainingTask(InferenceTask, ITrainingTask):
@@ -86,9 +89,23 @@ class TrainingTask(InferenceTask, ITrainingTask):
                 manual_image_threshold=config.metrics.threshold.manual_image,
                 manual_pixel_threshold=config.metrics.threshold.manual_pixel,
             ),
+            IterationTimer(on_step=False),
         ]
 
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
+        plugins = []
+        if config.trainer.plugins is not None:
+            plugins.extend(config.trainer.plugins)
+        config.trainer.pop("plugins")
+
+        if is_xpu_available():
+            config.trainer.strategy = "xpu_single"
+            config.trainer.accelerator = "xpu"
+            if config.trainer.precision == 16:
+                plugins.append(MixedPrecisionXPUPlugin())
+
+        self.trainer = Trainer(
+            **config.trainer, logger=CSVLogger(self.project_path, name=""), callbacks=callbacks, plugins=plugins
+        )
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)

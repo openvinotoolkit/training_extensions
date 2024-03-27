@@ -276,7 +276,7 @@ class OTXDetDataset(CustomDataset):
         assert isinstance(iou_thrs, list)
         mean_aps = []
         for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-            print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
+            print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}', logger)
             mean_ap, _ = self.evaluator.evaluate(results, logger, iou_thr, scale_ranges)
             mean_aps.append(mean_ap)
             eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)

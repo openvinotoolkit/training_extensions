@@ -7,7 +7,7 @@
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
-from openvino.runtime import Core, serialize
+from openvino.runtime import Core, save_model
 
 
 def check_if_quantized(model: Any) -> bool:
@@ -34,6 +34,6 @@ def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str, str], Any]) -
 
     # workaround for CVS-110054
     tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
-    serialize(model, str(tmp_xml_path))
+    save_model(model, str(tmp_xml_path), compress_to_fp16=False)
     tmp_xml_path.rename(xml_file)
     Path(str(tmp_xml_path.parent / tmp_xml_path.stem) + ".bin").unlink()

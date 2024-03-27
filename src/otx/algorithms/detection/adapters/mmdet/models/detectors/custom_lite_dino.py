@@ -6,8 +6,8 @@
 
 from mmdet.models.builder import DETECTORS
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.models.detectors import CustomDINO
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

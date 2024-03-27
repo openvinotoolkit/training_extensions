@@ -5,7 +5,7 @@
 
 from mmcls.models.builder import CLASSIFIERS
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 from .custom_image_classifier import CustomImageClassifier
 

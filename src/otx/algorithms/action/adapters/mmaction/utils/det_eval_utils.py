@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import time
 from collections import defaultdict
 
@@ -24,6 +23,10 @@ from mmaction.core.evaluation.ava_evaluation import (
 )
 from mmaction.core.evaluation.ava_evaluation import standard_fields
 from mmaction.core.evaluation.ava_utils import print_time, read_exclusions
+
+from otx.utils.logger import get_logger
+
+logger = get_logger()
 
 
 # pylint: disable=too-many-locals, too-many-branches
@@ -62,7 +65,7 @@ def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
     start = time.time()
     for image_key in gt_boxes:
         if verbose and image_key in excluded_keys:
-            logging.info("Found excluded timestamp in detections: %s. It will be ignored.", image_key)
+            logger.info("Found excluded timestamp in detections: %s. It will be ignored.", image_key)
             continue
         pascal_evaluator.add_single_ground_truth_image_info(
             image_key,
@@ -77,7 +80,7 @@ def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
     start = time.time()
     for image_key in boxes:
         if verbose and image_key in excluded_keys:
-            logging.info("Found excluded timestamp in detections: %s. It will be ignored.", image_key)
+            logger.info("Found excluded timestamp in detections: %s. It will be ignored.", image_key)
             continue
         pascal_evaluator.add_single_detected_image_info(
             image_key,

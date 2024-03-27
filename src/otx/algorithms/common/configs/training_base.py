@@ -31,6 +31,7 @@ class TrainType(ConfigurableEnum):
     Semisupervised = "Semisupervised"
     Selfsupervised = "Selfsupervised"
     Incremental = "Incremental"
+    Zeroshot = "Zeroshot"
     Futurework = "Futurework"
 
 
@@ -94,7 +95,7 @@ class BaseConfig(ConfigurableParameters):
         num_iters = configurable_integer(
             default_value=1,
             min_value=1,
-            max_value=100000,
+            max_value=1000,
             header="Number of training iterations",
             description="Increasing this value causes the results to be more robust but training time will be longer.",
             affects_outcome_of=ModelLifecycle.TRAINING,
@@ -290,7 +291,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=100000,
+            max_value=1000,
         )
 
         stat_requests_number = configurable_integer(

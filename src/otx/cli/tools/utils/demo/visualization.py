@@ -71,7 +71,7 @@ def draw_masks(frame: Mat, predictions, put_object_count: bool = False):
         cv2.drawContours(frame, contours, -1, color, 1)
         rect = cv2.boundingRect(contours[0])
         cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, 1)
-        put_text_on_rect_bg(frame, label.name, (rect[0], rect[1]), color=color)
+        put_text_on_rect_bg(frame, f"{label.name} {label.probability*100:.1f}%", (rect[0], rect[1]), color=color)
         cv2.bitwise_or(aggregated_mask, mask, dst=aggregated_mask)
         cv2.bitwise_or(
             aggregated_colored_mask,
@@ -110,7 +110,7 @@ def put_labels(frame: Mat, predictions: List[Annotation]):
     assert len(predictions[0].get_labels()) == 1
     label = predictions[0].get_labels()[0]
     color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
-    put_text_on_rect_bg(frame, label.name, (0, 0), color=color)
+    put_text_on_rect_bg(frame, f"{label.name} {label.probability*100:.1f}%", (0, 0), color=color)
     return frame
 
 
@@ -129,7 +129,7 @@ def draw_bounding_boxes(frame: Mat, predictions: List[Annotation], put_object_co
             label = prediction.get_labels()[0]
             color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
-            put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
+            put_text_on_rect_bg(frame, f"{label.name} {label.probability*100:.1f}%", (x1, y1), color=color)
         else:
             warn(
                 f"Predictions called on Annotations with shape {type(prediction.shape)}."

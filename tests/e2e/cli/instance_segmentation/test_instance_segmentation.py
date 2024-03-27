@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 import torch
-from pathlib import Path
 
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -74,6 +74,9 @@ resume_params = [
     "--learning_parameters.batch_size",
     "2",
 ]
+
+if is_xpu_available():
+    pytest.skip("Instance segmentation task is not supported on XPU", allow_module_level=True)
 
 otx_dir = os.getcwd()
 

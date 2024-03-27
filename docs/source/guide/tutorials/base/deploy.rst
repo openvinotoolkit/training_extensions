@@ -52,7 +52,7 @@ using the command below:
     2023-01-20 09:30:41,737 | INFO : Deploying the model
     2023-01-20 09:30:41,753 | INFO : Deploying completed
 
-You can also deploy the quantized model, that was optimized with NNCF or POT, passing the path to this model in IR format to ``--load-weights`` parameter.
+You can also deploy the quantized model, that was optimized with NNCF or PTQ, passing the path to this model in IR format to ``--load-weights`` parameter.
 
 After that, you can use the resulting ``openvino.zip`` archive in other application. 
 

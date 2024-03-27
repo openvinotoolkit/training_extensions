@@ -65,6 +65,7 @@ def test_patch_persistent_workers_dist_semisl(mocker):
 def test_get_adaptive_num_workers(mocker, num_dataloader):
     num_gpu = 5
     mock_torch = mocker.patch.object(config_utils, "torch")
+    mocker.patch.object(config_utils, "is_xpu_available", return_value=False)
     mock_torch.cuda.device_count.return_value = num_gpu
 
     num_cpu = 20
@@ -78,6 +79,7 @@ def test_get_adaptive_num_workers(mocker, num_dataloader):
 def test_get_adaptive_num_workers_no_gpu(mocker):
     num_gpu = 0
     mock_torch = mocker.patch.object(config_utils, "torch")
+    mocker.patch.object(config_utils, "is_xpu_available", return_value=False)
     mock_torch.cuda.device_count.return_value = num_gpu
 
     num_cpu = 20
@@ -85,6 +87,21 @@ def test_get_adaptive_num_workers_no_gpu(mocker):
     mock_multiprocessing.cpu_count.return_value = num_cpu
 
     assert get_adaptive_num_workers() is None
+
+
+@e2e_pytest_unit
+@pytest.mark.parametrize("num_dataloader", [1, 2, 4])
+def test_get_adaptive_num_workers_xpu(mocker, num_dataloader):
+    num_gpu = 5
+    mock_torch = mocker.patch.object(config_utils, "torch")
+    mocker.patch.object(config_utils, "is_xpu_available", return_value=True)
+    mock_torch.xpu.device_count.return_value = num_gpu
+
+    num_cpu = 20
+    mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+    mock_multiprocessing.cpu_count.return_value = num_cpu
+
+    assert get_adaptive_num_workers(num_dataloader) == num_cpu // (num_gpu * num_dataloader)
 
 
 @pytest.fixture

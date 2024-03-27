@@ -30,6 +30,7 @@ class TestTrainingTask:
         """Test train."""
         mocker_trainer = mocker.patch("otx.algorithms.visual_prompting.tasks.train.Trainer")
         mocker_save = mocker.patch("torch.save")
+        mocker.patch.object(self.training_task, "model_info")
 
         dataset = generate_visual_prompting_dataset()
         output_model = ModelEntity(

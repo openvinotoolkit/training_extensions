@@ -7,7 +7,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../../../../recipes/stages/instance-segmentation/incremental.py",
+    "../../../../../recipes/stages/instance_segmentation/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
     "../../base/models/detector.py",
 ]

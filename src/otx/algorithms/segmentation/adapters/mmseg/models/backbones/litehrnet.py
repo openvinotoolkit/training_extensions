@@ -30,7 +30,6 @@ from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
-from mmseg.utils import get_root_logger
 from torch import nn
 
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
@@ -39,6 +38,9 @@ from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     LocalAttentionModule,
     channel_shuffle,
 )
+from otx.utils.logger import get_logger
+
+logger = get_logger()
 
 
 # pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
@@ -1432,7 +1434,6 @@ class LiteHRNet(BaseModule):
         """
 
         if isinstance(pretrained, str):
-            logger = get_root_logger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             for m in self.modules():

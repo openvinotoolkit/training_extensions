@@ -5,7 +5,6 @@
 # pylint: disable=invalid-name
 
 import glob
-import logging
 import os
 import random
 from typing import Any, Dict, List, Optional, Union
@@ -19,8 +18,9 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.subset import Subset
 from otx.api.utils.argument_checks import IMAGE_FILE_EXTENSIONS
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def get_unlabeled_filename(base_root: str, file_list_path: str):

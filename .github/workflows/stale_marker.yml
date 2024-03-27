@@ -3,11 +3,14 @@ on:
   schedule:
     - cron: "30 1 * * *"
 
+# Declare default permissions as read only.
+permissions: read-all
+
 jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v4
+      - uses: actions/stale@28ca1036281a5e5922ead5184a1bbf96e5fc984e # v9.0.0
         with:
           stale-issue-message: "This issue is stale because it has been open 90 days with no activity. Remove stale label or comment or this will be closed in 7 days."
           stale-pr-message: "This PR is stale because it has been open 90 days with no activity."

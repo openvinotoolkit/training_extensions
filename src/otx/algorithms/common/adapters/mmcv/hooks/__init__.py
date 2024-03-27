@@ -91,3 +91,17 @@ __all__ = [
     "MemCacheHook",
     "LossDynamicsTrackingHook",
 ]
+
+try:
+    from .hpu_optimizer_hook import HPUOptimizerHook
+
+    __all__ += ["HPUOptimizerHook"]
+except:  # noqa: E722
+    pass
+
+try:
+    from .xpu_optimizer_hook import BFp16XPUOptimizerHook
+
+    __all__ += ["BFp16XPUOptimizerHook"]
+except:  # noqa: E722
+    pass

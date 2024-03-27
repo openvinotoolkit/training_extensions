@@ -25,6 +25,7 @@ from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
 from otx.cli.utils.parser import get_parser_and_hprams_data
+from otx.utils.logger import config_logger
 
 
 def get_args():
@@ -50,6 +51,7 @@ def main():
     # Parses input arguments.
     args = get_args()
     config_manager = ConfigManager(args, mode="deploy")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
