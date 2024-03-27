@@ -18,6 +18,7 @@ from openvino.model_api.models.utils import (
     InstanceSegmentationResult,
 )
 
+from otx.algorithms.classification.utils import get_hierarchical_label_list
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -182,7 +183,11 @@ def create_converter(
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
-        converter = ClassificationToAnnotationConverter(labels)
+        if configuration is not None and configuration.get("hierarchical", False):
+            hierarchical_cls_heads_info = configuration["multihead_class_info"]
+        else:
+            hierarchical_cls_heads_info = None
+        converter = ClassificationToAnnotationConverter(labels, hierarchical_cls_heads_info)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_DETECTION:
@@ -280,9 +285,10 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
     Args:
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
+        hierarchical_cls_heads_info (Dict): Info from model.hierarchical_info["cls_heads_info"]
     """
 
-    def __init__(self, label_schema: LabelSchemaEntity):
+    def __init__(self, label_schema: LabelSchemaEntity, hierarchical_cls_heads_info: Optional[Dict] = None):
         if len(label_schema.get_labels(False)) == 1:
             self.labels = label_schema.get_labels(include_empty=True)
         else:
@@ -295,6 +301,9 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
+
+        if self.hierarchical:
+            self.labels = get_hierarchical_label_list(hierarchical_cls_heads_info, self.labels)
 
     def convert_to_annotation(
         self, predictions: ClassificationResult, metadata: Optional[Dict] = None

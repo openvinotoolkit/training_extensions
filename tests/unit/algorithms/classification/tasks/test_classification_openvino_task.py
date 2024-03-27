@@ -101,8 +101,8 @@ class TestOpenVINOClassificationTask:
             "cls_heads_info": {
                 "num_multiclass_heads": 2,
                 "head_idx_to_logits_range": {"0": (0, 1), "1": (1, 2)},
-                "all_groups": [["a"], ["b"]],
-                "label_to_idx": {"a": 0, "b": 1},
+                "all_groups": [["b"], ["g"]],
+                "label_to_idx": {"b": 0, "g": 1},
                 "num_multilabel_classes": 0,
             }
         }
@@ -134,6 +134,7 @@ class TestOpenVINOClassificationTask:
             ),
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+        self.cls_ov_task.inferencer.model.hierarchical = True
         self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
         updated_dataset = self.cls_ov_task.infer(
             self.dataset, InferenceParameters(enable_async_inference=False, is_evaluation=False)
@@ -188,6 +189,7 @@ class TestOpenVINOClassificationTask:
             ),
         )
         self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
+        self.cls_ov_task.inferencer.model.hierarchical = True
         updpated_dataset = self.cls_ov_task.explain(self.dataset)
 
         assert updpated_dataset is not None
