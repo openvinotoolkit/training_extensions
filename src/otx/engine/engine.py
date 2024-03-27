@@ -311,6 +311,8 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+            if self.device.accelerator == "auto":
+                self.device = DeviceConfig(accelerator=DeviceType("cpu"))
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
