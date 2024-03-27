@@ -33,9 +33,9 @@ V1_V2_NAME_MAP = {
     "Accuracy(export)": "export/accuracy",
     "Accuracy(optimize)": "optimize/accuracy",
     "Accuracy(train)": "test/accuracy",
-    "Dice Average(export)": "export/Dice",
-    "Dice Average(optimize)": "optimize/Dice",
-    "Dice Average(train)": "test/Dice",
+    "Dice Average(export)": "export/dice",
+    "Dice Average(optimize)": "optimize/dice",
+    "Dice Average(train)": "test/dice",
     # Task names
     "single_label_classification": "classification/multi_class_cls",
     "multi_label_classification": "classification/multi_label_cls",
@@ -132,32 +132,48 @@ V1_V2_NAME_MAP = {
 }
 
 # Load all csv data
-csvs = Path(".").glob("**/*.csv")
-all_data = []
-for csv in csvs:
-    data = pd.read_csv(csv)
-    tiling_indices = data["task"] == "tiling_instance_segmentation"
-    data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
-    data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
-    data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
-    data.loc[data["model"].isna(), "model"] = "all"
-    data.loc[data["data"].isna(), "data"] = "all"
-    data.loc[data["data_group"].isna(), "data_group"] = "all"
-    all_data.append(data)
-all_data = pd.concat(all_data, ignore_index=True)
-
 def load_all(root_dir: Path, normalize: bool = False):
     """Load all csv files and csv in zip files."""
     def _normalize(data: pd.DataFrame) -> pd.DataFrame:
         """v1 -> v2"""
+        # Map v1 tiling task -> v2 tiling model
         tiling_indices = data["task"] == "tiling_instance_segmentation"
         data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
         data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
+        # Map anomaly metrics
+        if "test/image_F1Score" in data:
+            anomaly_indices = data["task"] == "anomaly_classification"
+            data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+            data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+            data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+            anomaly_indices = data["task"] == "anomaly_detection"
+            data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+            data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+            data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+        if "test/pixel_F1Score" in data:
+            anomaly_indices = data["task"] == "anomaly_segmentation"
+            data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/pixel_F1Score"]
+            data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/pixel_F1Score"]
+            data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/pixel_F1Score"]
+        # Map other names
         data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
+        # Fill blanks
         data.loc[data["model"].isna(), "model"] = "all"
         data.loc[data["data"].isna(), "data"] = "all"
         data.loc[data["data_group"].isna(), "data_group"] = "all"
         return data
+
+    csvs = root_dir.glob("**/*.csv")
+    all_data = []
+    for csv in csvs:
+        data = pd.read_csv(csv)
+        if normalize:
+            data = _normalize(data)
+        all_data.append(data)
+    return pd.concat(all_data, ignore_index=True)
+
+all_data = load_all(Path("."), normalize=True)
+
 
 TASK_METRIC_MAP = {
     "anomaly_classification": "test/f1-score",
@@ -168,9 +184,9 @@ TASK_METRIC_MAP = {
     "classification/h_label_cls": "test/accuracy",
     "detection": "test/f1-score",
     "instance_segmentation": "test/f1-score",
-    "semantic_segmentation": "test/Dice",
-    "visual_prompting": "test/Dice",
-    "zero_shot_visual_prompting": "test/Dice",
+    "semantic_segmentation": "test/dice",
+    "visual_prompting": "test/dice",
+    "zero_shot_visual_prompting": "test/dice",
 }
 
 
@@ -193,9 +209,10 @@ def summarize_task(task: str):
         ("export/iter_time", "large"),
     ]
     data = all_data.query(f"task == '{task}'")
-    data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
-    data = data.style.set_sticky(axis="index")
-    # data = data.reindex(column_order, axis=1)
+    # data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
+    data = data.pivot_table(index=["model", "otx_version"], columns=["data_group"], values=metrics, aggfunc="mean")
+    # data = data.style.set_sticky(axis="index")
+    data = data.reindex(column_order, axis=1)
     return data
 
 
@@ -213,5 +230,5 @@ def summarize_meta():
     ]
     data = all_data.pivot_table(index=["otx_version"], values=entries, aggfunc="first")
     data = data.reindex(entries, axis=1)
-    data = data.style.set_sticky(axis="index")
+    # data = data.style.set_sticky(axis="index")
     return data
