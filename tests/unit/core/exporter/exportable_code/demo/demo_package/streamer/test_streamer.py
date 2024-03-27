@@ -4,7 +4,6 @@
 
 import tempfile
 from pathlib import Path
-from time import sleep
 
 import pytest
 from otx.core.exporter.exportable_code.demo.demo_package.streamer.streamer import (
