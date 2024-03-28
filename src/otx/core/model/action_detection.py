@@ -9,11 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.action_detection import (
-    ActionDetBatchDataEntity,
-    ActionDetBatchPredEntity,
-    ActionDetBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
@@ -33,7 +29,6 @@ class OTXActionDetModel(
     OTXModel[
         ActionDetBatchDataEntity,
         ActionDetBatchPredEntity,
-        ActionDetBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -57,7 +52,7 @@ class OTXActionDetModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ActionDetBatchPredEntity | ActionDetBatchPredEntityWithXAI,
+        preds: ActionDetBatchPredEntity,
         inputs: ActionDetBatchDataEntity,
     ) -> MetricInput:
         return {

@@ -12,7 +12,7 @@ from torchvision import tv_tensors
 
 from otx.core.types.task import OTXTaskType
 
-from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXBatchPredEntityWithXAI, OTXDataEntity, OTXPredEntity
+from .base import OTXBatchDataEntity, OTXBatchPredEntity, OTXDataEntity, OTXPredEntity
 
 if TYPE_CHECKING:
     from datumaro import Polygon
@@ -42,13 +42,8 @@ class InstanceSegDataEntity(OTXDataEntity):
 
 
 @dataclass
-class InstanceSegPredEntity(InstanceSegDataEntity, OTXPredEntity):
+class InstanceSegPredEntity(OTXPredEntity, InstanceSegDataEntity):
     """Data entity to represent the detection model output prediction."""
-
-
-@dataclass
-class InstanceSegPredEntityWithXAI(InstanceSegDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent the detection model output prediction with explanation."""
 
 
 @dataclass
@@ -101,18 +96,17 @@ class InstanceSegBatchDataEntity(OTXBatchDataEntity[InstanceSegDataEntity]):
 
     def pin_memory(self) -> InstanceSegBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
-        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                bboxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes],
+                masks=[tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks],
+                labels=[label.pin_memory() for label in self.labels],
+            )
+        )
 
 
 @dataclass
-class InstanceSegBatchPredEntity(InstanceSegBatchDataEntity, OTXBatchPredEntity):
+class InstanceSegBatchPredEntity(OTXBatchPredEntity, InstanceSegBatchDataEntity):
     """Data entity to represent model output predictions for instance segmentation task."""
-
-
-@dataclass
-class InstanceSegBatchPredEntityWithXAI(InstanceSegBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for instance segmentation task with explanations."""
