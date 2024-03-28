@@ -8,7 +8,6 @@ import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.config.device import DeviceConfig
-from otx.core.data.dataset.tile import OTXTileDataset
 from otx.core.model.entity.base import OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
