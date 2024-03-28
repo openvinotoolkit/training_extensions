@@ -19,11 +19,9 @@ class HpoConfig:
     save_path: str | None = None
     mode: Literal["max", "min"] = "max"
     num_trials: int | None = None
-    num_workers: int = 1
+    num_workers: int = torch.cuda.device_count() if torch.cuda.is_available() else 1
     expected_time_ratio: int | float | None = 4
     maximum_resource: int | float | None = None
-    subset_ratio: float | int | None = None
-    min_subset_size: int = 500
     prior_hyper_parameters: dict | list[dict] | None = None
     acceptable_additional_time_ratio: float | int = 1.0
     minimum_resource: int | float | None = None

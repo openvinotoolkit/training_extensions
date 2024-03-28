@@ -673,7 +673,7 @@ class HyperBand(HpoBase):
 
     def _make_trial(self, hyper_parameter: dict) -> AshaTrial:
         trial_id = self._get_new_trial_id()
-        trial = AshaTrial(trial_id, hyper_parameter, self._get_train_environment())
+        trial = AshaTrial(trial_id, hyper_parameter)
         self._trials[trial_id] = trial
         return trial
 
@@ -681,9 +681,6 @@ class HyperBand(HpoBase):
         trial_id = self._next_trial_id
         self._next_trial_id += 1
         return str(trial_id)
-
-    def _get_train_environment(self) -> dict:
-        return {"subset_ratio": self.subset_ratio}
 
     def get_next_sample(self) -> AshaTrial | None:
         """Get next trial to train.

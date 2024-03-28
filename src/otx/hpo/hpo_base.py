@@ -42,10 +42,6 @@ class HpoBase(ABC):
                                                             HPO use time about exepected_time_ratio *
                                                             train time after HPO times.
         maximum_resource (int | float | None, optional): Maximum resource to use for training each trial.
-        subset_ratio (float | int | None, optional): ratio to how many train dataset to use for each trial.
-                                     The lower value is, the faster the speed is.
-                                     But If it's too low, HPO can be unstable.
-        min_subset_size (int, optional) : Minimum size of subset. Default value is 500.
         resume (bool, optional): resume flag decide to use previous HPO results.
                                  If HPO completed, you can just use optimized hyper parameters.
                                  If HPO stopped in middle, you can resume in middle.
@@ -66,8 +62,6 @@ class HpoBase(ABC):
         full_dataset_size: int = 0,
         expected_time_ratio: int | float | None = None,
         maximum_resource: int | float | None = None,
-        subset_ratio: float | int | None = None,
-        min_subset_size: int = 500,
         resume: bool = False,
         prior_hyper_parameters: dict | list[dict] | None = None,
         acceptable_additional_time_ratio: float | int = 1.0,
@@ -81,11 +75,6 @@ class HpoBase(ABC):
         if num_trials is not None:
             check_positive(num_trials, "num_trials")
         check_positive(num_workers, "num_workers")
-        if subset_ratio is not None and not 0 < subset_ratio <= 1:
-            error_msg = (
-                f"subset_ratio should be greater than 0 and lesser than or equal to 1. Your value is {subset_ratio}"
-            )
-            raise ValueError(error_msg)
 
         if save_path is None:
             save_path = tempfile.mkdtemp(prefix="OTX-hpo-")
@@ -98,8 +87,6 @@ class HpoBase(ABC):
         self.full_dataset_size = full_dataset_size
         self.expected_time_ratio = expected_time_ratio
         self.maximum_resource: int | float | None = maximum_resource
-        self.subset_ratio = subset_ratio
-        self.min_subset_size = min_subset_size
         self.resume = resume
         self.hpo_status: dict = {}
         self.acceptable_additional_time_ratio = acceptable_additional_time_ratio
