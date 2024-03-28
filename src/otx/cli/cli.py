@@ -514,6 +514,7 @@ class OTXCLI:
         The configuration is saved as a YAML file in the engine's working directory.
         """
         self.config[self.subcommand].pop("workspace", None)
+        self.config[self.subcommand]["work_dir"] = str(self.workspace.work_dir.parent)
         self.get_subcommand_parser(self.subcommand).save(
             cfg=self.config.get(str(self.subcommand), self.config),
             path=work_dir / "configs.yaml",
