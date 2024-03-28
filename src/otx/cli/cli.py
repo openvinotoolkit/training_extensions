@@ -408,7 +408,7 @@ class OTXCLI:
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        from otx.core.model.entity.base import OTXModel
+        from otx.core.model.entity.base import OTXModel, OVModel
 
         # Update num_classes
         if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
@@ -437,7 +437,7 @@ class OTXCLI:
         self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
-        if self.datamodule.config.tile_config.enable_tiler:
+        if not isinstance(model, OVModel) and self.datamodule.config.tile_config.enable_tiler:
             if not hasattr(model, "tile_config"):
                 msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
                 raise AttributeError(msg)
