@@ -17,7 +17,6 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook, feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -247,6 +246,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntityWithXAI:
         """Model forward function."""
+        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
@@ -304,6 +305,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
+        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+
         explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
         return explainer.func
 
