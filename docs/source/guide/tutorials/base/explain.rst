@@ -81,7 +81,7 @@ To do that we should use `--explain True` parameter during export.
             engine.export(..., explain=True)
             engine.explain(..., checkpoint="<xml_weights_path>")
 
-4. We can parametrize the explanation process by specifying the following parameters in `ExplainConfig``:
+4. We can parametrize the explanation process by specifying the following parameters in `ExplainConfig`:
 
 - `target_explain_group` - for which target saliency maps will be generated:
   - `IMAGE` - a single global activation map regardless of the classes that the model can detect.
