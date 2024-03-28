@@ -18,9 +18,17 @@ Base Tutorials
 
       Learn how to explain a model using OpenVINO™ Training Extensions.
 
+   .. grid-item-card:: Export and demo tutorial
+      :link: export
+      :link-type: doc
+      :text-align: center
+
+      Learn how to export a model using OpenVINO™ Training Extensions and use it in self-contained demo.
+
 .. toctree::
    :maxdepth: 2
    :hidden:
 
    how_to_train/index
    explain
+   export
