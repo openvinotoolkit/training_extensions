@@ -11,10 +11,8 @@ from typing import TYPE_CHECKING
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
-    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
-    OTXPredEntityWithXAI,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -51,13 +49,8 @@ class ActionClsDataEntity(OTXDataEntity):
 
 
 @dataclass
-class ActionClsPredEntity(ActionClsDataEntity, OTXPredEntity):
+class ActionClsPredEntity(OTXPredEntity, ActionClsDataEntity):
     """Data entity to represent the action classification model's output prediction."""
-
-
-@dataclass
-class ActionClsPredEntityWithXAI(ActionClsDataEntity, OTXPredEntityWithXAI):
-    """Data entity to represent the detection model output prediction with explanations."""
 
 
 @dataclass
@@ -92,16 +85,9 @@ class ActionClsBatchDataEntity(OTXBatchDataEntity[ActionClsDataEntity]):
 
     def pin_memory(self) -> ActionClsBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return super().pin_memory().wrap(labels=[label.pin_memory() for label in self.labels])
 
 
 @dataclass
-class ActionClsBatchPredEntity(ActionClsBatchDataEntity, OTXBatchPredEntity):
+class ActionClsBatchPredEntity(OTXBatchPredEntity, ActionClsBatchDataEntity):
     """Data entity to represent model output predictions for action classification task."""
-
-
-@dataclass
-class ActionClsBatchPredEntityWithXAI(ActionClsBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for multi-class classification task with explanations."""

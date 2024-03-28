@@ -8,7 +8,7 @@ import numpy as np
 from otx.algo.utils.xai_utils import dump_saliency_maps
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.classification import MulticlassClsBatchPredEntityWithXAI
+from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
 from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import AutoConfigurator
 
@@ -30,7 +30,7 @@ def test_sal_map_dump(
     datamodule = auto_configurator.get_datamodule()
 
     predict_result = [
-        MulticlassClsBatchPredEntityWithXAI(
+        MulticlassClsBatchPredEntity(
             batch_size=BATCH_SIZE,
             images=None,
             imgs_info=IMGS_INFO,

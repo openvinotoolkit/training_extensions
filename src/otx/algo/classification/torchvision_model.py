@@ -13,11 +13,7 @@ from torchvision import tv_tensors
 from torchvision.models import get_model, get_model_weights
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import (
-    MulticlassClsBatchDataEntity,
-    MulticlassClsBatchPredEntity,
-    MulticlassClsBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
@@ -224,7 +220,7 @@ class OTXTVModel(OTXMulticlassClsModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
@@ -240,7 +236,7 @@ class OTXTVModel(OTXMulticlassClsModel):
 
             saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
-            return MulticlassClsBatchPredEntityWithXAI(
+            return MulticlassClsBatchPredEntity(
                 batch_size=len(preds),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,

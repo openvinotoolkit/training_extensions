@@ -19,14 +19,8 @@ from torchvision import tv_tensors
 
 from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook, feature_vector_fn
 from otx.core.config.data import TileConfig
-from otx.core.data.entity.base import (
-    OTXBatchLossEntity,
-)
-from otx.core.data.entity.instance_segmentation import (
-    InstanceSegBatchDataEntity,
-    InstanceSegBatchPredEntity,
-    InstanceSegBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.base import OTXBatchLossEntity
+from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import TileBatchInstSegDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
@@ -54,7 +48,6 @@ class OTXInstanceSegModel(
     OTXModel[
         InstanceSegBatchDataEntity,
         InstanceSegBatchPredEntity,
-        InstanceSegBatchPredEntityWithXAI,
         TileBatchInstSegDataEntity,
     ],
 ):
@@ -86,7 +79,7 @@ class OTXInstanceSegModel(
         Returns:
             InstanceSegBatchPredEntity: Merged instance segmentation prediction.
         """
-        tile_preds: list[InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI] = []
+        tile_preds: list[InstanceSegBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = InstanceSegTileMerge(
             inputs.imgs_info,
@@ -185,7 +178,7 @@ class OTXInstanceSegModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI,
+        preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format that the metric can compute and cache the ground truth.
@@ -245,7 +238,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     def forward_explain(
         self,
         inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntityWithXAI:
+    ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
@@ -454,7 +447,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         self,
         outputs: dict[str, Any],
         inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:
@@ -510,7 +503,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
             feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
 
-            return InstanceSegBatchPredEntityWithXAI(
+            return InstanceSegBatchPredEntity(
                 batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -543,7 +536,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
 
 
 class OVInstanceSegmentationModel(
-    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity, InstanceSegBatchPredEntityWithXAI],
+    OVModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity],
 ):
     """Instance segmentation model compatible for OpenVINO IR inference.
 
@@ -618,7 +611,7 @@ class OVInstanceSegmentationModel(
         self,
         outputs: list[InstanceSegmentationResult],
         inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
         # add label index
         bboxes = []
         scores = []
@@ -653,7 +646,7 @@ class OVInstanceSegmentationModel(
 
             # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
             predicted_f_vectors = [out.feature_vector[0] for out in outputs]
-            return InstanceSegBatchPredEntityWithXAI(
+            return InstanceSegBatchPredEntity(
                 batch_size=len(outputs),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -679,7 +672,7 @@ class OVInstanceSegmentationModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: InstanceSegBatchPredEntity | InstanceSegBatchPredEntityWithXAI,
+        preds: InstanceSegBatchPredEntity,
         inputs: InstanceSegBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format that the metric can compute and cache the ground truth.

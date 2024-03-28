@@ -6,7 +6,7 @@ import torch
 from otx.algo.utils.xai_utils import process_saliency_maps, process_saliency_maps_in_pred_entity
 from otx.core.config.explain import ExplainConfig
 from otx.core.data.entity.base import ImageInfo
-from otx.core.data.entity.classification import MulticlassClsBatchPredEntityWithXAI, MultilabelClsBatchPredEntityWithXAI
+from otx.core.data.entity.classification import MulticlassClsBatchPredEntity, MultilabelClsBatchPredEntity
 from otx.core.types.explain import TargetExplainGroup
 
 NUM_CLASSES = 5
@@ -100,8 +100,8 @@ def test_process_image(postprocess) -> None:
         assert all(s_map_dict["map_per_image"].shape == (RAW_SIZE, RAW_SIZE) for s_map_dict in processed_saliency_maps)
 
 
-def _get_pred_result_multiclass(pred_labels) -> MulticlassClsBatchPredEntityWithXAI:
-    return MulticlassClsBatchPredEntityWithXAI(
+def _get_pred_result_multiclass(pred_labels) -> MulticlassClsBatchPredEntity:
+    return MulticlassClsBatchPredEntity(
         batch_size=BATCH_SIZE,
         images=None,
         imgs_info=IMGS_INFO,
@@ -112,8 +112,8 @@ def _get_pred_result_multiclass(pred_labels) -> MulticlassClsBatchPredEntityWith
     )
 
 
-def _get_pred_result_multilabel(pred_labels) -> MultilabelClsBatchPredEntityWithXAI:
-    return MultilabelClsBatchPredEntityWithXAI(
+def _get_pred_result_multilabel(pred_labels) -> MultilabelClsBatchPredEntity:
+    return MultilabelClsBatchPredEntity(
         batch_size=BATCH_SIZE,
         images=None,
         imgs_info=IMGS_INFO,

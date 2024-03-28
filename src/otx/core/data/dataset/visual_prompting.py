@@ -146,9 +146,12 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         )
         transformed_entity = self._apply_transforms(entity)
 
+        if transformed_entity is None:
+            msg = "This is not allowed."
+            raise RuntimeError(msg)
+
         # insert masks to transformed_entity
-        transformed_entity.masks = masks  # type: ignore[union-attr]
-        return transformed_entity
+        return transformed_entity.wrap(masks=masks)
 
     @property
     def collate_fn(self) -> Callable:

@@ -17,7 +17,7 @@ from torchvision import tv_tensors
 
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI
+from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
@@ -40,9 +40,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXDetectionModel(
-    OTXModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI, TileBatchDetDataEntity],
-):
+class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
     """Base class for the detection models used in OTX."""
 
     def __init__(
@@ -62,7 +60,7 @@ class OTXDetectionModel(
         )
         self.tile_config = TileConfig()
 
-    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | DetBatchPredEntityWithXAI:
+    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
         Args:
@@ -71,7 +69,7 @@ class OTXDetectionModel(
         Returns:
             DetBatchPredEntity: Merged detection prediction.
         """
-        tile_preds: list[DetBatchPredEntity | DetBatchPredEntityWithXAI] = []
+        tile_preds: list[DetBatchPredEntity] = []
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = DetectionTileMerge(
             inputs.imgs_info,
@@ -123,7 +121,7 @@ class OTXDetectionModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: DetBatchPredEntity | DetBatchPredEntityWithXAI,
+        preds: DetBatchPredEntity,
         inputs: DetBatchDataEntity,
     ) -> MetricInput:
         return {
@@ -189,7 +187,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def forward_explain(
         self,
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntityWithXAI:
+    ) -> DetBatchPredEntity:
         """Model forward function."""
         from otx.algo.hooks.recording_forward_hook import feature_vector_fn
 
@@ -412,7 +410,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         self,
         outputs: dict[str, Any],
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
         from mmdet.structures import DetDataSample
 
         if self.training:
@@ -464,7 +462,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
             feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
 
-            return DetBatchPredEntityWithXAI(
+            return DetBatchPredEntity(
                 batch_size=len(predictions),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -492,7 +490,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         return MMdeployExporter(**self._export_parameters)
 
 
-class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchPredEntityWithXAI]):
+class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Object detection model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -566,7 +564,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
         self,
         outputs: list[DetectionResult],
         inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity | DetBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> DetBatchPredEntity | OTXBatchLossEntity:
         # add label index
         bboxes = []
         scores = []
@@ -605,7 +603,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
 
             # Squeeze dim 2D => 1D, (1, internal_dim) => (internal_dim)
             predicted_f_vectors = [out.feature_vector[0] for out in outputs]
-            return DetBatchPredEntityWithXAI(
+            return DetBatchPredEntity(
                 batch_size=len(outputs),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -627,7 +625,7 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity, DetBatchP
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: DetBatchPredEntity | DetBatchPredEntityWithXAI,
+        preds: DetBatchPredEntity,
         inputs: DetBatchDataEntity,
     ) -> MetricInput:
         return {

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Mapping
-from dataclasses import dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from typing import TYPE_CHECKING, Any, Dict, Generic, Iterator, TypeVar
 
 import torch
@@ -501,16 +501,20 @@ class OTXDataEntity(Mapping):
         return ImageType.get_image_type(self.image)
 
     def to_tv_image(self: T_OTXDataEntity) -> T_OTXDataEntity:
-        """Convert `self.image` to TorchVision Image if it is a Numpy array (inplace operation)."""
+        """Return a new instance with the `image` attribute converted to a TorchVision Image if it is a NumPy array.
+
+        Returns:
+            A new instance with the `image` attribute converted to a TorchVision Image, if applicable.
+            Otherwise, return this instance as is.
+        """
         if isinstance(self.image, tv_tensors.Image):
             return self
 
-        self.image = F.to_image(self.image)
-        return self
+        return self.wrap(image=F.to_image(self.image))
 
     def __iter__(self) -> Iterator[str]:
-        for field in fields(self):
-            yield field.name
+        for field_ in fields(self):
+            yield field_.name
 
     def __getitem__(self, key: str) -> Any:  # noqa: ANN401
         return getattr(self, key)
@@ -519,6 +523,18 @@ class OTXDataEntity(Mapping):
         """Get the number of fields in this data entity."""
         return len(fields(self))
 
+    def wrap(self: T_OTXDataEntity, **kwargs) -> T_OTXDataEntity:
+        """Wrap this dataclass with the given keyword arguments.
+
+        Args:
+            **kwargs: Keyword arguments to be overwritten on top of this dataclass
+        Returns:
+            Updated dataclass
+        """
+        updated_kwargs = asdict(self)
+        updated_kwargs.update(**kwargs)
+        return self.__class__(**updated_kwargs)
+
 
 @dataclass
 class OTXPredEntity(OTXDataEntity):
@@ -526,13 +542,8 @@ class OTXPredEntity(OTXDataEntity):
 
     score: np.ndarray | Tensor
 
-
-@dataclass
-class OTXPredEntityWithXAI(OTXPredEntity):
-    """Data entity to represent model output prediction with explanations."""
-
-    saliency_map: np.ndarray | Tensor
-    feature_vector: np.ndarray | list
+    saliency_map: np.ndarray | Tensor | None = None
+    feature_vector: np.ndarray | list | None = None
 
 
 T_OTXBatchDataEntity = TypeVar(
@@ -631,27 +642,52 @@ class OTXBatchDataEntity(Generic[T_OTXDataEntity]):
         """Pin memory for member tensor variables."""
         # TODO(vinnamki): Keep track this issue
         # https://github.com/pytorch/pytorch/issues/116403
-        self.images = (
-            [tv_tensors.wrap(image.pin_memory(), like=image) for image in self.images]
-            if isinstance(self.images, list)
-            else tv_tensors.wrap(self.images.pin_memory(), like=self.images)
+        return self.wrap(
+            images=(
+                [tv_tensors.wrap(image.pin_memory(), like=image) for image in self.images]
+                if isinstance(self.images, list)
+                else tv_tensors.wrap(self.images.pin_memory(), like=self.images)
+            ),
         )
-        return self
+
+    def wrap(self: T_OTXBatchDataEntity, **kwargs) -> T_OTXBatchDataEntity:
+        """Wrap this dataclass with the given keyword arguments.
+
+        Args:
+            **kwargs: Keyword arguments to be overwritten on top of this dataclass
+        Returns:
+            Updated dataclass
+        """
+        updated_kwargs = asdict(self)
+        updated_kwargs.update(**kwargs)
+        return self.__class__(**updated_kwargs)
 
 
 @dataclass
 class OTXBatchPredEntity(OTXBatchDataEntity):
-    """Data entity to represent model output predictions."""
+    """Data entity to represent model output predictions.
+
+    Attributes:
+        scores: List of probability scores representing model predictions.
+        saliency_maps: List of saliency maps used to explain model predictions.
+            This field is optional and will be an empty list for non-XAI pipelines.
+        feature_vectors: List of intermediate feature vectors used for model predictions.
+            This field is optional and will be an empty list for non-XAI pipelines.
+    """
 
     scores: list[np.ndarray] | list[Tensor]
 
+    # (Optional) XAI-related outputs
+    saliency_maps: list[np.ndarray] | list[Tensor] = field(default_factory=list)
+    feature_vectors: list[np.ndarray] | list[Tensor] = field(default_factory=list)
 
-@dataclass
-class OTXBatchPredEntityWithXAI(OTXBatchPredEntity):
-    """Data entity to represent model output predictions with explanations."""
-
-    saliency_maps: list[np.ndarray] | list[Tensor]
-    feature_vectors: list[np.ndarray] | list[Tensor]
+    @property
+    def has_xai_outputs(self) -> bool:
+        """If the XAI related fields are fulfilled, return True."""
+        # NOTE: Don't know why but some of test cases in tests/integration/api/test_xai.py
+        # produce `len(self.saliency_maps) > 0` and `len(self.feature_vectors) == 0`
+        # return len(self.saliency_maps) > 0 and len(self.feature_vectors) > 0
+        return len(self.saliency_maps) > 0
 
 
 class OTXBatchLossEntity(Dict[str, Tensor]):
@@ -662,13 +698,6 @@ T_OTXBatchPredEntity = TypeVar(
     "T_OTXBatchPredEntity",
     bound=OTXBatchPredEntity,
 )
-
-
-T_OTXBatchPredEntityWithXAI = TypeVar(
-    "T_OTXBatchPredEntityWithXAI",
-    bound=OTXBatchPredEntityWithXAI,
-)
-
 
 T_OTXBatchLossEntity = TypeVar(
     "T_OTXBatchLossEntity",

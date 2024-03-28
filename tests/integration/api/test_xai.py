@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import openvino.runtime as ov
 import pytest
-from otx.core.data.entity.base import OTXBatchPredEntity, OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchPredEntity
 from otx.engine import Engine
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
@@ -57,7 +57,8 @@ def test_forward_explain(
     assert isinstance(predict_result[0], OTXBatchPredEntity)
 
     predict_result_explain = engine.predict(explain=True)
-    assert isinstance(predict_result_explain[0], OTXBatchPredEntityWithXAI)
+    assert isinstance(predict_result_explain[0], OTXBatchPredEntity)
+    assert predict_result_explain[0].has_xai_outputs
 
     batch_size = len(predict_result[0].scores)
     for i in range(batch_size):
@@ -106,7 +107,8 @@ def test_predict_with_explain(
 
     # Predict with explain torch & process maps
     predict_result_explain_torch = engine.predict(explain=True)
-    assert isinstance(predict_result_explain_torch[0], OTXBatchPredEntityWithXAI)
+    assert isinstance(predict_result_explain_torch[0], OTXBatchPredEntity)
+    assert predict_result_explain_torch[0].has_xai_outputs
     assert predict_result_explain_torch[0].saliency_maps is not None
     assert isinstance(predict_result_explain_torch[0].saliency_maps[0], dict)
 
@@ -134,7 +136,8 @@ def test_predict_with_explain(
 
     # Predict OV model with xai & process maps
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
-    assert isinstance(predict_result_explain_ov[0], OTXBatchPredEntityWithXAI)
+    assert isinstance(predict_result_explain_ov[0], OTXBatchPredEntity)
+    assert predict_result_explain_ov[0].has_xai_outputs
     assert predict_result_explain_ov[0].saliency_maps is not None
     assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
     assert predict_result_explain_ov[0].feature_vectors is not None

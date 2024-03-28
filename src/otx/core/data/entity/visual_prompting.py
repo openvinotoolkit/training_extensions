@@ -13,7 +13,6 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
-    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
     Points,
@@ -52,7 +51,7 @@ class VisualPromptingDataEntity(OTXDataEntity):
 
 
 @dataclass
-class VisualPromptingPredEntity(VisualPromptingDataEntity, OTXPredEntity):
+class VisualPromptingPredEntity(OTXPredEntity, VisualPromptingDataEntity):
     """Data entity to represent the visual prompting model output prediction."""
 
 
@@ -107,27 +106,28 @@ class VisualPromptingBatchDataEntity(OTXBatchDataEntity[VisualPromptingDataEntit
 
     def pin_memory(self) -> VisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.points = [
-            tv_tensors.wrap(point.pin_memory(), like=point) if point is not None else point for point in self.points
-        ]
-        self.bboxes = [
-            tv_tensors.wrap(bbox.pin_memory(), like=bbox) if bbox is not None else bbox for bbox in self.bboxes
-        ]
-        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
-        self.labels = [
-            {prompt_type: values.pin_memory() for prompt_type, values in labels.items()} for labels in self.labels
-        ]
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                points=[
+                    tv_tensors.wrap(point.pin_memory(), like=point) if point is not None else point
+                    for point in self.points
+                ],
+                bboxes=[
+                    tv_tensors.wrap(bbox.pin_memory(), like=bbox) if bbox is not None else bbox for bbox in self.bboxes
+                ],
+                masks=[tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks],
+                labels=[
+                    {prompt_type: values.pin_memory() for prompt_type, values in labels.items()}
+                    for labels in self.labels
+                ],
+            )
+        )
 
 
 @dataclass
-class VisualPromptingBatchPredEntity(VisualPromptingBatchDataEntity, OTXBatchPredEntity):
-    """Data entity to represent model output predictions for visual prompting task."""
-
-
-@dataclass
-class VisualPromptingBatchPredEntityWithXAI(VisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
+class VisualPromptingBatchPredEntity(OTXBatchPredEntity, VisualPromptingBatchDataEntity):
     """Data entity to represent model output predictions for visual prompting task."""
 
 
@@ -202,22 +202,22 @@ class ZeroShotVisualPromptingBatchDataEntity(OTXBatchDataEntity[ZeroShotVisualPr
 
     def pin_memory(self) -> ZeroShotVisualPromptingBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.prompts = [
-            [tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in prompts] for prompts in self.prompts
-        ]
-        self.masks = [tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks]
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                prompts=[
+                    [tv_tensors.wrap(prompt.pin_memory(), like=prompt) for prompt in prompts]
+                    for prompts in self.prompts
+                ],
+                masks=[tv_tensors.wrap(mask.pin_memory(), like=mask) for mask in self.masks],
+                labels=[label.pin_memory() for label in self.labels],
+            )
+        )
 
 
 @dataclass
-class ZeroShotVisualPromptingBatchPredEntity(ZeroShotVisualPromptingBatchDataEntity, OTXBatchPredEntity):
+class ZeroShotVisualPromptingBatchPredEntity(OTXBatchPredEntity, ZeroShotVisualPromptingBatchDataEntity):
     """Data entity to represent model output predictions for zero-shot visual prompting task."""
 
     prompts: list[Points]  # type: ignore[assignment]
-
-
-@dataclass
-class ZeroShotVisualPromptingBatchPredEntityWithXAI(ZeroShotVisualPromptingBatchPredEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for visual prompting task."""

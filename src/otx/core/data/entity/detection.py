@@ -13,10 +13,8 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
-    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
-    OTXPredEntityWithXAI,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -45,13 +43,8 @@ class DetDataEntity(OTXDataEntity):
 
 
 @dataclass
-class DetPredEntity(DetDataEntity, OTXPredEntity):
+class DetPredEntity(OTXPredEntity, DetDataEntity):
     """Data entity to represent the detection model output prediction."""
-
-
-@dataclass
-class DetPredEntityWithXAI(DetDataEntity, OTXPredEntityWithXAI):
-    """Data entity to represent the detection model output prediction with explanations."""
 
 
 @dataclass
@@ -98,17 +91,16 @@ class DetBatchDataEntity(OTXBatchDataEntity[DetDataEntity]):
 
     def pin_memory(self) -> DetBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                bboxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes],
+                labels=[label.pin_memory() for label in self.labels],
+            )
+        )
 
 
 @dataclass
-class DetBatchPredEntity(DetBatchDataEntity, OTXBatchPredEntity):
+class DetBatchPredEntity(OTXBatchPredEntity, DetBatchDataEntity):
     """Data entity to represent model output predictions for detection task."""
-
-
-@dataclass
-class DetBatchPredEntityWithXAI(DetBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for detection task with explanations."""
