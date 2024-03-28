@@ -56,21 +56,15 @@ Exported archive will consist of the following file structure:
   - ``requirements.txt`` - minimal packages required to run the demo
   - ``setup.py``
 
-
 3. You can deploy the model,
 using the command below:
 
 .. code-block:: shell
 
     (otx) ...$ otx export -c CONFIG
-               --checkpoint {PYTORCH_CHECKPOINT, OPENVINO_IR.XML}
+               --checkpoint {PYTORCH_CHECKPOINT}
                --export_format EXPORTABLE_CODE
                --work-dir outputs/deploy
-
-.. note::
-
-    You can also deploy the quantized model, that was optimized with PTQ, or already exported in IR format model, passing the path to ``.xml`` to ``--checkpoint`` parameter.
-    In that case ``--export_format`` is optional parameter.
 
 After that, you can use the resulting ``openvino.zip`` archive in other application.
 
@@ -103,7 +97,7 @@ using the model in the ``model`` folder. You can pass as ``input`` a single imag
 .. code-block::
 
     (demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
-                                                      --models outputs/deploy/model
+                                                      --model outputs/deploy/model
 
 You can press ``Q`` to stop inference during the demo running.
 
@@ -127,7 +121,7 @@ It works for images, videos, image folders and web cameras. To prevent issues, d
 .. code-block::
 
     (demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
-                                                      --models outputs/deploy/model \
+                                                      --model outputs/deploy/model \
                                                       --output resulted_images
 
 5. To run a demo on a web camera, we need to know its ID.
