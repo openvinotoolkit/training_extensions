@@ -264,13 +264,9 @@ class Engine:
             **kwargs,
         )
         fit_kwargs: dict[str, Any] = {}
-        if resume:
-            fit_kwargs["ckpt_path"] = self.checkpoint
-        elif self.checkpoint is not None:
-            loaded_checkpoint = torch.load(self.checkpoint)
-            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
-            self.model.load_state_dict(loaded_checkpoint)
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
@@ -279,6 +275,13 @@ class Engine:
             )
             logging.warning(msg)
             self.model.label_info = self.datamodule.label_info
+
+        if resume:
+            fit_kwargs["ckpt_path"] = self.checkpoint
+        elif self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
+            self.model.load_state_dict(loaded_checkpoint)
 
         with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
             self.trainer.fit(
@@ -335,6 +338,20 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         model = self.model
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
@@ -351,18 +368,6 @@ class Engine:
             model.load_state_dict(loaded_checkpoint)
 
         self._build_trainer(**kwargs)
-
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
 
         with override_metric_callable(model=model, new_metric_callable=metric) as model:
             self.trainer.test(
@@ -416,6 +421,20 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         model = self.model
 
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -433,18 +452,6 @@ class Engine:
         model.explain_mode = explain
 
         self._build_trainer(**kwargs)
-
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
 
         predict_result = self.trainer.predict(
             model=model,
