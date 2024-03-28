@@ -5,6 +5,7 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 ## Structure of generated zip
 
 - `README.md`
+- `LICENSE`
 - model
   - `model.xml`
   - `model.bin`
@@ -26,7 +27,6 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
       - `__init__.py`
       - `visualizer.py`
       - `vis_utils.py`
-  - `LICENSE`
   - `demo.py`
   - `requirements.txt`
   - `setup.py`

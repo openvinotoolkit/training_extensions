@@ -21,6 +21,7 @@ from otx.core.data.entity.base import (
     OTXBatchPredEntity,
 )
 from otx.core.model.entity.base import OTXModel, OVModel
+from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.utils import is_ckpt_for_finetuning, is_ckpt_from_otx_v1
@@ -260,6 +261,7 @@ class OTXLitModule(LightningModule):
         base_name: str,
         export_format: OTXExportFormatType,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
+        path_to_already_exported_model: PathLike | None = None,
     ) -> Path:
         """Export this model to the specified output directory.
 
@@ -268,7 +270,11 @@ class OTXLitModule(LightningModule):
             base_name: (str): base name for the exported model file. Extension is defined by the target export format
             export_format (OTXExportFormatType): format of the output model
             precision (OTXExportPrecisionType): precision of the output model
+            path_to_already_exported_model (PathLike | None): Valid only for
+                export_format=OTXExportFormatType.EXPORTABLE_CODE.
+                Path to the already exported model to add it in exportable code
+
         Returns:
             Path: path to the exported model.
         """
-        return self.model.export(output_dir, base_name, export_format, precision)
+        return self.model.export(output_dir, base_name, export_format, precision, path_to_already_exported_model)
