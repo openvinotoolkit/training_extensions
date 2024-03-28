@@ -123,6 +123,9 @@ class TestEngine:
         mock_test.assert_called_once()
         mock_torch_load.assert_not_called()
 
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.test(checkpoint="path/to/model.xml")
+
     def test_prediction_after_training(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXLitModule.load_state_dict")
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
@@ -146,6 +149,9 @@ class TestEngine:
         fxt_engine.predict(checkpoint="path/to/model.xml")
         mock_predict.assert_called_once()
         mock_torch_load.assert_not_called()
+
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.predict(checkpoint="path/to/model.xml")
 
     def test_prediction_explain_mode(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXLitModule.load_state_dict")
@@ -292,27 +298,3 @@ class TestEngine:
         assert engine is not None
         assert engine.datamodule.config.train_subset.batch_size == 3
         assert engine.datamodule.config.test_subset.subset_name == "TESTING"
-
-    def test_testing_with_ov_model_with_tiling(self, fxt_engine, mocker) -> None:
-        mock_test = mocker.patch("otx.engine.engine.Trainer.test")
-        mock_torch_load = mocker.patch("torch.load")
-        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
-        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-        fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.datamodule.subsets["test"] = create_autospec(OTXTileDataset)
-
-        fxt_engine.test(checkpoint="path/to/model.xml")
-        mock_test.assert_called_once()
-        mock_torch_load.assert_not_called()
-
-    def test_prediction_with_ov_model_with_tiling(self, fxt_engine, mocker) -> None:
-        mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
-        mock_torch_load = mocker.patch("torch.load")
-        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
-        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-        fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.datamodule.subsets["test"] = create_autospec(OTXTileDataset)
-
-        fxt_engine.predict(checkpoint="path/to/model.xml")
-        mock_predict.assert_called_once()
-        mock_torch_load.assert_not_called()

@@ -312,7 +312,7 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        # NOTE: Re-initiate datamodule for OVModel as model API supports its own data pipeline.
         if isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
@@ -391,11 +391,10 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
-        if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
+        # NOTE: Re-initiate datamodule for OVModel as model API supports its own data pipeline.
+        if isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         lit_module = self._build_lightning_module(
