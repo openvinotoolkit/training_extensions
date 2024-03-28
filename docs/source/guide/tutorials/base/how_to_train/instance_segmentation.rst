@@ -51,10 +51,10 @@ Dataset preparation
 
 .. code-block::
 
-  mkdir data ; cd data
-  git clone https://github.com/thsant/wgisd.git
-  cd wgisd
-  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
+    mkdir data ; cd data
+    git clone https://github.com/thsant/wgisd.git
+    cd wgisd
+    git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
@@ -82,10 +82,8 @@ we will need the following file structure:
   ├── annotations/
       ├── instances_train.json
       ├── instances_val.json
-      (Optional)
       └── instances_test.json
   ├──images/
-      (Optional)
       ├── train
       ├── val
       └── test
@@ -116,7 +114,7 @@ Training
 *********
 
 1. First of all, you need to choose which instance segmentation model you want to train.
-The list of supported templates for instance segmentation is available with the command line below.
+The list of supported recipes for instance segmentation is available with the command line below.
 
 .. note::
 
@@ -264,9 +262,9 @@ Here are the main outputs can expect with CLI:
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 10 minutes with full dataset.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
-Learn more about template-specific parameters using ``otx train params --help``.
+Learn more about recipe-specific parameters using ``otx train params --help``.
 
-It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
+It can be done by manually updating parameters in the ``configs.yaml`` file in your workplace or via the command line.
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 

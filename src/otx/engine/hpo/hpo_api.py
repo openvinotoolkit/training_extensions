@@ -14,7 +14,6 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
-from lightning.pytorch.cli import OptimizerCallable
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.types.task import OTXTaskType
@@ -25,6 +24,8 @@ from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import OptimizerCallable
+
     from otx.engine.engine import Engine
     from otx.hpo.hpo_base import HpoBase
 
@@ -177,7 +178,7 @@ class HPOConfigurator:
         if isinstance(self._engine.optimizer, list):
             for i, optimizer in enumerate(self._engine.optimizer):
                 search_space[f"optimizer.{i}.keywords.lr"] = self._make_lr_search_space(optimizer)
-        elif isinstance(self._engine.optimizer, OptimizerCallable):
+        elif self._engine.optimizer is not None:
             search_space["optimizer.keywords.lr"] = self._make_lr_search_space(self._engine.optimizer)
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size

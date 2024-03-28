@@ -55,10 +55,10 @@ Models
 ******
 .. _visual_prompting_model:
 
-We support the following model templates in experimental phase:
+We support the following model recipes in experimental phase:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
-|                                                                                        Template ID                                                         |     Name     | Complexity (GFLOPs) | Model size (MB) |
+|                                                                                        Recipe ID                                                         |     Name     | Complexity (GFLOPs) | Model size (MB) |
 +============================================================================================================================================================+==============+=====================+=================+
 | `Visual_Prompting_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_tiny_vit.yaml>`_   | SAM_Tiny_ViT | 38.55               | 47              |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+

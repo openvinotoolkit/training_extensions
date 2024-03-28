@@ -95,7 +95,7 @@ Training
 *********
 
 1. First of all, you need to choose which classification model you want to train.
-The list of supported templates for classification is available with the command line below.
+The list of supported recipes for classification is available with the command line below.
 
 .. note::
 
@@ -184,7 +184,7 @@ Let's check the multi-class classification configuration running the following c
         (otx) ...$ otx train --config configs.yaml
 
 
-3. ``otx train`` trains a model (a particular model template)
+3. ``otx train`` trains a model (a particular model recipe)
 on a dataset and results:
 
 Here are the main outputs can expect with CLI:
@@ -432,7 +432,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 
 
 4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using ``otx export --help``.
+Learn more about recipe-specific parameters using ``otx export --help``.
 
 For example, If you want to get the ONNX model format you can run it like below.
 

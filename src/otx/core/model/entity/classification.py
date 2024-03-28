@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Callable
 import numpy as np
 import torch
 
-from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
@@ -80,6 +79,8 @@ class ExplainableOTXClsModel(
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
         """Model forward function."""
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
@@ -139,6 +140,8 @@ class ExplainableOTXClsModel(
         return explainer.func
 
     def _reset_model_forward(self) -> None:
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         if not self.explain_mode:
             return
 

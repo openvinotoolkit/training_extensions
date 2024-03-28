@@ -55,7 +55,7 @@ ASHA also includes a technique called Hyperband, which is used to determine how 
 How to configure hyper-parameter optimization
 *********************************************
 
-You can configure HPO by modifying the ``hpo_config.yaml`` file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The ``hpo_config.yaml`` file already exists with default values in the same directory where ``template.yaml`` resides. Here is the default ``hpo_config.yaml`` file for classification:
+You can configure HPO by modifying the ``hpo_config.yaml`` file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The ``hpo_config.yaml`` file already exists with default values in the same directory where ``configs.yaml`` resides. Here is the default ``hpo_config.yaml`` file for classification:
 
 .. code-block::
 

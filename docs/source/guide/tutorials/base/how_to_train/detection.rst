@@ -87,14 +87,11 @@ we need to reformat the dataset according to this structure:
     ├── annotations/
         ├── instances_train.json
         ├── instances_val.json
-        (Optional)
         └── instances_test.json
     ├──images/
-        (The split on folders is optional)
         ├── train
         ├── val
         └── test
-    (There may be more extra unrelated folders)
 
 We can do that by running these commands:
 
@@ -118,7 +115,7 @@ Training
 *********
 
 1. First of all, you need to choose which object detection model you want to train.
-The list of supported templates for object detection is available with the command line below.
+The list of supported recipes for object detection is available with the command line below.
 
 .. note::
 
@@ -196,7 +193,7 @@ Let's check the object detection configuration running the following command:
         (otx) ...$ otx train --config configs.yaml
 
 
-3. ``otx train`` trains a model (a particular model template)
+3. ``otx train`` trains a model (a particular model recipe)
 on a dataset and results:
 
 Here are the main outputs can expect with CLI:
@@ -466,7 +463,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 
 
 4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using ``otx export --help``.
+Learn more about recipe-specific parameters using ``otx export --help``.
 
 For example, If you want to get the ONNX model format you can run it like below.
 
