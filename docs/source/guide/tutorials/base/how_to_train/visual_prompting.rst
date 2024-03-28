@@ -164,7 +164,10 @@ Let's check the visual prompting configuration running the following command:
 .. code-block:: shell
 
     # or its config path
-    (otx) ...$ otx train --config src/otx/recipe/visual_prompting/sam_tiny_vit.yaml --data_root data/wgisd --print_config
+    (otx) ...$ otx train --config  src/otx/recipe/visual_prompting/sam_tiny_vit.yaml \
+                         --data_root data/wgisd \
+                         --work_dir otx-workspace \
+                         --print_config
 
     ...
     data_root: data/wgisd
