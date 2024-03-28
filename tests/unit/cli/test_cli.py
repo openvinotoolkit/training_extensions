@@ -186,4 +186,4 @@ class TestOTXCLI:
             OTXCLI()
         out, _ = capfd.readouterr()
         result_config = yaml.safe_load(out)
-        assert result_config["metric"] == "otx.core.metrics.fmeasure._f_measure_callable"
+        assert result_config["metric"]["class_path"] == "otx.core.metrics.fmeasure.FMeasure"

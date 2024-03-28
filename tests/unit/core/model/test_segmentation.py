@@ -62,7 +62,8 @@ class TestOTXSegmentationModel:
 
     def test_validation_step(self, mocker, model, fxt_seg_data_entity) -> None:
         model.eval()
-        model.on_validation_start()
+        model.setup(stage="fit")
+        model.on_validation_epoch_start()
         mocker_update_loss = mocker.patch.object(
             model,
             "_convert_pred_entity_to_compute_metric",
@@ -73,7 +74,8 @@ class TestOTXSegmentationModel:
 
     def test_test_metric(self, mocker, model, fxt_seg_data_entity) -> None:
         model.eval()
-        model.on_validation_start()
+        model.setup(stage="fit")
+        model.on_validation_epoch_start()
         mocker_update_loss = mocker.patch.object(
             model,
             "_convert_pred_entity_to_compute_metric",

@@ -779,8 +779,4 @@ class FMeasure(Metric):
         return self.label_info.label_names
 
 
-def _f_measure_callable(label_info: LabelInfo) -> FMeasure:
-    return FMeasure(label_info=label_info)
-
-
-FMeasureCallable = _f_measure_callable
+FMeasureCallable = FMeasure

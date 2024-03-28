@@ -52,6 +52,7 @@ class OTXDetectionModel(
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        confidence_threshold: float | None = None,
     ) -> None:
         super().__init__(
             num_classes=num_classes,
@@ -61,6 +62,7 @@ class OTXDetectionModel(
             torch_compile=torch_compile,
         )
         self.tile_config = TileConfig()
+        self.confidence_threshold: float | None = confidence_threshold
 
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity | DetBatchPredEntityWithXAI:
         """Unpack detection tiles.
@@ -163,24 +165,23 @@ class OTXDetectionModel(
 
     def _log_metrics(self, meter: Metric, key: Literal["val", "test"], **compute_kwargs) -> None:
         if key == "val":
-            retval = super()._log_metrics(meter, key)
-
-            # NOTE: Validation metric logging can update `best_confidence_threshold`
-            if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
-                self.hparams["best_confidence_threshold"] = best_confidence_threshold
+            # NOTE: Validation metric logging can update `best_confidence_threshold`,
+            # if there's no pre-defined best confidence threshold
+            if self.confidence_threshold is None:
+                retval = super()._log_metrics(meter, key)
+                if best_confidence_threshold := getattr(meter, "best_confidence_threshold", None):
+                    self.hparams["best_confidence_threshold"] = best_confidence_threshold
+            else:
+                retval = super()._log_metrics(meter, key, best_confidence_threshold=self.confidence_threshold)
+                self.hparams["best_confidence_threshold"] = self.confidence_threshold
 
             return retval
 
-        if key == "test":
-            # NOTE: Test metric logging should use `best_confidence_threshold` found previously.
-            best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
-            compute_kwargs = (
-                {"best_confidence_threshold": best_confidence_threshold} if best_confidence_threshold else {}
-            )
+        # NOTE: Test metric logging should use `best_confidence_threshold` found previously.
+        best_confidence_threshold = self.hparams.get("best_confidence_threshold", None)
+        compute_kwargs = {"best_confidence_threshold": best_confidence_threshold} if best_confidence_threshold else {}
 
-            return super()._log_metrics(meter, key, **compute_kwargs)
-
-        raise ValueError(key)
+        return super()._log_metrics(meter, key, **compute_kwargs)
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
@@ -327,6 +328,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
+        confidence_threshold: float | None = None,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
         self.config = config
@@ -338,6 +340,7 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             scheduler=scheduler,
             metric=metric,
             torch_compile=torch_compile,
+            confidence_threshold=confidence_threshold,
         )
 
     @property
