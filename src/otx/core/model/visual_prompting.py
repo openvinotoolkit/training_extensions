@@ -487,17 +487,11 @@ class OVVisualPromptingModel(
             )
             async_inference = False
 
-        dirpath = Path(model_name).parent
-        image_encoder_path = dirpath / "exported_model_image_encoder.xml"
-        decoder_path = dirpath / "exported_model_decoder.xml"
-
-        if not image_encoder_path.exists() or not decoder_path.exists():
-            msg = "Cannot find both xml files to load"
-            raise ValueError(msg)
-
+        basename: str = Path(model_name).name
+        model_type_name: str = "_".join(basename.split("_")[:2])
         self.model_names: dict[str, str] = {
-            "image_encoder": image_encoder_path,
-            "decoder": decoder_path,
+            module: model_name.replace(basename, f"{model_type_name}_{module}.xml")
+            for module in ["image_encoder", "decoder"]
         }
         super().__init__(
             model_name=model_name,

@@ -280,7 +280,8 @@ class TestOVVisualPromptingModel:
             dirpath = Path(tmpdir)
             (dirpath / "exported_model_image_encoder.xml").touch()
             (dirpath / "exported_model_decoder.xml").touch()
-            return OVVisualPromptingModel(num_classes=0, model_name=dirpath / "exported_model_decoder.xml")
+            model_name = str(dirpath / "exported_model_decoder.xml")
+            return OVVisualPromptingModel(num_classes=0, model_name=model_name)
 
         return ov_visual_prompting_model
 
@@ -373,8 +374,9 @@ class TestOVZeroShotVisualPromptingModel:
         dirpath = Path(tmpdir)
         (dirpath / "exported_model_image_encoder.xml").touch()
         (dirpath / "exported_model_decoder.xml").touch()
+        model_name = str(dirpath / "exported_model_decoder.xml")
 
-        return OVZeroShotVisualPromptingModel(num_classes=0, model_name=dirpath / "exported_model_decoder.xml")
+        return OVZeroShotVisualPromptingModel(num_classes=0, model_name=model_name)
 
     @pytest.mark.parametrize("training", [True, False])
     def test_forward(
