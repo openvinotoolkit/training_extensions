@@ -19,6 +19,7 @@ from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import DiceCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -41,8 +42,8 @@ class OTXSegmentationModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = DiceCallable,
         torch_compile: bool = False,
     ):
@@ -99,8 +100,8 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = DiceCallable,
         torch_compile: bool = False,
     ) -> None:

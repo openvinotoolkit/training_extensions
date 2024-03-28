@@ -4,23 +4,24 @@ model:
     num_classes: 80
     variant: r50
 
-optimizer:
-  class_path: torch.optim.SGD
-  init_args:
-    lr: 0.007
-    momentum: 0.9
-    weight_decay: 0.001
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.007
+        momentum: 0.9
+        weight_decay: 0.001
 
-scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 100
-  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
-    init_args:
-      mode: max
-      factor: 0.1
-      patience: 9
-      monitor: val/map_50
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 100
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 9
+            monitor: val/map_50
 
 engine:
   task: ROTATED_DETECTION

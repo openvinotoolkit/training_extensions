@@ -1,0 +1,6 @@
+backbone:
+  name: dinov2_vits14_reg
+  frozen: false
+head:
+  in_channels: 384
+  num_classes: 1000

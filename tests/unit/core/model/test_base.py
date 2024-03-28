@@ -1,9 +1,13 @@
 import numpy as np
 import pytest
 import torch
+from lightning import Trainer
+from lightning.pytorch.utilities.types import LRSchedulerConfig
 from openvino.model_api.models.utils import ClassificationResult
 from otx.core.data.entity.base import OTXBatchDataEntity
 from otx.core.model.base import OTXModel, OVModel
+from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
+from pytest_mock import MockerFixture
 
 
 class MockNNModule(torch.nn.Module):
@@ -45,6 +49,42 @@ class TestOTXModel:
             curr_state_dict["model.head.bias"].index_select(0, indices),
             prev_state_dict["model.head.bias"],
         )
+
+    def test_lr_scheduler_step(self, mocker: MockerFixture) -> None:
+        mock_linear_warmup_scheduler = mocker.create_autospec(spec=LinearWarmupScheduler)
+        mock_main_scheduler = mocker.create_autospec(spec=torch.optim.lr_scheduler.LRScheduler)
+
+        with mocker.patch.object(OTXModel, "_create_model", return_value=MockNNModule(3)):
+            current_model = OTXModel(num_classes=3)
+
+        mock_trainer = mocker.create_autospec(spec=Trainer)
+        mock_trainer.lr_scheduler_configs = [
+            LRSchedulerConfig(mock_linear_warmup_scheduler),
+            LRSchedulerConfig(mock_main_scheduler),
+        ]
+        current_model.trainer = mock_trainer
+
+        # Assume that LinearWarmupScheduler is activated
+        mock_linear_warmup_scheduler.activated = True
+        for scheduler in [mock_linear_warmup_scheduler, mock_main_scheduler]:
+            current_model.lr_scheduler_step(scheduler=scheduler, metric=None)
+
+        # Assert mock_main_scheduler's step() is not called
+        mock_main_scheduler.step.assert_not_called()
+
+        mock_main_scheduler.reset_mock()
+
+        # Assume that LinearWarmupScheduler is not activated
+        mock_linear_warmup_scheduler.activated = False
+
+        for scheduler in [mock_linear_warmup_scheduler, mock_main_scheduler]:
+            current_model.lr_scheduler_step(scheduler=scheduler, metric=None)
+
+        # Assert mock_main_scheduler's step() is called
+        mock_main_scheduler.step.assert_called()
+
+        # Regardless of the activation status, LinearWarmupScheduler can be called
+        assert mock_linear_warmup_scheduler.step.call_count == 2
 
 
 class TestOVModel:

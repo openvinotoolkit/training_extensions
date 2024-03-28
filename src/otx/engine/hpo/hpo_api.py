@@ -14,7 +14,6 @@ from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable
 
 import torch
-from lightning.pytorch.cli import OptimizerCallable
 
 from otx.core.config.hpo import HpoConfig
 from otx.core.types.task import OTXTaskType
@@ -25,6 +24,8 @@ from .hpo_trial import run_hpo_trial
 from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
 
 if TYPE_CHECKING:
+    from lightning.pytorch.cli import OptimizerCallable
+
     from otx.engine.engine import Engine
     from otx.hpo.hpo_base import HpoBase
 
@@ -174,11 +175,12 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        if isinstance(self._engine.optimizer, list):
-            for i, optimizer in enumerate(self._engine.optimizer):
-                search_space[f"optimizer.{i}.keywords.lr"] = self._make_lr_search_space(optimizer)
-        elif isinstance(self._engine.optimizer, OptimizerCallable):
-            search_space["optimizer.keywords.lr"] = self._make_lr_search_space(self._engine.optimizer)
+        optimizer_conf = self._engine.model.optimizer_callable
+
+        if not callable(optimizer_conf):
+            raise TypeError(optimizer_conf)
+
+        search_space["model.optimizer_callable.keywords.lr"] = self._make_lr_search_space(optimizer_conf)
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
@@ -191,8 +193,11 @@ class HPOConfigurator:
         return search_space
 
     @staticmethod
-    def _make_lr_search_space(optimizer: OptimizerCallable) -> dict[str, Any]:
-        cur_lr = optimizer.keywords["lr"]  # type: ignore[union-attr]
+    def _make_lr_search_space(optimizer_callable: OptimizerCallable) -> dict[str, Any]:
+        params = [torch.nn.Parameter(torch.zeros([0]))]
+        optimizer = optimizer_callable(params)
+        param_group = next(iter(optimizer.param_groups))
+        cur_lr = param_group["lr"]  # type: ignore[union-attr]
         min_lr = cur_lr / 10
         return {
             "type": "qloguniform",

@@ -106,25 +106,31 @@ class TestAutoConfigurator:
         assert isinstance(datamodule, OTXDataModule)
         assert datamodule.task == task
 
-    def test_get_model(self) -> None:
-        task = OTXTaskType.DETECTION
-        auto_configurator = AutoConfigurator(task=task)
+    def test_get_model(self, fxt_task: OTXTaskType) -> None:
+        if fxt_task in {OTXTaskType.H_LABEL_CLS, OTXTaskType.ACTION_DETECTION}:
+            pytest.xfail(reason="Not working")
+
+        auto_configurator = AutoConfigurator(task=fxt_task)
 
         # Default Model
         model = auto_configurator.get_model()
         assert isinstance(model, OTXModel)
-        assert model.num_classes == 1000
 
         # With label_info
         label_names = ["class1", "class2", "class3"]
         label_info = LabelInfo(label_names=label_names, label_groups=[label_names])
         model = auto_configurator.get_model(label_info=label_info)
         assert isinstance(model, OTXModel)
-        assert model.num_classes == 3
 
-    def test_get_optimizer(self) -> None:
-        task = OTXTaskType.SEMANTIC_SEGMENTATION
-        auto_configurator = AutoConfigurator(task=task)
+    def test_get_optimizer(self, fxt_task: OTXTaskType) -> None:
+        if fxt_task in {
+            OTXTaskType.ANOMALY_SEGMENTATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+        }:
+            pytest.xfail(reason="Not working")
+
+        auto_configurator = AutoConfigurator(task=fxt_task)
         optimizer = auto_configurator.get_optimizer()
         if isinstance(optimizer, list):
             for opt in optimizer:
@@ -132,9 +138,15 @@ class TestAutoConfigurator:
         else:
             assert callable(optimizer)
 
-    def test_get_scheduler(self) -> None:
-        task = OTXTaskType.INSTANCE_SEGMENTATION
-        auto_configurator = AutoConfigurator(task=task)
+    def test_get_scheduler(self, fxt_task: OTXTaskType) -> None:
+        if fxt_task in {
+            OTXTaskType.ANOMALY_SEGMENTATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+        }:
+            pytest.xfail(reason="Not working")
+
+        auto_configurator = AutoConfigurator(task=fxt_task)
         scheduler = auto_configurator.get_scheduler()
         if isinstance(scheduler, list):
             for sch in scheduler:

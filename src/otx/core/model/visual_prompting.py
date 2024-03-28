@@ -40,6 +40,7 @@ from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -182,8 +183,8 @@ class OTXVisualPromptingModel(
     def __init__(
         self,
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -293,8 +294,8 @@ class OTXZeroShotVisualPromptingModel(
     def __init__(
         self,
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:

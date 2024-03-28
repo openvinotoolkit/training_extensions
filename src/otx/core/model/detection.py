@@ -23,6 +23,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -48,8 +49,8 @@ class OTXDetectionModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -323,8 +324,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:

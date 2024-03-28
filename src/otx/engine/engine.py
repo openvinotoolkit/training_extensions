@@ -32,7 +32,6 @@ from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
@@ -110,8 +109,6 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -124,10 +121,6 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
-                Defaults to None.
-            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
-                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
@@ -155,12 +148,6 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
-            optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
-        )
-        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
-            scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
-        )
 
         # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
         if self.task in (
@@ -168,7 +155,7 @@ class Engine:
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ):
-            self._model = self._get_anomaly_model(self._model, self.optimizer, self.scheduler)
+            self._model = self._get_anomaly_model(self._model)
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -735,8 +722,6 @@ class Engine:
             work_dir=instantiated_config.get("work_dir", work_dir),
             datamodule=instantiated_config.get("data"),
             model=instantiated_config.get("model"),
-            optimizer=instantiated_config.get("optimizer"),
-            scheduler=instantiated_config.get("scheduler"),
             **engine_kwargs,
         )
 
@@ -892,14 +877,7 @@ class Engine:
             raise RuntimeError(msg)
         return self._datamodule
 
-    def _get_anomaly_model(
-        self,
-        model: OTXModel,
-        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-    ) -> OTXModel:
+    def _get_anomaly_model(self, model: OTXModel) -> OTXModel:
         # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
         model.task = self.task
-        model.optimizer_callable = optimizer
-        model.scheduler_callable = scheduler
         return model

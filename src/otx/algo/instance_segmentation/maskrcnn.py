@@ -12,6 +12,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -26,8 +27,8 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         self,
         num_classes: int,
         variant: Literal["efficientnetb2b", "r50"],
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -67,8 +68,8 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
     ) -> None:

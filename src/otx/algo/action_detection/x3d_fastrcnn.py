@@ -11,6 +11,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.action_detection import MMActionCompatibleModel
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -25,8 +26,8 @@ class X3DFastRCNN(MMActionCompatibleModel):
         self,
         num_classes: int,
         topk: int | tuple[int],
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:

@@ -21,6 +21,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
 if TYPE_CHECKING:
@@ -150,8 +151,8 @@ class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
     def __init__(
         self,
         hlabel_info: HLabelInfo,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
@@ -177,8 +178,8 @@ class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -203,8 +204,8 @@ class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:

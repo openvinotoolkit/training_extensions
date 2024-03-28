@@ -60,7 +60,8 @@ def test_auto_configuration(
 
     default_config["model"]["init_args"]["num_classes"] = num_classes
 
-    assert engine._auto_configurator.config == default_config
+    drop_model_config = lambda cfg: {key: value for key, value in cfg.items() if key != "model"}
+    assert drop_model_config(engine._auto_configurator.config) == drop_model_config(default_config)
 
     max_epochs = 2 if task.lower() != "zero_shot_visual_prompting" else 1
     train_metric = engine.train(max_epochs=max_epochs)

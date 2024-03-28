@@ -7,15 +7,6 @@ model:
     use_throughput_mode: True
     model_type: "Segmentation"
 
-optimizer:
-  class_path: torch.optim.Adam
-  init_args:
-    lr: 1e-3
-    weight_decay: 0.0
-
-scheduler:
-  class_path: torch.optim.lr_scheduler.PolynomialLR
-
 engine:
   task: SEMANTIC_SEGMENTATION
   device: cpu

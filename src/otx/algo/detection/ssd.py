@@ -17,6 +17,7 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.build import build_mm_model, modify_num_classes
 
 if TYPE_CHECKING:
@@ -41,8 +42,8 @@ class SSD(MMDetCompatibleModel):
         self,
         num_classes: int,
         variant: Literal["mobilenetv2"],
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
