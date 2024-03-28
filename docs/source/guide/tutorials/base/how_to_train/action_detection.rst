@@ -68,7 +68,7 @@ Training
 *********
 
 1. First of all, you need to choose which action detection model you want to train.
-The list of supported templates for action detection is available with the command line below:
+The list of supported recipes for action detection is available with the command line below:
 
 .. note::
 
@@ -76,13 +76,13 @@ The list of supported templates for action detection is available with the comma
 
 .. code-block::
 
-  (otx) ...$ otx find --task action_detection
+  (otx) ...$ otx find --task ACTION_DETECTION
 
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
-  |       TASK       |                   ID                  |      NAME     |                                BASE PATH                                |
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
-  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  |          TASK         |                  Model Name          |                                         Recipe PATH                             |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  | ACTION_DETECTION      | x3d_fast_rcnn                        | ../otx/recipe/action/action_detection/x3d_fast_rcnn.yaml                        |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
 
 To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
