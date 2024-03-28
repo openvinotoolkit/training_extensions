@@ -73,11 +73,11 @@ Training
 *********
 
 1. You need to choose, which action classification model you want to train.
-To see the list of supported templates, run the following command:
+To see the list of supported recipes, run the following command:
 
 .. note::
 
-  OpenVINO™ Training Extensions supports X3D and MoViNet template now, other architecture will be supported in future.
+  OpenVINO™ Training Extensions supports X3D and MoViNet recipe now, other architecture will be supported in future.
 
 .. code-block::
 
@@ -86,8 +86,8 @@ To see the list of supported templates, run the following command:
   +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
   |          TASK         |                  ID                  |   NAME  |                               BASE PATH                               |
   +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
-  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/template.yaml   |
-  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/template.yaml |
+  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/recipe.yaml   |
+  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/recipe.yaml |
   +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
@@ -186,6 +186,15 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. code-block::
 
+<<<<<<< HEAD
+  (otx) ...$ otx build --task action_classification --train-data-roots data/hmdb51/CVAT/train/ --val-data-roots data/hmdb51/CVAT/valid
+  [*] Workspace Path: otx-workspace-ACTION_CLASSIFICATION
+  [*] Load Model Recipe ID: Custom_Action_Classification_X3D
+  [*] Load Model Name: X3D
+  [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/model.py
+  [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/data_pipeline.py
+  [*] Update data configuration file to: otx-workspace-ACTION_CLASSIFICATION/data.yaml
+=======
     otx-workspace
     ├── outputs/
         ├── 20240403_134256/
@@ -197,6 +206,7 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
         └── .latest
             └── train/
     ...
+>>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
@@ -343,8 +353,13 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 Optimization
 *************
 
+<<<<<<< HEAD
+1. You can further optimize the model with ``otx optimize``.
+Currently, quantization jobs that include PTQ is supported for X3D recipe. MoViNet will be supported in near future.
+=======
 1. We can further optimize the model with ``otx optimize``.
 It uses PTQ depending on the model and transforms it to ``INT8`` format.
+>>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 ``PTQ`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 

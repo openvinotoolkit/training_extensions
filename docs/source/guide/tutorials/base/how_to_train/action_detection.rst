@@ -68,7 +68,7 @@ Training
 *********
 
 1. First of all, you need to choose which action detection model you want to train.
-The list of supported templates for action detection is available with the command line below:
+The list of supported recipes for action detection is available with the command line below:
 
 .. note::
 
@@ -81,7 +81,7 @@ The list of supported templates for action detection is available with the comma
   +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
   |       TASK       |                   ID                  |      NAME     |                                BASE PATH                                |
   +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
-  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
+  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/recipe.yaml |
   +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
 
 To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
@@ -98,7 +98,16 @@ Here are the main outputs can expect with CLI:
 
     .. tab-item:: CLI (auto-config)
 
+<<<<<<< HEAD
+  [*] Workspace Path: otx-workspace-ACTION_DETECTION
+  [*] Load Model Recipe ID: Custom_Action_Detection_X3D_FAST_RCNN
+  [*] Load Model Name: X3D_FAST_RCNN
+  [*]     - Updated: otx-workspace-ACTION_DETECTION/model.py
+  [*]     - Updated: otx-workspace-ACTION_DETECTION/data_pipeline.py
+  [*] Update data configuration file to: otx-workspace-ACTION_DETECTION/data.yaml
+=======
         .. code-block:: shell
+>>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
             (otx) ...$ otx train --data_root data/JHMDB_10%
 

@@ -6,8 +6,13 @@ All possible OpenVINO™ Training Extensions CLI commands are presented below al
 .. note::
 
     To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/algorithms/index>` in the documentation.
+<<<<<<< HEAD
+    Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or LightningCLI.
+    `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
+=======
     Also, by default, the OpenVINO™ Training Extensions CLI is written using jsonargparse, see jsonargparse or LightningCLI.
     Please refer `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
+>>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 *****
 Help
@@ -198,7 +203,11 @@ Users can also pre-generate a config file with an example like the one below.
 Find
 *****
 
+<<<<<<< HEAD
+``otx find`` lists model recipes and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OTX.
+=======
 ``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OpenVINO™ Training Extensions.
+>>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 .. code-block:: shell
 
@@ -219,7 +228,7 @@ Find
     ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 
-Example to find ready-to-use templates for the detection task:
+Example to find ready-to-use recipes for the detection task:
 
 .. code-block:: shell
 
@@ -297,7 +306,7 @@ Then pass the path to ``coco_data_root`` to both root options:
 Training
 *********
 
-``otx train`` trains a model (a particular model template) on a dataset:
+``otx train`` trains a model (a particular model recipe) on a dataset:
 
 The results will be saved in ``./otx-workspace/`` folder by default. The output folder can be modified by ``--work_dir`` option. These files are used by other commands: ``export``, ``test``, ``demo``, etc.
 
@@ -347,7 +356,7 @@ The results will be saved in ``./otx-workspace/`` folder by default. The output 
     If your machine has enough main memory, we recommend increasing this value as much as possible.
     For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.config.mem_cache_size 8GB``.
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the recipe and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and recipe with the best accuracy/speed trade-off.
 
 You can override the configurable arguments.
 For example, that is how you can change the max epochs and the batch size for the training:
