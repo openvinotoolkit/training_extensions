@@ -32,27 +32,26 @@ For classification networks these algorithms are used to generate saliency maps:
 
 - **Activation Map​** - this is the most basic and naive approach. It takes the outputs of the model's feature extractor (backbone) and averages it in channel dimension. The results highly rely on the backbone and ignore neck and head computations. Basically, it gives a relatively good and fast result.
 
-- `Eigen-Cam <https://arxiv.org/abs/2008.00299​>`_ uses Principal Component Analysis (PCA).  It returns the first principal component of the feature extractor output, which most of the time corresponds to the dominant object. The results highly rely on the backbone as well and ignore neck and head computations.
+- `Recipro-CAM​ <https://arxiv.org/pdf/2209.14074>`_ uses Class Activation Mapping (CAM) to weigh the activation map for each class, so it can generate different saliency per class. Recipro-CAM is a fast gradient-free Reciprocal CAM method. The method involves spatially masking the extracted feature maps to exploit the correlation between activation maps and network predictions for target classes. **Default option** for CNN models.
 
-- `Recipro-CAM​ <https://arxiv.org/pdf/2209.14074>`_ uses Class Activation Mapping (CAM) to weigh the activation map for each class, so it can generate different saliency per class. Recipro-CAM is a fast gradient-free Reciprocal CAM method. The method involves spatially masking the extracted feature maps to exploit the correlation between activation maps and network predictions for target classes. 
-
+- `ViT Recipro-CAM​ <https://arxiv.org/abs/2310.02588>`_ is a modification of Recipro-CAM for Transformers-based models. It uses the same approach as Recipro-CAM but with a different way to extract feature maps from the Vision Transformer. **Default option** for transformer-based models.
 
 Below we show the comparison of described algorithms. ``Access to the model internal state`` means the necessity to modify the model's outputs and dump inner features.
 ``Per-class explanation support`` means generation different saliency maps for different classes.
 
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
-| Classification algorithm                  | Activation Map | Eigen-Cam      | Recipro-CAM                                                             |
-+===========================================+================+================+=========================================================================+
-| Need access to model internal state       | Yes            | Yes            |  Yes                                                                    |
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
-| Gradient-free                             | Yes            | Yes            |  Yes                                                                    |
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
-| Single-shot                               | Yes            | Yes            |  No (re-infer neck + head H*W times, where HxW – feature map size)      |                                                          
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
-| Per-class explanation support             | No             | No             | Yes                                                                     |
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
-| Execution speed                           | Fast           | Fast           | Medium                                                                  |  
-+-------------------------------------------+----------------+----------------+-------------------------------------------------------------------------+
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
+| Classification algorithm                  | Activation Map | Recipro-CAM                                                             | ViT Recipro-CAM                                                         |
++===========================================+================+=========================================================================+=========================================================================+
+| Need access to model internal state       | Yes            | Yes                                                                     | Yes                                                                     |
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
+| Gradient-free                             | Yes            | Yes                                                                     | Yes                                                                     |
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
+| Single-shot                               | Yes            | No (re-infer neck + head H*W times, where HxW – feature map size)       | No (re-infer last transformer encoder block)                            |                                                          
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
+| Per-class explanation support             | No             | Yes                                                                     | Yes                                                                     |
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
+| Execution speed                           | Fast           | Medium                                                                  | Medium                                                                  |  
++-------------------------------------------+----------------+-------------------------------------------------------------------------+-------------------------------------------------------------------------+
 
 
 ****************************
@@ -61,9 +60,9 @@ XAI algorithms for detection
 
 For detection networks these algorithms are used to generate saliency maps:
 
-- **Activation Map​** - the same approach as for classification networks, which uses the outputs from feature extractor. This is an algorithm is used to generate saliency maps for two-stage detectors.
+- **Activation Map​** - the same approach as for classification networks, which uses the outputs from feature extractor. This algorithm is used to generate saliency maps for two-stage detectors.
 
-- **DetClassProbabilityMap** - this approach takes the raw classification head output and uses class probability maps to calculate regions of interest for each class. So, it creates different salience maps for each class. This algorithm is implemented for single-stage detectors only.
+- **DetClassProbabilityMap** - this approach takes the raw classification head output and uses class probability maps to calculate regions of interest for each class. So, it creates different salience maps for each class. This algorithm is implemented for single-stage detectors only. **Default option** for detection models.
 
 .. image:: ../../../../utils/images/xai_det.jpg
   :width: 600
@@ -71,15 +70,16 @@ For detection networks these algorithms are used to generate saliency maps:
   :alt: this image shows the detailed description of XAI detection algorithm
 
 
-The main limitation of this method is that, due to training loss design of most single-stage detectors, activation values drift towards the center of the object while propagating through the network.
-This prevents from getting clear explanation in the input image space using intermediate activations.
+The main limitation of this method is that, due to the training loss design of most single-stage detectors, activation values drift towards the center of the object while propagating through the network. This prevents clear explanation in the input image space using intermediate activations.
 
-Below we show the comparison of described algorithms. ``Access to the model internal state`` means the necessity to modify the model's outputs and dump inner features.
-``Per-class explanation support`` means generation different saliency maps for different classes. ``Per-box explanation support`` means generation standalone saliency maps for each detected prediction.
+Below is a comparison of the described algorithms:
 
+- "Access to the model internal state" refers to the necessity to modify the model's outputs and dump inner features.
+- "Per-class explanation support" means the generation of different saliency maps for different classes.
+- "Per-box explanation support" means the generation of standalone saliency maps for each detected prediction.
 
 +-------------------------------------------+----------------------------+--------------------------------------------+
-| Detection algorithm                       | Activation Map             |  DetClassProbabilityMap                    |
+| Detection algorithm                       | Activation Map             | DetClassProbabilityMap                     |
 +===========================================+============================+============================================+
 | Need access to model internal state       | Yes                        | Yes                                        |           
 +-------------------------------------------+----------------------------+--------------------------------------------+
@@ -94,6 +94,14 @@ Below we show the comparison of described algorithms. ``Access to the model inte
 | Execution speed                           | Fast                       | Fast                                       |           
 +-------------------------------------------+----------------------------+--------------------------------------------+
 
+****************************************
+XAI algorithms for instance segmentation
+****************************************
+
+For instance segmentation networks the following algorithm is used to generate saliency maps:
+
+- **MaskRCNNExplainAlgo​** - in this approach the predicted object masks are combined and aggregated per class to generate the saliency maps for each class.
+
 
 .. tab-set::
 
@@ -101,10 +109,16 @@ Below we show the comparison of described algorithms. ``Access to the model inte
 
         .. code-block:: python
 
-            engine.explain(checkpoint="<checkpoint-path>")
+            engine.explain(
+              checkpoint="<checkpoint-path>", # .pth or .xml weights of the model
+              datamodule=OTXDataModule(), # The data module to use for predictions
+              dump=True # Wherether to save saliency map images or not
+              )
 
     .. tab-item:: CLI
 
         .. code-block:: bash
 
-            (otx) ...$ otx explain ... --checkpoint <checkpoint-path>
+            (otx) ...$ otx explain ... --checkpoint <checkpoint-path> # .pth or .xml weights of the model
+                                       --data_root <dataset_path> # Path to data folder or single image 
+                                       --dump True # Wherether to save saliency map images or not
