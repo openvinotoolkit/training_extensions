@@ -312,7 +312,7 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
             if self.device.accelerator == "auto":
-                self.device = DeviceType.cpu
+                self.device = DeviceType.cpu  # type: ignore[assignment]
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
