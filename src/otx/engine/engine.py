@@ -311,7 +311,9 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
-            if self.device.accelerator == "auto":
+            if self.device.accelerator != "cpu":
+                msg = "IR model supports inference only on CPU device. The device is changed automatic."
+                warn(msg, stacklevel=1)
                 self.device = DeviceType.cpu  # type: ignore[assignment]
 
         metric = metric if metric is not None else self._auto_configurator.get_metric()
