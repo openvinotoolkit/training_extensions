@@ -419,53 +419,7 @@ Learn more about the formats by following the links above. Here is an example of
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
-<p>We support the following ready-to-use model templates:</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Template ID</p></th>
-<th class="head"><p>Name</p></th>
-<th class="head"><p>Complexity (GFLOPs)</p></th>
-<th class="head"><p>Model size (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_tiny.yaml">Custom_Object_Detection_YOLOX</a></p></td>
-<td><p>YOLOX-TINY</p></td>
-<td><p>6.5</p></td>
-<td><p>20.4</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_s.yaml">Object_Detection_YOLOX_S</a></p></td>
-<td><p>YOLOX_S</p></td>
-<td><p>33.51</p></td>
-<td><p>46.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_l.yaml">Object_Detection_YOLOX_L</a></p></td>
-<td><p>YOLOX_L</p></td>
-<td><p>194.57</p></td>
-<td><p>207.0</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_x.yaml">Object_Detection_YOLOX_X</a></p></td>
-<td><p>YOLOX_X</p></td>
-<td><p>352.42</p></td>
-<td><p>378.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/ssd_mobilenetv2.yaml">Custom_Object_Detection_Gen3_SSD</a></p></td>
-<td><p>SSD</p></td>
-<td><p>9.4</p></td>
-<td><p>7.6</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/atss_mobilenetv2.yaml">Custom_Object_Detection_Gen3_ATSS</a></p></td>
-<td><p>MobileNetV2-ATSS</p></td>
-<td><p>20.6</p></td>
-<td><p>9.1</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/atss_resnext101.yaml">Object_Detection_ResNeXt101_ATSS</a></p></td>
-<td><p>ResNeXt101-ATSS</p></td>
-<td><p>434.75</p></td>
-<td><p>344.0</p></td>
-</tr>
-</tbody>
-</table>
+<p>We support the following ready-to-use model recipes:</p>
 <p>Above table can be found using the following command</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>DETECTION
 </pre></div>
@@ -483,8 +437,8 @@ Except for COCO, we report AP50 as performance metric.</p>
 <a class="reference external" href="https://www.bdd100k.com/">BDD100K</a> is the largest dataset among we used. 70000 images are used as train images and 10000 images are used for validation.
 <a class="reference external" href="https://public.roboflow.com/object-detection/brackish-underwater">Brackish</a> and <a class="reference external" href="https://public.roboflow.com/object-detection/plantdoc">Plantdoc</a> are datasets of medium size. They have around 10000 images for train and 1500 images for validation.
 <a class="reference external" href="https://public.roboflow.com/object-detection/bccd">BCCD</a> and <a class="reference external" href="https://public.roboflow.com/object-detection/chess-full">Chess pieces</a> are datasets of small size. They have around 300 images for train and 100 images for validation.
-We used our own templates without any modification.
-For hyperparameters, please, refer to the related template.
+We used our own recipes without any modification.
+For hyperparameters, please, refer to the related recipe.
 We trained each model with a single Nvidia GeForce RTX3090.</p>
 <table class="table">
 <thead>

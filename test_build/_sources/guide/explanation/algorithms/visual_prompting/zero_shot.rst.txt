@@ -48,7 +48,7 @@ Models
 ******
 .. _zero_shot_visual_prompting_model:
 
-We support the following model templates in experimental phase:
+We support the following model recipes in experimental phase:
 
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 |                                                                         Template ID                                                                         |          Name          | Complexity (GFLOPs) | Model size (MB) |

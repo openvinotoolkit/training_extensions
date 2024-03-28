@@ -49,7 +49,7 @@ An example of the annotations format and dataset structure can be found in our `
 Models
 ******
 
-We use the same model templates as for Multi-class Classification. Please, refer: :ref:`Classification Models <classification_models>`.
+We use the same model recipes as for Multi-class Classification. Please, refer: :ref:`Classification Models <classification_models>`.
 
 To see which models are available for the task, the following command can be executed:
 

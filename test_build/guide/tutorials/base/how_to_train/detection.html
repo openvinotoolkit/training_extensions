@@ -439,14 +439,11 @@ we need to reformat the dataset according to this structure:</p>
 ├──<span class="w"> </span>annotations/
 <span class="w">    </span>├──<span class="w"> </span>instances_train.json
 <span class="w">    </span>├──<span class="w"> </span>instances_val.json
-<span class="w">    </span><span class="o">(</span>Optional<span class="o">)</span>
 <span class="w">    </span>└──<span class="w"> </span>instances_test.json
 ├──images/
-<span class="w">    </span><span class="o">(</span>The<span class="w"> </span>split<span class="w"> </span>on<span class="w"> </span>folders<span class="w"> </span>is<span class="w"> </span>optional<span class="o">)</span>
 <span class="w">    </span>├──<span class="w"> </span>train
 <span class="w">    </span>├──<span class="w"> </span>val
 <span class="w">    </span>└──<span class="w"> </span><span class="nb">test</span>
-<span class="o">(</span>There<span class="w"> </span>may<span class="w"> </span>be<span class="w"> </span>more<span class="w"> </span>extra<span class="w"> </span>unrelated<span class="w"> </span>folders<span class="o">)</span>
 </pre></div>
 </div>
 <p>We can do that by running these commands:</p>
@@ -468,7 +465,7 @@ cp<span class="w"> </span>annotations/instances_val.json<span class="w"> </span>
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Link to this heading">#</a></h2>
 <p>1. First of all, you need to choose which object detection model you want to train.
-The list of supported templates for object detection is available with the command line below.</p>
+The list of supported recipes for object detection is available with the command line below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html"><span class="doc">Explanation section</span></a>.</p>
@@ -539,7 +536,7 @@ data:
 </pre></div>
 </div>
 </div>
-<p>3. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template)
+<p>3. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model recipe)
 on a dataset and results:</p>
 <p>Here are the main outputs can expect with CLI:
 - <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt</span></code> - a model checkpoint file.
@@ -801,7 +798,7 @@ API</label><div class="sd-tab-content docutils">
 </div>
 </div>
 <p>4. <code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--help</span></code>.</p>
+Learn more about recipe-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--help</span></code>.</p>
 <p>For example, If you want to get the ONNX model format you can run it like below.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-17" name="sd-tab-set-6" type="radio">

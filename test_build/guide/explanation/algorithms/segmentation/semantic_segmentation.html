@@ -401,7 +401,7 @@ For the supervised training we use the following algorithms components:</p>
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
 <p>For the dataset handling inside OpenVINO™ Training Extensions, we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>.</p>
 <p>At this end we support <a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/docs/source/docs/data-formats/formats/common_semantic_segmentation.md">Common Semantic Segmentation</a> data format.
-If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:</p>
+If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model recipe to start training:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Due to some internal limitations, the dataset should always consist of a “background” label. If your dataset doesn’t have a background label, rename the first label to “background” in the <code class="docutils literal notranslate"><span class="pre">meta.json</span></code> file.</p>
@@ -413,52 +413,11 @@ If you organized supported dataset format, starting training will be very simple
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
-<p id="semantic-segmentation-models">We support the following ready-to-use model templates:</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Template ID</p></th>
-<th class="head"><p>Name</p></th>
-<th class="head"><p>Complexity (GFLOPs)</p></th>
-<th class="head"><p>Model size (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/litehrnet_s.yaml">Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR</a></p></td>
-<td><p>Lite-HRNet-s-mod2</p></td>
-<td><p>1.44</p></td>
-<td><p>3.2</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/litehrnet_18.yaml">Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR</a></p></td>
-<td><p>Lite-HRNet-18-mod2</p></td>
-<td><p>2.82</p></td>
-<td><p>4.3</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/litehrnet_x.yaml">Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR</a></p></td>
-<td><p>Lite-HRNet-x-mod3</p></td>
-<td><p>9.20</p></td>
-<td><p>5.7</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/segnext_t.yaml">Custom_Semantic_Segmentation_SegNext_T</a></p></td>
-<td><p>SegNext-t</p></td>
-<td><p>6.07</p></td>
-<td><p>4.23</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/segnext_s.yaml">Custom_Semantic_Segmentation_SegNext_S</a></p></td>
-<td><p>SegNext-s</p></td>
-<td><p>15.35</p></td>
-<td><p>13.9</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/semantic_segmentation/segnext_b.yaml">Custom_Semantic_Segmentation_SegNext_B</a></p></td>
-<td><p>SegNext-b</p></td>
-<td><p>32.08</p></td>
-<td><p>27.56</p></td>
-</tr>
-</tbody>
-</table>
-<p>All of these models are members of the same <a class="reference external" href="https://arxiv.org/abs/2104.06403">Lite-HRNet</a> backbones family. They differ in the trade-off between accuracy and inference/training speed. <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-x-mod3</span></code> is the template with heavy-size architecture for accurate predictions but it requires long training.
+<p id="semantic-segmentation-models">We support the following ready-to-use model recipes:</p>
+<p>All of these models are members of the same <a class="reference external" href="https://arxiv.org/abs/2104.06403">Lite-HRNet</a> backbones family. They differ in the trade-off between accuracy and inference/training speed. <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-x-mod3</span></code> is the recipe with heavy-size architecture for accurate predictions but it requires long training.
 Whereas the <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-s-mod2</span></code> is the lightweight architecture for fast inference and training. It is the best choice for the scenario of a limited amount of data. The <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-18-mod2</span></code> model is the middle-sized architecture for the balance between fast inference and training time.</p>
 <p>Use <a class="reference external" href="https://arxiv.org/abs/2209.08575">SegNext</a> model which can achieve superior perfomance while preserving fast inference and fast training.</p>
-<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a> on some academic datasets using our <a class="reference internal" href="#semantic-segmentation-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
+<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a> on some academic datasets using our <a class="reference internal" href="#semantic-segmentation-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related recipe. We trained each model with single Nvidia GeForce RTX3090.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Model name</p></th>

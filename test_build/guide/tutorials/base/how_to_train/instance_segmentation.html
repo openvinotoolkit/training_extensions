@@ -411,10 +411,11 @@ environment:</p>
 </ul>
 </div>
 <p>1. Clone a repository with
-<a class="reference external" href="https://universe.roboflow.com/gianmarco-russo-vt9xr/car-seg-un1pm">car-seg dataset</a>.</p>
+<a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>data<span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>data
-wget<span class="w"> </span>https://ultralytics.com/assets/carparts-seg.zip
-unzip<span class="w"> </span>carparts-seg.zip
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/thsant/wgisd.git
+<span class="nb">cd</span><span class="w"> </span>wgisd
+git<span class="w"> </span>checkout<span class="w"> </span>6910edc5ae3aae8c20062941b1641821f0c30127
 </pre></div>
 </div>
 <p>This dataset contains images of grapevines with the annotation for different varieties of grapes.</p>
@@ -438,10 +439,8 @@ we will need the following file structure:</p>
 ├──<span class="w"> </span>annotations/
 <span class="w">    </span>├──<span class="w"> </span>instances_train.json
 <span class="w">    </span>├──<span class="w"> </span>instances_val.json
-<span class="w">    </span><span class="o">(</span>Optional<span class="o">)</span>
 <span class="w">    </span>└──<span class="w"> </span>instances_test.json
 ├──images/
-<span class="w">    </span><span class="o">(</span>Optional<span class="o">)</span>
 <span class="w">    </span>├──<span class="w"> </span>train
 <span class="w">    </span>├──<span class="w"> </span>val
 <span class="w">    </span>└──<span class="w"> </span><span class="nb">test</span>
@@ -471,7 +470,7 @@ cp<span class="w"> </span>annotations/instances_val.json<span class="w"> </span>
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Link to this heading">#</a></h2>
 <p>1. First of all, you need to choose which instance segmentation model you want to train.
-The list of supported templates for instance segmentation is available with the command line below.</p>
+The list of supported recipes for instance segmentation is available with the command line below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html"><span class="doc">Explanation section</span></a>.</p>
@@ -618,8 +617,8 @@ API</label><div class="sd-tab-content docutils">
 </div>
 <p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 10 minutes with full dataset.</p>
 <p>4. <code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
-Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
-<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file in your workplace or via the command line.</p>
+Learn more about recipe-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
+<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file in your workplace or via the command line.</p>
 <p>For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">

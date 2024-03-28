@@ -422,40 +422,14 @@ This format has the following structure:</p>
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
-<p id="classification-models">We support the following ready-to-use model templates:</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Template ID</p></th>
-<th class="head"><p>Name</p></th>
-<th class="head"><p>Complexity (GFLOPs)</p></th>
-<th class="head"><p>Model size (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
-<td><p>MobileNet-V3-large-1x</p></td>
-<td><p>0.44</p></td>
-<td><p>4.29</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
-<td><p>EfficientNet-B0</p></td>
-<td><p>0.81</p></td>
-<td><p>4.09</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
-<td><p>EfficientNet-V2-S</p></td>
-<td><p>5.76</p></td>
-<td><p>20.23</p></td>
-</tr>
-</tbody>
-</table>
-<p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
+<p id="classification-models">We support the following ready-to-use model recipes:</p>
+<p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this recipe provides competitive accuracy as well.
 <a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.</p>
 <p>To see which models are available for the task, the following command can be executed:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>MULTI_CLASS_CLS
 </pre></div>
 </div>
-<p>In the table below the top-1 accuracy on some academic datasets using our <a class="reference internal" href="#mcl-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
+<p>In the table below the top-1 accuracy on some academic datasets using our <a class="reference internal" href="#mcl-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our Recipes without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related recipe. We trained each model with single Nvidia GeForce RTX3090.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Model name</p></th>

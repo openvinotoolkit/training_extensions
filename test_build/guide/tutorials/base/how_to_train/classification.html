@@ -455,7 +455,7 @@ please keep the exact same name for the train/val/test folder, to identify the d
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Link to this heading">#</a></h2>
 <p>1. First of all, you need to choose which classification model you want to train.
-The list of supported templates for classification is available with the command line below.</p>
+The list of supported recipes for classification is available with the command line below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">Explanation section</span></a>.</p>
@@ -540,7 +540,7 @@ data:
 </pre></div>
 </div>
 </div>
-<p>3. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template)
+<p>3. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model recipe)
 on a dataset and results:</p>
 <p>Here are the main outputs can expect with CLI:
 - <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt</span></code> - a model checkpoint file.
@@ -780,7 +780,7 @@ API</label><div class="sd-tab-content docutils">
 </div>
 </div>
 <p>4. <code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--help</span></code>.</p>
+Learn more about recipe-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span> <span class="pre">--help</span></code>.</p>
 <p>For example, If you want to get the ONNX model format you can run it like below.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-17" name="sd-tab-set-6" type="radio">

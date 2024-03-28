@@ -857,6 +857,7 @@
                 <span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">fn_kwargs</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print_exception</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+                <span class="k">raise</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">work_dir</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unrecognized subcommand: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">&quot;</span>

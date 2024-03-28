@@ -378,9 +378,9 @@
 </div><section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h1>
 <p><strong>OpenVINO™ Training Extensions</strong> is a low-code transfer learning framework for Computer Vision.</p>
-<p>The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on <a class="reference external" href="https://pytorch.org/">PyTorch</a> and <a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html">OpenVINO™ toolkit</a>.</p>
+<p>The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on <a class="reference external" href="https://pytorch.org/">PyTorch</a> , <a class="reference external" href="https://lightning.ai/">Lightning</a> and <a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html">OpenVINO™ toolkit</a>.</p>
 <p>OpenVINO™ Training Extensions provide <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/src/otx/recipe">recipe</a> for every supported task type, which consolidates necessary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general. If you are an experienced user, you can configure your own model based on <a class="reference external" href="https://pytorch.org/vision/stable/index.html">torchvision</a>, <a class="reference external" href="https://github.com/open-mmlab/mmcv">mmcv</a> and <a class="reference external" href="https://github.com/openvinotoolkit/open_model_zoo">OpenVINO Model Zoo (OMZ)</a> frameworks.</p>
-<p>Furthermore, OpenVINO™ Training Extensions provides <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">automatic configuration</span></a> of task types and hyperparameters. The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.</p>
+<p>Furthermore, OpenVINO™ Training Extensions provides <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">automatic configuration</span></a> of task types and hyperparameters. The framework will identify the most suitable recipe based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.</p>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Link to this heading">#</a></h2>
 <p>OpenVINO™ Training Extensions supports the following computer vision tasks:</p>
@@ -403,7 +403,7 @@
 <li><p><strong>Half-precision training</strong> to save GPUs memory and use larger batch sizes</p></li>
 <li><p>Integrated, efficient <a class="reference internal" href="../explanation/additional_features/hpo.html"><span class="doc">hyper-parameter optimization module</span></a> (<strong>HPO</strong>). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.</p></li>
 <li><p>OpenVINO™ Training Extensions uses <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/index.html">Datumaro</a> as the backend to handle datasets. On account of that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. In the future there will be more supported formats available to give more freedom of datasets format choice.</p></li>
-<li><p>Improved <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration functionality</span></a>. OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.</p></li>
+<li><p>Improved <a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration functionality</span></a>. OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model recipe to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.</p></li>
 </ul>
 </section>
 <section id="documentation-content">
@@ -539,7 +539,7 @@ Advanced</div>
 <div><ol class="arabic simple">
 <li><p>Explanation of the task and main supervised training pipeline.</p></li>
 <li><p>Description of the supported datasets formats for each task.</p></li>
-<li><p>Available templates and models.</p></li>
+<li><p>Available recipes and models.</p></li>
 <li><p>Incremental learning approach.</p></li>
 </ol>
 </div></blockquote>

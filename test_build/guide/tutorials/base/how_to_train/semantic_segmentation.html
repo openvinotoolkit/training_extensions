@@ -403,131 +403,287 @@ environment:</p>
 </section>
 <section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Link to this heading">#</a></h2>
-<p>Download and prepare <a class="reference external" href="http://host.robots.ox.ac.uk/pascal/VOC/voc2012">VOC2012 dataset</a> with the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data</span>
-<span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">host</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">ox</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/</span><span class="n">pascal</span><span class="o">/</span><span class="n">VOC</span><span class="o">/</span><span class="n">voc2012</span><span class="o">/</span><span class="n">VOCtrainval_11</span><span class="o">-</span><span class="n">May</span><span class="o">-</span><span class="mf">2012.</span><span class="n">tar</span>
-<span class="n">tar</span> <span class="o">-</span><span class="n">xvf</span> <span class="n">VOCtrainval_11</span><span class="o">-</span><span class="n">May</span><span class="o">-</span><span class="mf">2012.</span><span class="n">tar</span>
-<span class="n">cd</span> <span class="o">..</span>
-</pre></div>
-</div>
-<a class="reference internal image-reference" href="../../../../_images/voc_example.png"><img alt="../../../../_images/voc_example.png" src="../../../../_images/voc_example.png" style="width: 600px;" /></a>
-<p>The dataset contains a set of RGB images with 20 semantic labels such as aeroplane, bicycle, bird, car, person, etc. The images are stored in the following format:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>VOC2012
-├── Annotations
-├── ImageSets
-├── JPEGImages
-├── SegmentationClass
-├── SegmentationObject
-</pre></div>
-</div>
+<p>For the semnatic segmentation, we’ll use the common_semantic_segmentation_dataset/supervised located at the tests/assets</p>
 </section>
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Link to this heading">#</a></h2>
 <p>1. First of all, you need to choose which semantic segmentation model you want to train.
-The list of supported templates for semantic segmentation is available with the command line below.</p>
+The list of supported recipes for semantic segmentation is available with the command line below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">Explanation section</span></a>.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --task segmentation
+<dl class="simple">
+<dt>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</dt><dd><p>We also can modify the architecture of supported models with various backbones, please refer to the <span class="xref std std-doc">advanced tutorial for model customization</span>.</p>
+</dd>
+</dl>
+<blockquote>
+<div><div class="sd-tab-item docutils">
+<p class="sd-tab-label rubric">CLI</p>
+<div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>SEMANTIC_SEGMENTATION
 
-+--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
-|     TASK     |                          ID                         |        NAME        |                                  BASE PATH                                   |
-+--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
-| SEGMENTATION |    Custom_Semantic_Segmentation_Lite-HRNet-18_OCR   |   Lite-HRNet-18    |   src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml    |
-| SEGMENTATION | Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml |
-| SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml  |
-| SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
-+--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
+┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w"> </span>Task<span class="w">                  </span>┃<span class="w"> </span>Model<span class="w"> </span>Name<span class="w">                    </span>┃<span class="w"> </span>Recipe<span class="w"> </span>Path<span class="w">                                                                        </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>openvino_model<span class="w">                </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/openvino_model.yaml<span class="w">                           </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>segnext_t<span class="w">                     </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/segnext_t.yaml<span class="w">                             </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>segnext_b<span class="w">                     </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/segnext_b.yaml<span class="w">                        </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>dino_v2<span class="w">                       </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/dino_v2.yaml<span class="w">                           </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>litehrnet_18<span class="w">                  </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_18.yaml<span class="w">                 </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>segnext_s<span class="w">                     </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/segnext_s.yaml<span class="w">                         </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>litehrnet_x<span class="w">                   </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_x.yaml<span class="w">                         </span>│
+│<span class="w"> </span>SEMANTIC_SEGMENTATION<span class="w"> </span>│<span class="w"> </span>litehrnet_s<span class="w">                   </span>│<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_s.yaml<span class="w">                         </span>│
+└───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>We do not attach an OCR head for supported models in default. We remain the suffix ‘_OCR’ in ID just for backward compatibility.</p>
 </div>
-<p>To have a specific example in this tutorial, all commands will be run on the <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html#semantic-segmentation-models"><span class="std std-ref">Lite-HRNet-18-mod2</span></a>  model. It’s a light model, that achieves competitive accuracy while keeping the inference fast.</p>
-<p>2.  Next, we need to create train/validation sets.
-OpenVINO™ Training Extensions supports auto-split functionality for semantic segmentation.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in the argument <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code> when using other supported segmentation dataset. To learn about dataset formats for semantic segmentation, please refer to the <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">explanation section</span></a>.</p>
 </div>
-<p>Let’s prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012 --model Lite-HRNet-18-mod2
+<div class="sd-tab-item docutils">
+<p class="sd-tab-label rubric">API</p>
+<div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine.utils.api</span> <span class="kn">import</span> <span class="n">list_models</span>
 
-[*] Load Model Template ID: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
-[*] Load Model Name: Lite-HRNet-18-mod2
+<span class="n">model_lists</span> <span class="o">=</span> <span class="n">list_models</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;SEMANTIC_SEGMENTATION&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model_lists</span><span class="p">)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">[</span>
+<span class="sd">  &#39;openvino_model&#39;,</span>
+<span class="sd">  &#39;dino_v2&#39;,</span>
+<span class="sd">  &#39;litehrnet_x&#39;,</span>
+<span class="sd">  &#39;litehrnet_18&#39;,</span>
+<span class="sd">  &#39;segnext_s&#39;,</span>
+<span class="sd">  &#39;segnext_b&#39;,</span>
+<span class="sd">  &#39;segnext_t&#39;,</span>
+<span class="sd">  &#39;litehrnet_s&#39;,</span>
+<span class="sd">]</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div></blockquote>
+<p>2.  On this step we will configure configuration
+with:</p>
+<ul class="simple">
+<li><p>all necessary configs for litehrnet_18</p></li>
+<li><p>train/validation sets, based on provided annotation.</p></li>
+</ul>
+<p>Let’s prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># or its config path</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_18.yaml<span class="w"> </span>--data_root<span class="w"> </span>tests/assets/common_semantic_segmentation_dataset/supervised<span class="w"> </span>--print_config
 
 ...
-
-[*] Update data configuration file to: otx-workspace-SEGMENTATION/data.yaml
-
-(otx) ...$ cd ./otx-workspace-SEGMENTATION
+data_root:<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised
+work_dir:<span class="w"> </span>otx-workspace
+callback_monitor:<span class="w"> </span>val/Dice
+disable_infer_num_classes:<span class="w"> </span><span class="nb">false</span>
+engine:
+<span class="w">  </span>task:<span class="w"> </span>SEMANTIC_SEGMENTATION
+<span class="w">  </span>device:<span class="w"> </span>auto
+data:
+...
 </pre></div>
 </div>
-<p>It will create <strong>otx-workspace-SEGMENTATION</strong> with all necessary configs for Lite-HRNet-18-mod2, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch and splitted dataset.</p>
-<p>3. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
-command in our workspace:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to get configuration as yaml file, please use <code class="docutils literal notranslate"><span class="pre">--print_config</span></code> parameter and <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">configs.yaml</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_18.yaml<span class="w"> </span>--data_root<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised<span class="w"> </span>--print_config<span class="w"> </span>&gt;<span class="w"> </span>configs.yaml
+<span class="c1"># Update configs.yaml &amp; Train configs.yaml</span>
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>configs.yaml
 </pre></div>
 </div>
-<p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
-<p>After that, we have the PyTorch model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code></p></li>
+</ol>
+<p>Here are the main outputs can expect with CLI:
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt</span></code> - a model checkpoint file.
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/configs.yaml</span></code> - The configuration file used in the training can be reused to reproduce the training.
+- <code class="docutils literal notranslate"><span class="pre">{work_dir}/.latest</span></code> - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+CLI (auto-config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised<span class="w"> </span>--task<span class="w"> </span>SEMANTIC_SEGMENTATION
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI (with config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_18.yaml<span class="w"> </span>--data_root<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
+API (from_config)</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/common_semantic_segmentation_dataset/supervised&quot;</span>
+<span class="n">recipe</span> <span class="o">=</span> <span class="s2">&quot;src/otx/recipe/semantic_segmentation/litehrnet_18.yaml&quot;</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+          <span class="n">config_path</span><span class="o">=</span><span class="n">recipe</span><span class="p">,</span>
+          <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+          <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;data/common_semantic_segmentation_dataset/supervised&quot;</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span>
+          <span class="n">model</span><span class="o">=</span><span class="s2">&quot;litehrnet_18&quot;</span><span class="p">,</span>
+          <span class="n">task</span><span class="o">=</span><span class="s2">&quot;SEMANTIC_SEGMENTATION&quot;</span><span class="p">,</span>
+          <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+          <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 18 seconds with full dataset.</p>
+<p>4. <code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about recipe-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
+<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file in your workplace or via the command line.</p>
+<p>For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">                         </span>--max_epochs<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-5">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
+<span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">data_config</span> <span class="o">=</span> <span class="n">DataModuleConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">train_subset</span><span class="o">=</span><span class="n">SubsetConfig</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="n">datamodule</span> <span class="o">=</span> <span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">data_config</span><span class="p">)</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">)</span>
+
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>5. The training result <code class="docutils literal notranslate"><span class="pre">checkpoints/*.ckpt</span></code> file is located in <code class="docutils literal notranslate"><span class="pre">{work_dir}</span></code> folder,
+while training logs can be found in the <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}</span></code> dir.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/tensorboard</span></code>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace
+└── outputs/
+    ├── 20240403_134256/
+    |   ├── csv/
+    |   ├── checkpoints/
+    |   |   └── epoch_*.pth
+    |   ├── tensorboard/
+    |   └── configs.yaml
+    └── .latest
+        └── train/
+...
+</pre></div>
+</div>
+<p>After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
 </section>
 <section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h2>
-<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
-model on a specific dataset.
-The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a <code class="docutils literal notranslate"><span class="pre">mDice</span></code> score for semantic segmentation.</p>
-<p>2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument <code class="docutils literal notranslate"><span class="pre">--test-data-roots</span></code>.
-By running this example command, the performance results evaluated by our splitted validation dataset are saved in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                    --load-weights models/weights.pth \
-                    --output outputs
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> runs evaluation of a trained
+model on a specific dataset.</p>
+<p>The test function receives test annotation information and model snapshot, trained in the previous step.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> will output a Dice for semantic segmentation.</p>
+<p>2. The command below will run validation on our dataset
+and save performance results in <code class="docutils literal notranslate"><span class="pre">otx-workspace</span></code>:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-6">
+CLI (with work_dir)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w">        </span>Test<span class="w"> </span>metric<span class="w">        </span>┃<span class="w">       </span>DataLoader<span class="w"> </span><span class="m">0</span><span class="w">        </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w">      </span>test/Dice<span class="w">            </span>│<span class="w">   </span><span class="m">0</span>.1556396484375<span class="w">         </span>│
+└───────────────────────────┴───────────────────────────┘
 </pre></div>
 </div>
-<p>Finally, we get the validation output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
-
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">:</span><span class="mi">56</span><span class="p">,</span><span class="mi">134</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">run</span> <span class="n">task</span> <span class="n">done</span><span class="o">.</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">:</span><span class="mi">57</span><span class="p">,</span><span class="mi">807</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">:</span><span class="mi">57</span><span class="p">,</span><span class="mi">807</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Computing</span> <span class="n">mDice</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">18</span><span class="p">:</span><span class="mi">09</span><span class="p">:</span><span class="mi">58</span><span class="p">,</span><span class="mi">508</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">mDice</span> <span class="n">after</span> <span class="n">evaluation</span><span class="p">:</span> <span class="mf">0.9659400544959128</span>
-<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-7">
+CLI (with config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--config<span class="w">  </span>src/otx/recipe/semantic_segmentation/maskrcnn_r50.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--data_root<span class="w"> </span>tests/assets/common_semantic_segmentation_dataset/supervised<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_051135/checkpoints/epoch_059.ckpt
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w">        </span>Test<span class="w"> </span>metric<span class="w">        </span>┃<span class="w">       </span>DataLoader<span class="w"> </span><span class="m">0</span><span class="w">        </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w">      </span>test/Dice<span class="w">            </span>│<span class="w">   </span><span class="m">0</span>.1556396484375<span class="w">         </span>│
+└───────────────────────────┴───────────────────────────┘
 </pre></div>
 </div>
-<p>In <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file, the validation output score is saved as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;Dice Average&quot;</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">}</span>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-8">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+</div>
+<p>3. The output of <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/csv/version_0/metrics.csv</span></code> consists of
+a dict with target metric name and its value.</p>
 </section>
 <section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Link to this heading">#</a></h2>
-<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the
+OpenVINO™ Intermediate Representation (IR) format.</p>
+<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">exported_model.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
-and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_model</span></code> folder.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
-                      --output openvino_model
-
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/</span></code> folder.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-9" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-9">
+CLI (with work_dir)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
 ...
-
-2023-02-02 03:23:03,057 | INFO : run task done.
-2023-02-02 03:23:03,064 | INFO : Exporting completed
+Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>:00:06.588245
 </pre></div>
 </div>
-<p>3. We can check the <code class="docutils literal notranslate"><span class="pre">mDice</span></code> score of the IR model and the consistency between the exported model and the PyTorch model,
-using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                    --load-weights openvino_model/openvino.xml \
-                    --output openvino_model
-
+</div>
+<input id="sd-tab-item-10" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-10">
+CLI (with config)</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
 ...
-
-Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
+Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>:00:06.588245
 </pre></div>
+</div>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-11">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="optimization">
@@ -535,36 +691,63 @@ Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
 It uses NNCF or PTQ depending on the model and transforms it to <code class="docutils literal notranslate"><span class="pre">INT8</span></code> format.</p>
 <p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
-<p>2. Command example for optimizing
-a PyTorch model (<cite>.pth</cite>) with OpenVINO™ NNCF.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
+<p>2.  Command example for optimizing
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-12">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize<span class="w">  </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
+<span class="w">                         </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_052847/exported_model.xml
 
 ...
-
-INFO:nncf:Loaded 5286/5286 parameters
-2023-02-21 18:09:56,134 | INFO : run task done.
-2023-02-21 18:09:57,807 | INFO : called evaluate()
-2023-02-21 18:09:57,807 | INFO : Computing mDice
-2023-02-21 18:09:58,508 | INFO : mDice after evaluation: 0.9659400544959128
-Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
+Statistics<span class="w"> </span>collection<span class="w"> </span>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="m">30</span>/30<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:14<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:00
+Applying<span class="w"> </span>Fast<span class="w"> </span>Bias<span class="w"> </span>correction<span class="w"> </span>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<span class="w"> </span><span class="m">100</span>%<span class="w"> </span><span class="m">58</span>/58<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:02<span class="w"> </span>•<span class="w"> </span><span class="m">0</span>:00:00
+Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>:00:24.958733
 </pre></div>
 </div>
-<p>The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 15 minutes.</p>
-<p>3.  Command example for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                        --output ptq_model
-
-...
-
-Performance(score: 0.9577656675749319, dashboard: (1 metric groups))
+</div>
+<input id="sd-tab-item-13" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-13">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ckpt_path</span> <span class="o">=</span> <span class="s2">&quot;otx-workspace/20240312_052847/exported_model.xml&quot;</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="n">ckpt_path</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
 </div>
 <p>Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
-<p>4. Now we have fully trained, optimized and exported an
+<p>3. Finally, we can also evaluate the optimized model by passing
+it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> function.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-14">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_055042/optimized_model.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">                    </span>--engine.device<span class="w"> </span>cpu
+
+...
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃<span class="w">        </span>Test<span class="w"> </span>metric<span class="w">        </span>┃<span class="w">       </span>DataLoader<span class="w"> </span><span class="m">0</span><span class="w">        </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│<span class="w">       </span>test/map_50<span class="w">         </span>│<span class="w">    </span><span class="m">0</span>.5482384562492371<span class="w">     </span>│
+└───────────────────────────┴───────────────────────────┘
+Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>:00:10.260521
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-15" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-15">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ckpt_path</span> <span class="o">=</span> <span class="s2">&quot;otx-workspace/20240312_055042/optimized_model.xml&quot;</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="n">ckpt_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>3. Now we have fully trained, optimized and exported an
 efficient model representation ready-to-use semantic segmentation model.</p>
-<p>The following tutorials provide further steps on how to <span class="xref std std-doc">deploy</span> and use your model in the <span class="xref std std-doc">demonstration mode</span> and visualize results.
-The examples are provided with an object detection model, but it is easy to apply them for semantic segmentation by substituting the object detection model with segmentation one.</p>
 </section>
 </section>
 

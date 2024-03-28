@@ -38,7 +38,7 @@ To see which models are available for the task, the following command can be exe
 
         (otx) ...$ otx find --task MULTI_LABEL_CLS
 
-In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes (including input resolution, which is 224x224 for all templates). We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our recipes without any changes (including input resolution, which is 224x224 for all recipes). We trained each model with single Nvidia GeForce RTX3090.
 
 +-----------------------+-----------------+-----------+------------------+-----------+
 | Model name            | Pascal-VOC 2007 | COCO 2014 | Aerial Maritime  | Mean mAP  |

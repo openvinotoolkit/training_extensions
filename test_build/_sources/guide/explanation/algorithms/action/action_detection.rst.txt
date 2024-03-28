@@ -24,10 +24,10 @@ We support the popular action classification formats, `AVA dataset <http://resea
 Models
 ******
 
-We support the following ready-to-use model templates for transfer learning:
+We support the following ready-to-use model recipes for transfer learning:
 
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------------+-------------------------+
-| Template ID                                                                                                                                                                             | Name          | Complexity (GFLOPs) | Model size (MB)         |
+| Recipe ID                                                                                                                                                                             | Name          | Complexity (GFLOPs) | Model size (MB)         |
 +=========================================================================================================================================================================================+===============+=====================+=========================+
 | `Custom_Action_Detection_X3D_FAST_RCNN <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml>`_                | x3d_fast_rcnn | 13.04               | 8.32                    |
 +-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+---------------------+-------------------------+
