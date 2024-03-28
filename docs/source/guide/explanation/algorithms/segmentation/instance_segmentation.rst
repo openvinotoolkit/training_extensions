@@ -50,7 +50,7 @@ For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset
 Models
 ******
 
-We support the following ready-to-use model templates:
+We support the following ready-to-use model recipes:
 
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
 | Model Recipe                                                                                                                                                                                                  | Name                       | Complexity (GFLOPs) | Model size (MB) |
@@ -80,7 +80,7 @@ Recently, we have updated RTMDet-Ins-tiny, integrating works from `RTMNet <https
 
 Our experiments indicate that MaskRCNN-SwinT and MaskRCNN-ResNet50 outperform MaskRCNN-EfficientNetB2B in terms of accuracy. However, if reducing training time is paramount, transitioning to MaskRCNN-EfficientNetB2B is recommended. Conversely, for applications where inference speed is crucial, RTMDet-Ins-tiny presents an optimal solution.
 
-In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our recipes without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related recipe. We trained each model with single Nvidia GeForce RTX3090.
 
 +---------------------------+--------------+------------+-----------------+
 | Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
