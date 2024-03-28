@@ -22,7 +22,7 @@ created in the previous step.
   . venv/otx/bin/activate
 
 2. ``otx explain`` command returns saliency maps, 
-which are heatmaps with red-colored areas indicating focus.
+which are heatmaps with red-colored areas indicating focus. Here's an example how to generate saliency maps from trained checkpoint:
 
 .. tab-set::
 
@@ -47,9 +47,9 @@ which are heatmaps with red-colored areas indicating focus.
         .. code-block:: python
 
             engine.explain(
-                checkpoint="<checkpoint-path>", # .pth weights of the model
-                datamodule=OTXDataModule(), # The data module to use for predictions
-                explain_config=ExplainConfig(postprocess=True), # Config used to handle saliency maps
+                checkpoint="<checkpoint-path>",
+                datamodule=OTXDataModule(...), # The data module to use for predictions
+                explain_config=ExplainConfig(postprocess=True),
                 dump=True # Wherether to save saliency map images or not
               )
 
@@ -62,8 +62,10 @@ It will contain a pair of generated images with saliency maps for each image use
 .. image:: ../../../../utils/images/explain_wgisd.png
   :width: 600
 
-4. To explain the exported IR model, it should be converted with additional outputs `saliency_map` and `feature_map`.
-To do that we should use `--explain True` parameter during export.
+|
+
+4. To explain the exported IR model, it should be converted with additional outputs ``saliency_map`` and ``feature_map``.
+To do that we should use ``--explain True`` parameter during export.
 
 .. tab-set::
 
@@ -81,16 +83,19 @@ To do that we should use `--explain True` parameter during export.
             engine.export(..., explain=True)
             engine.explain(..., checkpoint="<xml_weights_path>")
 
-4. We can parametrize the explanation process by specifying the following parameters in `ExplainConfig`:
+5. We can parametrize the explanation process by specifying 
+the following parameters in ``ExplainConfig``:
 
-- `target_explain_group` - for which target saliency maps will be generated:
-  - `IMAGE` - a single global activation map regardless of the classes that the model can detect.
-  - `ALL` - saliency map for each class that the model can detect.
-  - `PREDICTIONS` - saliency map for each predicted class.
+- ``target_explain_group`` - for which target saliency maps will be generated:
 
-- `postprocess`:
-  - `False` **default** - no postprocessing, low-resolution grayscale maps are returned.
-  - `True` - resizes and applies colormap to the saliency map.
+  - ``IMAGE`` - a single global activation map regardless of the classes that the model can detect.
+  - ``ALL`` - saliency map for each class that the model can detect.
+  - ``PREDICTIONS`` - saliency map for each predicted class.
+
+- ``postprocess``:
+
+  - ``False`` **default** - no postprocessing, low-resolution grayscale maps are returned.
+  - ``True`` - resizes and applies colormap to the saliency map.
 
 .. tab-set::
 
@@ -105,21 +110,21 @@ To do that we should use `--explain True` parameter during export.
 
         .. code-block:: python
 
-            engine.explain(
-                ...
-                explain_config=ExplainConfig(
-                  postprocess=True,
-                  target_explain_group=TargetExplainGroup.PREDICTIONS
-                )
+            engine.explain(...,
+                           explain_config=ExplainConfig(
+                             postprocess=True,
+                             target_explain_group=TargetExplainGroup.PREDICTIONS
+                           )
               )
 
-5. The explanation algorithm is chosen automatically based on the used model:
+6. The explanation algorithm is chosen automatically 
+based on the used model:
 
-- `Recipro-CAM` - for CNN classification models
-- `ViT Recipro-CAM` - for transformer-based classification models
+- ``Recipro-CAM`` - for CNN classification models
+- ``ViT Recipro-CAM`` - for transformer-based classification models
 
-- `DetClassProbabilityMap` - for single-stage detector models
-- `MaskRCNNExplainAlgo` - for MaskRCNN instance segmentation models
+- ``DetClassProbabilityMap`` - for single-stage detector models
+- ``MaskRCNNExplainAlgo`` - for MaskRCNN instance segmentation models
 
 .. note::
 
