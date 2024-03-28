@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from demo_package.model_wrapper import ModelWrapper
     from demo_package.visualizers import BaseVisualizer
 
-from demo_package.streamer import get_streamer
+from demo_package.streamer.streamer import get_streamer
 from demo_package.visualizers import dump_frames
 
 
