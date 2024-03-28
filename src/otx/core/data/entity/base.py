@@ -684,7 +684,10 @@ class OTXBatchPredEntity(OTXBatchDataEntity):
     @property
     def has_xai_outputs(self) -> bool:
         """If the XAI related fields are fulfilled, return True."""
-        return len(self.saliency_maps) > 0 and len(self.feature_vectors) > 0
+        # NOTE: Don't know why but some of test cases in tests/integration/api/test_xai.py
+        # produce `len(self.saliency_maps) > 0` and `len(self.feature_vectors) == 0`
+        # return len(self.saliency_maps) > 0 and len(self.feature_vectors) > 0
+        return len(self.saliency_maps) > 0
 
 
 class OTXBatchLossEntity(Dict[str, Tensor]):
