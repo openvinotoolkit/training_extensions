@@ -198,11 +198,7 @@ Users can also pre-generate a config file with an example like the one below.
 Find
 *****
 
-<<<<<<< HEAD
-``otx find`` lists model recipes and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OTX.
-=======
 ``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OpenVINO™ Training Extensions.
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 .. code-block:: shell
 

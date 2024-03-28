@@ -343,13 +343,8 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 Optimization
 *************
 
-<<<<<<< HEAD
-1. You can further optimize the model with ``otx optimize``.
-Currently, quantization jobs that include PTQ is supported for X3D recipe. MoViNet will be supported in near future.
-=======
 1. We can further optimize the model with ``otx optimize``.
 It uses PTQ depending on the model and transforms it to ``INT8`` format.
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 ``PTQ`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
