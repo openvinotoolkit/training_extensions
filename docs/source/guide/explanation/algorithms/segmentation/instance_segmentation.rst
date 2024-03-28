@@ -50,10 +50,10 @@ For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset
 Models
 ******
 
-We support the following ready-to-use model templates:
+We support the following ready-to-use model recipes:
 
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                                                                   | Name                       | Complexity (GFLOPs) | Model size (MB) |
+| Recipe ID                                                                                                                                                                                                   | Name                       | Complexity (GFLOPs) | Model size (MB) |
 +===============================================================================================================================================================================================================+============================+=====================+=================+
 | `Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml>`_    | MaskRCNN-EfficientNetB2B   | 68.48               | 13.27           |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
@@ -72,7 +72,7 @@ On the other hand, MaskRCNN-EfficientNetB2B employs the `EfficientNet-B2 <https:
 
 Recently, we have made updates to MaskRCNN-ConvNeXt, incorporating the `ConvNeXt backbone <https://arxiv.org/abs/2201.03545>`_. Through our experiments, we have observed that this variant achieves better accuracy compared to MaskRCNN-ResNet50 while utilizing less GPU memory. However, it is important to note that the training time and inference duration may slightly increase. If minimizing training time is a significant concern, we recommend considering a switch to MaskRCNN-EfficientNetB2B.
 
-In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our recipes without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related recipe. We trained each model with single Nvidia GeForce RTX3090.
 
 +---------------------------+--------------+------------+-----------------+
 | Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
