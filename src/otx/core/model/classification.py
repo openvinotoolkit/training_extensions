@@ -13,7 +13,6 @@ import numpy as np
 import torch
 from torchmetrics import Accuracy
 
-from otx.algo.hooks.recording_forward_hook import feature_vector_fn
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -90,6 +89,8 @@ class ExplainableOTXClsModel(
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntityWithXAI:
         """Model forward function."""
+        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+
         self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
@@ -149,6 +150,8 @@ class ExplainableOTXClsModel(
         return explainer.func
 
     def _reset_model_forward(self) -> None:
+        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+
         if not self.explain_mode:
             return
 
