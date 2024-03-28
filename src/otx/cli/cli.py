@@ -618,6 +618,8 @@ class OTXCLI:
                 tile_size=config.data.config.tile_config.tile_size,
                 overlap=config.data.config.tile_config.overlap,
             )
+            # update data in ``self.config_init``
+            self.config_init[self.subcommand].data = datamodule
         else:
             datamodule = self.get_config_value(self.config_init, "data")
         return datamodule

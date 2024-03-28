@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from mmengine.config import Config as MMConfig
+
 from otx.core.types.task import OTXTaskType
 
 
@@ -157,7 +158,7 @@ def fxt_cli_override_command_per_task() -> dict:
         ],
         "visual_prompting": [],
         "zero_shot_visual_prompting": [],
-        "anomaly_classification": ["--limit_val_batches", "0"],
-        "anomaly_detection": ["--limit_val_batches", "0"],
-        "anomaly_segmentation": ["--limit_val_batches", "0"],
+        "anomaly_classification": [],
+        "anomaly_detection": [],
+        "anomaly_segmentation": [],
     }

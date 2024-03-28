@@ -28,7 +28,7 @@ overrides:
         transforms:
           - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -44,7 +44,7 @@ overrides:
         transforms:
           - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
@@ -60,7 +60,7 @@ overrides:
         transforms:
           - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
