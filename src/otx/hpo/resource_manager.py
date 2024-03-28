@@ -98,6 +98,7 @@ class GPUResourceManager(BaseResourceManager):
 
     def __init__(self, num_gpu_for_single_trial: int = 1, num_parallel_trial: int | None = None) -> None:
         check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
+        check_positive(num_parallel_trial, "num_parallel_trial")
 
         self._num_gpu_for_single_trial = num_gpu_for_single_trial
         self._available_gpu = self._set_available_gpu(num_parallel_trial)

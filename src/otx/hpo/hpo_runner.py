@@ -245,7 +245,6 @@ def run_hpo_loop(
     resource_type: Literal["gpu", "cpu"] = "gpu",
     num_parallel_trial: int | None = None,
     num_gpu_for_single_trial: int | None = None,
-    available_gpu: str | None = None,
 ) -> None:
     """Run the HPO loop.
 
@@ -258,8 +257,6 @@ def run_hpo_loop(
                                                    It's used for CPUResourceManager. Defaults to None.
         num_gpu_for_single_trial (int | None, optional): How many GPUs are used for a single trial.
                                                          It's used for GPUResourceManager. Defaults to None.
-        available_gpu (str | None, optional): How many GPUs are available. It's used for GPUResourceManager.
-                                              Defaults to None.
     """
-    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu)
+    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial)
     hpo_loop.run()
