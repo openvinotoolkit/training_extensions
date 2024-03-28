@@ -6,13 +6,8 @@ All possible OpenVINO™ Training Extensions CLI commands are presented below al
 .. note::
 
     To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/algorithms/index>` in the documentation.
-<<<<<<< HEAD
-    Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or LightningCLI.
-    `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
-=======
     Also, by default, the OpenVINO™ Training Extensions CLI is written using jsonargparse, see jsonargparse or LightningCLI.
     Please refer `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 *****
 Help

@@ -98,16 +98,7 @@ Here are the main outputs can expect with CLI:
 
     .. tab-item:: CLI (auto-config)
 
-<<<<<<< HEAD
-  [*] Workspace Path: otx-workspace-ACTION_DETECTION
-  [*] Load Model Recipe ID: Custom_Action_Detection_X3D_FAST_RCNN
-  [*] Load Model Name: X3D_FAST_RCNN
-  [*]     - Updated: otx-workspace-ACTION_DETECTION/model.py
-  [*]     - Updated: otx-workspace-ACTION_DETECTION/data_pipeline.py
-  [*] Update data configuration file to: otx-workspace-ACTION_DETECTION/data.yaml
-=======
         .. code-block:: shell
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
             (otx) ...$ otx train --data_root data/JHMDB_10%
 

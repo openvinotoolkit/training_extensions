@@ -186,15 +186,6 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. code-block::
 
-<<<<<<< HEAD
-  (otx) ...$ otx build --task action_classification --train-data-roots data/hmdb51/CVAT/train/ --val-data-roots data/hmdb51/CVAT/valid
-  [*] Workspace Path: otx-workspace-ACTION_CLASSIFICATION
-  [*] Load Model Recipe ID: Custom_Action_Classification_X3D
-  [*] Load Model Name: X3D
-  [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/model.py
-  [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/data_pipeline.py
-  [*] Update data configuration file to: otx-workspace-ACTION_CLASSIFICATION/data.yaml
-=======
     otx-workspace
     ├── outputs/
         ├── 20240403_134256/
@@ -206,7 +197,6 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
         └── .latest
             └── train/
     ...
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 

@@ -11,11 +11,7 @@ Introduction
 
 The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on `PyTorch <https://pytorch.org/>`_ , `Lightning <https://lightning.ai/>`_ and `OpenVINO™ toolkit <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_.
 
-<<<<<<< HEAD
-OpenVINO™ Training Extensions provides a **“recipe”** for every supported task type, which consolidates necessary information to build a model. Model recipes are validated on various datasets and serve one-stop shop for obtaining the best models in general. If you are an experienced user, you can configure your own model based on `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcv <https://github.com/open-mmlab/mmcv>`_ and `OpenVINO Model Zoo (OMZ) <https://github.com/openvinotoolkit/open_model_zoo>`_ frameworks.
-=======
 OpenVINO™ Training Extensions provide `recipe <https://github.com/openvinotoolkit/training_extensions/tree/develop/src/otx/recipe>`_ for every supported task type, which consolidates necessary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general. If you are an experienced user, you can configure your own model based on `torchvision <https://pytorch.org/vision/stable/index.html>`_, `mmcv <https://github.com/open-mmlab/mmcv>`_ and `OpenVINO Model Zoo (OMZ) <https://github.com/openvinotoolkit/open_model_zoo>`_ frameworks.
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
 Furthermore, OpenVINO™ Training Extensions provides :doc:`automatic configuration <../explanation/additional_features/auto_configuration>` of task types and hyperparameters. The framework will identify the most suitable recipe based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
 
