@@ -1,8 +1,8 @@
-How to deploy the model and use demo in exportable code
-=======================================================
+Deploy & Demo
+=============
 
 This guide explains how to deploy a model trained in the :doc:`previous stage <how_to_train/index>` and visualize it outside of this repository.
-As a result of this step, you'll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.
+As a result of this step, you'll get the exported model together with the self-contained python package and a demo application to visualize results in other environments without a long installation process.
 
 ******
 Export
@@ -20,8 +20,8 @@ created in the previous step.
 2. ``otx export`` returns an ``.onnx``, ``openvino.xml(.bin)`` and ``.zip``
 exportable code with demo depending on the export type passed to CLI or API.
 
-You can export model in OpenVINO format and FP32
-using the command below. Specify path to trained PyTorch model using ``--checkpoint`` parameter:
+You can export the model in OpenVINO format and FP32
+using the command below. Specify the path to the trained PyTorch model using ``--checkpoint`` parameter:
 
 .. code-block:: shell
 
@@ -39,7 +39,7 @@ Deploy
 ******
 
 1. It is also possible to obtain a ``.zip``  archive with OpenVINO model and demo to run on your own testing images with visualization possibility.
-Exported archive will consist of the following file structure:
+The exported archive will consist of the following file structure:
 
 - ``LICENSE``
 - ``README.md``
@@ -66,14 +66,14 @@ using the command below:
                --export_format EXPORTABLE_CODE
                --work-dir outputs/deploy
 
-After that, you can use the resulting ``openvino.zip`` archive in other application.
+After that, you can use the resulting ``openvino.zip`` archive in other applications.
 
 *************
-Demonstrarion
+Demonstration
 *************
 
-Using the exported demo, we're able to run the model in the demonstration mode outside of this repository, using only ported ``.zip`` archive with minimum required packages.
-The demo allows to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario. It is not required to install OTX or PyTorch.
+Using the exported demo, we're able to run the model in the demonstration mode outside of this repository, using only the ported ``.zip`` archive with minimum required packages.
+The demo allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario. It is not required to install OTX or PyTorch.
 
 1. Unzip the ``openvino.zip``
 archive.
@@ -101,7 +101,7 @@ using the model in the ``model`` folder. You can pass as ``input`` a single imag
 
 You can press ``Q`` to stop inference during the demo running.
 
-For example, the model inference on image from WGISD dataset will look like this:
+For example, the model inference on the image from the WGISD dataset will look like this:
 
 .. image:: ../../../../utils/images/wgisd_pr_sample.jpg
   :width: 600
@@ -110,12 +110,12 @@ For example, the model inference on image from WGISD dataset will look like this
 .. note::
 
     If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
-    visualize inference results on the screen, apply the ``loop`` option, which enforces processing a single image in a loop.
+    visualize inference results on the screen, and apply the ``loop`` option, which enforces processing a single image in a loop.
     In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (``Ctrl+C`` for Linux).
 
 To learn how to run the demo on Windows and MacOS, please refer to the ``outputs/deploy/python/README.md`` file in exportable code.
 
-4. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``.
+4. To save inference results with predictions on it, we can specify the folder path, using ``--output``.
 It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
 .. code-block::
