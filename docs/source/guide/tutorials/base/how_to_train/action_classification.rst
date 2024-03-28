@@ -81,14 +81,15 @@ To see the list of supported recipes, run the following command:
 
 .. code-block::
 
-  (otx) ...$ otx find --task action_classification
+  (otx) ...$ otx find --task ACTION_CLASSIFICATION
 
-  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
-  |          TASK         |                  ID                  |   NAME  |                               BASE PATH                               |
-  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
-  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/recipe.yaml   |
-  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/recipe.yaml |
-  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  |          TASK         |                  Model Name          |                                         Recipe PATH                             |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  | ACTION_CLASSIFICATION | openvino_model                       | ../otx/recipe/action/action_classification/openvino_model.yaml                  |
+  | ACTION_CLASSIFICATION | x3d                                  | ../otx/recipe/action/action_classification/x3d.yaml                             |
+  | ACTION_CLASSIFICATION | movinet                              | ../otx/recipe/action/action_classification/movinet.yaml                         |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
