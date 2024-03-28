@@ -6,9 +6,13 @@
 from copy import copy
 from math import sqrt
 from typing import Any, Callable, Dict, List, Optional
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import torch
+from mmcv import Config
+from mmcv.runner import wrap_fp16_model
 from torch import distributed as dist
 from torch.cuda import is_available as cuda_available
 from torch.utils.data import Dataset
@@ -43,29 +47,88 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
 
     target[keys[-1]] = value
 
+    
+def _build_model(model_builder: Callable, cfg: Config):
+    model = model_builder(cfg)
+    if cfg.get("fp16", False):
+        wrap_fp16_model(model)
+    return model
+
 
 def _train_func_single_iter(
     batch_size: int,
     train_func: Callable,
-    model: torch.nn.Module,
     datasets: List[Dataset],
     cfg: OTXConfig,
-    validate: bool = False,
+    is_nncf: bool = False,
     meta: Optional[Dict[str, Any]] = None,
+    model: Optional[torch.nn.Module] = None,
+    model_builder: Optional[Callable] = None,
 ):
     caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
     _set_max_epoch(cfg, 1)  # setup for training a single iter to reduce time
 
+    new_dataset = [SubDataset(datasets[0], batch_size)]
+
+    if model is None:
+        model = _build_model(model_builder, cfg)
+    if is_nncf:
+        import otx.algorithms.detection.adapters.mmdet.nncf.patches
+        model.nncf._uncompressed_model_accuracy = 0
+
+    train_func(
+        model=model,
+        dataset=new_dataset,
+        cfg=cfg,
+        distributed=False,
+        validate=is_nncf,  # nncf needs eval hooks
+        meta=meta,
+    )
+
+    
+def _copy_mmcv_cfg(cfg: Config) -> Config:
+    copied_cfg = copy(cfg)
+    copied_cfg = copy(copied_cfg._cfg_dict)
+    return copied_cfg
+
+
+def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> Path:
+    from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+    file_path = save_path / "nncf_model.pth"
+    torch.save(
+        {
+            "state_dict" : model.state_dict(),
+            "meta" : {
+                "nncf_meta" : NNCFMetaState(
+                    state_to_build=cfg.runner.nncf_meta.state_to_build,
+                    data_to_build=cfg.runner.nncf_meta.data_to_build,
+                    compression_ctrl=cfg.custom_hooks[-1]["compression_ctrl"].get_compression_state()
+                ),
+                "nncf_enable_compression" : True
+            }
+        },
+        file_path
+    )
+
+    return file_path
+
+
+def _organize_custom_hooks(custom_hooks: List, is_nncf: bool = False) -> None:
     # Remove hooks due to reasons below
     # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
     # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
     # CustomEvalHook => exclude validation in classification task
     # CancelInterfaceHook => avoid segmentation fault
+
+    if is_nncf:
+        hooks_to_remove = ["OTXProgressHook", "CompressionHook"]
+    else:
+        hooks_to_remove = ["CancelTrainingHook", "earlystoppinghook", "CustomEvalHook", "CancelInterfaceHook"]
+
     idx_hooks_to_remove = []
-    hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook", "CancelInterfaceHook"]
-    for i, hook in enumerate(cfg.custom_hooks):
-        if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
+    for i, hook in enumerate(custom_hooks):
+        if not is_nncf and hook["type"] == "AdaptiveTrainSchedulingHook":
             hook["enable_eval_before_run"] = False
         for hook_to_remove in hooks_to_remove:
             if hook_to_remove.lower() in hook["type"].lower():
@@ -74,18 +137,7 @@ def _train_func_single_iter(
     if idx_hooks_to_remove:
         idx_hooks_to_remove.sort()
         for i in reversed(idx_hooks_to_remove):
-            del cfg.custom_hooks[i]
-
-    new_dataset = [SubDataset(datasets[0], batch_size)]
-
-    train_func(
-        model=model,
-        dataset=new_dataset,
-        cfg=cfg,
-        distributed=False,
-        validate=validate,
-        meta=meta,
-    )
+            custom_hooks.pop(i)
 
 
 def adapt_batch_size(
@@ -94,9 +146,10 @@ def adapt_batch_size(
     datasets: List[Dataset],
     cfg: OTXConfig,
     distributed: bool = False,
-    validate: bool = False,
+    is_nncf: bool = False,
     meta: Optional[Dict[str, Any]] = None,
     not_increase: bool = True,
+    model_builder: Optional[torch.nn.Module] = None,
 ):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
@@ -110,7 +163,7 @@ def adapt_batch_size(
         datasets (List): List of datasets.
         cfg (OTXConfig): Configuration of a training.
         distributed (bool): whether distributed training or not.
-        validate (bool): Whether do vlidation or not.
+        is_nncf (bool): Whether nncf or not.
         meta (Optional[Dict[str, Any]]): meta information.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
@@ -119,21 +172,35 @@ def adapt_batch_size(
         logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA and XPU.")
         return
 
-    copied_cfg = copy(cfg)
+    copied_cfg = _copy_mmcv_cfg(cfg)
     copied_cfg.pop("algo_backend", None)
+
+    if is_nncf:
+        if model_builder is None:
+            msg = "model_builder should be possed for nncf models."
+            raise RuntimeError(msg)
+        temp_dir = TemporaryDirectory("adaptive-bs")
+        copied_cfg.load_from = _save_nncf_model_weight(model, cfg, temp_dir)
+
+    _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
 
     default_bs = _get_batch_size(cfg)
     if not distributed or (rank := dist.get_rank()) == 0:
+        train_func_kwargs = {
+            "train_func": train_func,
+            "datasets": datasets,
+            "cfg": copied_cfg,
+            "is_nncf": is_nncf,
+            "meta": meta,
+        }
+        if model_builder is None:
+            train_func_kwargs["model"] = model
+        else:
+            train_func_kwargs["model_builder"] = model_builder
+
         bs_search_algo = BsSearchAlgo(
             train_func=_train_func_single_iter,
-            train_func_kwargs={
-                "train_func": train_func,
-                "model": model,
-                "datasets": datasets,
-                "cfg": copied_cfg,
-                "validate": validate,
-                "meta": meta,
-            },
+            train_func_kwargs=train_func_kwargs,
             default_bs=default_bs,
             max_bs=len(datasets[0]),
         )
