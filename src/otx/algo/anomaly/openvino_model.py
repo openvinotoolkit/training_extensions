@@ -13,8 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from otx.core.metrics import NullMetricCallable
-from otx.core.metrics.types import MetricCallable
+from otx.core.metrics.types import MetricCallable, NullMetricCallable
 from otx.core.model.anomaly import AnomalyModelInputs
 from otx.core.model.base import OVModel
 
