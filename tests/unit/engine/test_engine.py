@@ -299,7 +299,7 @@ class TestEngine:
         mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
         mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
         fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.datamodule.subsets["test"], create_autospec(OTXTileDataset)
+        fxt_engine.datamodule.subsets["test"] = create_autospec(OTXTileDataset)
 
         fxt_engine.test(checkpoint="path/to/model.xml")
         mock_test.assert_called_once()
@@ -311,7 +311,7 @@ class TestEngine:
         mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
         mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
         fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.datamodule.subsets["test"], create_autospec(OTXTileDataset)
+        fxt_engine.datamodule.subsets["test"] = create_autospec(OTXTileDataset)
 
         fxt_engine.predict(checkpoint="path/to/model.xml")
         mock_predict.assert_called_once()
