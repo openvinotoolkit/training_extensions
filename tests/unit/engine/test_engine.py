@@ -2,11 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+from unittest.mock import create_autospec
 
 import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.config.device import DeviceConfig
+from otx.core.data.dataset.tile import OTXTileDataset
+from otx.core.model.entity.base import OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.engine import Engine
@@ -289,3 +292,27 @@ class TestEngine:
         assert engine is not None
         assert engine.datamodule.config.train_subset.batch_size == 3
         assert engine.datamodule.config.test_subset.subset_name == "TESTING"
+
+    def test_testing_with_ov_model_with_tiling(self, fxt_engine, mocker) -> None:
+        mock_test = mocker.patch("otx.engine.engine.Trainer.test")
+        mock_torch_load = mocker.patch("torch.load")
+        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.datamodule.subsets["test"], create_autospec(OTXTileDataset)
+
+        fxt_engine.test(checkpoint="path/to/model.xml")
+        mock_test.assert_called_once()
+        mock_torch_load.assert_not_called()
+
+    def test_prediction_with_ov_model_with_tiling(self, fxt_engine, mocker) -> None:
+        mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
+        mock_torch_load = mocker.patch("torch.load")
+        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.datamodule.subsets["test"], create_autospec(OTXTileDataset)
+
+        fxt_engine.predict(checkpoint="path/to/model.xml")
+        mock_predict.assert_called_once()
+        mock_torch_load.assert_not_called()
