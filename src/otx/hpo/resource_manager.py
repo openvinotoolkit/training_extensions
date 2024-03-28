@@ -93,26 +93,25 @@ class GPUResourceManager(BaseResourceManager):
 
     Args:
         num_gpu_for_single_trial (int, optional): How many GPUs is used for a single trial. Defaults to 1.
-        available_gpu (str | None, optional): How many GPUs are available. Defaults to None.
+        num_parallel_trial (int, optional): How many trials to run in parallel. Defaults to 4.
     """
 
-    def __init__(self, num_gpu_for_single_trial: int = 1, available_gpu: str | None = None) -> None:
+    def __init__(self, num_gpu_for_single_trial: int = 1, num_parallel_trial: int | None = None) -> None:
         check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
 
         self._num_gpu_for_single_trial = num_gpu_for_single_trial
-        self._available_gpu = self._set_available_gpu(available_gpu)
+        self._available_gpu = self._set_available_gpu(num_parallel_trial)
         self._usage_status: dict[Any, list] = {}
 
-    def _set_available_gpu(self, available_gpu: str | None = None) -> list[int]:
-        if available_gpu is None:
-            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
-            if cuda_visible_devices is not None:
-                available_gpu_arr = self._transform_gpu_format_from_string_to_arr(cuda_visible_devices)
-            else:
-                num_gpus = torch.cuda.device_count()
-                available_gpu_arr = list(range(num_gpus))
+    def _set_available_gpu(self, num_parallel_trial: int | None = None) -> list[int]:
+        cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+        if cuda_visible_devices is not None:
+            available_gpu_arr = self._transform_gpu_format_from_string_to_arr(cuda_visible_devices)
         else:
-            available_gpu_arr = self._transform_gpu_format_from_string_to_arr(available_gpu)
+            num_gpus = torch.cuda.device_count()
+            available_gpu_arr = list(range(num_gpus))
+        if num_parallel_trial is not None:
+            available_gpu_arr = available_gpu_arr[:num_parallel_trial]
 
         return available_gpu_arr
 
@@ -168,7 +167,6 @@ def get_resource_manager(
     resource_type: Literal["gpu", "cpu"],
     num_parallel_trial: int | None = None,
     num_gpu_for_single_trial: int | None = None,
-    available_gpu: str | None = None,
 ) -> BaseResourceManager:
     """Get an appropriate resource manager depending on current environment.
 
@@ -179,8 +177,6 @@ def get_resource_manager(
                                             Defaults to None.
         num_gpu_for_single_trial (int | None, optional): How many GPUs is used for a single trial.
                                                          It's used for GPUResourceManager. Defaults to None.
-        available_gpu (str | None, optional): How many GPUs are available. It's used for GPUResourceManager.
-                                              Defaults to None.
 
     Raises:
         ValueError: If resource_type is neither 'gpu' nor 'cpu', then raise an error.
@@ -197,7 +193,7 @@ def get_resource_manager(
         args = _remove_none_from_dict(args)
         return CPUResourceManager(**args)  # type: ignore[arg-type]
     if resource_type == "gpu":
-        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore[dict-item]
+        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "num_parallel_trial": num_parallel_trial}  # type: ignore[dict-item]
         args = _remove_none_from_dict(args)
         return GPUResourceManager(**args)  # type: ignore[arg-type]
     error_msg = f"Available resource type is cpu, gpu. Your value is {resource_type}."
