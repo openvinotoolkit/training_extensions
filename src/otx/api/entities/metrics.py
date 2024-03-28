@@ -7,15 +7,15 @@
 import abc
 import datetime
 import math
+import logging
 from enum import Enum
 from typing import Generic, List, Optional, Sequence, TypeVar, Union
-from otx.utils.logger import get_logger
 
 import numpy as np
 
 from otx.api.utils.time_utils import now
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 class MetricEntity(metaclass=abc.ABCMeta):
