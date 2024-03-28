@@ -47,13 +47,14 @@ Dataset preparation
 
 
 1. Clone a repository with
-`car-seg dataset <https://universe.roboflow.com/gianmarco-russo-vt9xr/car-seg-un1pm>`_.
+`WGISD dataset <https://github.com/thsant/wgisd>`_.
 
-.. code-block:: shell
+.. code-block::
 
   mkdir data ; cd data
-  wget https://ultralytics.com/assets/carparts-seg.zip
-  unzip carparts-seg.zip
+  git clone https://github.com/thsant/wgisd.git
+  cd wgisd
+  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
@@ -382,7 +383,7 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
