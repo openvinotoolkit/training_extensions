@@ -10,16 +10,17 @@ engine:
   task: ANOMALY_SEGMENTATION
   device: auto
 
-callback_monitor: train_loss_epoch # val loss is not available as there is no validation set from default dataloader
+callback_monitor: pixel_AUROC
 
 data: ../_base_/data/torchvision_base.yaml
 overrides:
   max_epochs: 700
-  limit_val_batches: 0 # this is set to 0 as the default dataloader does not have validation set. But this also means that the model will not give correct performance numbers
+  num_sanity_val_steps: 0
   callbacks:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         patience: 5
+        mode: max
     - class_path: otx.algo.callbacks.adaptive_train_scheduling.AdaptiveTrainScheduling
       init_args:
         max_interval: 1
@@ -31,11 +32,10 @@ overrides:
         batch_size: 8
         num_workers: 4
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -48,11 +48,10 @@ overrides:
         batch_size: 8
         num_workers: 4
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}
@@ -65,11 +64,10 @@ overrides:
         batch_size: 8
         num_workers: 4
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: torchvision.transforms.v2.Resize
             init_args:
-              size: 256
+              size: [256, 256]
               antialias: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
           - class_path: torchvision.transforms.v2.ToDtype
             init_args:
               dtype: ${as_torch_dtype:torch.float32}

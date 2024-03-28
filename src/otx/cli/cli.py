@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-
 from __future__ import annotations
 
 import dataclasses
@@ -348,7 +347,7 @@ class OTXCLI:
             # Instantiate the things that don't need to special handling
             self.config_init = self.parser.instantiate_classes(self.config)
             self.workspace = self.get_config_value(self.config_init, "workspace")
-            self.datamodule = self.get_config_value(self.config_init, "data")
+            self.datamodule = self._select_datamodule()  # type: ignore[no-untyped-call]
 
             # Instantiate the model and needed components
             self.model, self.optimizer, self.scheduler = self.instantiate_model(model_config=model_config)
@@ -579,3 +578,48 @@ class OTXCLI:
         else:
             msg = f"Unrecognized subcommand: {self.subcommand}"
             raise ValueError(msg)
+
+    def _select_datamodule(self):  # noqa: ANN202 # annotation is disabled as OTXDataModule is not imported
+        """Override the config with anomaly related configuration.
+
+        If the task is one of the anomaly detection tasks, the config is overridden with the anomaly related
+        configuration.
+
+        Note: (ashwinvaidya17)  This is temporary till OTX supports custom dataloader.
+
+        Returns:
+            OTXDataModule: The instantiated datamodule.
+        """
+        config = self.config[self.subcommand]
+        if config.engine.task in (
+            OTXTaskType.ANOMALY_CLASSIFICATION,
+            OTXTaskType.ANOMALY_DETECTION,
+            OTXTaskType.ANOMALY_SEGMENTATION,
+        ):
+            from otx.data.anomaly import AnomalyDataModule
+
+            datamodule = AnomalyDataModule(
+                task_type=config.engine.task,
+                data_dir=config.engine.data_root,
+                data_format="mvtec",
+                train_batch_size=config.data.config.train_subset.batch_size,
+                train_num_workers=config.data.config.train_subset.num_workers,
+                train_transforms=config.data.config.train_subset.transforms,
+                train_transform_lib_type=config.data.config.train_subset.transform_lib_type,
+                val_batch_size=config.data.config.val_subset.batch_size,
+                val_num_workers=config.data.config.val_subset.num_workers,
+                val_transforms=config.data.config.val_subset.transforms,
+                val_transform_lib_type=config.data.config.val_subset.transform_lib_type,
+                test_batch_size=config.data.config.test_subset.batch_size,
+                test_num_workers=config.data.config.test_subset.num_workers,
+                test_transforms=config.data.config.test_subset.transforms,
+                test_transform_lib_type=config.data.config.test_subset.transform_lib_type,
+                enable_tiler=config.data.config.tile_config.enable_tiler,
+                tile_size=config.data.config.tile_config.tile_size,
+                overlap=config.data.config.tile_config.overlap,
+            )
+            # update data in ``self.config_init``
+            self.config_init[self.subcommand].data = datamodule
+        else:
+            datamodule = self.get_config_value(self.config_init, "data")
+        return datamodule
