@@ -17,6 +17,7 @@ from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
+from otx.core.data.dataset.tile import OTXTileDataset
 from otx.core.data.module import OTXDataModule
 from otx.core.model.entity.base import OTXModel, OVModel
 from otx.core.model.module.base import OTXLitModule
@@ -312,6 +313,10 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
+
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         lit_module = self._build_lightning_module(
             model=model,
@@ -389,6 +394,10 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         lit_module = self._build_lightning_module(
             model=model,
