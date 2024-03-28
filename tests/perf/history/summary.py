@@ -36,6 +36,9 @@ V1_V2_NAME_MAP = {
     "Dice Average(export)": "export/dice",
     "Dice Average(optimize)": "optimize/dice",
     "Dice Average(train)": "test/dice",
+    "test/Dice": "test/dice",
+    "export/Dice": "export/dice",
+    "optimize/Dice": "optimize/dice",
     # Task names
     "single_label_classification": "classification/multi_class_cls",
     "multi_label_classification": "classification/multi_label_cls",
@@ -175,7 +178,7 @@ def load_all(root_dir: Path, normalize: bool = False):
         all_data.append(data)
     return pd.concat(all_data, ignore_index=True)
 
-all_data = load_all(Path("."), normalize=True)
+all_data = load_all(Path(__file__).parent, normalize=True)
 
 
 TASK_METRIC_MAP = {
@@ -196,7 +199,11 @@ TASK_METRIC_MAP = {
 def summarize_table(task: str):
     """Summarize benchmark histoy table by task."""
     score_metric = TASK_METRIC_MAP[task]
-    metrics = [f"{score_metric}", "train/e2e_time", "export/iter_time"]
+    metrics = [
+        f"{score_metric}",
+        "train/e2e_time",
+        # "export/iter_time",
+    ]
     column_order = [
         (f"{score_metric}", "all"),
         (f"{score_metric}", "small"),
@@ -206,28 +213,31 @@ def summarize_table(task: str):
         ("train/e2e_time", "small"),
         ("train/e2e_time", "medium"),
         ("train/e2e_time", "large"),
-        ("export/iter_time", "all"),
-        ("export/iter_time", "small"),
-        ("export/iter_time", "medium"),
-        ("export/iter_time", "large"),
+        # ("export/iter_time", "all"),
+        # ("export/iter_time", "small"),
+        # ("export/iter_time", "medium"),
+        # ("export/iter_time", "large"),
     ]
     data = all_data.query(f"task == '{task}'")
-    # data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
+    #data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
     data = data.pivot_table(index=["model", "otx_version"], columns=["data_group"], values=metrics, aggfunc="mean")
     # data = data.style.set_sticky(axis="index")
-    data = data.reindex(column_order, axis=1)
-    return data
+    # data = data.reindex(column_order, axis=1)
+    return data.fillna("")
 
 
 def summarize_graph(task: str):
     """Summarize benchmark histoy graph by task."""
     score_metric = TASK_METRIC_MAP[task]
-    metrics = [f"{score_metric}", "train/e2e_time", "export/iter_time"]
+    metrics = [
+        f"{score_metric}",
+        "train/e2e_time",
+        # "export/iter_time",
+    ]
     data = all_data.query(f"task == '{task}'")
     graphs = []
     for metric in metrics:
-        print(metric)
-        df = data.pivot_table(index=["otx_version"], columns=["model"], values=[metric], aggfunc="mean")
+        df = data.pivot_table(index=["otx_version"], columns=["model"], values=metric, aggfunc="mean")
         ax = df.plot(title=metric)
         graphs.append(ax)
     return graphs
