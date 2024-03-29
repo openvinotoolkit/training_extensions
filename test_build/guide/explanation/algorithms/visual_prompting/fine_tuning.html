@@ -418,6 +418,27 @@ Given both bounding boxes and points prompts at the same time, bounding boxes ha
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
 <p id="visual-prompting-model">We support the following model recipes in experimental phase:</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Recipe ID</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_tiny_vit.yaml">Visual_Prompting_SAM_Tiny_ViT</a></p></td>
+<td><p>SAM_Tiny_ViT</p></td>
+<td><p>38.55</p></td>
+<td><p>47</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_vit_b.yaml">Visual_Prompting_SAM_ViT_B</a></p></td>
+<td><p>SAM_ViT_B</p></td>
+<td><p>454.76</p></td>
+<td><p>363</p></td>
+</tr>
+</tbody>
+</table>
 <p>To check feasibility of <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a>, we did experiments using three public datasets with each other domains: <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a> and <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a>, and checked <a class="reference external" href="https://en.wikipedia.org/wiki/F-score">F1-score</a>.
 We used sampled training data from <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a> and full training data (=110) from <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>.</p>
 <table class="table">

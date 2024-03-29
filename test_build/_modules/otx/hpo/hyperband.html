@@ -912,7 +912,7 @@
 
     <span class="k">def</span> <span class="nf">_make_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AshaTrial</span><span class="p">:</span>
         <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_trial_id</span><span class="p">()</span>
-        <span class="n">trial</span> <span class="o">=</span> <span class="n">AshaTrial</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_train_environment</span><span class="p">())</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="n">AshaTrial</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">[</span><span class="n">trial_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span>
         <span class="k">return</span> <span class="n">trial</span>
 
@@ -920,9 +920,6 @@
         <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_id</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_get_train_environment</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subset_ratio&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_ratio</span><span class="p">}</span>
 
 <div class="viewcode-block" id="HyperBand.get_next_sample">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_next_sample">[docs]</a>

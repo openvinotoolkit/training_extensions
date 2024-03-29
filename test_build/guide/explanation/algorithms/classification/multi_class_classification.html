@@ -424,6 +424,32 @@ This format has the following structure:</p>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
 <p id="classification-models">We support the following ready-to-use model recipes:</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Recipe ID</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
+<td><p>MobileNet-V3-large-1x</p></td>
+<td><p>0.44</p></td>
+<td><p>4.29</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
+<td><p>EfficientNet-B0</p></td>
+<td><p>0.81</p></td>
+<td><p>4.09</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
+<td><p>EfficientNet-V2-S</p></td>
+<td><p>5.76</p></td>
+<td><p>20.23</p></td>
+</tr>
+</tbody>
+</table>
 <p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this recipe provides competitive accuracy as well.
 <a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.</p>
 <p>To see which models are available for the task, the following command can be executed:</p>

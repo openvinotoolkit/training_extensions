@@ -279,10 +279,6 @@
 <span class="sd">                                                            HPO use time about exepected_time_ratio *</span>
 <span class="sd">                                                            train time after HPO times.</span>
 <span class="sd">        maximum_resource (int | float | None, optional): Maximum resource to use for training each trial.</span>
-<span class="sd">        subset_ratio (float | int | None, optional): ratio to how many train dataset to use for each trial.</span>
-<span class="sd">                                     The lower value is, the faster the speed is.</span>
-<span class="sd">                                     But If it&#39;s too low, HPO can be unstable.</span>
-<span class="sd">        min_subset_size (int, optional) : Minimum size of subset. Default value is 500.</span>
 <span class="sd">        resume (bool, optional): resume flag decide to use previous HPO results.</span>
 <span class="sd">                                 If HPO completed, you can just use optimized hyper parameters.</span>
 <span class="sd">                                 If HPO stopped in middle, you can resume in middle.</span>
@@ -303,8 +299,6 @@
         <span class="n">full_dataset_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">expected_time_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">maximum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">subset_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">min_subset_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
         <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">prior_hyper_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">acceptable_additional_time_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -318,11 +312,6 @@
         <span class="k">if</span> <span class="n">num_trials</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">check_positive</span><span class="p">(</span><span class="n">num_trials</span><span class="p">,</span> <span class="s2">&quot;num_trials&quot;</span><span class="p">)</span>
         <span class="n">check_positive</span><span class="p">(</span><span class="n">num_workers</span><span class="p">,</span> <span class="s2">&quot;num_workers&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">subset_ratio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">subset_ratio</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">error_msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;subset_ratio should be greater than 0 and lesser than or equal to 1. Your value is </span><span class="si">{</span><span class="n">subset_ratio</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">save_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">save_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;OTX-hpo-&quot;</span><span class="p">)</span>
@@ -335,8 +324,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">full_dataset_size</span> <span class="o">=</span> <span class="n">full_dataset_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">expected_time_ratio</span> <span class="o">=</span> <span class="n">expected_time_ratio</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maximum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">maximum_resource</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">subset_ratio</span> <span class="o">=</span> <span class="n">subset_ratio</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">min_subset_size</span> <span class="o">=</span> <span class="n">min_subset_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">resume</span> <span class="o">=</span> <span class="n">resume</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hpo_status</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">acceptable_additional_time_ratio</span> <span class="o">=</span> <span class="n">acceptable_additional_time_ratio</span>
