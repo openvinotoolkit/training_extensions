@@ -230,15 +230,14 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
   otx-workspace
-  └── outputs/
-      ├── 20240403_134256/
-      |   ├── csv/
-      |   ├── checkpoints/
-      |   |   └── epoch_*.pth
-      |   ├── tensorboard/
-      |   └── configs.yaml
-      └── .latest
-          └── train/
+    ├── 20240403_134256/
+    |   ├── csv/
+    |   ├── checkpoints/
+    |   |   └── epoch_*.pth
+    |   ├── tensorboard/
+    |   └── configs.yaml
+    └── .latest
+        └── train/
   ...
 
 After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
