@@ -88,6 +88,7 @@ def execute_hpo(
             **_adjust_train_args(train_args),
         ),
         "gpu" if torch.cuda.is_available() else "cpu",
+        num_parallel_trial=hpo_configurator.hpo_config["num_workers"],
     )
 
     best_trial = hpo_algo.get_best_config()

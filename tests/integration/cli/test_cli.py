@@ -478,6 +478,8 @@ def test_otx_hpo_e2e(
         "true",
         "--hpo_config.expected_time_ratio",
         "2",
+        "--hpo_config.num_workers",
+        "1",
         *fxt_cli_override_command_per_task[task],
     ]
 
