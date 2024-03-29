@@ -251,12 +251,8 @@
 <span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">batched_nms</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">ImageInfo</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXDataEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">,</span> <span class="n">DetPredEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">InstanceSegBatchPredEntity</span><span class="p">,</span>
-    <span class="n">InstanceSegBatchPredEntityWithXAI</span><span class="p">,</span>
-    <span class="n">InstanceSegPredEntity</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">DetPredEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">,</span> <span class="n">InstanceSegPredEntity</span>
 
 
 <div class="viewcode-block" id="TileMerge">
@@ -344,7 +340,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.DetectionTileMerge.merge">[docs]</a>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">batch_tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">],</span>
+        <span class="n">batch_tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetBatchPredEntity</span><span class="p">],</span>
         <span class="n">batch_tile_attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetPredEntity</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge batch tile predictions to a list of full-size prediction data entities.</span>
@@ -443,7 +439,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.utils.tile_merge.html#otx.core.utils.tile_merge.InstanceSegTileMerge.merge">[docs]</a>
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">batch_tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceSegBatchPredEntity</span> <span class="o">|</span> <span class="n">InstanceSegBatchPredEntityWithXAI</span><span class="p">],</span>
+        <span class="n">batch_tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceSegBatchPredEntity</span><span class="p">],</span>
         <span class="n">batch_tile_attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceSegPredEntity</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge inst-seg tile predictions to one single prediction.</span>

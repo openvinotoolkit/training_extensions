@@ -254,7 +254,7 @@
 
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntityWithXAI</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">TileBatchDetDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
@@ -280,9 +280,7 @@
 
 <div class="viewcode-block" id="OTXDetectionModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXDetectionModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">,</span> <span class="n">TileBatchDetDataEntity</span><span class="p">],</span>
-<span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXDetectionModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">TileBatchDetDataEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the detection models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -304,7 +302,7 @@
 
 <div class="viewcode-block" id="OTXDetectionModel.forward_tiles">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.forward_tiles">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TileBatchDetDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TileBatchDetDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack detection tiles.</span>
 
 <span class="sd">        Args:</span>
@@ -313,7 +311,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            DetBatchPredEntity: Merged detection prediction.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tile_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetBatchPredEntity</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">tile_attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">merger</span> <span class="o">=</span> <span class="n">DetectionTileMerge</span><span class="p">(</span>
             <span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
@@ -366,7 +364,7 @@
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">preds</span><span class="p">:</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">,</span>
+        <span class="n">preds</span><span class="p">:</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricInput</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -440,7 +438,7 @@
     <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
 
@@ -673,7 +671,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">DetDataSample</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
@@ -725,7 +723,7 @@
             <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
             <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
-            <span class="k">return</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
                 <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
@@ -756,7 +754,7 @@
 
 <div class="viewcode-block" id="OVDetectionModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OVDetectionModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OVDetectionModel</span><span class="p">(</span><span class="n">OVModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">]):</span>
+<span class="k">class</span> <span class="nc">OVDetectionModel</span><span class="p">(</span><span class="n">OVModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Object detection model compatible for OpenVINO IR inference.</span>
 
 <span class="sd">    It can consume OpenVINO IR model path or model name from Intel OMZ repository</span>
@@ -830,7 +828,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetectionResult</span><span class="p">],</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
         <span class="c1"># add label index</span>
         <span class="n">bboxes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
@@ -869,7 +867,7 @@
 
             <span class="c1"># Squeeze dim 2D =&gt; 1D, (1, internal_dim) =&gt; (internal_dim)</span>
             <span class="n">predicted_f_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">feature_vector</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">DetBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
                 <span class="n">images</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">images</span><span class="p">,</span>
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
@@ -891,7 +889,7 @@
 
     <span class="k">def</span> <span class="nf">_convert_pred_entity_to_compute_metric</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">preds</span><span class="p">:</span> <span class="n">DetBatchPredEntity</span> <span class="o">|</span> <span class="n">DetBatchPredEntityWithXAI</span><span class="p">,</span>
+        <span class="n">preds</span><span class="p">:</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricInput</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span>
