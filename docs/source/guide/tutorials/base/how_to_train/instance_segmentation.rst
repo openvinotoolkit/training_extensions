@@ -49,7 +49,7 @@ Dataset preparation
 1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
-.. code-block:: shell
+.. code-block::
 
     mkdir data ; cd data
     git clone https://github.com/thsant/wgisd.git
@@ -177,7 +177,10 @@ Let's check the object detection configuration running the following command:
 .. code-block:: shell
 
   # or its config path
-  (otx) ...$ otx train --config src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml --data_root data/wgisd --print_config
+  (otx) ...$ otx train --config  src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml \
+                       --data_root data/wgisd \
+                       --work_dir otx-workspace \
+                       --print_config
 
   ...
   data_root: data/wgisd
@@ -381,7 +384,7 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
 and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
