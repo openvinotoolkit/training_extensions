@@ -54,10 +54,10 @@ Learn more about the formats by following the links above. Here is an example of
 Models
 ******
 
-We support the following ready-to-use model templates:
+We support the following ready-to-use model recipes:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                | Name                | Complexity (GFLOPs) | Model size (MB) |
+| Recipe ID                                                                                                                                                | Name                | Complexity (GFLOPs) | Model size (MB) |
 +============================================================================================================================================================+=====================+=====================+=================+
 | `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_tiny.yaml>`_            |      YOLOX-TINY     | 6.5                 | 20.4            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
@@ -96,8 +96,8 @@ Except for COCO, we report AP50 as performance metric.
 `BDD100K <https://www.bdd100k.com/>`_ is the largest dataset among we used. 70000 images are used as train images and 10000 images are used for validation.
 `Brackish <https://public.roboflow.com/object-detection/brackish-underwater>`_ and `Plantdoc <https://public.roboflow.com/object-detection/plantdoc>`_ are datasets of medium size. They have around 10000 images for train and 1500 images for validation.
 `BCCD <https://public.roboflow.com/object-detection/bccd>`_ and `Chess pieces <https://public.roboflow.com/object-detection/chess-full>`_ are datasets of small size. They have around 300 images for train and 100 images for validation.
-We used our own templates without any modification.
-For hyperparameters, please, refer to the related template.
+We used our own recipes without any modification.
+For hyperparameters, please, refer to the related recipe.
 We trained each model with a single Nvidia GeForce RTX3090.
 
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
