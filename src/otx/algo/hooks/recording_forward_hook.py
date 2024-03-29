@@ -5,17 +5,22 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Sequence
+from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import torch
+
+from otx.core.types.explain import FeatureMapType
 
 if TYPE_CHECKING:
     from mmengine.structures.instance_data import InstanceData
     from torch.utils.hooks import RemovableHandle
 
+HeadForwardFn = Callable[[FeatureMapType], torch.Tensor]
+ExplainerForwardFn = HeadForwardFn
 
-def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> torch.Tensor:
+
+def get_feature_vector(feature_map: FeatureMapType) -> torch.Tensor:
     """Generate the feature vector by average pooling feature maps."""
     if isinstance(feature_map, (list, tuple)):
         # aggregate feature maps from Feature Pyramid Network
@@ -24,9 +29,7 @@ def feature_vector_fn(feature_map: torch.Tensor | Sequence[torch.Tensor]) -> tor
             torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)).flatten(start_dim=1)
             for f in feature_map
         ]
-        if len(feature_vectors) > 1:
-            return torch.cat(feature_vectors, 1)
-        return feature_vectors[0]
+        return torch.cat(feature_vectors, 1)
 
     return torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1)).flatten(start_dim=1)
 
@@ -38,7 +41,7 @@ class BaseRecordingForwardHook:
         normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, head_forward_fn: Callable | None = None, normalize: bool = True) -> None:
+    def __init__(self, head_forward_fn: HeadForwardFn | None = None, normalize: bool = True) -> None:
         self._head_forward_fn = head_forward_fn
         self.handle: RemovableHandle | None = None
         self._records: list[torch.Tensor] = []
@@ -128,7 +131,7 @@ class ActivationMapHook(BaseRecordingForwardHook):
         hook.handle = backbone.register_forward_hook(hook.recording_forward)
         return hook
 
-    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: FeatureMapType, fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
         if isinstance(feature_map, (list, tuple)):
             feature_map = feature_map[fpn_idx]
@@ -151,7 +154,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 
     def __init__(
         self,
-        head_forward_fn: Callable,
+        head_forward_fn: HeadForwardFn,
         num_classes: int,
         normalize: bool = True,
         optimize_gap: bool = False,
@@ -164,7 +167,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
     def create_and_register_hook(
         cls,
         backbone: torch.nn.Module,
-        head_forward_fn: Callable,
+        head_forward_fn: HeadForwardFn,
         num_classes: int,
         optimize_gap: bool,
     ) -> BaseRecordingForwardHook:
@@ -177,7 +180,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         hook.handle = backbone.register_forward_hook(hook.recording_forward)
         return hook
 
-    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: FeatureMapType, fpn_idx: int = -1) -> torch.Tensor:
         """Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).
 
         Args:
@@ -239,7 +242,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
     def __init__(
         self,
-        head_forward_fn: Callable,
+        head_forward_fn: HeadForwardFn,
         num_classes: int,
         use_gaussian: bool = True,
         cls_token: bool = True,
@@ -254,7 +257,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
     def create_and_register_hook(
         cls,
         target_layernorm: torch.nn.Module,
-        head_forward_fn: Callable,
+        head_forward_fn: HeadForwardFn,
         num_classes: int,
     ) -> BaseRecordingForwardHook:
         """Create this object and register it to the module forward hook."""
@@ -346,13 +349,13 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
 
     def func(
         self,
-        cls_scores: torch.Tensor | Sequence[torch.Tensor],
+        cls_scores: FeatureMapType,
         _: int = -1,
     ) -> torch.Tensor:
         """Generate the saliency map from raw classification head output, then normalizing to (0, 255).
 
         Args:
-            cls_scores (torch.Tensor | Sequence[torch.Tensor]): Classification scores from cls_head.
+            cls_scores (FeatureMapType): Classification scores from cls_head.
 
         Returns:
             torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]

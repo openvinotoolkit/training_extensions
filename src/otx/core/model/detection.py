@@ -190,9 +190,9 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import feature_vector_fn
+        from otx.algo.hooks.recording_forward_hook import get_feature_vector
 
-        self.model.feature_vector_fn = feature_vector_fn
+        self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden

@@ -15,6 +15,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.model.utils.mmpretrain import ForwardExplainMixInForMMPretrain
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
+class EfficientNetB0ForHLabelCls(ForwardExplainMixInForMMPretrain, MMPretrainHlabelClsModel):
     """EfficientNetB0 Model for hierarchical label classification task."""
 
     def __init__(
@@ -51,7 +52,7 @@ class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "hlabel", add_prefix)
 
 
-class EfficientNetB0ForMulticlassCls(MMPretrainMulticlassClsModel):
+class EfficientNetB0ForMulticlassCls(ForwardExplainMixInForMMPretrain, MMPretrainMulticlassClsModel):
     """EfficientNetB0 Model for multi-label classification task."""
 
     def __init__(
@@ -79,7 +80,7 @@ class EfficientNetB0ForMulticlassCls(MMPretrainMulticlassClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class EfficientNetB0ForMultilabelCls(MMPretrainMultilabelClsModel):
+class EfficientNetB0ForMultilabelCls(ForwardExplainMixInForMMPretrain, MMPretrainMultilabelClsModel):
     """EfficientNetB0 Model for multi-class classification task."""
 
     def __init__(

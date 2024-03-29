@@ -55,6 +55,7 @@ def test_forward_explain(
 
     predict_result = engine.predict()
     assert isinstance(predict_result[0], OTXBatchPredEntity)
+    assert not predict_result[0].has_xai_outputs
 
     predict_result_explain = engine.predict(explain=True)
     assert isinstance(predict_result_explain[0], OTXBatchPredEntity)

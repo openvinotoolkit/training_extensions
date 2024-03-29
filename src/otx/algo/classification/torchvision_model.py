@@ -5,15 +5,18 @@
 
 from __future__ import annotations
 
+import types
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
 from torch import nn
-from torchvision import tv_tensors
 from torchvision.models import get_model, get_model_weights
 
+from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
@@ -137,6 +140,12 @@ class TVModelWithLossComputation(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.loss = loss
 
+        self.explainer = ReciproCAMHook(
+            self._head_forward_fn,
+            num_classes=num_classes,
+            optimize_gap=True,
+        )
+
     def forward(
         self,
         images: torch.Tensor,
@@ -161,7 +170,38 @@ class TVModelWithLossComputation(nn.Module):
             return logits
         if mode == "loss":
             return self.loss(logits, labels)
+        if mode == "explain":
+            return self._forward_explain(images)
+
         return self.softmax(logits)
+
+    def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
+        x = self.backbone(images)
+        backbone_feat = x
+
+        saliency_maps = self.explainer.func(backbone_feat)
+
+        if len(x.shape) == 4 and not self.use_layer_norm_2d:
+            x = x.view(x.size(0), -1)
+
+        feature_vectors = x
+
+        logits = self.head(x)
+
+        return {
+            "logits": logits,
+            "preds": logits.argmax(-1, keepdim=True).unbind(0),
+            "scores": self.softmax(logits),
+            "saliency_maps": saliency_maps.unbind(0),
+            "feature_vectors": feature_vectors.unbind(0),
+        }
+
+    @torch.no_grad()
+    def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs model's neck and head forward."""
+        if len(x.shape) == 4 and not self.use_layer_norm_2d:
+            x = x.view(x.size(0), -1)
+        return self.head(x)
 
 
 class OTXTVModel(OTXMulticlassClsModel):
@@ -173,6 +213,8 @@ class OTXTVModel(OTXMulticlassClsModel):
         loss (Callable | None, optional): The loss function to be used. Defaults to None.
         freeze_backbone (bool, optional): Whether to freeze the backbone model. Defaults to False.
     """
+
+    model: TVModelWithLossComputation
 
     def __init__(
         self,
@@ -207,14 +249,17 @@ class OTXTVModel(OTXMulticlassClsModel):
         )
 
     def _customize_inputs(self, inputs: MulticlassClsBatchDataEntity) -> dict[str, Any]:
-        if isinstance(inputs.images, list):
-            images = tv_tensors.wrap(torch.stack(inputs.images, dim=0), like=inputs.images[0])
+        if self.training:
+            mode = "loss"
+        elif self.explain_mode:
+            mode = "explain"
         else:
-            images = inputs.images
+            mode = "predict"
+
         return {
-            "images": images,
+            "images": inputs.stacked_images,
             "labels": torch.cat(inputs.labels, dim=0),
-            "mode": "loss" if self.training else "predict",
+            "mode": mode,
         }
 
     def _customize_outputs(
@@ -230,23 +275,6 @@ class OTXTVModel(OTXMulticlassClsModel):
         scores = torch.unbind(logits, 0)
         preds = logits.argmax(-1, keepdim=True).unbind(0)
 
-        if self.explain_mode:
-            if not isinstance(outputs, dict) or "saliency_map" not in outputs:
-                msg = "No saliency maps in the model output."
-                raise ValueError(msg)
-
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
-
-            return MulticlassClsBatchPredEntity(
-                batch_size=len(preds),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=scores,
-                labels=preds,
-                saliency_maps=list(saliency_maps),
-                feature_vectors=[],
-            )
-
         return MulticlassClsBatchPredEntity(
             batch_size=inputs.batch_size,
             images=inputs.images,
@@ -254,6 +282,11 @@ class OTXTVModel(OTXMulticlassClsModel):
             scores=scores,
             labels=preds,
         )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -270,44 +303,30 @@ class OTXTVModel(OTXMulticlassClsModel):
 
         parameters = super()._export_parameters
         parameters.update(export_params)
+        if self.explain_mode:
+            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
         return parameters
 
-    @staticmethod
-    def _forward_explain_image_classifier(
-        self: TVModelWithLossComputation,
-        images: torch.Tensor,
-        labels: torch.Tensor | None = None,  # noqa: ARG004
-        mode: str = "tensor",
-    ) -> dict:
-        """Forward func of the TVModelWithLossComputation instance."""
-        x = self.backbone(images)
-        backbone_feat = x
+    def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
 
-        saliency_map = self.explain_fn(backbone_feat)
+        return MulticlassClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_maps=outputs["saliency_maps"],
+            feature_vectors=outputs["feature_vectors"],
+        )
 
-        if len(x.shape) == 4 and not self.use_layer_norm_2d:
-            x = x.view(x.size(0), -1)
+    def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.__orig_model_forward = self.model.forward
+        new_forward = types.MethodType(self.model._forward_explain, self.model)  # noqa: SLF001
+        self.model.forward = new_forward  # type: ignore[method-assign]
 
-        feature_vector = x
-        if len(feature_vector.shape) == 1:
-            feature_vector = feature_vector.unsqueeze(0)
-
-        logits = self.head(x)
-        if mode == "predict":
-            logits = self.softmax(logits)
-
-        return {
-            "logits": logits,
-            "feature_vector": feature_vector,
-            "saliency_map": saliency_map,
-        }
-
-    @torch.no_grad()
-    def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward. Can be redefined at the model's level."""
-        if (head := getattr(self.model, "head", None)) is None:
-            raise ValueError
-
-        if len(x.shape) == 4 and not self.model.use_layer_norm_2d:
-            x = x.view(x.size(0), -1)
-        return head(x)
+    def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]

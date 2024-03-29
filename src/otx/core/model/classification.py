@@ -6,19 +6,13 @@
 from __future__ import annotations
 
 import json
-import types
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
 from torchmetrics import Accuracy
 
-from otx.algo.hooks.recording_forward_hook import feature_vector_fn
-from otx.core.data.entity.base import (
-    OTXBatchLossEntity,
-    T_OTXBatchDataEntity,
-    T_OTXBatchPredEntity,
-)
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -44,9 +38,7 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
-    from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
@@ -54,127 +46,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class ExplainableOTXClsModel(
-    OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity],
-):
-    """OTX classification model which can attach a XAI hook."""
-
-    @property
-    def has_gap(self) -> bool:
-        """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
-        return True
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
-        return export_params
-
-    @torch.no_grad()
-    def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward. Can be redefined at the model's level."""
-        if (neck := getattr(self.model, "neck", None)) is None:
-            raise ValueError
-        if (head := getattr(self.model, "head", None)) is None:
-            raise ValueError
-
-        output = neck(x)
-        return head([output])
-
-    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
-        """Model forward function."""
-        self.model.feature_vector_fn = feature_vector_fn
-        self.model.explain_fn = self.get_explain_fn()
-
-        # If customize_inputs is overridden
-        outputs = (
-            self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
-            else self._forward_explain_image_classifier(self.model, inputs)
-        )
-
-        return (
-            self._customize_outputs(outputs, inputs)
-            if self._customize_outputs != ExplainableOTXClsModel._customize_outputs
-            else outputs["predictions"]
-        )
-
-    @staticmethod
-    def _forward_explain_image_classifier(
-        self: ImageClassifier,
-        inputs: torch.Tensor,
-        data_samples: list[DataSample] | None = None,
-        mode: str = "tensor",
-    ) -> dict[str, torch.Tensor]:
-        """Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model."""
-        x = self.backbone(inputs)
-        backbone_feat = x
-
-        feature_vector = self.feature_vector_fn(backbone_feat)
-        saliency_map = self.explain_fn(backbone_feat)
-
-        if self.with_neck:
-            x = self.neck(x)
-
-        if mode == "tensor":
-            logits = self.head(x) if self.with_head else x
-        elif mode == "predict":
-            logits = self.head.predict(x, data_samples)
-        else:
-            msg = f'Invalid mode "{mode}".'
-            raise RuntimeError(msg)
-
-        return {
-            "logits": logits,
-            "feature_vector": feature_vector,
-            "saliency_map": saliency_map,
-        }
-
-    def get_explain_fn(self) -> Callable:
-        """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
-
-        explainer = ReciproCAMHook(
-            self.head_forward_fn,
-            num_classes=self.num_classes,
-            optimize_gap=self.has_gap,
-        )
-        return explainer.func
-
-    def _reset_model_forward(self) -> None:
-        if not self.explain_mode:
-            return
-
-        self.model.feature_vector_fn = feature_vector_fn
-        self.model.explain_fn = self.get_explain_fn()
-        forward_with_explain = self._forward_explain_image_classifier
-
-        self.original_model_forward = self.model.forward
-
-        func_type = types.MethodType
-        self.model.forward = func_type(forward_with_explain, self.model)
-
-    def _restore_model_forward(self) -> None:
-        if not self.explain_mode:
-            return
-
-        if not self.original_model_forward:
-            msg = "Original model forward was not saved."
-            raise RuntimeError(msg)
-
-        func_type = types.MethodType
-        self.model.forward = func_type(self.original_model_forward, self.model)
-        self.original_model_forward = None
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
-
 class OTXMulticlassClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         MulticlassClsBatchDataEntity,
         MulticlassClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -351,6 +224,11 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         )
 
     @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
+
+    @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         export_params = super()._export_parameters
@@ -370,7 +248,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 
 class OTXMultilabelClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         MultilabelClsBatchDataEntity,
         MultilabelClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -548,6 +426,11 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
     @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
+
+    @property
     def _export_parameters(self) -> dict[str, Any]:
         """Defines parameters required to export a particular model implementation."""
         export_params = super()._export_parameters
@@ -563,7 +446,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
 
 
 class OTXHlabelClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         HlabelClsBatchDataEntity,
         HlabelClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -766,6 +649,11 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             scores=scores,
             labels=labels,
         )
+
+    @property
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        return OTXNativeModelExporter(**self._export_parameters)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

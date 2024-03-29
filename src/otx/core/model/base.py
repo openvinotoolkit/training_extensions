@@ -79,6 +79,9 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     Args:
         num_classes: Number of classes this model can predict.
+
+    Attributes:
+        explain_mode: If true, `self.predict_step()` will produce a XAI output as well
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
@@ -96,7 +99,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self._label_info = LabelInfo.from_num_classes(num_classes) if num_classes > 0 else NullLabelInfo()
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
-        self.original_model_forward = None
+        self._explain_mode = False
 
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
@@ -473,9 +476,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         raise NotImplementedError
 
     def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
         pass
 
     def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
         pass
 
     def forward_tiles(
