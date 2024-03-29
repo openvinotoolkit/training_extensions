@@ -782,6 +782,7 @@ class Engine:
     def work_dir(self, work_dir: PathLike) -> None:
         self._work_dir = work_dir
         self._cache.update(default_root_dir=work_dir)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def device(self) -> DeviceConfig:
@@ -794,6 +795,7 @@ class Engine:
             device = DeviceType.xpu
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def trainer(self) -> Trainer:
@@ -823,6 +825,7 @@ class Engine:
 
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
+            self._cache.is_trainer_args_identical = True
             self._trainer.task = self.task
             self.work_dir = self._trainer.default_root_dir
 
