@@ -20,8 +20,12 @@ class TestTrainerArgumentsCache:
 
     def test_trainer_arguments_cache_requires_update(self):
         cache = TrainerArgumentsCache(max_epochs=100, val_check_interval=0)
-        assert not cache.requires_update(max_epochs=100, val_check_interval=0)
+        assert cache.requires_update(max_epochs=100, val_check_interval=0)
         assert cache.requires_update(max_epochs=1, val_check_interval=1.0)
+
+        cache = TrainerArgumentsCache(max_epochs=100, val_check_interval=0)
+        cache.is_trainer_args_identical = True
+        assert not cache.requires_update(max_epochs=100, val_check_interval=0)
 
     def test_trainer_arguments_cache_get_trainer_constructor_args(self):
         cache = TrainerArgumentsCache()
