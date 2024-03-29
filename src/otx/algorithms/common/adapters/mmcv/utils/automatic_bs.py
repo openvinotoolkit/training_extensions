@@ -74,7 +74,13 @@ def _train_func_single_iter(
     if model is None:
         model = _build_model(model_builder, cfg)
     if is_nncf:
-        import otx.algorithms.detection.adapters.mmdet.nncf.patches
+        if "mmdet" in str(type(model)):
+            import otx.algorithms.detection.adapters.mmdet.nncf.patches
+        elif "mmcls" in str(type(model)):
+            import otx.algorithms.classification.adapters.mmcls.nncf.patches
+        elif "mmseg" in str(type(model)):
+            import otx.algorithms.segmentation.adapters.mmseg.nncf.patches
+
         model.nncf._uncompressed_model_accuracy = 0
 
     train_func(
@@ -168,7 +174,7 @@ def adapt_batch_size(
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
-    if not (cuda_available() or is_xpu_available):
+    if not (cuda_available() or is_xpu_available()):
         logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA and XPU.")
         return
 
