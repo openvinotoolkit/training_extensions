@@ -65,23 +65,26 @@ class Engine:
     Example:
         The following examples show how to use the Engine class.
 
-        Auto-Configuration with data_root
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ... )
+        Auto-Configuration with data_root::
 
-        Create Engine with Custom OTXModel
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ...     model=OTXModel(...),
-        ...     checkpoint=<checkpoint/path>,
-        ... )
+            engine = Engine(
+                data_root=<dataset/path>,
+            )
 
-        Create Engine with Custom OTXDataModule
-        >>> engine = Engine(
-        ...     model = OTXModel(...),
-        ...     datamodule = OTXDataModule(...),
-        ... )
+        Create Engine with Custom OTXModel::
+
+            engine = Engine(
+                data_root=<dataset/path>,
+                model=OTXModel(...),
+                checkpoint=<checkpoint/path>,
+            )
+
+        Create Engine with Custom OTXDataModule::
+
+            engine = Engine(
+                model = OTXModel(...),
+                datamodule = OTXDataModule(...),
+            )
     """
 
     def __init__(
@@ -527,6 +530,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
+
         CLI Usage:
             To optimize a model, run
                 ```python
@@ -743,17 +747,17 @@ class Engine:
             ...     data_root=<dataset/path>,
             ... )
 
-            If you want to override configuration from default config
-            >>> overriding = {
-            ...     "data.config.train_subset.batch_size": 2,
-            ...     "data.config.test_subset.subset_name": "TESTING",
-            ... }
-            >>> engine = Engine(
-            ...     model_name="atss_mobilenetv2",
-            ...     task="DETECTION",
-            ...     data_root=<dataset/path>,
-            ...     **overriding,
-            ... )
+            If you want to override configuration from default config:
+                >>> overriding = {
+                ...     "data.config.train_subset.batch_size": 2,
+                ...     "data.config.test_subset.subset_name": "TESTING",
+                ... }
+                >>> engine = Engine(
+                ...     model_name="atss_mobilenetv2",
+                ...     task="DETECTION",
+                ...     data_root=<dataset/path>,
+                ...     **overriding,
+                ... )
         """
         default_config = DEFAULT_CONFIG_PER_TASK.get(task)
         model_path = str(default_config).split("/")
