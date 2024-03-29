@@ -264,7 +264,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
 class TestOVVisualPromptingModel:
     @pytest.fixture()
-    def set_ov_visual_prompting_model(self, mocker):
+    def set_ov_visual_prompting_model(self, mocker, tmpdir):
         def ov_visual_prompting_model(for_create_model: bool = False) -> OVVisualPromptingModel:
             if for_create_model:
                 mocker.patch("openvino.model_api.adapters.create_core")
@@ -277,7 +277,11 @@ class TestOVVisualPromptingModel:
                     "_create_model",
                     return_value={"image_encoder": Mock(), "decoder": Mock()},
                 )
-            return OVVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
+            dirpath = Path(tmpdir)
+            (dirpath / "exported_model_image_encoder.xml").touch()
+            (dirpath / "exported_model_decoder.xml").touch()
+            model_name = str(dirpath / "exported_model_decoder.xml")
+            return OVVisualPromptingModel(num_classes=0, model_name=model_name)
 
         return ov_visual_prompting_model
 
@@ -360,14 +364,19 @@ class TestOVVisualPromptingModel:
 
 class TestOVZeroShotVisualPromptingModel:
     @pytest.fixture()
-    def ov_zero_shot_visual_prompting_model(self, mocker) -> OVZeroShotVisualPromptingModel:
+    def ov_zero_shot_visual_prompting_model(self, mocker, tmpdir) -> OVZeroShotVisualPromptingModel:
         mocker.patch.object(
             OVZeroShotVisualPromptingModel,
             "_create_model",
             return_value={"image_encoder": Mock(), "decoder": Mock()},
         )
         mocker.patch.object(OVZeroShotVisualPromptingModel, "initialize_reference_info")
-        return OVZeroShotVisualPromptingModel(num_classes=0, model_name="exported_model_decoder.xml")
+        dirpath = Path(tmpdir)
+        (dirpath / "exported_model_image_encoder.xml").touch()
+        (dirpath / "exported_model_decoder.xml").touch()
+        model_name = str(dirpath / "exported_model_decoder.xml")
+
+        return OVZeroShotVisualPromptingModel(num_classes=0, model_name=model_name)
 
     @pytest.mark.parametrize("training", [True, False])
     def test_forward(

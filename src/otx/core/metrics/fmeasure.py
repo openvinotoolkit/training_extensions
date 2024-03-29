@@ -644,6 +644,7 @@ class FMeasure(Metric):
     def __init__(
         self,
         label_info: LabelInfo,
+        *,
         vary_nms_threshold: bool = False,
         cross_class_nms: bool = False,
     ):
