@@ -161,4 +161,4 @@ Here is explanation of all HPO configuration.
 
 - **asynchronous_sha** (*bool*, *default=True*) Whether SHAs(brackets) are running parallelly or not.
 
-**reduction_factor**, **asynchronous_bracket** and **asynchronous_sha** are HyperBand hyper parameters. If you want to know them more, please refer `ASHA <https://arxiv.org/pdf/1810.05934.pdf>`. 
+**reduction_factor**, **asynchronous_bracket** and **asynchronous_sha** are HyperBand hyper parameters. If you want to know them more, please refer `ASHA <https://arxiv.org/pdf/1810.05934.pdf>`_.
