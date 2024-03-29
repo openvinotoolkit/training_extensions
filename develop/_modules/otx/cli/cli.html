@@ -257,7 +257,7 @@
 <span class="kn">from</span> <span class="nn">otx</span> <span class="kn">import</span> <span class="n">OTX_LOGO</span><span class="p">,</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils</span> <span class="kn">import</span> <span class="n">absolute_path</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.help_formatter</span> <span class="kn">import</span> <span class="n">CustomHelpFormatter</span>
-<span class="kn">from</span> <span class="nn">otx.cli.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">add_list_type_arguments</span><span class="p">,</span> <span class="n">get_short_docstring</span><span class="p">,</span> <span class="n">patch_update_configs</span>
+<span class="kn">from</span> <span class="nn">otx.cli.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">get_short_docstring</span><span class="p">,</span> <span class="n">patch_update_configs</span>
 <span class="kn">from</span> <span class="nn">otx.cli.utils.workspace</span> <span class="kn">import</span> <span class="n">Workspace</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">HLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
@@ -265,6 +265,8 @@
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">jsonargparse._actions</span> <span class="kn">import</span> <span class="n">_ActionSubCommands</span>
+
+    <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
 
 
 <span class="n">_ENGINE_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
@@ -383,7 +385,7 @@
             <span class="s2">&quot;Setting this option to true will disable this behavior.&quot;</span><span class="p">,</span>
             <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">engine_skip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="s2">&quot;work_dir&quot;</span><span class="p">}</span>
+        <span class="n">engine_skip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">,</span> <span class="s2">&quot;work_dir&quot;</span><span class="p">}</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">add_class_arguments</span><span class="p">(</span>
             <span class="n">Engine</span><span class="p">,</span>
             <span class="s2">&quot;engine&quot;</span><span class="p">,</span>
@@ -395,14 +397,11 @@
         <span class="c1"># Model Settings</span>
         <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
 
-        <span class="n">model_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fail_untyped&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
-
         <span class="n">parser</span><span class="o">.</span><span class="n">add_subclass_arguments</span><span class="p">(</span>
             <span class="n">OTXModel</span><span class="p">,</span>
             <span class="s2">&quot;model&quot;</span><span class="p">,</span>
             <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">},</span>
-            <span class="o">**</span><span class="n">model_kwargs</span><span class="p">,</span>
+            <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Datamodule Settings</span>
         <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
@@ -412,23 +411,6 @@
             <span class="s2">&quot;data&quot;</span><span class="p">,</span>
             <span class="n">fail_untyped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">sub_configs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="c1"># Optimizer &amp; Scheduler Settings</span>
-        <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerTypeUnion</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span>
-        <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
-        <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
-
-        <span class="n">add_list_type_arguments</span><span class="p">(</span>
-            <span class="n">parser</span><span class="p">,</span>
-            <span class="n">baseclass</span><span class="o">=</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]),</span>
-            <span class="n">nested_key</span><span class="o">=</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span>
-            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;params&quot;</span><span class="p">},</span>
-        <span class="p">)</span>
-        <span class="n">add_list_type_arguments</span><span class="p">(</span>
-            <span class="n">parser</span><span class="p">,</span>
-            <span class="n">baseclass</span><span class="o">=</span><span class="p">(</span><span class="n">LRScheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerTypeUnion</span><span class="p">]),</span>
-            <span class="n">nested_key</span><span class="o">=</span><span class="s2">&quot;scheduler&quot;</span><span class="p">,</span>
-            <span class="n">skip</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">},</span>
         <span class="p">)</span>
 
         <span class="n">parser</span><span class="o">.</span><span class="n">add_class_arguments</span><span class="p">(</span><span class="n">Workspace</span><span class="p">,</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span>
@@ -605,7 +587,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
 
             <span class="c1"># Instantiate the model and needed components</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">instantiate_engine</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_engine</span><span class="p">()</span></div>
@@ -622,8 +604,6 @@
         <span class="n">engine_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;engine&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Engine</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">scheduler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
             <span class="n">datamodule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span>
             <span class="n">work_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">work_dir</span><span class="p">,</span>
             <span class="o">**</span><span class="n">engine_kwargs</span><span class="p">,</span>
@@ -632,7 +612,7 @@
 
 <div class="viewcode-block" id="OTXCLI.instantiate_model">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.cli.html#otx.cli.cli.OTXCLI.instantiate_model">[docs]</a>
-    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">instantiate_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_config</span><span class="p">:</span> <span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModel</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the model based on the subcommand.</span>
 
 <span class="sd">        This method checks if the subcommand is one of the engine subcommands.</span>
@@ -645,7 +625,6 @@
 <span class="sd">            tuple: The model and optimizer and scheduler.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
-        <span class="kn">from</span> <span class="nn">otx.core.utils.instantiators</span> <span class="kn">import</span> <span class="n">partial_instantiate_class</span>
 
         <span class="n">skip</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
@@ -665,22 +644,6 @@
                 <span class="n">hlabel_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
                 <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">hlabel_info</span> <span class="o">=</span> <span class="n">hlabel_info</span>
                 <span class="n">skip</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;hlabel_info&quot;</span><span class="p">)</span>
-
-        <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">optimizer_kwargs</span><span class="p">]</span>
-        <span class="n">optimizers</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">([</span><span class="n">_opt</span> <span class="k">for</span> <span class="n">_opt</span> <span class="ow">in</span> <span class="n">optimizer_kwargs</span> <span class="k">if</span> <span class="n">_opt</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">optimizers</span><span class="p">:</span>
-            <span class="c1"># Updates the instantiated optimizer.</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizers</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span>
-
-        <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;scheduler&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler_kwargs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">scheduler_kwargs</span><span class="p">]</span>
-        <span class="n">schedulers</span> <span class="o">=</span> <span class="n">partial_instantiate_class</span><span class="p">([</span><span class="n">_sch</span> <span class="k">for</span> <span class="n">_sch</span> <span class="ow">in</span> <span class="n">scheduler_kwargs</span> <span class="k">if</span> <span class="n">_sch</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">schedulers</span><span class="p">:</span>
-            <span class="c1"># Updates the instantiated scheduler.</span>
-            <span class="n">model_config</span><span class="o">.</span><span class="n">init_args</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">schedulers</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;scheduler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span>
 
         <span class="c1"># Parses the OTXModel separately to update num_classes.</span>
         <span class="n">model_parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
@@ -704,7 +667,7 @@
         <span class="c1"># Update self.config with model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Namespace</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_config</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">schedulers</span></div>
+        <span class="k">return</span> <span class="n">model</span></div>
 
 
 <div class="viewcode-block" id="OTXCLI.get_config_value">

@@ -270,16 +270,21 @@
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span><span class="p">,</span> <span class="n">NullMetricCallable</span>
+<span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
+<span class="kn">from</span> <span class="nn">otx.core.schedulers.warmup_schedulers</span> <span class="kn">import</span> <span class="n">LinearWarmupScheduler</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">NullLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">get_default_num_async_infer_requests</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.miscellaneous</span> <span class="kn">import</span> <span class="n">ensure_callable</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">is_ckpt_for_finetuning</span><span class="p">,</span> <span class="n">is_ckpt_from_otx_v1</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
+    <span class="kn">from</span> <span class="nn">lightning.pytorch.utilities.types</span> <span class="kn">import</span> <span class="n">LRSchedulerTypeUnion</span><span class="p">,</span> <span class="n">OptimizerLRScheduler</span>
+    <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
     <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">params_t</span>
 
     <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
@@ -292,8 +297,19 @@
     <span class="k">return</span> <span class="n">SGD</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
 
 
+<span class="k">def</span> <span class="nf">_default_scheduler_callable</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span>
+    <span class="n">interval</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LRScheduler</span><span class="p">:</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">ConstantLR</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c1"># NOTE: &quot;interval&quot; attribute should be set to configure the scheduler&#39;s step interval correctly</span>
+    <span class="n">scheduler</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+    <span class="k">return</span> <span class="n">scheduler</span>
+
+
 <span class="n">DefaultOptimizerCallable</span> <span class="o">=</span> <span class="n">_default_optimizer_callable</span>
-<span class="n">DefaultSchedulerCallable</span> <span class="o">=</span> <span class="n">ConstantLR</span>
+<span class="n">DefaultSchedulerCallable</span> <span class="o">=</span> <span class="n">_default_scheduler_callable</span>
 
 
 <div class="viewcode-block" id="OTXModel">
@@ -313,8 +329,8 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">OptimizerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
-        <span class="n">scheduler</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">LRSchedulerCallable</span><span class="p">]</span> <span class="o">|</span> <span class="n">LRSchedulerCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">OptimizerCallable</span> <span class="o">=</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span> <span class="o">|</span> <span class="n">LRSchedulerListCallable</span> <span class="o">=</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">NullMetricCallable</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -324,12 +340,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_callable</span> <span class="o">=</span> <span class="n">optimizer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span> <span class="o">=</span> <span class="n">scheduler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">metric</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_callable</span> <span class="o">=</span> <span class="n">ensure_callable</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span> <span class="o">=</span> <span class="n">ensure_callable</span><span class="p">(</span><span class="n">scheduler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">ensure_callable</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">torch_compile</span> <span class="o">=</span> <span class="n">torch_compile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># this line allows to access init params with &#39;self.hparams&#39; attribute</span>
         <span class="c1"># also ensures init params will be stored in ckpt</span>
@@ -507,36 +524,34 @@
 
 <div class="viewcode-block" id="OTXModel.configure_optimizers">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.configure_optimizers">[docs]</a>
-    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Choose what optimizers and learning-rate schedulers to use in your optimization.</span>
+    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizerLRScheduler</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure an optimizer and learning-rate schedulers.</span>
 
-<span class="sd">        Normally you&#39;d need one. But in the case of GANs or similar you might have multiple.</span>
+<span class="sd">        Configure an optimizer and learning-rate schedulers</span>
+<span class="sd">        from the given optimizer and scheduler or scheduler list callable in the constructor.</span>
+<span class="sd">        Generally, there is two lr schedulers. One is for a linear warmup scheduler and</span>
+<span class="sd">        the other is the main scheduler working after the warmup period.</span>
 
-<span class="sd">        Examples:</span>
-<span class="sd">            https://lightning.ai/docs/pytorch/latest/common/lightning_module.html#configure-optimizers</span>
-
-<span class="sd">        :return: A dict containing the configured optimizers and learning-rate schedulers to be used for training.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Two list. The former is a list that contains an optimizer</span>
+<span class="sd">            The latter is a list of lr scheduler configs which has a dictionary format.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+        <span class="n">schedulers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">ensure_list</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>  <span class="c1"># noqa: ANN401</span>
             <span class="k">return</span> <span class="n">item</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
-        <span class="n">optimizers</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span> <span class="k">else</span> <span class="n">optimizer</span>
-            <span class="k">for</span> <span class="n">optimizer</span> <span class="ow">in</span> <span class="n">ensure_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_callable</span><span class="p">)</span>
-        <span class="p">]</span>
-
-        <span class="n">lr_schedulers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">scheduler_config</span> <span class="ow">in</span> <span class="n">ensure_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span><span class="p">):</span>
-            <span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler_config</span><span class="p">(</span><span class="n">optimizers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">scheduler_config</span><span class="p">)</span> <span class="k">else</span> <span class="n">scheduler_config</span>
+        <span class="n">lr_scheduler_configs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">scheduler</span> <span class="ow">in</span> <span class="n">ensure_list</span><span class="p">(</span><span class="n">schedulers</span><span class="p">):</span>
             <span class="n">lr_scheduler_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler</span><span class="p">}</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">&quot;interval&quot;</span><span class="p">):</span>
                 <span class="n">lr_scheduler_config</span><span class="p">[</span><span class="s2">&quot;interval&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">interval</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="s2">&quot;monitor&quot;</span><span class="p">):</span>
                 <span class="n">lr_scheduler_config</span><span class="p">[</span><span class="s2">&quot;monitor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">monitor</span>
-            <span class="n">lr_schedulers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lr_scheduler_config</span><span class="p">)</span>
+            <span class="n">lr_scheduler_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lr_scheduler_config</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">optimizers</span><span class="p">,</span> <span class="n">lr_schedulers</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">optimizer</span><span class="p">],</span> <span class="n">lr_scheduler_configs</span></div>
 
 
 <div class="viewcode-block" id="OTXModel.configure_metric">
@@ -939,7 +954,41 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_optimization_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">{}</span></div>
+        <span class="k">return</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="OTXModel.lr_scheduler_step">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.lr_scheduler_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">lr_scheduler_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">:</span> <span class="n">LRSchedulerTypeUnion</span><span class="p">,</span> <span class="n">metric</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;It is required to prioritize the warmup lr scheduler than other lr scheduler during a warmup period.</span>
+
+<span class="sd">        It will ignore other lr scheduler&#39;s stepping if the warmup scheduler is currently activated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warmup_schedulers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">scheduler</span>
+            <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">lr_scheduler_configs</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">LinearWarmupScheduler</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">warmup_schedulers</span><span class="p">:</span>
+            <span class="c1"># There is no warmup scheduler</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">lr_scheduler_step</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">warmup_schedulers</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No more than two warmup schedulers coexist.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">warmup_scheduler</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">warmup_schedulers</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">scheduler</span> <span class="o">!=</span> <span class="n">warmup_scheduler</span> <span class="ow">and</span> <span class="n">warmup_scheduler</span><span class="o">.</span><span class="n">activated</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Warmup lr scheduler is currently activated. &quot;</span>
+                <span class="s2">&quot;Ignore other schedulers until the warmup lr scheduler is finished&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">lr_scheduler_step</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span></div>
+</div>
 
 
 
@@ -967,6 +1016,7 @@
         <span class="n">use_throughput_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">model_api_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">NullMetricCallable</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="n">model_type</span>

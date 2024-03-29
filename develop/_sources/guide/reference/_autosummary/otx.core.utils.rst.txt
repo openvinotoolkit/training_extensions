@@ -33,6 +33,7 @@ otx.core.utils
    otx.core.utils.imports
    otx.core.utils.instantiators
    otx.core.utils.mask_util
+   otx.core.utils.miscellaneous
    otx.core.utils.pylogger
    otx.core.utils.tile_merge
    otx.core.utils.utils
