@@ -177,7 +177,10 @@ Let's check the object detection configuration running the following command:
 .. code-block:: shell
 
   # or its config path
-  (otx) ...$ otx train --config src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml --data_root data/wgisd --print_config
+  (otx) ...$ otx train --config  src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml \
+                       --data_root data/wgisd \
+                       --work_dir otx-workspace \
+                       --print_config
 
   ...
   data_root: data/wgisd
