@@ -112,7 +112,7 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
 
 def init_environment(model: Optional[ModelEntity] = None, mode: str = "visual_prompt"):
     model_template = parse_model_template(
-        os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR.get(mode), "template.yaml")
+        os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR.get(mode), "template_experimental.yaml")
     )
     hyper_parameters = create(model_template.hyper_parameters.data)
     labels_schema = generate_otx_label_schema()
