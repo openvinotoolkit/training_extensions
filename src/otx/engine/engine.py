@@ -163,7 +163,7 @@ class Engine:
         resume: bool = False,
         metric: Metric | MetricCallable | None = None,
         run_hpo: bool = False,
-        hpo_config: HpoConfig | None = None,
+        hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -220,8 +220,6 @@ class Engine:
         """
         metric = metric if metric is not None else self._auto_configurator.get_metric()
         if run_hpo:
-            if hpo_config is None:
-                hpo_config = HpoConfig()
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)
