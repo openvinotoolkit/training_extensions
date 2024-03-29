@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -412,10 +413,10 @@ environment:</p>
 </div>
 <p>1. Clone a repository with
 <a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>data<span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>data
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/thsant/wgisd.git
-<span class="nb">cd</span><span class="w"> </span>wgisd
-git<span class="w"> </span>checkout<span class="w"> </span>6910edc5ae3aae8c20062941b1641821f0c30127
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">data</span> <span class="p">;</span> <span class="n">cd</span> <span class="n">data</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">thsant</span><span class="o">/</span><span class="n">wgisd</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">wgisd</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="mi">6910</span><span class="n">edc5ae3aae8c20062941b1641821f0c30127</span>
 </pre></div>
 </div>
 <p>This dataset contains images of grapevines with the annotation for different varieties of grapes.</p>
@@ -529,7 +530,10 @@ with:</p>
 This is because the function automatically detects annotations and images according to the expected folder structure we achieved above.</p>
 <p>Let’s check the object detection configuration running the following command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># or its config path</span>
-<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml<span class="w"> </span>--data_root<span class="w"> </span>data/wgisd<span class="w"> </span>--print_config
+<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w">  </span>src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--data_root<span class="w"> </span>data/wgisd<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
+<span class="w">                     </span>--print_config
 
 ...
 data_root:<span class="w"> </span>data/wgisd
@@ -653,15 +657,14 @@ while training logs can be found in the <code class="docutils literal notranslat
 <p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/tensorboard</span></code>.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace
-└── outputs/
-    ├── 20240403_134256/
-    |   ├── csv/
-    |   ├── checkpoints/
-    |   |   └── epoch_*.pth
-    |   ├── tensorboard/
-    |   └── configs.yaml
-    └── .latest
-        └── train/
+  ├── 20240403_134256/
+  |   ├── csv/
+  |   ├── checkpoints/
+  |   |   └── epoch_*.pth
+  |   ├── tensorboard/
+  |   └── configs.yaml
+  └── .latest
+      └── train/
 ...
 </pre></div>
 </div>
@@ -725,7 +728,7 @@ a dict with target metric name and its value.</p>
 <h2>Export<a class="headerlink" href="#export" title="Link to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the
 OpenVINO™ Intermediate Representation (IR) format.</p>
-<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> for architecture and <code class="docutils literal notranslate"><span class="pre">exported_model.bin</span></code> for weights.</p>
+<p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">exported_model.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">exported_model.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/</span></code> folder.</p>
 <div class="sd-tab-set docutils">

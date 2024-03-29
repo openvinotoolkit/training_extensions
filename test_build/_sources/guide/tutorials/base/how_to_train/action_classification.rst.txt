@@ -188,15 +188,14 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
     otx-workspace
-    ├── outputs/
-        ├── 20240403_134256/
-            ├── csv/
-            ├── checkpoints/
-            |   └── epoch_*.pth
-            ├── tensorboard/
-            └── configs.yaml
-        └── .latest
-            └── train/
+    ├── 20240403_134256/
+        ├── csv/
+        ├── checkpoints/
+        |   └── epoch_*.pth
+        ├── tensorboard/
+        └── configs.yaml
+    └── .latest
+        └── train/
     ...
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.

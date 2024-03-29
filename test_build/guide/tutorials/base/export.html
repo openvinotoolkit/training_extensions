@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>XAI Tutorial &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>Deploy &amp; Demo &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=ff8fa330"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/explain';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/export';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Deploy &amp; Demo" href="export.html" />
-    <link rel="prev" title="Visual Prompting model" href="how_to_train/visual_prompting.html" />
+    <link rel="next" title="Advanced Tutorials" href="../advanced/index.html" />
+    <link rel="prev" title="XAI Tutorial" href="explain.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -239,8 +239,8 @@
 <li class="toctree-l3"><a class="reference internal" href="how_to_train/visual_prompting.html">Visual Prompting model</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">XAI Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="export.html">Deploy &amp; Demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -374,138 +374,116 @@
             
             <article class="bd-article" role="main">
               
-  <section id="xai-tutorial">
-<h1>XAI Tutorial<a class="headerlink" href="#xai-tutorial" title="Link to this heading">#</a></h1>
-<p>This guide explains the model behavior, which is trained through <a class="reference internal" href="how_to_train/index.html"><span class="doc">previous stage</span></a>.
-It allows displaying the saliency maps, which provide the locality where the model gave an attention to predict a specific category.</p>
-<p>To be specific, this tutorial uses as an example of the ATSS model trained through <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> and saved as <code class="docutils literal notranslate"><span class="pre">otx-workspace/.latest/train/checkpoints/epoch_*.pth</span></code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.</p>
-</div>
-<p>For visualization we use images from WGISD dataset from the <a class="reference internal" href="how_to_train/detection.html"><span class="doc">object detection tutorial</span></a> together with trained model.</p>
+  <section id="deploy-demo">
+<h1>Deploy &amp; Demo<a class="headerlink" href="#deploy-demo" title="Link to this heading">#</a></h1>
+<p>This guide explains how to deploy a model trained in the <a class="reference internal" href="how_to_train/index.html"><span class="doc">previous stage</span></a> and visualize it outside of this repository.
+As a result of this step, you’ll get the exported model together with the self-contained python package and a demo application to visualize results in other environments without a long installation process.</p>
+<section id="export">
+<h2>Export<a class="headerlink" href="#export" title="Link to this heading">#</a></h2>
 <p>1. Activate the virtual environment
 created in the previous step.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>.otx/bin/activate
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>.otx/bin/activate
 <span class="c1"># or by this line, if you created an environment, using tox</span>
 .<span class="w"> </span>venv/otx/bin/activate
 </pre></div>
 </div>
-<p>2. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> command returns saliency maps,
-which are heatmaps with red-colored areas indicating focus. Here’s an example how to generate saliency maps from trained checkpoint:</p>
-<div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-0">
-CLI (with work_dir)</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
-<span class="w">                       </span>--dump<span class="w"> </span>True<span class="w"> </span><span class="c1"># Wherether to save saliency map images or not</span>
+<p>2. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> returns an <code class="docutils literal notranslate"><span class="pre">.onnx</span></code>, <code class="docutils literal notranslate"><span class="pre">openvino.xml(.bin)</span></code> and <code class="docutils literal notranslate"><span class="pre">.zip</span></code>
+exportable code with demo depending on the export type passed to CLI or API.</p>
+<p>You can export the model in OpenVINO format and FP32
+using the command below. Specify the path to the trained PyTorch model using <code class="docutils literal notranslate"><span class="pre">--checkpoint</span></code> parameter:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>CONFIG<span class="w"> </span>--checkpoint<span class="w"> </span>CHECKPOINT<span class="w"> </span>--export_format<span class="w"> </span><span class="o">{</span>ONNX,OPENVINO,EXPORTABLE_CODE<span class="o">}</span><span class="w"> </span>--export_precision<span class="w"> </span><span class="o">{</span>FP16,FP32<span class="o">}</span><span class="w"> </span>--work-dir<span class="w"> </span>WORK_DIR
 </pre></div>
 </div>
-</div>
-<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-1">
-CLI (with config)</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>--config<span class="w">  </span>src/otx/recipe/detection/atss_mobilenetv2.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">                       </span>--data_root<span class="w"> </span>data/wgisd<span class="w"> </span><span class="se">\</span>
-<span class="w">                       </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt<span class="w"> </span><span class="se">\</span>
-<span class="w">                       </span>--dump<span class="w"> </span>True<span class="w"> </span><span class="c1"># Wherether to save saliency map images or not</span>
+<p>You can also specify <code class="docutils literal notranslate"><span class="pre">export_format</span></code> nad <code class="docutils literal notranslate"><span class="pre">export_precision</span></code> parameters.
+For example, to export a model with precision FP16 and format ONNX, execute:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>CONFIG<span class="w"> </span>--checkpoint<span class="w"> </span>CHECKPOINT<span class="w"> </span>--export_format<span class="w"> </span>ONNX<span class="w"> </span>--export_precision<span class="w"> </span>FP16<span class="w"> </span>--work-dir<span class="w"> </span>outputs/deploy
 </pre></div>
 </div>
-</div>
-<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-2">
-API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span>
-    <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;checkpoint-path&gt;&quot;</span><span class="p">,</span>
-    <span class="n">datamodule</span><span class="o">=</span><span class="n">OTXDataModule</span><span class="p">(</span><span class="o">...</span><span class="p">),</span> <span class="c1"># The data module to use for predictions</span>
-    <span class="n">explain_config</span><span class="o">=</span><span class="n">ExplainConfig</span><span class="p">(</span><span class="n">postprocess</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-    <span class="n">dump</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Wherether to save saliency map images or not</span>
-  <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>3. The generated saliency maps will appear in  <code class="docutils literal notranslate"><span class="pre">otx-workspace/.latest/explain/saliency_maps</span></code> folder.
-It will contain a pair of generated images with saliency maps for each image used for the explanation process:</p>
+</section>
+<section id="deploy">
+<h2>Deploy<a class="headerlink" href="#deploy" title="Link to this heading">#</a></h2>
+<p>1. It is also possible to obtain a <code class="docutils literal notranslate"><span class="pre">.zip</span></code>  archive with OpenVINO model and demo to run on your own testing images with visualization possibility.
+The exported archive will consist of the following file structure:</p>
 <ul class="simple">
-<li><p>saliency map - where red color means more attention of the model</p></li>
-<li><p>overlay - where the saliency map is combined with the original image:</p></li>
-</ul>
-<a class="reference internal image-reference" href="../../../_images/explain_wgisd.png"><img alt="../../../_images/explain_wgisd.png" src="../../../_images/explain_wgisd.png" style="width: 600px;" /></a>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<p>4. To explain the exported IR model, it should be converted with additional outputs <code class="docutils literal notranslate"><span class="pre">saliency_map</span></code> and <code class="docutils literal notranslate"><span class="pre">feature_map</span></code>.
-To do that we should use <code class="docutils literal notranslate"><span class="pre">--explain</span> <span class="pre">True</span></code> parameter during export.</p>
-<div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-3">
-CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--explain<span class="w"> </span>True
-<span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_052847/exported_model.xml
-</pre></div>
-</div>
-</div>
-<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-4">
-API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;xml_weights_path&gt;&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>5. We can parametrize the explanation process by specifying
-the following parameters in <code class="docutils literal notranslate"><span class="pre">ExplainConfig</span></code>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">target_explain_group</span></code> - for which target saliency maps will be generated:</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">LICENSE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">README.md</span></code></p></li>
+<li><p>model</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">IMAGE</span></code> - a single global activation map regardless of the classes that the model can detect.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ALL</span></code> - saliency map for each class that the model can detect.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">PREDICTIONS</span></code> - saliency map for each predicted class.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">model.xml</span></code> and <code class="docutils literal notranslate"><span class="pre">model.bin</span></code> - model exported to the OpenVINO™ format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code> - file containing the post-processing info and meta information about labels in the dataset</p></li>
 </ul>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">postprocess</span></code>:</p>
+<li><p>python</p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">False</span></code> <strong>default</strong> - no postprocessing, low-resolution grayscale maps are returned.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">True</span></code> - resizes and applies colormap to the saliency map.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo_package</span></code> - package folder with necessary modules needed to run demo</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo.py</span></code>- simple demo to visualize results of model inference</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> - minimal packages required to run the demo</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setup.py</span></code></p></li>
 </ul>
 </li>
 </ul>
-<div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-5">
-CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--explain_config.postprocess<span class="w"> </span>True
-<span class="w">                           </span>--explain_config.target_explain_group<span class="w"> </span>PREDICTIONS
+<p>3. You can deploy the model,
+using the command below:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-c<span class="w"> </span>CONFIG
+<span class="w">           </span>--checkpoint<span class="w"> </span><span class="o">{</span>PYTORCH_CHECKPOINT<span class="o">}</span>
+<span class="w">           </span>--export_format<span class="w"> </span>EXPORTABLE_CODE
+<span class="w">           </span>--work-dir<span class="w"> </span>outputs/deploy
 </pre></div>
 </div>
-</div>
-<input id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-6">
-API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="o">...</span><span class="p">,</span>
-               <span class="n">explain_config</span><span class="o">=</span><span class="n">ExplainConfig</span><span class="p">(</span>
-                 <span class="n">postprocess</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">target_explain_group</span><span class="o">=</span><span class="n">TargetExplainGroup</span><span class="o">.</span><span class="n">PREDICTIONS</span>
-               <span class="p">)</span>
-  <span class="p">)</span>
+<p>After that, you can use the resulting <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> archive in other applications.</p>
+</section>
+<section id="demonstration">
+<h2>Demonstration<a class="headerlink" href="#demonstration" title="Link to this heading">#</a></h2>
+<p>Using the exported demo, we’re able to run the model in the demonstration mode outside of this repository, using only the ported <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archive with minimum required packages.
+The demo allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario. It is not required to install OTX or PyTorch.</p>
+<p>1. Unzip the <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code>
+archive.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unzip</span>  <span class="n">outputs</span><span class="o">/</span><span class="n">deploy</span><span class="o">/.</span><span class="n">latest</span><span class="o">/</span><span class="n">export</span><span class="o">/</span><span class="n">exportable_code</span><span class="o">.</span><span class="n">zip</span> <span class="o">-</span><span class="n">d</span> <span class="n">outputs</span><span class="o">/</span><span class="n">deploy</span><span class="o">/</span>
 </pre></div>
 </div>
+<p>2. To run the demo in exportable code, we can use a brand-new virtual environment,
+where we need to install a minimalistic set of packages required for inference only.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">demo_venv</span> <span class="o">--</span><span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;demo&quot;</span>
+<span class="n">source</span> <span class="n">demo_venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
 </div>
+<p>3. The following line will run the demo on your input source,
+using the model in the <code class="docutils literal notranslate"><span class="pre">model</span></code> folder. You can pass as <code class="docutils literal notranslate"><span class="pre">input</span></code> a single image, a folder of images, a video file, or a web camera id.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
+                                                  --model outputs/deploy/model
+</pre></div>
 </div>
-<p>6. The explanation algorithm is chosen automatically
-based on the used model:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Recipro-CAM</span></code> - for CNN classification models</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ViT</span> <span class="pre">Recipro-CAM</span></code> - for transformer-based classification models</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">DetClassProbabilityMap</span></code> - for single-stage detector models</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">MaskRCNNExplainAlgo</span></code> - for MaskRCNN instance segmentation models</p></li>
-</ul>
+<p>You can press <code class="docutils literal notranslate"><span class="pre">Q</span></code> to stop inference during the demo running.</p>
+<p>For example, the model inference on the image from the WGISD dataset will look like this:</p>
+<a class="reference internal image-reference" href="../../../_images/wgisd_pr_sample.jpg"><img alt="this image shows the inference results on the WGISD dataset" src="../../../_images/wgisd_pr_sample.jpg" style="width: 600px;" /></a>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Learn more about Explainable AI and its algorithms in <a class="reference internal" href="../../explanation/additional_features/xai.html"><span class="doc">XAI explanation section</span></a></p>
+<p>If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
+visualize inference results on the screen, and apply the <code class="docutils literal notranslate"><span class="pre">loop</span></code> option, which enforces processing a single image in a loop.
+In this case, you can stop the demo by pressing <cite>Q</cite> button or killing the process in the terminal (<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> for Linux).</p>
 </div>
+<p>To learn how to run the demo on Windows and MacOS, please refer to the <code class="docutils literal notranslate"><span class="pre">outputs/deploy/python/README.md</span></code> file in exportable code.</p>
+<p>4. To save inference results with predictions on it, we can specify the folder path, using <code class="docutils literal notranslate"><span class="pre">--output</span></code>.
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a <code class="docutils literal notranslate"><span class="pre">--loop</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
+                                                  --model outputs/deploy/model \
+                                                  --output resulted_images
+</pre></div>
+</div>
+<p>5. To run a demo on a web camera, we need to know its ID.
+We can check a list of camera devices by running this command line on Linux system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">v4l</span><span class="o">-</span><span class="n">utils</span>
+<span class="n">v4l2</span><span class="o">-</span><span class="n">ctl</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">devices</span>
+</pre></div>
+</div>
+<p>The output will look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Integrated</span> <span class="n">Camera</span> <span class="p">(</span><span class="n">usb</span><span class="o">-</span><span class="mi">0000</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">1</span><span class="n">a</span><span class="mf">.0</span><span class="o">-</span><span class="mf">1.6</span><span class="p">):</span>
+    <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video0</span>
+</pre></div>
+</div>
+<p>After that, we can use this <code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> as a camera ID for <code class="docutils literal notranslate"><span class="pre">--input</span></code>.</p>
+</section>
 </section>
 
 
@@ -516,17 +494,17 @@ based on the used model:</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="how_to_train/visual_prompting.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="explain.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Visual Prompting model</p>
+          <p class="prev-next-title">XAI Tutorial</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="export.html" title="next page">
+  <a class='right-next' id="next-link" href="../advanced/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Deploy &amp; Demo</p>
+      <p class="prev-next-title">Advanced Tutorials</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -541,6 +519,33 @@ based on the used model:</p>
               
 <div class="toc-item">
   
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#export">
+   Export
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#deploy">
+   Deploy
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#demonstration">
+   Demonstration
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
 <div id="searchbox"></div>
 </div>
 
@@ -551,7 +556,7 @@ based on the used model:</p>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/tutorials/base/explain.rst.txt">
+    <a href="../../../_sources/guide/tutorials/base/export.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -633,15 +634,14 @@ while training logs can be found in the <code class="docutils literal notranslat
 <p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/tensorboard</span></code>.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace
-├── outputs/
-    ├── 20240403_134256/
-        ├── csv/
-        ├── checkpoints/
-        |   └── epoch_*.pth
-        ├── tensorboard/
-        └── configs.yaml
-    └── .latest
-        └── train/
+├── 20240403_134256/
+    ├── csv/
+    ├── checkpoints/
+    |   └── epoch_*.pth
+    ├── tensorboard/
+    └── configs.yaml
+└── .latest
+    └── train/
 ...
 </pre></div>
 </div>

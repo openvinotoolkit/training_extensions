@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorials/base/explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/base/export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -543,11 +544,80 @@ templates for specific problem domains.</p>
 </section>
 <section id="entrypoint">
 <h3>Entrypoint<a class="headerlink" href="#entrypoint" title="Link to this heading">#</a></h3>
-<p>TBD &#64;samet-akcay &#64;harimkang</p>
-</section>
-<section id="intel-device-support">
-<h3>Intel Device Support<a class="headerlink" href="#intel-device-support" title="Link to this heading">#</a></h3>
-<p>TBD</p>
+<ol class="arabic">
+<li><p><strong>User Workflow for OpenVINO™ Training Extensions</strong></p>
+<p>We defined the user workflow for the OpenVINO™ Training Extensions
+before defining the entry points to provide to users.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Definition of OpenVINO™ Training Extensions Workflow" src="../../_images/otx_workflow.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4. Definition of OpenVINO™ Training Extensions Workflow</p></td>
+</tr>
+</tbody>
+</table>
+<p>As shown above, the User will define the Dataset and the Task they want to solve.
+OpenVINO™ Training Extensions will provide a model to solve that Problem.
+You can use the built-in model or choose from several models.
+Advanced Users can also import their own Custom Model.</p>
+<p>The User will then define the Training Configuration and start the Training.
+Basically, OpenVINO™ Training Extensions provide a recipe that allows user to run
+the training and change the training parameters.</p>
+<p>Users can also use HPO to help the machine find the optimal parameters.
+After training, the user can evaluate the model and deploy it to the edge device.
+We have defined this natural workflow, and the end result is that
+the user is provided with a trained model, a model that is available on the edge device,
+and an optimized model.</p>
+</li>
+<li><p><strong>Designing Engine Classes for a Natural Workflow</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Engine Class Diagram" src="../../_images/engine_diagram.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 5. Engine Class Diagram</p></td>
+</tr>
+</tbody>
+</table>
+<p>As shown in Figure 5, we have designed the Engine classes to provide a natural workflow.
+In addition to the models and datamodules provided by OpenVINO™ Training Extensions’s core,
+Engine provides all the entry points that OpenVINO™ Training Extensions wants to provide through Engine.</p>
+<p>By looking at the Engine class, users can see what OpenVINO™ Training Extensions is trying to provide and use it in a natural way.
+User configure Model and Data, and train it using a Trainer called Engine.
+The role of Model can be done in core’s Model, and Dataset-related things can be done in Datamodule,
+The rest, from training to deployment, will be handled by Engine.</p>
+</li>
+<li><p><strong>Auto-Configurator to help novice users get started</strong></p>
+<p>Users without typical Trainer experience, such as Lightning, struggle to configure models and data pipelines.
+This stems from the structure of the Model, Datamodule, and Engine requiring separate configuration.
+To minimize this difficulty, OpenVINO™ Training Extensions uses a feature called Auto-Configuration.
+If the user does not provide the required input, whether it is a Model or Data pipeline, the Auto-Configurator fills in the gaps.
+This allows users to easily use OpenVINO™ Training Extensions by only configuring the dataset.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;&lt;path_to_data_root&gt;&quot;</span><span class="p">)</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data_root<span class="w"> </span>&lt;path_to_data_root&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</li>
+</ol>
+<p>Authors: &#64;samet-akcay &#64;harimkang</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id9" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
@@ -644,11 +714,6 @@ programming languages.” OOPSLA, 2004.</p>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#entrypoint">
      Entrypoint
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#intel-device-support">
-     Intel Device Support
     </a>
    </li>
   </ul>

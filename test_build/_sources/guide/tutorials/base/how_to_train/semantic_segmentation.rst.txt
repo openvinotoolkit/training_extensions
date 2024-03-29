@@ -50,13 +50,7 @@ The list of supported recipes for semantic segmentation is available with the co
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
-<<<<<<< HEAD
-  We also can modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
-
 .. tab-set::
-=======
-.. code-block::
->>>>>>> b55d82cf6f648c42b6b9e3a6c9b1c1e3dbe5d6c2
 
     .. tab-item:: CLI
 
@@ -98,7 +92,7 @@ The list of supported recipes for semantic segmentation is available with the co
           ]
           '''
 
-2.  On this step we will configure configuration 
+1.  On this step we will configure configuration 
 with:
 
 - all necessary configs for litehrnet_18
@@ -230,15 +224,14 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
   otx-workspace
-  └── outputs/
-      ├── 20240403_134256/
-      |   ├── csv/
-      |   ├── checkpoints/
-      |   |   └── epoch_*.pth
-      |   ├── tensorboard/
-      |   └── configs.yaml
-      └── .latest
-          └── train/
+    ├── 20240403_134256/
+    |   ├── csv/
+    |   ├── checkpoints/
+    |   |   └── epoch_*.pth
+    |   ├── tensorboard/
+    |   └── configs.yaml
+    └── .latest
+        └── train/
   ...
 
 After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.

@@ -240,7 +240,6 @@
 <span class="c1"># Copyright (C) 2023 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 
-
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">dataclasses</span>
@@ -601,7 +600,7 @@
             <span class="c1"># Instantiate the things that don&#39;t need to special handling</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">instantiate_classes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_datamodule</span><span class="p">()</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
 
             <span class="c1"># Instantiate the model and needed components</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instantiate_model</span><span class="p">(</span><span class="n">model_config</span><span class="o">=</span><span class="n">model_config</span><span class="p">)</span>
@@ -670,7 +669,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: The model and optimizer and scheduler.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.core.model.entity.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
+        <span class="kn">from</span> <span class="nn">otx.core.model.entity.base</span> <span class="kn">import</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
 
         <span class="c1"># Update num_classes</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;disable_infer_num_classes&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
@@ -699,7 +698,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
 
         <span class="c1"># Update tile config due to adaptive tiling</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The model does not have a tile_config attribute. Please check if the model supports tiling.&quot;</span>
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
@@ -788,6 +787,7 @@
 <span class="sd">        The configuration is saved as a YAML file in the engine&#39;s working directory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;workspace&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;work_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="o">.</span><span class="n">work_dir</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_subcommand_parser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
             <span class="n">cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
             <span class="n">path</span><span class="o">=</span><span class="n">work_dir</span> <span class="o">/</span> <span class="s2">&quot;configs.yaml&quot;</span><span class="p">,</span>
@@ -862,7 +862,52 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unrecognized subcommand: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="k">def</span> <span class="nf">_select_datamodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: ANN202 # annotation is disabled as OTXDataModule is not imported</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override the config with anomaly related configuration.</span>
+
+<span class="sd">        If the task is one of the anomaly detection tasks, the config is overridden with the anomaly related</span>
+<span class="sd">        configuration.</span>
+
+<span class="sd">        Note: (ashwinvaidya17)  This is temporary till OTX supports custom dataloader.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            OTXDataModule: The instantiated datamodule.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">task</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">,</span>
+            <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">otx.data.anomaly</span> <span class="kn">import</span> <span class="n">AnomalyDataModule</span>
+
+            <span class="n">datamodule</span> <span class="o">=</span> <span class="n">AnomalyDataModule</span><span class="p">(</span>
+                <span class="n">task_type</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">data_dir</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span>
+                <span class="n">data_format</span><span class="o">=</span><span class="s2">&quot;mvtec&quot;</span><span class="p">,</span>
+                <span class="n">train_batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">train_num_workers</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">train_transforms</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
+                <span class="n">train_transform_lib_type</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">train_subset</span><span class="o">.</span><span class="n">transform_lib_type</span><span class="p">,</span>
+                <span class="n">val_batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">val_num_workers</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">val_transforms</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
+                <span class="n">val_transform_lib_type</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">val_subset</span><span class="o">.</span><span class="n">transform_lib_type</span><span class="p">,</span>
+                <span class="n">test_batch_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">test_num_workers</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">test_transforms</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
+                <span class="n">test_transform_lib_type</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">transform_lib_type</span><span class="p">,</span>
+                <span class="n">enable_tiler</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">,</span>
+                <span class="n">tile_size</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span>
+                <span class="n">overlap</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># update data in ``self.config_init``</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">datamodule</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">datamodule</span></div>
 
 </pre></div>
 

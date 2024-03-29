@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -393,8 +394,8 @@ It looks like a heatmap, where warm-colored areas represent the areas with main 
 <p>For classification networks these algorithms are used to generate saliency maps:</p>
 <ul class="simple">
 <li><p><strong>Activation Map​</strong> - this is the most basic and naive approach. It takes the outputs of the model’s feature extractor (backbone) and averages it in channel dimension. The results highly rely on the backbone and ignore neck and head computations. Basically, it gives a relatively good and fast result.</p></li>
-<li><p><a class="reference external" href="https://arxiv.org/abs/2008.00299​">Eigen-Cam</a> uses Principal Component Analysis (PCA).  It returns the first principal component of the feature extractor output, which most of the time corresponds to the dominant object. The results highly rely on the backbone as well and ignore neck and head computations.</p></li>
-<li><p><a class="reference external" href="https://arxiv.org/pdf/2209.14074">Recipro-CAM​</a> uses Class Activation Mapping (CAM) to weigh the activation map for each class, so it can generate different saliency per class. Recipro-CAM is a fast gradient-free Reciprocal CAM method. The method involves spatially masking the extracted feature maps to exploit the correlation between activation maps and network predictions for target classes.</p></li>
+<li><p><a class="reference external" href="https://arxiv.org/pdf/2209.14074">Recipro-CAM​</a> uses Class Activation Mapping (CAM) to weigh the activation map for each class, so it can generate different saliency per class. Recipro-CAM is a fast gradient-free Reciprocal CAM method. The method involves spatially masking the extracted feature maps to exploit the correlation between activation maps and network predictions for target classes. <strong>Default option</strong> for CNN models.</p></li>
+<li><p><a class="reference external" href="https://arxiv.org/abs/2310.02588">ViT Recipro-CAM​</a> is a modification of Recipro-CAM for Transformers-based models. It uses the same approach as Recipro-CAM but with a different way to extract feature maps from the Vision Transformer. <strong>Default option</strong> for transformer-based models.</p></li>
 </ul>
 <p>Below we show the comparison of described algorithms. <code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">model</span> <span class="pre">internal</span> <span class="pre">state</span></code> means the necessity to modify the model’s outputs and dump inner features.
 <code class="docutils literal notranslate"><span class="pre">Per-class</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation different saliency maps for different classes.</p>
@@ -402,8 +403,8 @@ It looks like a heatmap, where warm-colored areas represent the areas with main 
 <thead>
 <tr class="row-odd"><th class="head"><p>Classification algorithm</p></th>
 <th class="head"><p>Activation Map</p></th>
-<th class="head"><p>Eigen-Cam</p></th>
 <th class="head"><p>Recipro-CAM</p></th>
+<th class="head"><p>ViT Recipro-CAM</p></th>
 </tr>
 </thead>
 <tbody>
@@ -419,17 +420,17 @@ It looks like a heatmap, where warm-colored areas represent the areas with main 
 </tr>
 <tr class="row-even"><td><p>Single-shot</p></td>
 <td><p>Yes</p></td>
-<td><p>Yes</p></td>
 <td><p>No (re-infer neck + head H*W times, where HxW – feature map size)</p></td>
+<td><p>No (re-infer last transformer encoder block)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Per-class explanation support</p></td>
 <td><p>No</p></td>
-<td><p>No</p></td>
+<td><p>Yes</p></td>
 <td><p>Yes</p></td>
 </tr>
 <tr class="row-even"><td><p>Execution speed</p></td>
 <td><p>Fast</p></td>
-<td><p>Fast</p></td>
+<td><p>Medium</p></td>
 <td><p>Medium</p></td>
 </tr>
 </tbody>
@@ -439,14 +440,17 @@ It looks like a heatmap, where warm-colored areas represent the areas with main 
 <h2>XAI algorithms for detection<a class="headerlink" href="#xai-algorithms-for-detection" title="Link to this heading">#</a></h2>
 <p>For detection networks these algorithms are used to generate saliency maps:</p>
 <ul class="simple">
-<li><p><strong>Activation Map​</strong> - the same approach as for classification networks, which uses the outputs from feature extractor. This is an algorithm is used to generate saliency maps for two-stage detectors.</p></li>
-<li><p><strong>DetClassProbabilityMap</strong> - this approach takes the raw classification head output and uses class probability maps to calculate regions of interest for each class. So, it creates different salience maps for each class. This algorithm is implemented for single-stage detectors only.</p></li>
+<li><p><strong>Activation Map​</strong> - the same approach as for classification networks, which uses the outputs from feature extractor. This algorithm is used to generate saliency maps for two-stage detectors.</p></li>
+<li><p><strong>DetClassProbabilityMap</strong> - this approach takes the raw classification head output and uses class probability maps to calculate regions of interest for each class. So, it creates different salience maps for each class. This algorithm is implemented for single-stage detectors only. <strong>Default option</strong> for detection models.</p></li>
 </ul>
 <a class="reference internal image-reference" href="../../../_images/xai_det.jpg"><img alt="this image shows the detailed description of XAI detection algorithm" class="align-center" src="../../../_images/xai_det.jpg" style="width: 600px;" /></a>
-<p>The main limitation of this method is that, due to training loss design of most single-stage detectors, activation values drift towards the center of the object while propagating through the network.
-This prevents from getting clear explanation in the input image space using intermediate activations.</p>
-<p>Below we show the comparison of described algorithms. <code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">model</span> <span class="pre">internal</span> <span class="pre">state</span></code> means the necessity to modify the model’s outputs and dump inner features.
-<code class="docutils literal notranslate"><span class="pre">Per-class</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation different saliency maps for different classes. <code class="docutils literal notranslate"><span class="pre">Per-box</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation standalone saliency maps for each detected prediction.</p>
+<p>The main limitation of this method is that, due to the training loss design of most single-stage detectors, activation values drift towards the center of the object while propagating through the network. This prevents clear explanation in the input image space using intermediate activations.</p>
+<p>Below is a comparison of the described algorithms:</p>
+<ul class="simple">
+<li><p>“Access to the model internal state” refers to the necessity to modify the model’s outputs and dump inner features.</p></li>
+<li><p>“Per-class explanation support” means the generation of different saliency maps for different classes.</p></li>
+<li><p>“Per-box explanation support” means the generation of standalone saliency maps for each detected prediction.</p></li>
+</ul>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Detection algorithm</p></th>
@@ -481,18 +485,31 @@ This prevents from getting clear explanation in the input image space using inte
 </tr>
 </tbody>
 </table>
+</section>
+<section id="xai-algorithms-for-instance-segmentation">
+<h2>XAI algorithms for instance segmentation<a class="headerlink" href="#xai-algorithms-for-instance-segmentation" title="Link to this heading">#</a></h2>
+<p>For instance segmentation networks the following algorithm is used to generate saliency maps:</p>
+<ul class="simple">
+<li><p><strong>MaskRCNNExplainAlgo​</strong> - in this approach the predicted object masks are combined and aggregated per class to generate the saliency maps for each class.</p></li>
+</ul>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 </input><label class="sd-tab-label" for="sd-tab-item-0">
 API</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;checkpoint-path&gt;&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span>
+  <span class="n">checkpoint</span><span class="o">=</span><span class="s2">&quot;&lt;checkpoint-path&gt;&quot;</span><span class="p">,</span> <span class="c1"># .pth or .xml weights of the model</span>
+  <span class="n">datamodule</span><span class="o">=</span><span class="n">OTXDataModule</span><span class="p">(),</span> <span class="c1"># The data module to use for predictions</span>
+  <span class="n">dump</span><span class="o">=</span><span class="kc">True</span> <span class="c1"># Wherether to save saliency map images or not</span>
+  <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
 </input><label class="sd-tab-label" for="sd-tab-item-1">
 CLI</label><div class="sd-tab-content docutils">
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;checkpoint-path&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>explain<span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="c1"># .pth or .xml weights of the model</span>
+<span class="w">                           </span>--data_root<span class="w"> </span>&lt;dataset_path&gt;<span class="w"> </span><span class="c1"># Path to data folder or single image</span>
+<span class="w">                           </span>--dump<span class="w"> </span>True<span class="w"> </span><span class="c1"># Wherether to save saliency map images or not</span>
 </pre></div>
 </div>
 </div>
@@ -546,6 +563,11 @@ CLI</label><div class="sd-tab-content docutils">
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#xai-algorithms-for-detection">
    XAI algorithms for detection
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#xai-algorithms-for-instance-segmentation">
+   XAI algorithms for instance segmentation
   </a>
  </li>
 </ul>

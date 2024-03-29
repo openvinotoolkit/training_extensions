@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/base/export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -390,7 +391,8 @@
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>OTX target explain group definition.</p>
 <dl class="simple">
-<dt>Enum contains the following values:</dt><dd><p>IMAGE - This implies that single global saliency map will be generated for input image.
+<dt>Enum contains the following values:</dt><dd><p>IMAGE - This implies that single global saliency map will be generated for input image
+regardless of model’s classes.
 ALL - This implies that saliency maps will be generated for all possible targets.
 PREDICTIONS - This implies that saliency map will be generated per each prediction.</p>
 </dd>

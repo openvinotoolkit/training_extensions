@@ -174,12 +174,77 @@ Authors: @wonjuleee @vinnamkim
 Entrypoint
 ~~~~~~~~~~
 
-TBD @samet-akcay @harimkang
 
-Intel Device Support
-~~~~~~~~~~~~~~~~~~~~
+1. **User Workflow for OpenVINO™ Training Extensions**
 
-TBD
+   We defined the user workflow for the OpenVINO™ Training Extensions
+   before defining the entry points to provide to users. 
+
+   +----------------------------------------------------------------+
+   | |Definition of OpenVINO™ Training Extensions Workflow|         |
+   +================================================================+
+   | Figure 4. Definition of OpenVINO™ Training Extensions Workflow |
+   +----------------------------------------------------------------+
+
+   As shown above, the User will define the Dataset and the Task they want to solve.
+   OpenVINO™ Training Extensions will provide a model to solve that Problem.
+   You can use the built-in model or choose from several models.
+   Advanced Users can also import their own Custom Model.
+
+   The User will then define the Training Configuration and start the Training.
+   Basically, OpenVINO™ Training Extensions provide a recipe that allows user to run
+   the training and change the training parameters.
+
+   Users can also use HPO to help the machine find the optimal parameters.
+   After training, the user can evaluate the model and deploy it to the edge device.
+   We have defined this natural workflow, and the end result is that
+   the user is provided with a trained model, a model that is available on the edge device,
+   and an optimized model.
+
+2. **Designing Engine Classes for a Natural Workflow**
+
+   +--------------------------------+
+   | |Engine Class Diagram|         |
+   +================================+
+   | Figure 5. Engine Class Diagram |
+   +--------------------------------+
+
+   As shown in Figure 5, we have designed the Engine classes to provide a natural workflow.
+   In addition to the models and datamodules provided by OpenVINO™ Training Extensions's core,
+   Engine provides all the entry points that OpenVINO™ Training Extensions wants to provide through Engine.
+
+   By looking at the Engine class, users can see what OpenVINO™ Training Extensions is trying to provide and use it in a natural way.
+   User configure Model and Data, and train it using a Trainer called Engine.
+   The role of Model can be done in core's Model, and Dataset-related things can be done in Datamodule,
+   The rest, from training to deployment, will be handled by Engine.
+
+3. **Auto-Configurator to help novice users get started**
+
+   Users without typical Trainer experience, such as Lightning, struggle to configure models and data pipelines.
+   This stems from the structure of the Model, Datamodule, and Engine requiring separate configuration.
+   To minimize this difficulty, OpenVINO™ Training Extensions uses a feature called Auto-Configuration.
+   If the user does not provide the required input, whether it is a Model or Data pipeline, the Auto-Configurator fills in the gaps.
+   This allows users to easily use OpenVINO™ Training Extensions by only configuring the dataset.
+
+   .. tab-set::
+
+      .. tab-item:: API
+
+         .. code-block:: python
+
+            from otx.engine import Engine
+
+            engine = Engine(data_root="<path_to_data_root>")
+            engine.train()
+
+      .. tab-item:: CLI
+
+         .. code-block:: bash
+
+            (otx) ...$ otx train ... --data_root <path_to_data_root>
+
+Authors: @samet-akcay @harimkang
+
 
 .. [1]
    Meijer, Erik, and Peter Drayton. “Static typing where possible,
@@ -210,3 +275,5 @@ TBD
 .. |Task-Data-Model| image:: ../../../utils/images/product_design/task_data_model.png
 .. |Reuse Model| image:: ../../../utils/images/product_design/reuse_model.png
 .. |Support Various Data Format| image:: ../../../utils/images/product_design/support_various_data_format.png
+.. |Definition of OpenVINO™ Training Extensions Workflow| image:: ../../../utils/images/product_design/otx_workflow.png
+.. |Engine Class Diagram| image:: ../../../utils/images/product_design/engine_diagram.png

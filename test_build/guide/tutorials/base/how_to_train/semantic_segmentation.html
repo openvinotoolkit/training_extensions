@@ -240,6 +240,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../export.html">Deploy &amp; Demo</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -413,14 +414,10 @@ The list of supported recipes for semantic segmentation is available with the co
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">Explanation section</span></a>.</p>
 </div>
-<dl class="simple">
-<dt>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</dt><dd><p>We also can modify the architecture of supported models with various backbones, please refer to the <span class="xref std std-doc">advanced tutorial for model customization</span>.</p>
-</dd>
-</dl>
-<blockquote>
-<div><div class="sd-tab-item docutils">
-<p class="sd-tab-label rubric">CLI</p>
-<div class="sd-tab-content docutils">
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+CLI</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>SEMANTIC_SEGMENTATION
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -438,10 +435,9 @@ The list of supported recipes for semantic segmentation is available with the co
 </pre></div>
 </div>
 </div>
-</div>
-<div class="sd-tab-item docutils">
-<p class="sd-tab-label rubric">API</p>
-<div class="sd-tab-content docutils">
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine.utils.api</span> <span class="kn">import</span> <span class="n">list_models</span>
 
 <span class="n">model_lists</span> <span class="o">=</span> <span class="n">list_models</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;SEMANTIC_SEGMENTATION&quot;</span><span class="p">)</span>
@@ -462,8 +458,7 @@ The list of supported recipes for semantic segmentation is available with the co
 </div>
 </div>
 </div>
-</div></blockquote>
-<p>2.  On this step we will configure configuration
+<p>1.  On this step we will configure configuration
 with:</p>
 <ul class="simple">
 <li><p>all necessary configs for litehrnet_18</p></li>
@@ -502,22 +497,22 @@ data:
 - <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/configs.yaml</span></code> - The configuration file used in the training can be reused to reproduce the training.
 - <code class="docutils literal notranslate"><span class="pre">{work_dir}/.latest</span></code> - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-0">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-2">
 CLI (auto-config)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--data_root<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised<span class="w"> </span>--task<span class="w"> </span>SEMANTIC_SEGMENTATION
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-1">
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-3">
 CLI (with config)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>--config<span class="w"> </span>src/otx/recipe/semantic_segmentation/litehrnet_18.yaml<span class="w"> </span>--data_root<span class="w"> </span>data/common_semantic_segmentation_dataset/supervised
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-2">
+<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-4">
 API (from_config)</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
@@ -534,8 +529,8 @@ API (from_config)</label><div class="sd-tab-content docutils">
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-3" name="sd-tab-set-0" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-3">
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-5">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
 
@@ -559,16 +554,16 @@ Learn more about recipe-specific parameters using <code class="docutils literal 
 <p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file in your workplace or via the command line.</p>
 <p>For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-4">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-6">
 CLI</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data.config.train_subset.batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
 <span class="w">                         </span>--max_epochs<span class="w"> </span><span class="m">100</span>
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-5">
+<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-7">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">DataModuleConfig</span><span class="p">,</span> <span class="n">SubsetConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.module</span> <span class="kn">import</span> <span class="n">OTXDataModule</span>
@@ -591,15 +586,14 @@ while training logs can be found in the <code class="docutils literal notranslat
 <p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/tensorboard</span></code>.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace
-└── outputs/
-    ├── 20240403_134256/
-    |   ├── csv/
-    |   ├── checkpoints/
-    |   |   └── epoch_*.pth
-    |   ├── tensorboard/
-    |   └── configs.yaml
-    └── .latest
-        └── train/
+  ├── 20240403_134256/
+  |   ├── csv/
+  |   ├── checkpoints/
+  |   |   └── epoch_*.pth
+  |   ├── tensorboard/
+  |   └── configs.yaml
+  └── .latest
+      └── train/
 ...
 </pre></div>
 </div>
@@ -614,8 +608,8 @@ model on a specific dataset.</p>
 <p>2. The command below will run validation on our dataset
 and save performance results in <code class="docutils literal notranslate"><span class="pre">otx-workspace</span></code>:</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-6">
+<input checked="checked" id="sd-tab-item-8" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-8">
 CLI (with work_dir)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -626,8 +620,8 @@ CLI (with work_dir)</label><div class="sd-tab-content docutils">
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-7">
+<input id="sd-tab-item-9" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-9">
 CLI (with config)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--config<span class="w">  </span>src/otx/recipe/semantic_segmentation/maskrcnn_r50.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">                    </span>--data_root<span class="w"> </span>tests/assets/common_semantic_segmentation_dataset/supervised<span class="w"> </span><span class="se">\</span>
@@ -640,8 +634,8 @@ CLI (with config)</label><div class="sd-tab-content docutils">
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-8">
+<input id="sd-tab-item-10" name="sd-tab-set-3" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-10">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">()</span>
 </pre></div>
@@ -659,8 +653,8 @@ OpenVINO™ Intermediate Representation (IR) format.</p>
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">{work_dir}/{timestamp}/</span></code> folder.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-9" name="sd-tab-set-3" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-9">
+<input checked="checked" id="sd-tab-item-11" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-11">
 CLI (with work_dir)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace
 ...
@@ -668,8 +662,8 @@ Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</s
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-10" name="sd-tab-set-3" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-10">
+<input id="sd-tab-item-12" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-12">
 CLI (with config)</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">export</span><span class="w"> </span>...<span class="w"> </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
 ...
@@ -677,8 +671,8 @@ Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</s
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-11" name="sd-tab-set-3" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-11">
+<input id="sd-tab-item-13" name="sd-tab-set-4" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-13">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">export</span><span class="p">()</span>
 </pre></div>
@@ -694,8 +688,8 @@ It uses NNCF or PTQ depending on the model and transforms it to <code class="doc
 <p>2.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-4" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-12">
+<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-14">
 CLI</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>optimize<span class="w">  </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
 <span class="w">                         </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_052847/exported_model.xml
@@ -707,8 +701,8 @@ Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</s
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-13" name="sd-tab-set-4" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-13">
+<input id="sd-tab-item-15" name="sd-tab-set-5" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-15">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ckpt_path</span> <span class="o">=</span> <span class="s2">&quot;otx-workspace/20240312_052847/exported_model.xml&quot;</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="n">ckpt_path</span><span class="p">)</span>
@@ -720,8 +714,8 @@ API</label><div class="sd-tab-content docutils">
 <p>3. Finally, we can also evaluate the optimized model by passing
 it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> function.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-14" name="sd-tab-set-5" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-14">
+<input checked="checked" id="sd-tab-item-16" name="sd-tab-set-6" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-16">
 CLI</label><div class="sd-tab-content docutils">
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--work_dir<span class="w"> </span>otx-workspace<span class="w"> </span><span class="se">\</span>
 <span class="w">                    </span>--checkpoint<span class="w"> </span>otx-workspace/20240312_055042/optimized_model.xml<span class="w"> </span><span class="se">\</span>
@@ -737,8 +731,8 @@ Elapsed<span class="w"> </span>time:<span class="w"> </span><span class="m">0</s
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-15" name="sd-tab-set-5" type="radio">
-</input><label class="sd-tab-label" for="sd-tab-item-15">
+<input id="sd-tab-item-17" name="sd-tab-set-6" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-17">
 API</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ckpt_path</span> <span class="o">=</span> <span class="s2">&quot;otx-workspace/20240312_055042/optimized_model.xml&quot;</span>
 <span class="n">engine</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">=</span><span class="n">ckpt_path</span><span class="p">)</span>
