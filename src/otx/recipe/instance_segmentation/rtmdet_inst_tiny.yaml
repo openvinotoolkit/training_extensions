@@ -4,24 +4,25 @@ model:
     num_classes: 80
     variant: tiny
 
-optimizer:
-  class_path: torch.optim.SGD
-  init_args:
-    lr: 0.001
-    momentum: 0.9
-    weight_decay: 0.0001
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.001
+        momentum: 0.9
+        weight_decay: 0.0001
 
-scheduler:
-  - class_path: otx.algo.schedulers.warmup_schedulers.LinearWarmupScheduler
-    init_args:
-      num_warmup_steps: 20
-  - class_path: lightning.pytorch.cli.ReduceLROnPlateau
-    init_args:
-      mode: max
-      factor: 0.1
-      patience: 9
-      monitor: val/map_50
-      min_lr: 4e-06
+    scheduler:
+      class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
+      init_args:
+        num_warmup_steps: 20
+        main_scheduler_callable:
+          class_path: lightning.pytorch.cli.ReduceLROnPlateau
+          init_args:
+            mode: max
+            factor: 0.1
+            patience: 9
+            monitor: val/map_50
+            min_lr: 4e-06
 
 engine:
   task: INSTANCE_SEGMENTATION

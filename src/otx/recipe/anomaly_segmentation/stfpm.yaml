@@ -4,13 +4,13 @@ model:
     layers: ["layer1", "layer2", "layer3"]
     backbone: "resnet18"
 
-optimizer:
-  class_path: torch.optim.SGD
-  init_args:
-    lr: 0.4
-    momentum: 0.9
-    dampening: 0
-    weight_decay: 0.001
+    optimizer:
+      class_path: torch.optim.SGD
+      init_args:
+        lr: 0.4
+        momentum: 0.9
+        dampening: 0
+        weight_decay: 0.001
 
 engine:
   task: ANOMALY_SEGMENTATION

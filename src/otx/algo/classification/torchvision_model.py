@@ -21,6 +21,7 @@ from otx.core.data.entity.classification import (
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -182,8 +183,8 @@ class OTXTVModel(OTXMulticlassClsModel):
         backbone: TVModelType,
         num_classes: int,
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,

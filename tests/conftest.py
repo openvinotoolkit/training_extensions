@@ -7,6 +7,7 @@ import torch
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegDataEntity
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
+from otx.core.types.task import OTXTaskType
 from torchvision.tv_tensors import Image, Mask
 
 
@@ -49,4 +50,9 @@ def fxt_clean_up_mem_cache() -> None:
 # TODO(Jaeguk): Add cpu param when OTX can run integration test parallelly for each task.
 @pytest.fixture(params=[pytest.param("gpu", marks=pytest.mark.gpu)])
 def fxt_accelerator(request: pytest.FixtureRequest) -> str:
+    return request.param
+
+
+@pytest.fixture(params=set(OTXTaskType) - {OTXTaskType.DETECTION_SEMI_SL})
+def fxt_task(request: pytest.FixtureRequest) -> OTXTaskType:
     return request.param

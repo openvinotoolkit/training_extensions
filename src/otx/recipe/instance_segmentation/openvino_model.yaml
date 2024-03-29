@@ -7,19 +7,6 @@ model:
     async_inference: True
     use_throughput_mode: True
 
-optimizer:
-  class_path: torch.optim.SGD
-  init_args:
-    lr: 0.01
-
-scheduler:
-  class_path: lightning.pytorch.cli.ReduceLROnPlateau
-  init_args:
-    mode: min
-    factor: 0.1
-    patience: 9
-    monitor: train/loss
-
 engine:
   task: INSTANCE_SEGMENTATION
   device: cpu

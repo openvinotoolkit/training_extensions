@@ -30,6 +30,7 @@ from otx.core.data.entity.visual_prompting import (
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     import numpy as np
@@ -627,8 +628,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
         root_reference_info: Path | str = "vpm_zsl_reference_infos",

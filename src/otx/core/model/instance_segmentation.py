@@ -31,6 +31,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
@@ -62,8 +63,8 @@ class OTXInstanceSegModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -351,8 +352,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
