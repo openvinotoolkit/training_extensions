@@ -12,8 +12,7 @@ import numpy as np
 from datumaro import Image
 
 from otx.core.config.explain import ExplainConfig
-from otx.core.data.entity.base import OTXBatchPredEntityWithXAI
-from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchPredEntity
 from otx.core.types.explain import TargetExplainGroup
 
 if TYPE_CHECKING:
@@ -23,22 +22,23 @@ if TYPE_CHECKING:
 
 
 def process_saliency_maps_in_pred_entity(
-    predict_result: list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI | Any],
+    predict_result: list[OTXBatchPredEntity],
     explain_config: ExplainConfig,
-) -> list[Any] | list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI]:
+) -> list[OTXBatchPredEntity]:
     """Process saliency maps in PredEntity."""
-    for predict_result_per_batch in predict_result:
+
+    def _process(predict_result_per_batch: OTXBatchPredEntity) -> OTXBatchPredEntity:
         saliency_maps = predict_result_per_batch.saliency_maps
         imgs_info = predict_result_per_batch.imgs_info
         ori_img_shapes = [img_info.ori_shape for img_info in imgs_info]
-        pred_labels = predict_result_per_batch.labels  # type: ignore[union-attr]
-        if pred_labels:
+        if pred_labels := getattr(predict_result_per_batch, "labels", None):
             pred_labels = [pred.tolist() for pred in pred_labels]
 
         processed_saliency_maps = process_saliency_maps(saliency_maps, explain_config, pred_labels, ori_img_shapes)
 
-        predict_result_per_batch.saliency_maps = processed_saliency_maps
-    return predict_result
+        return predict_result_per_batch.wrap(saliency_maps=processed_saliency_maps)
+
+    return [_process(predict_result_per_batch) for predict_result_per_batch in predict_result]
 
 
 def process_saliency_maps(
@@ -116,7 +116,7 @@ def postprocess(saliency_map: np.ndarray, output_size: tuple[int, int] | None) -
 
 
 def dump_saliency_maps(
-    predict_result: list[OTXBatchPredEntityWithXAI | InstanceSegBatchPredEntityWithXAI | Any],
+    predict_result: list[OTXBatchPredEntity],
     explain_config: ExplainConfig,
     datamodule: EVAL_DATALOADERS | OTXDataModule,
     output_dir: Path,

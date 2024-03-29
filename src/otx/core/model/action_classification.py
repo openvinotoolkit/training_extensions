@@ -10,11 +10,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 
-from otx.core.data.entity.action_classification import (
-    ActionClsBatchDataEntity,
-    ActionClsBatchPredEntity,
-    ActionClsBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
@@ -39,7 +35,6 @@ class OTXActionClsModel(
     OTXModel[
         ActionClsBatchDataEntity,
         ActionClsBatchPredEntity,
-        ActionClsBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -75,7 +70,7 @@ class OTXActionClsModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ActionClsBatchPredEntity | ActionClsBatchPredEntityWithXAI,
+        preds: ActionClsBatchPredEntity,
         inputs: ActionClsBatchDataEntity,
     ) -> MetricInput:
         pred = torch.tensor(preds.labels)
@@ -201,7 +196,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
 
 
 class OVActionClsModel(
-    OVModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, ActionClsBatchPredEntityWithXAI],
+    OVModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity],
 ):
     """Action Classification model compatible for OpenVINO IR inference.
 

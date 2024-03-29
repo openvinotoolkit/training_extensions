@@ -25,15 +25,13 @@ import torch
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, Points, T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
-    VisualPromptingBatchPredEntityWithXAI,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
-    ZeroShotVisualPromptingBatchPredEntityWithXAI,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
@@ -171,12 +169,7 @@ def _inference_step_for_zero_shot(
 
 
 class OTXVisualPromptingModel(
-    OTXModel[
-        VisualPromptingBatchDataEntity,
-        VisualPromptingBatchPredEntity,
-        VisualPromptingBatchPredEntityWithXAI,
-        T_OTXTileBatchDataEntity,
-    ],
+    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
 
@@ -270,7 +263,7 @@ class OTXVisualPromptingModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: VisualPromptingBatchPredEntity | VisualPromptingBatchPredEntityWithXAI,
+        preds: VisualPromptingBatchPredEntity,
         inputs: VisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
@@ -285,7 +278,6 @@ class OTXZeroShotVisualPromptingModel(
     OTXModel[
         ZeroShotVisualPromptingBatchDataEntity,
         ZeroShotVisualPromptingBatchPredEntity,
-        ZeroShotVisualPromptingBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -446,7 +438,7 @@ class OTXZeroShotVisualPromptingModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        preds: ZeroShotVisualPromptingBatchPredEntity,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
@@ -461,7 +453,6 @@ class OVVisualPromptingModel(
     OVModel[
         VisualPromptingBatchDataEntity,
         VisualPromptingBatchPredEntity,
-        VisualPromptingBatchPredEntityWithXAI,
     ],
 ):
     """Visual prompting model compatible for OpenVINO IR inference.
@@ -597,7 +588,7 @@ class OVVisualPromptingModel(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
@@ -921,7 +912,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     def forward(  # type: ignore[override]
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
         fn = self.learn if self.training else self.infer
@@ -992,7 +983,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
             return outputs
@@ -1426,7 +1417,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        preds: ZeroShotVisualPromptingBatchPredEntity,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""

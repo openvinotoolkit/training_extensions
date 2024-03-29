@@ -28,7 +28,6 @@ from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
-    T_OTXBatchPredEntityWithXAI,
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -75,10 +74,7 @@ DefaultOptimizerCallable = _default_optimizer_callable
 DefaultSchedulerCallable = _default_scheduler_callable
 
 
-class OTXModel(
-    LightningModule,
-    Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
-):
+class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the models used in OTX.
 
     Args:
@@ -203,7 +199,7 @@ class OTXModel(
         batch: T_OTXBatchDataEntity,
         batch_idx: int,
         dataloader_idx: int = 0,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI:
+    ) -> T_OTXBatchPredEntity:
         """Step function called during PyTorch Lightning Trainer's predict."""
         if self.explain_mode:
             return self.forward_explain(inputs=batch)
@@ -300,7 +296,7 @@ class OTXModel(
     @abstractmethod
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI,
+        preds: T_OTXBatchPredEntity,
         inputs: T_OTXBatchDataEntity,
     ) -> MetricInput:
         """Convert given inputs to a Python dictionary for the metric computation."""
@@ -443,14 +439,14 @@ class OTXModel(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         raise NotImplementedError
 
     def forward(
         self,
         inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         # If customize_inputs is overridden
         if isinstance(inputs, OTXTileBatchDataEntity):
@@ -468,10 +464,7 @@ class OTXModel(
             else outputs
         )
 
-    def forward_explain(
-        self,
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntityWithXAI:
+    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward explain function."""
         raise NotImplementedError
 
@@ -488,7 +481,7 @@ class OTXModel(
     def forward_tiles(
         self,
         inputs: T_OTXTileBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function for tile task."""
         raise NotImplementedError
 
@@ -674,7 +667,7 @@ class OTXModel(
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
 
 
-class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXBatchPredEntityWithXAI]):
+class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the OpenVINO model.
 
     This is a base class representing interface for interacting with OpenVINO
@@ -742,10 +735,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         images = [np.transpose(im.cpu().numpy(), (1, 2, 0)) for im in entity.images]
         return {"inputs": images}
 
-    def _forward(
-        self,
-        inputs: T_OTXBatchDataEntity,
-    ) -> T_OTXBatchPredEntity | T_OTXBatchPredEntityWithXAI:
+    def _forward(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward function."""
 
         def _callback(result: NamedTuple, idx: int) -> None:
@@ -775,7 +765,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         """Model forward function."""
         return self._forward(inputs=inputs)  # type: ignore[return-value]
 
-    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntityWithXAI:
+    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward explain function."""
         return self._forward(inputs=inputs)  # type: ignore[return-value]
 
