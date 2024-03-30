@@ -220,9 +220,12 @@ def summarize_table(task: str):
     ]
     data = all_data.query(f"task == '{task}'")
     #data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
-    data = data.pivot_table(index=["model", "otx_version"], columns=["data_group"], values=metrics, aggfunc="mean")
+    data = data.pivot_table(index=["model", "otx_version"], columns=["data_group"], values=metrics, aggfunc=["mean", "std"])
     # data = data.style.set_sticky(axis="index")
     # data = data.reindex(column_order, axis=1)
+    data.columns = data.columns.rename(["stat", "metric", "data_group"])
+    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
+    data = data.sort_index(axis=1)
     return data.fillna("")
 
 
