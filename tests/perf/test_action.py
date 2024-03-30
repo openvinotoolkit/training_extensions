@@ -17,33 +17,52 @@ class TestPerfActionClassification(PerfTestBase):
     """Benchmark action classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="action/classification", name="movinet", category="speed"),
-        Benchmark.Model(task="action/classification", name="x3d", category="accuracy"),
+        Benchmark.Model(task="action/action_classification", name="movinet", category="speed"),
+        Benchmark.Model(task="action/action_classification", name="x3d", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [
         Benchmark.Dataset(
-            name="ucf-5percent",
-            path=Path("action/action_classification/wood_medium"),
-            group="medium",
+            name="ucf-5percent-small",
+            path=Path("action/action_classification/ucf_kinetics_5percent_small"),
+            group="small",
             num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "max_epochs": "10",
+                "deterministic": "True",
+                "data.config.data_format": "kinetics",
+            },
         ),
         Benchmark.Dataset(
-            name="mvtec_hazelnut_large",
-            path=Path("action/mvtec/hazelnut_large"),
+            name="ucf-30percent-medium",
+            path=Path("action/action_classification/ucf_kinetics_30percent_medium"),
+            group="medium",
+            num_repeat=5,
+            extra_overrides={
+                "max_epochs": "10",
+                "deterministic": "True",
+                "data.config.data_format": "kinetics",
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_classification/ucf_kinetics_large"),
             group="large",
             num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "max_epochs": "3",
+                "deterministic": "True",
+                "data.config.data_format": "kinetics",
+            },
         ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test/image_F1Score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/image_F1Score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/image_F1Score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
@@ -80,41 +99,51 @@ class TestPerfActionDetection(PerfTestBase):
     """Benchmark action detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="action/detection", name="x3d_fastrcnn", category="accuracy"),
+        Benchmark.Model(task="action/action_detection", name="x3d_fastrcnn", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [
         Benchmark.Dataset(
-            name=f"mvtec_bottle_small_{idx}",
-            path=Path("action/mvtec/bottle_small") / f"{idx}",
+            name="ucf-5percent-small",
+            path=Path("action/action_detection/UCF101_ava_5percent"),
             group="small",
             num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="mvtec_wood_medium",
-            path=Path("action/mvtec/wood_medium"),
-            group="medium",
-            num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "max_epochs": "3",
+                "deterministic": "True",
+                "data.config.data_format": "ava",
+            },
         ),
         Benchmark.Dataset(
-            name="mvtec_hazelnut_large",
-            path=Path("action/mvtec/hazelnut_large"),
+            name="ucf-30percent-medium",
+            path=Path("action/action_detection/UCF101_ava_30percent"),
+            group="medium",
+            num_repeat=5,
+            extra_overrides={
+                "max_epochs": "3",
+                "deterministic": "True",
+                "data.config.data_format": "ava",
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_detection/UCF101_ava"),
             group="large",
             num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "max_epochs": "1",
+                "deterministic": "True",
+                "data.config.data_format": "ava",
+            },
         ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="test/image_F1Score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/image_F1Score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/image_F1Score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/map_50", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
