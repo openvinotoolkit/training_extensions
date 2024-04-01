@@ -33,10 +33,15 @@ class TestPerfObjectDetection(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                    "callback_monitor": "val/f1-score",
+                    "scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                },
             },
         )
         for idx in (1, 2, 3)
@@ -47,10 +52,15 @@ class TestPerfObjectDetection(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                    "callback_monitor": "val/f1-score",
+                    "scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -59,10 +69,15 @@ class TestPerfObjectDetection(PerfTestBase):
             group="large",
             num_repeat=5,
             extra_overrides={
-                "deterministic": "True",
-                "metric": "otx.core.metrics.fmeasure.FMeasure",
-                "callback_monitor": "val/f1-score",
-                "scheduler.monitor": "val/f1-score",
+                "train": {
+                    "deterministic": "True",
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                    "callback_monitor": "val/f1-score",
+                    "scheduler.monitor": "val/f1-score",
+                },
+                "test": {
+                    "metric": "otx.core.metrics.fmeasure.FMeasure",
+                },
             },
         ),
     ]

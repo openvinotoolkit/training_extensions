@@ -28,9 +28,10 @@ class TestPerfActionClassification(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "10",
-                "deterministic": "True",
-                "data.config.data_format": "kinetics",
+                "train": {
+                    "max_epochs": "10",
+                    "deterministic": "True",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -39,9 +40,10 @@ class TestPerfActionClassification(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "10",
-                "deterministic": "True",
-                "data.config.data_format": "kinetics",
+                "train": {
+                    "max_epochs": "10",
+                    "deterministic": "True",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -50,9 +52,10 @@ class TestPerfActionClassification(PerfTestBase):
             group="large",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "3",
-                "deterministic": "True",
-                "data.config.data_format": "kinetics",
+                "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
             },
         ),
     ]
@@ -109,9 +112,10 @@ class TestPerfActionDetection(PerfTestBase):
             group="small",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "3",
-                "deterministic": "True",
-                "data.config.data_format": "ava",
+                "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -120,9 +124,10 @@ class TestPerfActionDetection(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "3",
-                "deterministic": "True",
-                "data.config.data_format": "ava",
+                "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
             },
         ),
         Benchmark.Dataset(
@@ -131,9 +136,10 @@ class TestPerfActionDetection(PerfTestBase):
             group="large",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "1",
-                "deterministic": "True",
-                "data.config.data_format": "ava",
+                "train": {
+                    "max_epochs": "1",
+                    "deterministic": "True",
+                },
             },
         ),
     ]

@@ -101,8 +101,9 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
             group="medium",
             num_repeat=5,
             extra_overrides={
-                "max_epochs": "1",
-                "data.config.data_format": "datumaro",
+                "train": {
+                    "max_epochs": "1",
+                },
             },
         ),
     ]
