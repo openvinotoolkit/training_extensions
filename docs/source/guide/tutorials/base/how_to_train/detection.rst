@@ -87,14 +87,11 @@ we need to reformat the dataset according to this structure:
     ├── annotations/
         ├── instances_train.json
         ├── instances_val.json
-        (Optional)
         └── instances_test.json
     ├──images/
-        (The split on folders is optional)
         ├── train
         ├── val
         └── test
-    (There may be more extra unrelated folders)
 
 We can do that by running these commands:
 
@@ -118,7 +115,7 @@ Training
 *********
 
 1. First of all, you need to choose which object detection model you want to train.
-The list of supported templates for object detection is available with the command line below.
+The list of supported recipes for object detection is available with the command line below.
 
 .. note::
 
@@ -136,7 +133,6 @@ The list of supported templates for object detection is available with the comma
             ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃                              
             ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                              
             │ DETECTION │ atss_mobilenetv2_tile │ src/otx/recipe/detection/atss_mobilenetv2_tile.yaml            │                              
-            │ DETECTION │ atss_r50_fpn          │ src/otx/recipe/detection/atss_r50_fpn.yaml                     │                              
             │ DETECTION │ atss_resnext101       │ src/otx/recipe/detection/atss_resnext101.yaml                  │                              
             │ DETECTION │ atss_mobilenetv2      │ src/otx/recipe/detection/atss_mobilenetv2.yaml                 │                              
             └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
@@ -151,7 +147,6 @@ The list of supported templates for object detection is available with the comma
             print(model_lists)
             '''
             [
-                'atss_r50_fpn',
                 'atss_mobilenetv2',
                 'atss_mobilenetv2_tile',
                 'atss_resnext101',
@@ -174,7 +169,10 @@ Let's check the object detection configuration running the following command:
 .. code-block:: shell
 
     # or its config path
-    (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml --data_root data/wgisd --print_config
+    (otx) ...$ otx train --config  src/otx/recipe/detection/atss_mobilenetv2.yaml \
+                         --data_root data/wgisd \
+                         --work_dir otx-workspace \
+                         --print_config
 
     ...
     data_root: data/wgisd
@@ -198,7 +196,7 @@ Let's check the object detection configuration running the following command:
         (otx) ...$ otx train --config configs.yaml
 
 
-3. ``otx train`` trains a model (a particular model template)
+3. ``otx train`` trains a model (a particular model recipe)
 on a dataset and results:
 
 Here are the main outputs can expect with CLI:
@@ -293,20 +291,19 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
     otx-workspace
-    ├── outputs/
-        ├── 20240403_134256/
-            ├── csv/
-            ├── checkpoints/
-            |   └── epoch_*.pth
-            ├── tensorboard/
-            └── configs.yaml
-        └── .latest
-            └── train/
+    ├── 20240403_134256/
+        ├── csv/
+        ├── checkpoints/
+        |   └── epoch_*.pth
+        ├── tensorboard/
+        └── configs.yaml
+    └── .latest
+        └── train/
     ...
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
-After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Evaluation
@@ -369,7 +366,7 @@ Export
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
-Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
 
 2. That's how we can export the trained model ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt``
 from the previous section and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
@@ -468,7 +465,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 
 
 4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using ``otx export --help``.
+Learn more about recipe-specific parameters using ``otx export --help``.
 
 For example, If you want to get the ONNX model format you can run it like below.
 
@@ -539,7 +536,7 @@ with OpenVINO™ PTQ.
             engine.optimize(checkpoint=ckpt_path)
 
 
-The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
+The optimization time highly relies on the hardware characteristics, for example on Intel(R) Core(TM) i9-11900 it took about 25 seconds.
 Please note, that PTQ will take some time without logging to optimize the model.
 
 3. Finally, we can also evaluate the optimized model by passing
