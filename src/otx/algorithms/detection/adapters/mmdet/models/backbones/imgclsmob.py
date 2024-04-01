@@ -112,6 +112,7 @@ def _build_model_including_pytorchcv(
     default_args=None,
 ) -> nn.Module:
     """Try to build model from mmdet first and build from pytorchcv."""
+    breakpoint()
     try:
         model = ori_build_func(cfg, registry, default_args)
     except KeyError:  # build from pytorchcv
@@ -131,7 +132,7 @@ def _build_model_including_pytorchcv(
 
 def _build_pytorchcv_model(
     type: str,  # noqa: A002
-    out_indices: List[int],
+    out_indices: Optional[List[int]] = None,
     frozen_stages: int = 0,
     norm_eval: bool = False,
     verbose: bool = False,

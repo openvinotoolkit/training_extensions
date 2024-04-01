@@ -159,6 +159,7 @@ class TestMMDetectionTask:
 
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.learning_parameters.auto_adapt_batch_size = "None"
         task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
 
         self.iseg_task = MMDetectionTask(task_env)
