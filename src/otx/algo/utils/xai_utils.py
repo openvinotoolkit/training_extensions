@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Utils used for XAI."""
 
-# TODO(someone): Typings in this file is too weak or wrong. It should be fixed.
+# TODO(gzalessk): Typings in this file is too weak or wrong. It should be fixed.
 # For example, `pred_labels: list | None` has no object typing containered in the list.
 # On the other hand, process_saliency_maps should not produce list of dictionaries
 # (`list[dict[str, np.ndarray | torch.Tensor]]`).
