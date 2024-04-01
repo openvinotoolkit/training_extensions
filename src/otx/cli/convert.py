@@ -81,13 +81,13 @@ class BaseConverter:
                 config["data"]["config"]["test_subset"]["batch_size"] = param_value
                 unused_params.pop(param_name)
             elif param_name == "learning_rate":
-                config["optimizer"]["init_args"]["lr"] = param_value
+                config["model"]["init_args"]["optimizer"]["init_args"]["lr"] = param_value
                 unused_params.pop(param_name)
             elif param_name == "learning_rate_warmup_iters":
-                for scheduler in config["scheduler"]:
-                    if scheduler["class_path"] == "otx.algo.schedulers.LinearWarmupScheduler":
-                        scheduler["init_args"]["num_warmup_steps"] = param_value
-                        unused_params.pop(param_name)
+                scheduler = config["model"]["init_args"]["scheduler"]
+                if scheduler["class_path"] == "otx.core.schedulers.LinearWarmupSchedulerCallable":
+                    scheduler["init_args"]["num_warmup_steps"] = param_value
+                    unused_params.pop(param_name)
             elif param_name == "num_iters":
                 config["max_epoch"] = param_value
                 unused_params.pop(param_name)
