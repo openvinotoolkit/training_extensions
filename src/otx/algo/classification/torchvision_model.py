@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import types
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
@@ -179,21 +178,21 @@ class TVModelWithLossComputation(nn.Module):
         x = self.backbone(images)
         backbone_feat = x
 
-        saliency_maps = self.explainer.func(backbone_feat)
+        saliency_map = self.explainer.func(backbone_feat)
 
         if len(x.shape) == 4 and not self.use_layer_norm_2d:
             x = x.view(x.size(0), -1)
 
-        feature_vectors = x
+        feature_vector = x
 
         logits = self.head(x)
 
         return {
             "logits": logits,
-            "preds": logits.argmax(-1, keepdim=True).unbind(0),
+            "preds": logits.argmax(-1, keepdim=False),
             "scores": self.softmax(logits),
-            "saliency_maps": saliency_maps.unbind(0),
-            "feature_vectors": feature_vectors.unbind(0),
+            "saliency_map": saliency_map,
+            "feature_vector": feature_vector,
         }
 
     @torch.no_grad()
@@ -303,8 +302,7 @@ class OTXTVModel(OTXMulticlassClsModel):
 
         parameters = super()._export_parameters
         parameters.update(export_params)
-        if self.explain_mode:
-            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
+
         return parameters
 
     def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
@@ -317,15 +315,14 @@ class OTXTVModel(OTXMulticlassClsModel):
             imgs_info=inputs.imgs_info,
             labels=outputs["preds"],
             scores=outputs["scores"],
-            saliency_maps=outputs["saliency_maps"],
-            feature_vectors=outputs["feature_vectors"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
         )
 
     def _reset_model_forward(self) -> None:
         # TODO(vinnamkim): This will be revisited by the export refactoring
         self.__orig_model_forward = self.model.forward
-        new_forward = types.MethodType(self.model._forward_explain, self.model)  # noqa: SLF001
-        self.model.forward = new_forward  # type: ignore[method-assign]
+        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
 
     def _restore_model_forward(self) -> None:
         # TODO(vinnamkim): This will be revisited by the export refactoring

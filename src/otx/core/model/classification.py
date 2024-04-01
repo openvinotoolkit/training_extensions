@@ -202,8 +202,8 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return MulticlassClsBatchPredEntity(
                 batch_size=len(predictions),
@@ -211,8 +211,8 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return MulticlassClsBatchPredEntity(
@@ -404,8 +404,8 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return MultilabelClsBatchPredEntity(
                 batch_size=len(predictions),
@@ -413,8 +413,8 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return MultilabelClsBatchPredEntity(
@@ -629,8 +629,8 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return HlabelClsBatchPredEntity(
                 batch_size=len(outputs),
@@ -638,8 +638,8 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return HlabelClsBatchPredEntity(
@@ -720,8 +720,8 @@ class OVMulticlassClassificationModel(
                 imgs_info=inputs.imgs_info,
                 scores=pred_scores,
                 labels=pred_labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return MulticlassClsBatchPredEntity(
@@ -794,8 +794,8 @@ class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, Mult
                 imgs_info=inputs.imgs_info,
                 scores=pred_scores,
                 labels=[],
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return MultilabelClsBatchPredEntity(
@@ -892,8 +892,8 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
                 imgs_info=inputs.imgs_info,
                 scores=all_pred_scores,
                 labels=all_pred_labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return HlabelClsBatchPredEntity(

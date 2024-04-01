@@ -460,8 +460,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return DetBatchPredEntity(
                 batch_size=len(predictions),
@@ -470,8 +470,8 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
                 scores=scores,
                 bboxes=bboxes,
                 labels=labels,
-                saliency_maps=saliency_maps,
-                feature_vectors=feature_vectors,
+                saliency_map=saliency_map,
+                feature_vector=feature_vector,
             )
 
         return DetBatchPredEntity(
@@ -611,8 +611,8 @@ class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
                 scores=scores,
                 bboxes=bboxes,
                 labels=labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return DetBatchPredEntity(

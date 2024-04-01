@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import types
-from typing import TYPE_CHECKING, Any, Callable, Generic
+from typing import TYPE_CHECKING, Callable, Generic
 
 import torch
 from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
@@ -156,13 +156,6 @@ class ForwardExplainMixInForMMPretrain(Generic[T_OTXBatchPredEntity, T_OTXBatchD
             return forward_func(inputs)
         finally:
             self._restore_model_forward()
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters  # type: ignore[misc]
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
-        return export_params
 
     def _reset_model_forward(self) -> None:
         # TODO(vinnamkim): This will be revisited by the export refactoring

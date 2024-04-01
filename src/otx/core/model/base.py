@@ -610,7 +610,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         Returns:
             dict[str, Any]: parameters of exporter.
         """
-        parameters = {}
+        parameters: dict[str, Any] = {}
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
@@ -625,6 +625,9 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             ("model_info", "optimization_config"): json.dumps(optimization_config),
             ("model_info", "label_info"): self.label_info.to_json(),
         }
+
+        if self.explain_mode:
+            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
 
         return parameters
 

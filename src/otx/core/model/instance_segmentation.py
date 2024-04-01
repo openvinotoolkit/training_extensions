@@ -501,8 +501,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return InstanceSegBatchPredEntity(
                 batch_size=len(predictions),
@@ -513,8 +513,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 masks=masks,
                 polygons=[],
                 labels=labels,
-                saliency_maps=list(saliency_maps),
-                feature_vectors=list(feature_vectors),
+                saliency_map=list(saliency_map),
+                feature_vector=list(feature_vector),
             )
 
         return InstanceSegBatchPredEntity(
@@ -656,8 +656,8 @@ class OVInstanceSegmentationModel(
                 masks=masks,
                 polygons=[],
                 labels=labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return InstanceSegBatchPredEntity(

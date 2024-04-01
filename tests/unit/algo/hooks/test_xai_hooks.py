@@ -24,8 +24,8 @@ def test_activationmap() -> None:
 
     feature_map = torch.zeros((1, 10, 5, 5))
 
-    saliency_maps = hook.func(feature_map)
-    assert saliency_maps.size() == torch.Size([1, 5, 5])
+    saliency_map = hook.func(feature_map)
+    assert saliency_map.size() == torch.Size([1, 5, 5])
 
     hook.recording_forward(None, None, feature_map)
     assert len(hook.records) == 1
@@ -52,8 +52,8 @@ def test_reciprocam() -> None:
 
     feature_map = torch.zeros((1, 10, 5, 5))
 
-    saliency_maps = hook.func(feature_map)
-    assert saliency_maps.size() == torch.Size([1, 2, 5, 5])
+    saliency_map = hook.func(feature_map)
+    assert saliency_map.size() == torch.Size([1, 2, 5, 5])
 
     hook.recording_forward(None, None, feature_map)
     assert len(hook.records) == 1
@@ -78,8 +78,8 @@ def test_vitreciprocam() -> None:
 
     feature_map = torch.zeros((1, 197, 192))
 
-    saliency_maps = hook.func(feature_map)
-    assert saliency_maps.size() == torch.Size([1, 2, 14, 14])
+    saliency_map = hook.func(feature_map)
+    assert saliency_map.size() == torch.Size([1, 2, 14, 14])
 
     hook.recording_forward(None, None, feature_map)
     assert len(hook.records) == 1
@@ -102,8 +102,8 @@ def test_detclassprob() -> None:
 
     backbone_out = torch.zeros((1, 5, 2, 2, 2))
 
-    saliency_maps = hook.func(backbone_out)
-    assert saliency_maps.size() == torch.Size([5, 2, 2, 2])
+    saliency_map = hook.func(backbone_out)
+    assert saliency_map.size() == torch.Size([5, 2, 2, 2])
 
 
 def test_maskrcnn() -> None:
@@ -137,6 +137,6 @@ def test_maskrcnn() -> None:
     )
 
     # 2 images
-    saliency_maps = hook.func([pred, pred])
-    assert len(saliency_maps) == 2
-    assert saliency_maps[0].shape == (2, 10, 10)
+    saliency_map = hook.func([pred, pred])
+    assert len(saliency_map) == 2
+    assert saliency_map[0].shape == (2, 10, 10)

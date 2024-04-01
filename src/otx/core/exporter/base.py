@@ -241,15 +241,34 @@ class OTXModelExporter:
         return extra_data
 
     def _postprocess_openvino_model(self, exported_model: openvino.Model) -> openvino.Model:
-        if self.output_names is not None:
-            if len(self.output_names) != len(exported_model.outputs):
-                msg = "The number of outputs in the exported model doesn't match with exporter parameters"
-                raise RuntimeError(msg)
-            for i, name in enumerate(self.output_names):
-                exported_model.outputs[i].tensor.set_names({name})
-        elif len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
+        if len(exported_model.outputs) == 1 and len(exported_model.outputs[0].get_names()) == 0:
             # workaround for OVC's bug: single output doesn't have a name in OV model
             exported_model.outputs[0].tensor.set_names({"output1"})
+
+        if self.output_names is not None:
+            traced_outputs = [(output.get_names(), output) for output in exported_model.outputs]
+
+            for output_name in self.output_names:
+                found = False
+                for name, output in traced_outputs:
+                    # TODO(vinnamkim): This is because `name` in `traced_outputs` is a list of set such as
+                    # [{'logits', '1555'}, {'1556', 'preds'}, {'1557', 'scores'},
+                    # {'saliency_map', '1551'}, {'feature_vector', '1554', 'input.1767'}]
+                    # This ugly format of `name` comes from `openvino.convert_model`.
+                    # Find a cleaner way for this in the future.
+                    if output_name in name:
+                        found = True
+                        # NOTE: This is because without this renaming such as
+                        # `{'saliency_map', '1551'}` => `{'saliency_map'}`
+                        # ModelAPI cannot produce the outputs correctly.
+                        output.tensor.set_names({output_name})
+
+                if not found:
+                    msg = (
+                        "Given output name to export is not in the traced_outputs, "
+                        f"{output_name} not in {traced_outputs}"
+                    )
+                    raise RuntimeError(msg)
 
         if self.metadata is not None:
             export_metadata = self._extend_model_metadata(self.metadata)
