@@ -7,7 +7,7 @@ Using these useful prompts, the main purpose of this task is to obtain labels fr
 This section examines the solutions for visual prompting offered by the OpenVINO Training Extensions library.
 `Segment Anything (SAM) <https://arxiv.org/abs/2304.02643>`_, is one of the most famous visual prompting methods and this model will be used to adapt a new dataset domain.
 Because `SAM <https://arxiv.org/abs/2304.02643>`_ was trained by using web-scale dataset and has huge backbone network, fine-tuning the whole network is difficult and lots of resources are required.
-Therefore, in this section, we try to fine-tune only mask decoder only for several epochs to increase performance on the new dataset domain.
+Therefore, in this section, we try to fine-tune the mask decoder only for several epochs to increase performance on the new dataset domain.
 For fine-tuning `SAM <https://arxiv.org/abs/2304.02643>`_, we use following algorithms components:
 
 .. _visual_prompting_finetuning_pipeline:
@@ -24,8 +24,8 @@ For fine-tuning `SAM <https://arxiv.org/abs/2304.02643>`_, we use following algo
 
 .. note::
 
-    Currently, fine-tuning `SAM <https://arxiv.org/abs/2304.02643>`_ with bounding boxes in the OpenVINO Training Extensions is only supported.
-    We will support fine-tuning with other prompts (points and texts) and continuous fine-tuning with predicted mask information in the near future.
+    In OTX 2.0, fine-tuning using either bounding boxes or points is available.
+    Given both bounding boxes and points prompts at the same time, bounding boxes have priority because using bounding boxes as prompts is more accurate.
 
 .. note::
 
@@ -39,7 +39,7 @@ Dataset Format
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
-We support three dataset formats for visual prompting:
+We support four dataset formats for visual prompting:
 
 - `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/common_semantic_segmentation.html>`_ for semantic segmentation
 
@@ -47,11 +47,7 @@ We support three dataset formats for visual prompting:
 
 - `Pascal VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
 
-.. note::
-
-    During training, mDice for binary mask without label information is used for train/validation metric.
-    After training, if using ``otx test`` to evaluate performance, mDice for binary or multi-class masks with label information will be used.
-    As you can expect, performance will be different between ``otx train`` and ``otx test``, but if unlabeled mask performance is high, labeld mask performance is high as well.
+- `Datumaro <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/datumaro.html>`_ for custom format dataset
 
 
 ******
@@ -59,18 +55,18 @@ Models
 ******
 .. _visual_prompting_model:
 
-We support the following model templates in experimental phase:
+We support the following model recipes in experimental phase:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
-|                                                                                        Template ID                                                         |     Name     | Complexity (GFLOPs) | Model size (MB) |
+|                                                                                        Recipe ID                                                           |     Name     | Complexity (GFLOPs) | Model size (MB) |
 +============================================================================================================================================================+==============+=====================+=================+
-| `Visual_Prompting_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_tiny_vit.yaml>`_   | SAM_Tiny_ViT | 38.95               | 47              |
+| `Visual_Prompting_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_tiny_vit.yaml>`_   | SAM_Tiny_ViT | 38.55               | 47              |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
-| `Visual_Prompting_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_vit_b.yaml>`_         | SAM_ViT_B    | 483.71              | 362             |
+| `Visual_Prompting_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/visual_prompting/sam_vit_b.yaml>`_         | SAM_ViT_B    | 454.76              | 363             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+---------------------+-----------------+
 
-To check feasibility of `SAM <https://arxiv.org/abs/2304.02643>`_, we did experiments using three public datasets with each other domains: `WGISD <https://github.com/thsant/wgisd>`_, `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_, and `FLARE22 <https://flare22.grand-challenge.org/>`_, and checked `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_.
-We used sampled training data from `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ and `FLARE22 <https://flare22.grand-challenge.org/>`_, and full training data (=110) from `WGISD <https://github.com/thsant/wgisd>`_.
+To check feasibility of `SAM <https://arxiv.org/abs/2304.02643>`_, we did experiments using three public datasets with each other domains: `WGISD <https://github.com/thsant/wgisd>`_ and `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_, and checked `F1-score <https://en.wikipedia.org/wiki/F-score>`_.
+We used sampled training data from `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ and full training data (=110) from `WGISD <https://github.com/thsant/wgisd>`_.
 
 +---------------------------------------------------------------+--------------------+
 |                            Dataset                            |      #samples      |
@@ -79,24 +75,23 @@ We used sampled training data from `Trashcan <https://conservancy.umn.edu/handle
 +---------------------------------------------------------------+--------------------+
 | `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ | 500                |
 +---------------------------------------------------------------+--------------------+
-| `FLARE22 <https://flare22.grand-challenge.org/>`_             | 1 CT (=100 slices) |
-+---------------------------------------------------------------+--------------------+
 
 The below table shows performance improvement after fine-tuning.
 
-+------------+--------------------------------------------+---------------------------------------------------------------+---------------------------------------------------+
-| Model name | `WGISD <https://github.com/thsant/wgisd>`_ | `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ | `FLARE22 <https://flare22.grand-challenge.org/>`_ |
-+============+============================================+===============================================================+===================================================+
-| Tiny_ViT   | 90.32 → 92.29 (+1.97)                      | 82.38 → 85.01 (+2.63)                                         | 89.69 → 93.05 (+3.36)                             |
-+------------+--------------------------------------------+---------------------------------------------------------------+---------------------------------------------------+
-| ViT_B      | 92.32 → 92.46 (+0.14)                      | 79.61 → 81.50 (+1.89)                                         | 91.48 → 91.68 (+0.20)                             |
-+------------+--------------------------------------------+---------------------------------------------------------------+---------------------------------------------------+
++--------------+--------------------------------------------+---------------------------------------------------------------+
+|  Model name  | `WGISD <https://github.com/thsant/wgisd>`_ | `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ |
++==============+============================================+===============================================================+
+| SAM_Tiny_ViT | 90.32 → 92.10 (+1.78)                      | 82.38 → 85.35 (+2.97)                                         |
++--------------+--------------------------------------------+---------------------------------------------------------------+
+| SAM_ViT_B    | 92.32 → 93.16 (+0.84)                      | 79.61 → 86.40 (+6.79)                                         |
++--------------+--------------------------------------------+---------------------------------------------------------------+
 
 According to datasets, ``learning rate`` and ``batch size`` can be adjusted like below:
 
 .. code-block:: shell
 
-    (otx) ...$ otx train --config <model_config_path> \
-                         --data_root <path_to_data_root> \
-                         --data.config.train_subset.batch_size <batch_size_to_be_updated> \
-                         --optimizer.lr <learning_rate_to_be_updated>
+    (otx) ...$ otx train \
+        --config <model_config_path> \
+        --data_root <path_to_data_root> \
+        --data.config.train_subset.batch_size <batch_size_to_be_updated> \
+        --optimizer.lr <learning_rate_to_be_updated>

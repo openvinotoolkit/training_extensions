@@ -1,10 +1,10 @@
-OpenVINO™ Training Extensions API Quick-Start
+:octicon:`code-square;1em` API Quick-Guide
 ==============================================
 
 Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.
 
-For demonstration purposes we will use the Object Detection SSD model with `WGISD <https://github.com/thsant/wgisd>`_ public dataset as we did for the :doc:`CLI tutorial <../tutorials/base/how_to_train/detection>`.
+For demonstration purposes we will use the Object Detection ATSS model with `WGISD <https://github.com/thsant/wgisd>`_ public dataset as we did for the :doc:`CLI tutorial <../tutorials/base/how_to_train/detection>`.
 
 .. note::
 
@@ -19,17 +19,17 @@ with `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
 .. code-block:: shell
 
-  cd data
-  git clone https://github.com/thsant/wgisd.git
-  cd wgisd
-  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
+    cd data
+    git clone https://github.com/thsant/wgisd.git
+    cd wgisd
+    git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 2. We need to rename annotations to
 be distinguished by OpenVINO™ Training Extensions Datumaro manager:
 
 .. code-block:: shell
 
-    mv data images && mv coco_annotations annotations && mv annotations/train_bbox_instances.json instances_train.json  && mv annotations/test_bbox_instances.json instances_val.json
+    mv data images && mv coco_annotations annotations && mv annotations/train_bbox_instances.json instances_train.json && mv annotations/test_bbox_instances.json instances_val.json
 
 Now it is all set to use this dataset inside OpenVINO™ Training Extensions
 
@@ -37,7 +37,7 @@ Now it is all set to use this dataset inside OpenVINO™ Training Extensions
 Quick Start with auto-configuration
 ************************************
 
-Once the dataset is ready, we can immediately start training with the model and data pipeline recommended by OTX through auto-configuration.
+Once the dataset is ready, we can immediately start training with the model and data pipeline recommended by OpenVINO™ Training Extension through auto-configuration.
 The following code snippet demonstrates how to use the auto-configuration feature:
 
 .. code-block:: python
@@ -50,7 +50,7 @@ The following code snippet demonstrates how to use the auto-configuration featur
 
 .. note::
 
-    If dataset supports multiple Task types, this will default to the Task type detected by OTX.
+    If dataset supports multiple Task types, this will default to the Task type detected by OpenVINO™ Training Extension.
     If you want to specify a specific Task type, you need to specify it like below:
 
     .. code-block:: python
@@ -65,35 +65,55 @@ The following code snippet demonstrates how to use the auto-configuration featur
 Check Available Model Recipes
 **********************************
 
-If you want to use other models offered by OTX besides the ones provided by Auto-Configuration, you can get a list of available models in OTX as shown below.
+If you want to use other models offered by OpenVINO™ Training Extension besides the ones provided by Auto-Configuration, you can get a list of available models in OpenVINO™ Training Extension as shown below.
 
-.. code-block:: python
+.. tab-set::
 
-    from otx.engine.utils.api import list_models
+    .. tab-item:: List of available model names
 
-    model_lists = list_models(task="DETECTION")
-    print(model_lists)
+        .. code-block:: python
 
-    '''
-    [
-        'yolox_tiny_tile',
-        'yolox_x',
-        'yolox_l_tile',
-        'yolox_x_tile', 'yolox_l',
-        'atss_r50_fpn',
-        'ssd_mobilenetv2',
-        'yolox_s',
-        'yolox_tiny',
-        'openvino_model',
-        'atss_mobilenetv2',
-        'yolox_s_tile',
-        'rtmdet_tiny',
-        'atss_mobilenetv2_tile',
-        'atss_resnext101',
-        'ssd_mobilenetv2_tile',
-    ]
-    '''
+            from otx.engine.utils.api import list_models
 
+            model_lists = list_models(task="DETECTION")
+            print(model_lists)
+
+            '''
+            [
+                'yolox_tiny_tile',
+                'yolox_x',
+                'yolox_l_tile',
+                'yolox_x_tile', 'yolox_l',
+                'atss_r50_fpn',
+                'ssd_mobilenetv2',
+                'yolox_s',
+                'yolox_tiny',
+                'openvino_model',
+                'atss_mobilenetv2',
+                'yolox_s_tile',
+                'rtmdet_tiny',
+                'atss_mobilenetv2_tile',
+                'atss_resnext101',
+                'ssd_mobilenetv2_tile',
+            ]
+            '''
+
+    .. tab-item:: Print available configuration information
+
+        .. code-block:: python
+
+            from otx.engine.utils.api import list_models
+
+            model_lists = list_models(task="DETECTION", print_table=True)
+
+            '''
+            ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓            
+            ┃ Task      ┃ Model Name            ┃ Recipe Path                                                    ┃            
+            ┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩            
+            │ DETECTION │ yolox_tiny            │ src/otx/recipe/detection/yolox_tiny.yaml                       │            
+            │ ...       │                       │                                                                │
+            └───────────┴───────────────────────┴────────────────────────────────────────────────────────────────┘
+            '''
 
 .. note::
 
@@ -170,7 +190,7 @@ The current default setting is ``auto``.
 In addition, the ``Engine`` constructor can be associated with the Trainer's constructor arguments to control the Trainer's functionality.
 Refer `lightning.Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
 
-4. Using the OTX configuration we can configure the Engine.
+4. Using the OpenVINO™ Training Extension configuration we can configure the Engine.
 
 .. code-block:: python
 
@@ -190,7 +210,7 @@ Training
 
 Create an output model and start actual training:
 
-1. Below is an example using the ``atss_mobilenetv2`` model provided by OTX.
+1. Below is an example using the ``atss_mobilenetv2`` model provided by OpenVINO™ Training Extension.
 
 .. code-block:: python
 
@@ -212,7 +232,7 @@ Create an output model and start actual training:
 
 .. note::
 
-    This can use callbacks provided by OTX and several training techniques.
+    This can use callbacks provided by OpenVINO™ Training Extension and several training techniques.
     However, in this case, no arguments are specified for train.
 
 3. If you want to specify the model, you can do so as shown below:
@@ -435,7 +455,7 @@ The default value for ``export_precision`` is ``FP32``.
 
         .. code-block:: python
 
-            engine.export(precision="FP16")
+            engine.export(export_precision="FP16")
 
 
 ****

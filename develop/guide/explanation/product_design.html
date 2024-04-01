@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Product Design &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=d626d52b" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script src="../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/product_design';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="API reference" href="../reference/index.html" />
+    <link rel="prev" title="Class-Incremental Sampler" href="additional_features/class_incremental_sampler.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-package" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M8.878.392a1.75 1.75 0 00-1.756 0l-5.25 3.045A1.75 1.75 0 001 4.951v6.098c0 .624.332 1.2.872 1.514l5.25 3.045a1.75 1.75 0 001.756 0l5.25-3.045c.54-.313.872-.89.872-1.514V4.951c0-.624-.332-1.2-.872-1.514L8.878.392zM7.875 1.69a.25.25 0 01.25 0l4.63 2.685L8 7.133 3.245 4.375l4.63-2.685zM2.5 5.677v5.372c0 .09.047.171.125.216l4.625 2.683V8.432L2.5 5.677zm6.25 8.271l4.625-2.683a.25.25 0 00.125-.216V5.677L8.75 8.432v5.516z" fill-rule="evenodd"></path></svg> Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/cli_commands.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-terminal" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0114.25 15H1.75A1.75 1.75 0 010 13.25V2.75zm1.75-.25a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25V2.75a.25.25 0 00-.25-.25H1.75zM7.25 8a.75.75 0 01-.22.53l-2.25 2.25a.75.75 0 11-1.06-1.06L5.44 8 3.72 6.28a.75.75 0 111.06-1.06l2.25 2.25c.141.14.22.331.22.53zm1.5 1.5a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z" fill-rule="evenodd"></path></svg> CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/api_tutorial.html"><svg aria-hidden="true" class="sd-octicon sd-octicon-code-square" height="1.0em" version="1.1" viewbox="0 0 16 16" width="1.0em"><path d="M1.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25V1.75a.25.25 0 00-.25-.25H1.75zM0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0114.25 16H1.75A1.75 1.75 0 010 14.25V1.75zm9.22 3.72a.75.75 0 000 1.06L10.69 8 9.22 9.47a.75.75 0 101.06 1.06l2-2a.75.75 0 000-1.06l-2-2a.75.75 0 00-1.06 0zM6.78 6.53a.75.75 0 00-1.06-1.06l-2 2a.75.75 0 000 1.06l2 2a.75.75 0 101.06-1.06L5.31 8l1.47-1.47z" fill-rule="evenodd"></path></svg> API Quick-Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/base/index.html">Base Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../tutorials/base/how_to_train/index.html">Training to deployment tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/classification.html">Classification  model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/detection.html">Object Detection model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/instance_segmentation.html">Instance Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/action_detection.html">Action Detection model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorials/base/how_to_train/visual_prompting.html">Visual Prompting model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/base/explain.html">XAI Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/base/export.html">Deploy &amp; Demo</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/advanced/index.html">Advanced Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/advanced/configuration.html">How to write OTX Configuration (recipe)</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/action/action_detection.html">Action Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="algorithms/visual_prompting/index.html">Visual Prompting</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/visual_prompting/fine_tuning.html">Visual Prompting (Fine-tuning)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="algorithms/visual_prompting/zero_shot.html">Visual Prompting (Zero-shot learning)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/adaptive_training.html">Adaptive Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/xai.html">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="additional_features/class_incremental_sampler.html">Class-Incremental Sampler</a></li>
+
+</ul>
+</li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Product Design</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/_autosummary/otx.html">otx</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.algo.html">otx.algo</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.action_classification.html">otx.algo.action_classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.classification.html">otx.algo.classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.detection.html">otx.algo.detection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.segmentation.html">otx.algo.segmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.cli.html">otx.cli.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.install.html">otx.cli.install</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.cli.utils.html">otx.cli.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.config.html">otx.core.config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.data.html">otx.core.data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.exporter.html">otx.core.exporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.metrics.html">otx.core.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.schedulers.html">otx.core.schedulers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.types.html">otx.core.types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.core.utils.html">otx.core.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.data.html">otx.data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.engine.html">otx.engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.hpo.html">otx.hpo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.recipe.html">otx.recipe</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../reference/_autosummary/otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../reference/_autosummary/otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/_autosummary/otx.utils.html">otx.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../release_notes/index.html">Releases</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="product-design">
+<h1>Product Design<a class="headerlink" href="#product-design" title="Link to this heading">#</a></h1>
+<section id="our-product-mission">
+<h2>Our Product Mission<a class="headerlink" href="#our-product-mission" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Provide a deep learning model training framework that encompasses
+various tasks solvable by deep learning models.</strong> Our product aims to
+be convenient for developers, allowing them to easily expand support
+for tasks and models.</p></li>
+<li><p><strong>Empower users to seamlessly and intuitively navigate the
+OpenVINO™-based workflow, from model training to inference.</strong> To
+ensure a user-friendly experience throughout, our product should have
+user-friendly CLI and Python API entrypoints.</p></li>
+<li><p><strong>Support Intel devices for accelerating deep learning model
+training:</strong> We offer best practices for training from scratch or
+fine-tuning popular model architectures using Intel devices.</p></li>
+</ol>
+</section>
+<section id="product-design-principles">
+<h2>Product Design Principles<a class="headerlink" href="#product-design-principles" title="Link to this heading">#</a></h2>
+<p>To realize our product missions, we establish the following design
+principles and details, providing a comprehensive overview of our
+product’s structure.</p>
+<section id="core">
+<h3>Core<a class="headerlink" href="#core" title="Link to this heading">#</a></h3>
+<ol class="arabic">
+<li><p><strong>Static Typing System for Task-Data-Model to Accelerate Task and
+Model Development Cycles</strong></p>
+<p><em>“Advocates of static typing argue that … a better design time
+developer experience…”</em> <a class="footnote-reference brackets" href="#id9" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+<p>Our framework should support various deep learning tasks
+simultaneously. To achieve this mission, it is essential to make it
+developer-friendly for expanding our product across three dimensions:
+task, data, and model. The key insight here is that, while these
+dimensions may seem independent, they can be interconnected into a
+single dimension, specifically the task, where both the data and
+model depend on. We believe that nice abstractions with static typing
+can help developers in this regard. Therefore, we here introduce the
+<strong>Task-Data-Model</strong> abstraction with static typing.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Task-Data-Model" src="../../_images/task_data_model.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 1. Task-Data-Model abstractions with static typing</p></td>
+</tr>
+</tbody>
+</table>
+<p>As shown in Figure 1, there are abstractions (grey-colored boxes)
+that form the base for each task:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">OTXTaskType</span></code>: A Python enum defining the deep learning task
+supported in this framework.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OTXDataEntity</span></code>: A Python dataclass object representing a single
+data sample for each <code class="docutils literal notranslate"><span class="pre">OTXTaskType</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OTXBatchDataEntity</span></code>: A Python dataclass object representing a
+batch of <code class="docutils literal notranslate"><span class="pre">OTXDataEntity</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OTXModel</span></code>: PyTorch module (<code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>) defined for each
+<code class="docutils literal notranslate"><span class="pre">OTXTaskType</span></code>. Its <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function has strict typing: 1)
+<code class="docutils literal notranslate"><span class="pre">OTXBatchDataEntity</span></code> as inputs and 2) <code class="docutils literal notranslate"><span class="pre">OTXBatchLossEntity</span></code> or
+<code class="docutils literal notranslate"><span class="pre">OTXBatchPredEntity</span></code> as outputs.</p></li>
+</ol>
+<p>On the other hand, we can see embodiments from the abstractions
+(blue-colored boxes) for the detection task
+(<code class="docutils literal notranslate"><span class="pre">OTXTaskType.DETECTION</span></code>):</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DetDataEntity</span></code> and <code class="docutils literal notranslate"><span class="pre">DetBatchDataEntity</span></code>: Python dataclass
+objects including <code class="docutils literal notranslate"><span class="pre">bboxes</span></code> and <code class="docutils literal notranslate"><span class="pre">labels</span></code> fields for the
+detection task. <code class="docutils literal notranslate"><span class="pre">DetBatchDataEntity</span></code> is used for the input of
+<code class="docutils literal notranslate"><span class="pre">OTXDetectionModel</span></code>’s <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DetBatchPredEntity</span></code>: Python dataclass object including the
+<code class="docutils literal notranslate"><span class="pre">scores</span></code> field beyond <code class="docutils literal notranslate"><span class="pre">DetBatchDataEntity</span></code>. It is used for the
+output of <code class="docutils literal notranslate"><span class="pre">OTXDetectionModel</span></code>’s <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function at
+inference mode.</p></li>
+</ol>
+<p>As observed, a developer aiming to add a new model to OTX for the
+detection task only needs to consider the strictly typed input and
+output (<code class="docutils literal notranslate"><span class="pre">DetBatchDataEntity</span></code> and <code class="docutils literal notranslate"><span class="pre">DetBatchPredEntity</span></code>).</p>
+<p>Conversely, in the event of a new task requirement, we can
+incorporate it by implementing embodiments from the base, such as
+<code class="docutils literal notranslate"><span class="pre">OTXTaskType</span></code>, <code class="docutils literal notranslate"><span class="pre">OTXDataEntity</span></code>, <code class="docutils literal notranslate"><span class="pre">OTXBatchDataEntity</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">OTXModel</span></code>.</p>
+</li>
+<li><p><strong>Single Engine but Capable of Incorporating Other Public Model
+Training Frameworks</strong></p>
+<p><em>“Don’t Reinvent the Wheel”</em> <a class="footnote-reference brackets" href="#id10" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
+<p>We choose PyTorch Lightning <a class="footnote-reference brackets" href="#id11" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> as the primary engine for our
+training framework. However, as you are aware, there are numerous
+open-source model training frameworks worldwide. Often, these
+frameworks are tightly coupled with their own engines, hindering the
+reuse of valuable data pipelines or model implementations. This goes
+against the well-known software engineering principle, <em>“Don’t
+Reinvent the Wheel.”</em></p>
+<p>Nevertheless, our <code class="docutils literal notranslate"><span class="pre">OTXModel</span></code> class features special abstract member
+functions that enable us to reuse model implementations from any
+framework. These special functions, namely <code class="docutils literal notranslate"><span class="pre">create_model()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">customize_inputs()</span></code> and <code class="docutils literal notranslate"><span class="pre">customize_outputs()</span></code>, facilitate the
+conversion of our own data entity class to the format required by a
+model imported from an external framework.</p>
+<p>Let’s consider an example of importing a model from MMDetection <a class="footnote-reference brackets" href="#id12" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>:</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Reuse Model" src="../../_images/reuse_model.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 2. Import RTMDetTiny <a class="footnote-reference brackets" href="#id13" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> model from MMDetection</p></td>
+</tr>
+</tbody>
+</table>
+<p>In Figure 2, <code class="docutils literal notranslate"><span class="pre">MMDetCompatibleModel</span></code> implements <code class="docutils literal notranslate"><span class="pre">create_model()</span></code>
+to generate the <code class="docutils literal notranslate"><span class="pre">RTMDetTiny</span></code> model and registers it as a child
+module. At this point, the <code class="docutils literal notranslate"><span class="pre">RTMDetTiny</span></code> model requires
+<code class="docutils literal notranslate"><span class="pre">DataSample</span></code> input from MMDetection and produces a Python
+dictionary for its output. These data entity types do not comply with
+our framework. To resolve this issue, <code class="docutils literal notranslate"><span class="pre">MMDetCompatibleModel</span></code>
+implements <code class="docutils literal notranslate"><span class="pre">customize_inputs()</span></code> and <code class="docutils literal notranslate"><span class="pre">customize_outputs()</span></code>
+functions to convert them into our format. With this design, we can
+explicitly support major frameworks. We plan to continually expand
+the supported frameworks using this approach.</p>
+</li>
+<li><p><strong>Support Various Data Formats without Worrying about Customizing the
+Input Data Pipeline</strong></p>
+<p><em>“Much of the time for an AI project is likely to be spent on
+data-related tasks …”</em> <a class="footnote-reference brackets" href="#id14" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a></p>
+<p>When developing a new deep learning model, one of the most tedious
+tasks is often creating a data pipeline for the given dataset.
+Developers must study the data schema of the provided dataset and
+parse it into a data entity consumable by both the data augmentation
+pipeline and the model.</p>
+<p>To simplify and enhance this process in the model development
+lifecycle, we introduce Datumaro <a class="footnote-reference brackets" href="#id15" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a>, a member of the OpenVINO™
+open-source ecosystem. Datumaro allows the import of various data
+formats from around the world. Please refer to the following Figure.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Support Various Data Format" src="../../_images/support_various_data_format.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 3. Only the root directory path is provided by the user to
+make a data pipeline</p></td>
+</tr>
+</tbody>
+</table>
+<p>In Figure 3, a popular data format such as COCO, VOC, YOLO, or
+Cityscape can be imported with Datumaro. While Figure 3 illustrates
+the entire data pipeline, the only input required from the user is
+<code class="docutils literal notranslate"><span class="pre">data_root</span></code>. This simplicity allows users to enjoy a convenient
+model training workflow without worrying about the input data
+pipeline.</p>
+<p>Another advantage highlighted in Figure 3 is the support for multiple
+data augmentation pipelines. As shown, we demonstrate how to
+incorporate a data augmentation pipeline from an external framework.
+We provide the necessary online conversions before and after the data
+augmentation pipeline from the external framework. As a result, by
+adjusting or using the configuration from the template we provide,
+users can utilize not only the default pipeline from
+TorchVision <a class="footnote-reference brackets" href="#id16" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>, but also other pipelines such as MMPretrain,
+MMDetection, etc. This flexibility enables developers to freely
+compose the model and the data augmentation pipeline from various
+frameworks, accelerating the creation of custom model training
+templates for specific problem domains.</p>
+</li>
+</ol>
+<p>Authors: &#64;wonjuleee &#64;vinnamkim</p>
+</section>
+<section id="entrypoint">
+<h3>Entrypoint<a class="headerlink" href="#entrypoint" title="Link to this heading">#</a></h3>
+<ol class="arabic">
+<li><p><strong>User Workflow for OpenVINO™ Training Extensions</strong></p>
+<p>We defined the user workflow for the OpenVINO™ Training Extensions
+before defining the entry points to provide to users.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Definition of OpenVINO™ Training Extensions Workflow" src="../../_images/otx_workflow.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 4. Definition of OpenVINO™ Training Extensions Workflow</p></td>
+</tr>
+</tbody>
+</table>
+<p>As shown above, the User will define the Dataset and the Task they want to solve.
+OpenVINO™ Training Extensions will provide a model to solve that Problem.
+You can use the built-in model or choose from several models.
+Advanced Users can also import their own Custom Model.</p>
+<p>The User will then define the Training Configuration and start the Training.
+Basically, OpenVINO™ Training Extensions provide a recipe that allows user to run
+the training and change the training parameters.</p>
+<p>Users can also use HPO to help the machine find the optimal parameters.
+After training, the user can evaluate the model and deploy it to the edge device.
+We have defined this natural workflow, and the end result is that
+the user is provided with a trained model, a model that is available on the edge device,
+and an optimized model.</p>
+</li>
+<li><p><strong>Designing Engine Classes for a Natural Workflow</strong></p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><img alt="Engine Class Diagram" src="../../_images/engine_diagram.png" /></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Figure 5. Engine Class Diagram</p></td>
+</tr>
+</tbody>
+</table>
+<p>As shown in Figure 5, we have designed the Engine classes to provide a natural workflow.
+In addition to the models and datamodules provided by OpenVINO™ Training Extensions’s core,
+Engine provides all the entry points that OpenVINO™ Training Extensions wants to provide through Engine.</p>
+<p>By looking at the Engine class, users can see what OpenVINO™ Training Extensions is trying to provide and use it in a natural way.
+User configure Model and Data, and train it using a Trainer called Engine.
+The role of Model can be done in core’s Model, and Dataset-related things can be done in Datamodule,
+The rest, from training to deployment, will be handled by Engine.</p>
+</li>
+<li><p><strong>Auto-Configurator to help novice users get started</strong></p>
+<p>Users without typical Trainer experience, such as Lightning, struggle to configure models and data pipelines.
+This stems from the structure of the Model, Datamodule, and Engine requiring separate configuration.
+To minimize this difficulty, OpenVINO™ Training Extensions uses a feature called Auto-Configuration.
+If the user does not provide the required input, whether it is a Model or Data pipeline, the Auto-Configurator fills in the gaps.
+This allows users to easily use OpenVINO™ Training Extensions by only configuring the dataset.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-0">
+API</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">otx.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="n">engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;&lt;path_to_data_root&gt;&quot;</span><span class="p">)</span>
+<span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+</input><label class="sd-tab-label" for="sd-tab-item-1">
+CLI</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span>train<span class="w"> </span>...<span class="w"> </span>--data_root<span class="w"> </span>&lt;path_to_data_root&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</li>
+</ol>
+<p>Authors: &#64;samet-akcay &#64;harimkang</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id9" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Meijer, Erik, and Peter Drayton. “Static typing where possible,
+dynamic typing when needed: The end of the cold war between
+programming languages.” OOPSLA, 2004.</p>
+</aside>
+<aside class="footnote brackets" id="id10" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Reinventing_the_wheel#In_software_development">https://en.wikipedia.org/wiki/Reinventing_the_wheel#In_software_development</a></p>
+</aside>
+<aside class="footnote brackets" id="id11" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://lightning.ai/pytorch-lightning">https://lightning.ai/pytorch-lightning</a></p>
+</aside>
+<aside class="footnote brackets" id="id12" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">4</a><span class="fn-bracket">]</span></span>
+<p><a class="github reference external" href="https://github.com/open-mmlab/mmdetection">open-mmlab/mmdetection</a></p>
+</aside>
+<aside class="footnote brackets" id="id13" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p><a class="github reference external" href="https://github.com/open-mmlab/mmdetection/tree/main/configs/rtmdet">open-mmlab/mmdetection</a></p>
+</aside>
+<aside class="footnote brackets" id="id14" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">6</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://www.netapp.com/media/16928-wp-7299.pdf">https://www.netapp.com/media/16928-wp-7299.pdf</a></p>
+</aside>
+<aside class="footnote brackets" id="id15" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">7</a><span class="fn-bracket">]</span></span>
+<p><a class="github reference external" href="https://github.com/openvinotoolkit/datumaro">openvinotoolkit/datumaro</a></p>
+</aside>
+<aside class="footnote brackets" id="id16" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">8</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://pytorch.org/vision/0.16/transforms.html">https://pytorch.org/vision/0.16/transforms.html</a></p>
+</aside>
+</aside>
+</section>
+</section>
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="additional_features/class_incremental_sampler.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Class-Incremental Sampler</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="../reference/index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">API reference</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#our-product-mission">
+   Our Product Mission
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#product-design-principles">
+   Product Design Principles
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#core">
+     Core
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#entrypoint">
+     Entrypoint
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../_sources/guide/explanation/product_design.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
