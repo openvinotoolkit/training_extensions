@@ -101,7 +101,7 @@ def _train_func_single_iter(
 
 def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> str:
     from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
-    save_path = Path("/home/eunwoosh/work/val_bef_train/exp/logs/test_cls_f15be629629574cca4c2")
+    save_path = Path("/home/eunwoosh/work/val_bef_train/exp")
     file_path = save_path / "nncf_model.pth"
     for custom_hook in cfg.custom_hooks:
         if custom_hook["type"] == "CompressionHook":

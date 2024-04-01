@@ -265,6 +265,7 @@ class MMDetectionTask(OTXDetectionTask):
                 datasets,
                 cfg,
                 cfg.distributed,
+                isinstance(self, NNCFBaseTask),
                 meta=meta,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
                 model_builder=getattr(self, "model_builder") if isinstance(self, NNCFBaseTask) else None
