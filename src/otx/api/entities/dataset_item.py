@@ -460,20 +460,19 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return clone
 
     def __getstate__(self):
-        _ = self.roi
-        ret = copy.copy(self.__dict__)
-        ret["_DatasetItemEntity__roi_lock"] = None
-        return ret
+        """Exclude '__roi_lock' during pickling."""
+        _ = self.roi  # Call ROI getter to ensure original object has an ROI.
+        obj_dict = copy.copy(self.__dict__)
+        obj_dict["_DatasetItemEntity__roi_lock"] = None
+        return obj_dict
 
     def __setstate__(self, d):
+        """Set new lock object during unpickling."""
         lock_obj = Lock()
         for key in list(d.keys()):
             if "_DatasetItemEntity" in key:
                 if "roi_lock" in key:
                     d[key] = lock_obj
-                    d[key.replace("_DatasetItemEntity", "")] = lock_obj
-                else:
-                    d[key.replace("_DatasetItemEntity", "")] = d[key]
         self.__dict__ = d
 
     def append_metadata_item(self, data: IMetadata, model: Optional[ModelEntity] = None):

@@ -30,15 +30,15 @@ KNOWN_HEADS = {
 def otx_head_factory(*args, base_type="FCNHead", **kwargs):
     """Factory function for creating custom otx head based on mmsegmentation heads."""
 
-    head_base_cls = KNOWN_HEADS[base_type]
-
-    if len(args) > 1 and isinstance(args[1], dict) and "base_type" in args[1]:
+    if len(args) >= 2 and isinstance(args[1], dict) and "base_type" in args[1]:
         # workaround for pickling CustomOTXHead.
         # Currently, there is no way to pass keyword arguments using '__reduce__'.
         # So, pass all arguments to args and set variables properly.
         kwargs = args[1]
         base_type = kwargs.pop("base_type")
         args = args[0]
+
+    head_base_cls = KNOWN_HEADS[base_type]
 
     class CustomOTXHead(head_base_cls):
         """Custom OTX head for Semantic Segmentation.
@@ -205,7 +205,6 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
 
         def __reduce__(self):
             """Dump factory function instead of class."""
-            temp = {"base_type": base_type, **kwargs}
-            return otx_head_factory, (tuple(args), temp)
+            return otx_head_factory, (tuple(args), {"base_type": base_type, **kwargs})
 
     return CustomOTXHead(base_type, *args, **kwargs)

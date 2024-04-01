@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import inspect
+from importlib import import_module
 from copy import copy
 from math import sqrt
 from typing import Any, Callable, Dict, List, Optional
@@ -19,8 +20,9 @@ from torch.cuda import is_available as cuda_available
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
+from otx.algorithms.common.adapters.torch.utils import sync_batchnorm_2_batchnorm
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
-from otx.algorithms.common.utils.utils import is_xpu_available
+from otx.algorithms.common.utils import is_xpu_available
 from otx.core.data import caching
 from otx.utils.logger import get_logger
 
@@ -49,11 +51,18 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
     
-def _build_model(model_builder: Callable, cfg: Config):
+def _build_model(model_builder: Callable, cfg: Config) -> torch.nn.Module:
     model = model_builder(cfg)
     if cfg.get("fp16", False):
         wrap_fp16_model(model)
     return model
+
+
+NNCF_PATCH_MODULE = {
+    "mmcls" : "otx.algorithms.classification.adapters.mmcls.nncf.patches",
+    "mmdet" : "otx.algorithms.detection.adapters.mmdet.nncf.patches",
+    "mmseg" : "otx.algorithms.segmentation.adapters.mmseg.nncf.patches",
+}
 
 
 def _train_func_single_iter(
@@ -65,29 +74,33 @@ def _train_func_single_iter(
     meta: Optional[Dict[str, Any]] = None,
     model: Optional[torch.nn.Module] = None,
     model_builder: Optional[Callable] = None,
-):
+) -> None:
     caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
-    _set_max_epoch(cfg, 1)  # setup for training a single iter to reduce time
+    _set_max_epoch(cfg, 1)  # setup for training a single iter to save time
 
     new_dataset = [SubDataset(datasets[0], batch_size)]
 
     validate = is_nncf  # nncf needs eval hooks
     if is_nncf:
         pkg_name = inspect.getmodule(train_func).__package__
-        if "mmdet" in pkg_name:
-            import otx.algorithms.detection.adapters.mmdet.nncf.patches
-        elif "mmcls" in pkg_name:
-            import otx.algorithms.classification.adapters.mmcls.nncf.patches
-            validate = False  # classification task has own custom eval hook
-        elif "mmseg" in pkg_name:
-            import otx.algorithms.segmentation.adapters.mmseg.nncf.patches
+        for framework in ["mmcls", "mmdet", "mmseg"]:
+            if framework in pkg_name:
+                import_module(NNCF_PATCH_MODULE[framework])
+                break
+        else:
+            framework = None
 
+        if framework == "mmcls":
+            validate = False  # classification task has own custom eval hook
+                
     if model is None:
         model = _build_model(model_builder, cfg)
 
     if is_nncf:
         model.nncf._uncompressed_model_accuracy = 0
+
+    sync_batchnorm_2_batchnorm(model)
 
     train_func(
         model=model,
@@ -101,7 +114,6 @@ def _train_func_single_iter(
 
 def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> str:
     from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
-    save_path = Path("/home/eunwoosh/work/val_bef_train/exp")
     file_path = save_path / "nncf_model.pth"
     for custom_hook in cfg.custom_hooks:
         if custom_hook["type"] == "CompressionHook":
@@ -131,15 +143,18 @@ def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: P
 
 def _organize_custom_hooks(custom_hooks: List, is_nncf: bool = False) -> None:
     # Remove hooks due to reasons below
+    # for nncf task
+    # OTXProgressHook and CompressionHook are added when building a model. Need to remove them to avoid duplication.
+    # for normal task
     # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
+    # CancelInterfaceHook => avoid segmentation fault
     # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
     # CustomEvalHook => exclude validation in classification task
-    # CancelInterfaceHook => avoid segmentation fault
 
     if is_nncf:
         hooks_to_remove = ["OTXProgressHook", "CompressionHook"]
     else:
-        hooks_to_remove = ["CancelTrainingHook", "earlystoppinghook", "CustomEvalHook", "CancelInterfaceHook"]
+        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook", "CancelInterfaceHook"]
 
     idx_hooks_to_remove = []
     for i, hook in enumerate(custom_hooks):
@@ -164,8 +179,8 @@ def adapt_batch_size(
     is_nncf: bool = False,
     meta: Optional[Dict[str, Any]] = None,
     not_increase: bool = True,
-    model_builder: Optional[torch.nn.Module] = None,
-):
+    model_builder: Optional[Callable] = None,
+) -> None:
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -181,25 +196,27 @@ def adapt_batch_size(
         is_nncf (bool): Whether nncf or not.
         meta (Optional[Dict[str, Any]]): meta information.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
+        model_builder (Optional[Callable]):
+            Function for building a model. If it exsits, a model build from model_builder is used instead of the model
+            in the argument. It's required for nncf because nncf changes model , which prevent model from pickling.
     """
 
     if not (cuda_available() or is_xpu_available()):
-        logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA and XPU.")
+        logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA or XPU.")
         return
 
     copied_cfg = copy(cfg)
-    custom_hooks = copy(cfg.custom_hooks)
+    copied_cfg.custom_hooks = copy(cfg.custom_hooks)
     copied_cfg.pop("algo_backend", None)
 
     if is_nncf:
         if model_builder is None:
-            msg = "model_builder should be possed for nncf models."
+            msg = "model_builder should be possed for building a nncf model."
             raise RuntimeError(msg)
         temp_dir = TemporaryDirectory("adaptive-bs")
         copied_cfg.load_from = _save_nncf_model_weight(model, cfg, Path(temp_dir.name))
-
-    _organize_custom_hooks(custom_hooks, is_nncf)
-    copied_cfg.custom_hooks = custom_hooks
+    
+    _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
 
     default_bs = _get_batch_size(cfg)
     if not distributed or (rank := dist.get_rank()) == 0:
@@ -229,9 +246,10 @@ def adapt_batch_size(
 
     if distributed:
         if rank == 0:
-            total_try_result = torch.tensor([new_batch_size], dtype=torch.int64).cuda()
+            total_try_result = torch.tensor([new_batch_size], dtype=torch.int)
         else:
-            total_try_result = torch.empty(1, dtype=torch.int64).cuda()
+            total_try_result = torch.empty(1, dtype=torch.int)
+        total_try_result = total_try_result.cuda() if torch.cuda.is_available() else total_try_result.xpu()
         dist.broadcast(total_try_result, src=0)
         new_batch_size = total_try_result[0].item()
 

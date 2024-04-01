@@ -8,9 +8,7 @@ from mmcv.runner import wrap_fp16_model
 
 from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
 from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
-from otx.algorithms.common.adapters.mmdeploy.utils.utils import (
-    sync_batchnorm_2_batchnorm,
-)
+from otx.algorithms.common.adapters.torch.utils import sync_batchnorm_2_batchnorm
 from otx.utils.logger import get_logger
 
 logger = get_logger()

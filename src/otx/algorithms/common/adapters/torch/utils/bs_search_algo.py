@@ -25,8 +25,8 @@ def _run_trial(train_func: Callable, train_func_kwargs: Dict[str, Any], bs: int,
         train_func(**kwargs)
     except RuntimeError as e:
         if str(e).startswith("CUDA out of memory.") or str(e).startswith(  # CUDA OOM
-            "Allocation is out of device memory on current platform."
-        ):  # XPU OOM
+            "Allocation is out of device memory on current platform."  # XPU OOM
+        ):
             oom = True
         else:
             raise e
@@ -50,8 +50,6 @@ class BsSearchAlgo:
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
-    MAX_FAIL_LIMIT = 3
-
     def __init__(self, train_func: Callable, train_func_kwargs: Dict[str, Any], default_bs: int, max_bs: int):
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
@@ -72,24 +70,21 @@ class BsSearchAlgo:
         self._mp_ctx = mp.get_context("spawn")
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
-        for _ in range(self.MAX_FAIL_LIMIT):
-            trial_queue = self._mp_ctx.Queue()
-            proc = self._mp_ctx.Process(
-                target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue)
-            )
-            proc.start()
-            output = None
-            while proc.is_alive():
-                try:
-                    output = trial_queue.get(timeout=1)
-                    break
-                except queue.Empty:
-                    pass
-            proc.join()
-            if output is not None:
+        trial_queue = self._mp_ctx.Queue()
+        proc = self._mp_ctx.Process(
+            target=_run_trial, args=(self._train_func, self._train_func_kwargs, bs, trial_queue)
+        )
+        proc.start()
+        output = None
+        while proc.is_alive():
+            try:
+                output = trial_queue.get(timeout=1)
                 break
-        else:
-            msg = f"Fail to train a model more than {self.MAX_FAIL_LIMIT} times during adaptive batch size."
+            except queue.Empty:
+                pass
+        proc.join()
+        if output is None:
+            msg = f"There is no output from the trial for adaptive batch size."
             raise RuntimeError(msg)
 
         oom = output["oom"]
@@ -99,7 +94,7 @@ class BsSearchAlgo:
             # Because heapq only supports min heap, use negatized batch size
             self._bs_try_history[bs] = max_memory_reserved
 
-        logger.info(
+        logger.debug(
             f"Adapting Batch size => bs : {bs}, OOM : {oom}, "
             f"memory usage : {max_memory_reserved / self._total_mem}%"
         )
@@ -237,8 +232,6 @@ class BsSearchAlgo:
                 return bs1
 
         estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
-        print(estimated_bs)
-        breakpoint()
 
         # If estimated_bs is already tried and it used memory more than upper bound,
         # set estimated_bs as lowest value of batch sizes using memory more than uppoer bound - 2

@@ -3,23 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from __future__ import annotations
 
+from typing import Dict, Optional, Union, List
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import get_dist_info
-from mmdet.models.builder import BACKBONES, MODELS
+from mmengine.config import Config, ConfigDict
+from mmdet.models.builder import BACKBONES
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from otx.utils.logger import get_logger
-
-if TYPE_CHECKING:
-    from mmengine.config import Config, ConfigDict
 
 # TODO: Need to fix pylint issues
 # pylint: disable=protected-access, abstract-method, no-value-for-parameter, assignment-from-no-return
@@ -102,16 +99,16 @@ def init_weights(self, pretrained=True):
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=self.models_cache_root)
 
 
-ori_build_func = MODELS.build_func
+ori_build_func = BACKBONES.build_func
 
 
-def _pytorchcv_model_reduce(self) -> nn.Module:  # noqa: ANN001
+def _pytorchcv_model_reduce(self) -> nn.Module:
     return (_build_model_including_pytorchcv, (self.otx_cfg,))
 
 
 def _build_model_including_pytorchcv(
     cfg,
-    registry: dict | ConfigDict | Config = MODELS,
+    registry: Union[Dict | ConfigDict | Config] = BACKBONES,
     default_args=None,
 ) -> nn.Module:
     """Try to build model from mmdet first and build from pytorchcv."""
@@ -134,18 +131,18 @@ def _build_model_including_pytorchcv(
 
 def _build_pytorchcv_model(
     type: str,  # noqa: A002
-    out_indices: list[int],
+    out_indices: List[int],
     frozen_stages: int = 0,
     norm_eval: bool = False,
     verbose: bool = False,
-    activation_cfg: dict | None = None,
-    norm_cfg: dict | None = None,
+    activation_cfg: Optional[Dict] = None,
+    norm_cfg: Optional[Dict] = None,
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
     models_cache_root = kwargs.get("root", Path.home() / ".torch" / "models")
     is_pretrained = kwargs.get("pretrained", False)
-    print(
+    logger.warning(
         f"Init model {type}, pretrained={is_pretrained}, models cache {models_cache_root}",
     )
     model = _models[type](**kwargs)
@@ -171,7 +168,7 @@ def _build_pytorchcv_model(
             if i > max(out_indices):
                 model.features[i] = None
     else:
-        print(
+        raise ValueError(
             "Failed to automatically wrap backbone network. "
             f"Object of type {model.__class__} has no valid attribute called "
             "'features'.",
@@ -180,4 +177,4 @@ def _build_pytorchcv_model(
     return model
 
 
-MODELS.build_func = _build_model_including_pytorchcv
+BACKBONES.build_func = _build_model_including_pytorchcv
