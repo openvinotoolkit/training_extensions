@@ -121,7 +121,7 @@ class Benchmark:
         """
         # Search csv files
         if os.path.isdir(result_path):
-            csv_file_paths = glob.glob(f"{result_path}/**/exp_summary.csv", recursive=True)
+            csv_file_paths = glob.glob(f"{result_path}/**/all_exp_result.csv", recursive=True)
         else:
             csv_file_paths = [result_path]
         results = []
@@ -143,6 +143,7 @@ class Benchmark:
         # Merge experiments
         data = pd.concat(results, ignore_index=True)
         data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
+        data = data.rename(columns={"repeat": "seed"})
         return data.set_index(["task", "model", "data_group", "data"])
 
     @staticmethod
