@@ -319,23 +319,26 @@
 <span class="sd">    Example:</span>
 <span class="sd">        The following examples show how to use the Engine class.</span>
 
-<span class="sd">        Auto-Configuration with data_root</span>
-<span class="sd">        &gt;&gt;&gt; engine = Engine(</span>
-<span class="sd">        ...     data_root=&lt;dataset/path&gt;,</span>
-<span class="sd">        ... )</span>
+<span class="sd">        Auto-Configuration with data_root::</span>
 
-<span class="sd">        Create Engine with Custom OTXModel</span>
-<span class="sd">        &gt;&gt;&gt; engine = Engine(</span>
-<span class="sd">        ...     data_root=&lt;dataset/path&gt;,</span>
-<span class="sd">        ...     model=OTXModel(...),</span>
-<span class="sd">        ...     checkpoint=&lt;checkpoint/path&gt;,</span>
-<span class="sd">        ... )</span>
+<span class="sd">            engine = Engine(</span>
+<span class="sd">                data_root=&lt;dataset/path&gt;,</span>
+<span class="sd">            )</span>
 
-<span class="sd">        Create Engine with Custom OTXDataModule</span>
-<span class="sd">        &gt;&gt;&gt; engine = Engine(</span>
-<span class="sd">        ...     model = OTXModel(...),</span>
-<span class="sd">        ...     datamodule = OTXDataModule(...),</span>
-<span class="sd">        ... )</span>
+<span class="sd">        Create Engine with Custom OTXModel::</span>
+
+<span class="sd">            engine = Engine(</span>
+<span class="sd">                data_root=&lt;dataset/path&gt;,</span>
+<span class="sd">                model=OTXModel(...),</span>
+<span class="sd">                checkpoint=&lt;checkpoint/path&gt;,</span>
+<span class="sd">            )</span>
+
+<span class="sd">        Create Engine with Custom OTXDataModule::</span>
+
+<span class="sd">            engine = Engine(</span>
+<span class="sd">                model = OTXModel(...),</span>
+<span class="sd">                datamodule = OTXDataModule(...),</span>
+<span class="sd">            )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_EXPORTED_MODEL_BASE_NAME</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span>
@@ -799,6 +802,7 @@
 <span class="sd">            ...     datamodule=OTXDataModule(),</span>
 <span class="sd">            ...     checkpoint=&lt;checkpoint/path&gt;,</span>
 <span class="sd">            ... )</span>
+
 <span class="sd">        CLI Usage:</span>
 <span class="sd">            To optimize a model, run</span>
 <span class="sd">                ```python</span>
@@ -1017,17 +1021,17 @@
 <span class="sd">            ...     data_root=&lt;dataset/path&gt;,</span>
 <span class="sd">            ... )</span>
 
-<span class="sd">            If you want to override configuration from default config</span>
-<span class="sd">            &gt;&gt;&gt; overriding = {</span>
-<span class="sd">            ...     &quot;data.config.train_subset.batch_size&quot;: 2,</span>
-<span class="sd">            ...     &quot;data.config.test_subset.subset_name&quot;: &quot;TESTING&quot;,</span>
-<span class="sd">            ... }</span>
-<span class="sd">            &gt;&gt;&gt; engine = Engine(</span>
-<span class="sd">            ...     model_name=&quot;atss_mobilenetv2&quot;,</span>
-<span class="sd">            ...     task=&quot;DETECTION&quot;,</span>
-<span class="sd">            ...     data_root=&lt;dataset/path&gt;,</span>
-<span class="sd">            ...     **overriding,</span>
-<span class="sd">            ... )</span>
+<span class="sd">            If you want to override configuration from default config:</span>
+<span class="sd">                &gt;&gt;&gt; overriding = {</span>
+<span class="sd">                ...     &quot;data.config.train_subset.batch_size&quot;: 2,</span>
+<span class="sd">                ...     &quot;data.config.test_subset.subset_name&quot;: &quot;TESTING&quot;,</span>
+<span class="sd">                ... }</span>
+<span class="sd">                &gt;&gt;&gt; engine = Engine(</span>
+<span class="sd">                ...     model_name=&quot;atss_mobilenetv2&quot;,</span>
+<span class="sd">                ...     task=&quot;DETECTION&quot;,</span>
+<span class="sd">                ...     data_root=&lt;dataset/path&gt;,</span>
+<span class="sd">                ...     **overriding,</span>
+<span class="sd">                ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">default_config</span> <span class="o">=</span> <span class="n">DEFAULT_CONFIG_PER_TASK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
         <span class="n">model_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">default_config</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
