@@ -246,7 +246,7 @@ class OTXConfig(Config):
 
     def __copy__(self):
         """Do real shallow copy of mmcv's Config.
-        
+
         mmcv's Config keeps all variables in '_cfg_dict' attribute.
         So, if it isn't copied, then original isntance and shallow copied object use same '_cfg_dict',
         which can lead to unexepected result. To prevent it, shallow copy all attributes of the current isntance.

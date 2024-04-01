@@ -86,4 +86,3 @@ def sync_batchnorm_2_batchnorm(module, dim=2):
     del module
 
     return module_output
-

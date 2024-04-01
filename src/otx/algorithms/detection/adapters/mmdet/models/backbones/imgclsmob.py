@@ -4,13 +4,13 @@
 #
 
 
-from typing import Dict, Optional, Union, List
 from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import get_dist_info
-from mmengine.config import Config, ConfigDict
 from mmdet.models.builder import BACKBONES
+from mmengine.config import Config, ConfigDict
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
@@ -108,7 +108,7 @@ def _pytorchcv_model_reduce(self) -> nn.Module:
 
 def _build_model_including_pytorchcv(
     cfg,
-    registry: Union[Dict | ConfigDict | Config] = BACKBONES,
+    registry: Union[Dict, ConfigDict, Config] = BACKBONES,
     default_args=None,
 ) -> nn.Module:
     """Try to build model from mmdet first and build from pytorchcv."""

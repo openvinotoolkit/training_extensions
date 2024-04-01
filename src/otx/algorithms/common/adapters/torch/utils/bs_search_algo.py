@@ -84,7 +84,7 @@ class BsSearchAlgo:
                 pass
         proc.join()
         if output is None:
-            msg = f"There is no output from the trial for adaptive batch size."
+            msg = "There is no output from the trial for adaptive batch size."
             raise RuntimeError(msg)
 
         oom = output["oom"]

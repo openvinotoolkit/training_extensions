@@ -419,7 +419,7 @@ class MMClassificationTask(OTXClassificationTask):
                 is_nncf,
                 meta=meta,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
-                model_builder=getattr(self, "model_builder") if is_nncf else None
+                model_builder=getattr(self, "model_builder") if is_nncf else None,
             )
 
         train_model(

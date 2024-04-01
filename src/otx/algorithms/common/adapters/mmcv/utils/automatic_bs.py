@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import inspect
-from importlib import import_module
 from copy import copy
+from importlib import import_module
 from math import sqrt
-from typing import Any, Callable, Dict, List, Optional
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -20,8 +20,7 @@ from torch.cuda import is_available as cuda_available
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
-from otx.algorithms.common.adapters.torch.utils import sync_batchnorm_2_batchnorm
-from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
+from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo, sync_batchnorm_2_batchnorm
 from otx.algorithms.common.utils import is_xpu_available
 from otx.core.data import caching
 from otx.utils.logger import get_logger
@@ -50,7 +49,7 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
 
     target[keys[-1]] = value
 
-    
+
 def _build_model(model_builder: Callable, cfg: Config) -> torch.nn.Module:
     model = model_builder(cfg)
     if cfg.get("fp16", False):
@@ -59,9 +58,9 @@ def _build_model(model_builder: Callable, cfg: Config) -> torch.nn.Module:
 
 
 NNCF_PATCH_MODULE = {
-    "mmcls" : "otx.algorithms.classification.adapters.mmcls.nncf.patches",
-    "mmdet" : "otx.algorithms.detection.adapters.mmdet.nncf.patches",
-    "mmseg" : "otx.algorithms.segmentation.adapters.mmseg.nncf.patches",
+    "mmcls": "otx.algorithms.classification.adapters.mmcls.nncf.patches",
+    "mmdet": "otx.algorithms.detection.adapters.mmdet.nncf.patches",
+    "mmseg": "otx.algorithms.segmentation.adapters.mmseg.nncf.patches",
 }
 
 
@@ -93,7 +92,7 @@ def _train_func_single_iter(
 
         if framework == "mmcls":
             validate = False  # classification task has own custom eval hook
-                
+
     if model is None:
         model = _build_model(model_builder, cfg)
 
@@ -114,6 +113,7 @@ def _train_func_single_iter(
 
 def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> str:
     from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+
     file_path = save_path / "nncf_model.pth"
     for custom_hook in cfg.custom_hooks:
         if custom_hook["type"] == "CompressionHook":
@@ -122,20 +122,20 @@ def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: P
     else:
         msg = "CompressionHook doesn't exist in custom hooks."
         raise RuntimeError(msg)
-            
+
     torch.save(
         {
-            "state_dict" : model.state_dict(),
-            "meta" : {
-                "nncf_meta" : NNCFMetaState(
+            "state_dict": model.state_dict(),
+            "meta": {
+                "nncf_meta": NNCFMetaState(
                     state_to_build=cfg.runner.nncf_meta.state_to_build,
                     data_to_build=cfg.runner.nncf_meta.data_to_build,
-                    compression_ctrl=compression_ctrl
+                    compression_ctrl=compression_ctrl,
                 ),
-                "nncf_enable_compression" : True
-            }
+                "nncf_enable_compression": True,
+            },
         },
-        file_path
+        file_path,
     )
 
     return str(file_path)
@@ -215,7 +215,7 @@ def adapt_batch_size(
             raise RuntimeError(msg)
         temp_dir = TemporaryDirectory("adaptive-bs")
         copied_cfg.load_from = _save_nncf_model_weight(model, cfg, Path(temp_dir.name))
-    
+
     _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
 
     default_bs = _get_batch_size(cfg)
