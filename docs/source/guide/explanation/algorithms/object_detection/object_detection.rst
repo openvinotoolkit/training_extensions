@@ -54,10 +54,10 @@ Learn more about the formats by following the links above. Here is an example of
 Models
 ******
 
-We support the following ready-to-use model templates:
+We support the following ready-to-use model recipes:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                | Name                | Complexity (GFLOPs) | Model size (MB) |
+| Recipe ID                                                                                                                                                  | Name                | Complexity (GFLOPs) | Model size (MB) |
 +============================================================================================================================================================+=====================+=====================+=================+
 | `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/detection/yolox_tiny.yaml>`_            |      YOLOX-TINY     | 6.5                 | 20.4            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
@@ -96,8 +96,8 @@ Except for COCO, we report AP50 as performance metric.
 `BDD100K <https://www.bdd100k.com/>`_ is the largest dataset among we used. 70000 images are used as train images and 10000 images are used for validation.
 `Brackish <https://public.roboflow.com/object-detection/brackish-underwater>`_ and `Plantdoc <https://public.roboflow.com/object-detection/plantdoc>`_ are datasets of medium size. They have around 10000 images for train and 1500 images for validation.
 `BCCD <https://public.roboflow.com/object-detection/bccd>`_ and `Chess pieces <https://public.roboflow.com/object-detection/chess-full>`_ are datasets of small size. They have around 300 images for train and 100 images for validation.
-We used our own templates without any modification.
-For hyperparameters, please, refer to the related template.
+We used our own recipes without any modification.
+For hyperparameters, please, refer to the related recipe.
 We trained each model with a single Nvidia GeForce RTX3090.
 
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
@@ -110,12 +110,6 @@ We trained each model with a single Nvidia GeForce RTX3090.
 | MobileNetV2-ATSS           | 32.5 (49.5)      | 40.2      | 99.1      | 63.4      | 93.4      | 99.1         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 | ResNeXt101-ATSS            | 45.1 (63.8)      | 45.5      | 99.3      | 69.3      | 93.1      | 99.1         |
-+----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| ResNet50-Deformable-DETR   | 44.3 (63.2)      | 44.8      | 97.7      | 60.7      | 93.4      | 99.2         |
-+----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| ResNet50-DINO              | 49.0 (66.4)      | 47.2      | 99.5      | 62.9      | 93.5      | 99.1         |
-+----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| ResNet50-Lite-DINO         | 48.1 (64.4)      | 47.0      | 99.0      | 62.5      | 93.6      | 99.4         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 | YOLOX-S                    | 40.3 (59.1)      | 37.1      | 93.6      | 54.8      | 92.7      | 98.8         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
