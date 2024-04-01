@@ -246,6 +246,18 @@ class OVActionClsModel(
             labels=pred_labels,
         )
 
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ActionClsBatchPredEntity,
+        inputs: ActionClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
     @property
     def model_adapter_parameters(self) -> dict:
         """Model parameters for export."""

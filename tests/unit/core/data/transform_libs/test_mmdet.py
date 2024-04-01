@@ -104,7 +104,7 @@ class TestPackDetInputs:
                         canvas_size=(1024, 1024),
                     ),
                     points=None,  # TODO(sungchul): add point prompts in mmx
-                    masks=None,
+                    masks=[],
                     labels=LongTensor([1]),
                     polygons=[Polygon(points=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6], label=0)],
                 ),

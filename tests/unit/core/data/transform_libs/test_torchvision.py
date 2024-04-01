@@ -57,4 +57,4 @@ class TestPackVideo:
         )
         transform = PackVideo()
         out = transform(entity)
-        assert out.video == entity.video
+        assert out.image == entity.video
