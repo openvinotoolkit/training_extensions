@@ -454,6 +454,7 @@ class OTXCLI:
         The configuration is saved as a YAML file in the engine's working directory.
         """
         self.config[self.subcommand].pop("workspace", None)
+        self.config[self.subcommand]["work_dir"] = str(self.workspace.work_dir.parent)
         # TODO(vinnamki): Revisit it after changing the optimizer and scheduler instantiating.
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")

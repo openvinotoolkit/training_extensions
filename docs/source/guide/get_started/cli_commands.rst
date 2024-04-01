@@ -1,4 +1,4 @@
-OpenVINO™ Training Extensions CLI Usage
+:octicon:`terminal;1em` CLI Guide
 ==========================================
 
 All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
@@ -6,8 +6,8 @@ All possible OpenVINO™ Training Extensions CLI commands are presented below al
 .. note::
 
     To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/algorithms/index>` in the documentation.
-    Also, by default, the OTX CLI is written using jsonargparse, see jsonargparse or LightningCLI.
-    `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>_`
+    Also, by default, the OpenVINO™ Training Extensions CLI is written using jsonargparse, see jsonargparse or LightningCLI.
+    Please refer `Jsonargparse Documentation <https://jsonargparse.readthedocs.io/en/v4.27.4/#configuration-files>`_
 
 *****
 Help
@@ -198,7 +198,7 @@ Users can also pre-generate a config file with an example like the one below.
 Find
 *****
 
-``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OTX.
+``otx find`` lists model templates and backbones available for the given task. Specify the task name with ``--task`` option. Use ``--pattern`` to find the model name from OpenVINO™ Training Extensions.
 
 .. code-block:: shell
 
@@ -219,7 +219,7 @@ Find
     ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 
-Example to find ready-to-use templates for the detection task:
+Example to find ready-to-use recipes for the detection task:
 
 .. code-block:: shell
 
@@ -297,38 +297,57 @@ Then pass the path to ``coco_data_root`` to both root options:
 Training
 *********
 
-``otx train`` trains a model (a particular model template) on a dataset:
+``otx train`` trains a model (a particular model recipe) on a dataset:
 
 The results will be saved in ``./otx-workspace/`` folder by default. The output folder can be modified by ``--work_dir`` option. These files are used by other commands: ``export``, ``test``, ``demo``, etc.
 
 ``otx train`` receives ``--config`` as a argument. ``config`` can be a path to the specific ``*.yaml`` file. Also, the path to data root should be passed to the CLI to start training.
 
 
+.. tab-set::
 
-Example of the command line to start training using Auto-Configuration:
+    .. tab-item:: Auto-Configuration
 
-.. code-block:: shell
+        Example of the command line to start training using Auto-Configuration:
 
-    (otx) ...$ otx train --data_root <dataset-root> --task <TASK>
+        .. code-block:: shell
 
-You can use the recipe configuration provided by OTX. The corresponding configuration file can be found via ``otx find``.
+            (otx) ...$ otx train --data_root <dataset-root> --task <TASK>
 
-.. code-block:: shell
+    .. tab-item:: With Configuration
 
-    (otx) ...$ otx train --config <config-file-path> --data_root <dataset-root>
+        You can use the recipe configuration provided by OpenVINO™ Training Extensions. The corresponding configuration file can be found via ``otx find``.
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --config <config-file-path> --data_root <dataset-root>
+
+    .. tab-item:: With Custom Model
+
+        You can also use a custom model and data module. The model and data module can be passed as a class path or a configuration file.
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --model <model-class-path-or-name> --task <task-type> --data_root <dataset-root>
+
+        For example, if you want to use the ``otx.algo.detection.atss.ATSS`` model class, you can train it as shown below.
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --model otx.algo.detection.atss.ATSS --model.variant mobilenetv2 --task DETECTION ...
 
 .. note::
-  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tensorboard``.
+    You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tensorboard``.
 
 .. note::
-  ``--data.config.mem_cache_size`` provides in-memory caching for decoded images in main memory.
-  If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
-  image decoding can account for a non-negligible overhead in data pre-processing.
-  This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
-  If your machine has enough main memory, we recommend increasing this value as much as possible.
-  For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.config.mem_cache_size 8GB``.
+    ``--data.config.mem_cache_size`` provides in-memory caching for decoded images in main memory.
+    If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
+    image decoding can account for a non-negligible overhead in data pre-processing.
+    This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
+    If your machine has enough main memory, we recommend increasing this value as much as possible.
+    For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--data.config.mem_cache_size 8GB``.
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the recipe and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and recipe with the best accuracy/speed trade-off.
 
 You can override the configurable arguments.
 For example, that is how you can change the max epochs and the batch size for the training:
@@ -340,7 +359,7 @@ For example, that is how you can change the max epochs and the batch size for th
 .. note::
 
     ``train``, ``test`` works based on ``lightning.Tranier``. You can change the Trainer component with the arguments of train and test. You can find more arguments in this documentation.
-    `Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>_`
+    `Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_
 
 **********
 Exporting
@@ -352,7 +371,7 @@ The command below performs exporting to the ``{work_dir}/`` path.
 
 .. code-block:: shell
 
-    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth>
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.ckpt>
 
 The command results in ``exported_model.xml``, ``exported_model.bin``.
 
@@ -360,7 +379,7 @@ To use the exported model as an input for ``otx explain``, please dump additiona
 
 .. code-block:: shell
 
-    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth> --explain True
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.ckpt> --explain True
 
 
 .. note::
@@ -387,8 +406,8 @@ Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ PTQ:
 
 .. code-block:: shell
 
-    (otx) ...$ otx optimize ... --checkpoint <path/to/openvino.xml> \
-                                --data_root <path/to/val/root> \
+    (otx) ...$ otx optimize ... --checkpoint <path/to/exported_model.xml> \
+                                --data_root <path/to/val/root>
 
 
 Thus, to use PTQ pass the path to exported IR (.xml) model.
@@ -419,7 +438,7 @@ The command below will evaluate the trained model on the provided dataset:
 
 .. note::
 
-    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--checkpoint`` option.
+    It is possible to pass both PyTorch weights ``.ckpt`` or OpenVINO™ IR ``exported_model.xml`` to ``--checkpoint`` option.
 
 
 .. note::
@@ -449,13 +468,13 @@ The command below will generate saliency maps (heatmaps with red colored areas o
 
 .. note::
 
-    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+    It is possible to pass both PyTorch weights ``.ckpt`` or OpenVINO™ IR ``exported_model.xml`` to ``--load-weights`` option.
 
 By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model in ``otx explain``, please first export it with ``--explain`` parameter:
 
 .. code-block:: shell
 
-    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.pth> \
+    (otx) ...$ otx export ... --checkpoint <path/to/trained/weights.ckpt> \
                               --explain True
     (otx) ...$ otx explain ... --checkpoint outputs/openvino/with_features \
 
@@ -477,7 +496,7 @@ If we run a typical Training example, will have a folder like the one below as o
         20240000_000001/              # Deliverables from OTX CLI Second-Trial
 
 
-OTX considers the folder with ``.latest`` to be the root of the entire Workspace.
+OpenVINO™ Training Extensions considers the folder with ``.latest`` to be the root of the entire Workspace.
 ``.latest`` soft-links to the most recently trained output folder.
 
 Case 1: If a user specifies an output ``work_dir`` (An already existing workspace)

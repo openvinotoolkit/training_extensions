@@ -13,3 +13,4 @@ Additional Features
    xai
    fast_data_loading
    tiling
+   class_incremental_sampler

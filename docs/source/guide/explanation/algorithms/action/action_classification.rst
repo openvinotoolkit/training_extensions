@@ -17,9 +17,9 @@ For supervised learning we use the following algorithms components:
 Dataset Format
 **************
 
-We support the popular action classification formats, such as `Jester <https://developer.qualcomm.com/software/ai-datasets/jester>`_, `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_, `UCF101 <https://www.crcv.ucf.edu/data/UCF101.php>`_. Specifically, these formats will be converted into our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/cvat_dataset/action_classification/train>`_ using the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+We support the popular action classification formats, `Kinetics <https://github.com/cvdfoundation/kinetics-dataset>`_ .
 
-The names of the annotations files and the overall dataset structure should be the same as the original dataset.
+The names of the annotations files and the overall dataset structure should be the same converted to Kinetics format from original dataset.
 
 Refer to our tutorial for more information on how to train, validate, and optimize action classification models.
 
@@ -30,7 +30,7 @@ Models
 Currently OpenVINO™ Training Extensions supports `X3D <https://arxiv.org/abs/2004.04730>`_ and `MoViNet <https://arxiv.org/pdf/2103.11511.pdf>`_ for action classification.
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
-| Template ID                                                                                                                                                                            | Name    | Complexity (GFLOPs) | Model size (MB)         |
+| Recipe ID                                                                                                                                                                              | Name    | Complexity (GFLOPs) | Model size (MB)         |
 +========================================================================================================================================================================================+=========+=====================+=========================+
 | `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/action/action_classification/x3d.yaml>`_                         | X3D     | 2.49                | 3.79                    |
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
