@@ -244,6 +244,14 @@ class OTXConfig(Config):
 
         return text
 
+    def __copy__(self):
+        cls = self.__class__
+        other = cls.__new__(cls)
+        for key, val in self.__dict__.items():
+            other.__dict__[key] = copy.copy(val)
+
+        return other
+
 
 def copy_config(cfg):
     """A function that creates a deep copy of the input configuration object.

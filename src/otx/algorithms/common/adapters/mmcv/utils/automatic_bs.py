@@ -3,6 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import inspect
 from copy import copy
 from math import sqrt
 from typing import Any, Callable, Dict, List, Optional
@@ -71,16 +72,21 @@ def _train_func_single_iter(
 
     new_dataset = [SubDataset(datasets[0], batch_size)]
 
-    if model is None:
-        model = _build_model(model_builder, cfg)
+    validate = is_nncf  # nncf needs eval hooks
     if is_nncf:
-        if "mmdet" in str(type(model)):
+        pkg_name = inspect.getmodule(train_func).__package__
+        if "mmdet" in pkg_name:
             import otx.algorithms.detection.adapters.mmdet.nncf.patches
-        elif "mmcls" in str(type(model)):
+        elif "mmcls" in pkg_name:
             import otx.algorithms.classification.adapters.mmcls.nncf.patches
-        elif "mmseg" in str(type(model)):
+            validate = False  # classification task has own custom eval hook
+        elif "mmseg" in pkg_name:
             import otx.algorithms.segmentation.adapters.mmseg.nncf.patches
 
+    if model is None:
+        model = _build_model(model_builder, cfg)
+
+    if is_nncf:
         model.nncf._uncompressed_model_accuracy = 0
 
     train_func(
@@ -88,20 +94,23 @@ def _train_func_single_iter(
         dataset=new_dataset,
         cfg=cfg,
         distributed=False,
-        validate=is_nncf,  # nncf needs eval hooks
+        validate=validate,
         meta=meta,
     )
 
-    
-def _copy_mmcv_cfg(cfg: Config) -> Config:
-    copied_cfg = copy(cfg)
-    copied_cfg = copy(copied_cfg._cfg_dict)
-    return copied_cfg
 
-
-def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> Path:
+def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> str:
     from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+    save_path = Path("/home/eunwoosh/work/val_bef_train/exp/logs/test_cls_f15be629629574cca4c2")
     file_path = save_path / "nncf_model.pth"
+    for custom_hook in cfg.custom_hooks:
+        if custom_hook["type"] == "CompressionHook":
+            compression_ctrl = custom_hook["compression_ctrl"].get_compression_state()
+            break
+    else:
+        msg = "CompressionHook doesn't exist in custom hooks."
+        raise RuntimeError(msg)
+            
     torch.save(
         {
             "state_dict" : model.state_dict(),
@@ -109,7 +118,7 @@ def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: P
                 "nncf_meta" : NNCFMetaState(
                     state_to_build=cfg.runner.nncf_meta.state_to_build,
                     data_to_build=cfg.runner.nncf_meta.data_to_build,
-                    compression_ctrl=cfg.custom_hooks[-1]["compression_ctrl"].get_compression_state()
+                    compression_ctrl=compression_ctrl
                 ),
                 "nncf_enable_compression" : True
             }
@@ -117,7 +126,7 @@ def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: P
         file_path
     )
 
-    return file_path
+    return str(file_path)
 
 
 def _organize_custom_hooks(custom_hooks: List, is_nncf: bool = False) -> None:
@@ -178,7 +187,8 @@ def adapt_batch_size(
         logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA and XPU.")
         return
 
-    copied_cfg = _copy_mmcv_cfg(cfg)
+    copied_cfg = copy(cfg)
+    custom_hooks = copy(cfg.custom_hooks)
     copied_cfg.pop("algo_backend", None)
 
     if is_nncf:
@@ -186,9 +196,10 @@ def adapt_batch_size(
             msg = "model_builder should be possed for nncf models."
             raise RuntimeError(msg)
         temp_dir = TemporaryDirectory("adaptive-bs")
-        copied_cfg.load_from = _save_nncf_model_weight(model, cfg, temp_dir)
+        copied_cfg.load_from = _save_nncf_model_weight(model, cfg, Path(temp_dir.name))
 
-    _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
+    _organize_custom_hooks(custom_hooks, is_nncf)
+    copied_cfg.custom_hooks = custom_hooks
 
     default_bs = _get_batch_size(cfg)
     if not distributed or (rank := dist.get_rank()) == 0:
