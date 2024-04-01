@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import statistics
 import sys
 from abc import ABC, abstractmethod
@@ -22,7 +23,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
-from otx.cli.tools.cli import main as otx_cli
 from rich.console import Console
 from rich.table import Table
 
@@ -919,9 +919,8 @@ class OtxCommandRunner:
         return True
 
     def _run_otx_command(self, command: List[str]):
-        sys.argv = copy(command)
         try:
-            otx_cli()
+            subprocess.run(command, check=True)
         except Exception as e:
             self._fail_logs.append(CommandFailInfo(variable=self._command_var, exception=e, command=" ".join(command)))
 
