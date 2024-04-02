@@ -247,7 +247,7 @@ def _resize_image_info(image_info: ImageInfo, size: list[int], **kwargs) -> Imag
 
     ori_h, ori_w = image_info.ori_shape
     new_h, new_w = image_info.img_shape
-    image_info.scale_factor = (new_h / ori_h, new_w / ori_w)
+    image_info.scale_factor = (new_w / ori_w, new_h / ori_h)
     return image_info
 
 
