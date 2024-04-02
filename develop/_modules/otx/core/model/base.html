@@ -1119,13 +1119,6 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Model is already optimized by PTQ&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span><span class="n">data_batch</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-            <span class="n">np_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">data_batch</span><span class="p">)</span>
-            <span class="n">image</span> <span class="o">=</span> <span class="n">np_data</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
-            <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_transform</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_change_layout</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
-
         <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span>
 
         <span class="n">ptq_config_from_ir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_ptq_config_from_ir</span><span class="p">(</span><span class="n">ov_model</span><span class="p">)</span>
@@ -1135,7 +1128,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ptq_config</span> <span class="o">=</span> <span class="n">ptq_config_from_ir</span>
 
-        <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">transform_fn</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
+        <span class="n">quantization_dataset</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_fn</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
         <span class="n">compressed_model</span> <span class="o">=</span> <span class="n">nncf</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="n">ov_model</span><span class="p">,</span>
@@ -1146,6 +1139,17 @@
         <span class="n">openvino</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">compressed_model</span><span class="p">,</span> <span class="n">output_model_path</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">output_model_path</span></div>
+
+
+<div class="viewcode-block" id="OVModel.transform_fn">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OVModel.transform_fn">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_batch</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Data transform function for PTQ.&quot;&quot;&quot;</span>
+        <span class="n">np_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">data_batch</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np_data</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">h</span><span class="p">))</span>
+        <span class="n">resized_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">input_transform</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_change_layout</span><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span></div>
 
 
     <span class="k">def</span> <span class="nf">_read_ptq_config_from_ir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ov_model</span><span class="p">:</span> <span class="n">Model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>

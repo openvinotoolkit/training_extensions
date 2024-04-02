@@ -347,7 +347,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-process.&quot;&quot;&quot;</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">get_multiclass_predictions</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="k">def</span> <span class="nf">_change_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Action classification task do not require layout change.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">inputs</span></div>
 
 </pre></div>
 

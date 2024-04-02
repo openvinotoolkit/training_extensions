@@ -242,14 +242,15 @@
 <span class="kn">import</span> <span class="nn">functools</span>
 
 <span class="kn">from</span> <span class="nn">mmaction.models</span> <span class="kn">import</span> <span class="n">MODELS</span>
-<span class="kn">from</span> <span class="nn">mmaction.models.recognizers.recognizer3d</span> <span class="kn">import</span> <span class="n">Recognizer3D</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">otx.algo.action_classification.recognizers.recognizer</span> <span class="kn">import</span> <span class="n">OTXRecognizer3D</span>
 
 
 <div class="viewcode-block" id="MoViNetRecognizer">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.action_classification.html#otx.algo.action_classification.MoViNetRecognizer">[docs]</a>
 <span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
-<span class="k">class</span> <span class="nc">MoViNetRecognizer</span><span class="p">(</span><span class="n">Recognizer3D</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MoViNetRecognizer</span><span class="p">(</span><span class="n">OTXRecognizer3D</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;MoViNet recognizer model framework for OTX compatibility.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
