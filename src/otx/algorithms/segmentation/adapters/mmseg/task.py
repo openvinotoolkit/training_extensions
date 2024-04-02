@@ -360,9 +360,6 @@ class MMSegmentationTask(OTXSegmentationTask):
             htcore.hpu.ModuleCacher(max_graphs=10)(model=model.backbone, inplace=True)
             htcore.hpu.ModuleCacher(max_graphs=10)(model=model.decode_head, inplace=True)
 
-        if cfg.distributed:
-            convert_sync_batchnorm(model)
-
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
@@ -378,6 +375,9 @@ class MMSegmentationTask(OTXSegmentationTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
                 model_builder=getattr(self, "model_builder") if is_nncf else None,
             )
+
+        if cfg.distributed:
+            convert_sync_batchnorm(model)
 
         train_segmentor(
             model,
