@@ -46,6 +46,7 @@ class BsSearchAlgo:
 
     Args:
         train_func (Callable[[int], None]): Training function with single arugment to set batch size.
+        train_func_kwargs (Dict[str, Any]): Keyword arguments for train_func.
         default_bs (int): Default batch size. It should be bigger than 0.
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
@@ -91,7 +92,6 @@ class BsSearchAlgo:
         max_memory_reserved = output["max_memory_reserved"]
 
         if not oom:
-            # Because heapq only supports min heap, use negatized batch size
             self._bs_try_history[bs] = max_memory_reserved
 
         logger.debug(
@@ -247,10 +247,10 @@ class BsSearchAlgo:
                 y_idx -= 1
 
         if x_idx == y_idx:
-            if check_bs_suitable(bs_arr[cur_max_bs_idx] + 2):
-                estimated_bs = bs_arr[cur_max_bs_idx] + 2
+            if check_bs_suitable(bs_arr[cur_max_bs_idx][0] + 2):
+                estimated_bs = bs_arr[cur_max_bs_idx][0] + 2
             else:
-                estimated_bs = bs_arr[cur_max_bs_idx]
+                estimated_bs = bs_arr[cur_max_bs_idx][0]
 
         if estimated_bs > self._max_bs:
             estimated_bs = self._max_bs

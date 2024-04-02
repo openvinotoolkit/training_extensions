@@ -1,4 +1,5 @@
-from otx.algorithms.common.utils.utils import is_xpu_available
+from unittest.mock import MagicMock
+
 import pytest
 from math import sqrt
 
@@ -12,19 +13,20 @@ TRAINSET_SIZE = 100
 
 
 class MockBsSearchAlgo:
-    def __init__(self, train_func, default_bs: int, max_bs: int):
+    def __init__(self, train_func, train_func_kwargs, default_bs: int, max_bs: int):
         self.train_func = train_func
+        self.train_func_kwargs = train_func_kwargs
         self.default_bs = default_bs
         self.max_bs = max_bs
 
     def auto_decrease_batch_size(self):
-        self.train_func(self.default_bs)
-        self.train_func(self.default_bs // 2)
+        self.train_func(batch_size=self.default_bs, **self.train_func_kwargs)
+        self.train_func(batch_size=self.default_bs // 2, **self.train_func_kwargs)
         return self.default_bs // 2
 
     def find_big_enough_batch_size(self, drop_last: bool):
-        self.train_func(self.default_bs)
-        self.train_func(self.default_bs + 2)
+        self.train_func(batch_size=self.default_bs, **self.train_func_kwargs)
+        self.train_func(batch_size=self.default_bs + 2, **self.train_func_kwargs)
         return self.default_bs + 2
 
 
@@ -63,14 +65,24 @@ def mock_dataset(mocker):
     return mock_ds
 
 
+@pytest.fixture
+def mock_model():
+    return MagicMock()
+
+
 @pytest.mark.parametrize("not_increase", [True, False])
 @pytest.mark.parametrize("is_action_task", [True, False])
 @pytest.mark.parametrize("is_iter_based_runner", [True, False])
 def test_adapt_batch_size(
-    mocker, mock_adapt_algo_cls, common_cfg, mock_dataset, not_increase, is_action_task, is_iter_based_runner
+    mocker,
+    mock_adapt_algo_cls,
+    common_cfg,
+    mock_dataset,
+    not_increase,
+    is_action_task,
+    is_iter_based_runner,
+    mock_model
 ):
-    if is_xpu_available():
-        pytest.skip("Adaptive batch size is not supported on XPU")
     # prepare
     mock_train_func = mocker.MagicMock()
     new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
@@ -86,7 +98,7 @@ def test_adapt_batch_size(
         mock_config = set_mock_cfg_not_action(common_cfg)
 
     # execute
-    adapt_batch_size(mock_train_func, mock_config, mock_dataset, False, not_increase)
+    adapt_batch_size(mock_train_func, mock_model, mock_dataset, mock_config, not_increase=not_increase)
 
     # check adapted batch size is applied
     if is_action_task:
@@ -133,11 +145,17 @@ class TestSubDataset:
         self.sub_dataset = SubDataset(self.fullset, self.num_samples)
 
     def test_init(self, mocker):
-        fullset = mocker.MagicMock()
+        class MockDataset:
+            def __init__(self):
+                self.img_indices = {"cls_0" : 1, "cls_1" : 2}
+        fullset = MockDataset()
         subset = SubDataset(fullset, 3)
 
         # test for class incremental case. If below assert can't be passed, ClsIncrSampler can't work well.
         assert len(subset.img_indices["new"]) / len(subset.img_indices["old"]) + 1 <= self.num_samples
+        # test existing num_indices values still exist
+        assert subset.img_indices["cls_0"] == 1
+        assert subset.img_indices["cls_1"] == 2
 
     @pytest.mark.parametrize("num_samples", [-1, 0])
     def test_init_w_wrong_num_samples(self, mocker, num_samples):
