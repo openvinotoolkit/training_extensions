@@ -165,3 +165,21 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
         videowriter.write(img)
 
     videowriter.release()
+
+
+def find_folder(base_path: Path, folder_name: str) -> Path:
+    """
+    Find the folder with the given name within the specified base path.
+
+    Args:
+        base_path (Path): The base path to search within.
+        folder_name (str): The name of the folder to find.
+
+    Returns:
+        Path: The path to the folder.
+    """
+    for folder_path in base_path.rglob(folder_name):
+        if folder_path.is_dir():
+            return folder_path
+    msg = f"Folder {folder_name} not found in {base_path}."
+    raise FileNotFoundError(msg)

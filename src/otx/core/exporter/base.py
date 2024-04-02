@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import tempfile
 from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
+from otx import __version__
 from otx.core.exporter.exportable_code import demo
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
@@ -181,7 +183,8 @@ class OTXModelExporter:
                 work_dir / "requirements.txt",
                 Path("python") / "requirements.txt",
             )
-            arch.write(work_dir.parents[5] / "LICENSE", Path("python") / "LICENSE")
+            # get LICENSE file from the installed otx package
+            arch.write(Path(f"{sys.modules['otx'].__path__[0]}-{__version__}.dist-info") / "LICENSE")
             arch.write(work_dir / "demo.py", Path("python") / "demo.py")
             arch.write(work_dir / "README.md", Path("./") / "README.md")
             arch.write(work_dir / "setup.py", Path("python") / "setup.py")
