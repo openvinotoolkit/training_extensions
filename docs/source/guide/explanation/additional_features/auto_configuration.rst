@@ -25,7 +25,7 @@ Basically, to start the training and obtain a good baseline with the best trade-
             (otx) ...$ otx train ... --data_root <path_to_data_root>
 
 
-After dataset preparation, the training will be started with the middle-sized template to achieve competitive accuracy preserving fast inference.
+After dataset preparation, the training will be started with the middle-sized recipe to achieve competitive accuracy preserving fast inference.
 
 
 Supported dataset formats for each task:

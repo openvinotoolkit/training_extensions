@@ -11,10 +11,8 @@ from typing import TYPE_CHECKING
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
-    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
-    OTXPredEntityWithXAI,
 )
 from otx.core.data.entity.utils import register_pytree_node
 from otx.core.types.task import OTXTaskType
@@ -40,13 +38,8 @@ class MulticlassClsDataEntity(OTXDataEntity):
 
 
 @dataclass
-class MulticlassClsPredEntity(MulticlassClsDataEntity, OTXPredEntity):
+class MulticlassClsPredEntity(OTXPredEntity, MulticlassClsDataEntity):
     """Data entity to represent the multi-class classification model output prediction."""
-
-
-@dataclass
-class MulticlassClsPredEntityWithXAI(MulticlassClsDataEntity, OTXPredEntityWithXAI):
-    """Data entity to represent the multi-class classification model output prediction with explanations."""
 
 
 @dataclass
@@ -80,19 +73,12 @@ class MulticlassClsBatchDataEntity(OTXBatchDataEntity[MulticlassClsDataEntity]):
 
     def pin_memory(self) -> MulticlassClsBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return super().pin_memory().wrap(labels=[label.pin_memory() for label in self.labels])
 
 
 @dataclass
-class MulticlassClsBatchPredEntity(MulticlassClsBatchDataEntity, OTXBatchPredEntity):
+class MulticlassClsBatchPredEntity(OTXBatchPredEntity, MulticlassClsBatchDataEntity):
     """Data entity to represent model output predictions for multi-class classification task."""
-
-
-@dataclass
-class MulticlassClsBatchPredEntityWithXAI(MulticlassClsBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for multi-class classification task with explanations."""
 
 
 @register_pytree_node
@@ -112,13 +98,8 @@ class MultilabelClsDataEntity(OTXDataEntity):
 
 
 @dataclass
-class MultilabelClsPredEntity(MultilabelClsDataEntity, OTXPredEntity):
+class MultilabelClsPredEntity(OTXPredEntity, MultilabelClsDataEntity):
     """Data entity to represent the multi-label classification model output prediction."""
-
-
-@dataclass
-class MultilabelClsPredEntityWithXAI(MultilabelClsDataEntity, OTXPredEntityWithXAI):
-    """Data entity to represent the multi-label classification model output prediction with explanations."""
 
 
 @dataclass
@@ -152,19 +133,12 @@ class MultilabelClsBatchDataEntity(OTXBatchDataEntity[MultilabelClsDataEntity]):
 
     def pin_memory(self) -> MultilabelClsBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.labels = [label.pin_memory() for label in self.labels]
-        return self
+        return super().pin_memory().wrap(labels=[label.pin_memory() for label in self.labels])
 
 
 @dataclass
-class MultilabelClsBatchPredEntity(MultilabelClsBatchDataEntity, OTXBatchPredEntity):
+class MultilabelClsBatchPredEntity(OTXBatchPredEntity, MultilabelClsBatchDataEntity):
     """Data entity to represent model output predictions for multi-label classification task."""
-
-
-@dataclass
-class MultilabelClsBatchPredEntityWithXAI(MultilabelClsBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for multi-label classification task with explanations."""
 
 
 @register_pytree_node
@@ -185,13 +159,8 @@ class HlabelClsDataEntity(OTXDataEntity):
 
 
 @dataclass
-class HlabelClsPredEntity(HlabelClsDataEntity, OTXPredEntity):
+class HlabelClsPredEntity(OTXPredEntity, HlabelClsDataEntity):
     """Data entity to represent the H-label classification model output prediction."""
-
-
-@dataclass
-class HlabelClsPredEntityWithXAI(HlabelClsDataEntity, OTXPredEntityWithXAI):
-    """Data entity to represent the H-label classification model output prediction with explanation."""
 
 
 @dataclass
@@ -226,10 +195,5 @@ class HlabelClsBatchDataEntity(OTXBatchDataEntity[HlabelClsDataEntity]):
 
 
 @dataclass
-class HlabelClsBatchPredEntity(HlabelClsBatchDataEntity, OTXBatchPredEntity):
+class HlabelClsBatchPredEntity(OTXBatchPredEntity, HlabelClsBatchDataEntity):
     """Data entity to represent model output predictions for H-label classification task."""
-
-
-@dataclass
-class HlabelClsBatchPredEntityWithXAI(HlabelClsBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for H-label classification task with explanations."""

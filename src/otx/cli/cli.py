@@ -20,7 +20,7 @@ from rich.console import Console
 from otx import OTX_LOGO, __version__
 from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
-from otx.cli.utils.jsonargparse import add_list_type_arguments, get_short_docstring, patch_update_configs
+from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
 from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
@@ -28,6 +28,8 @@ from otx.core.utils.imports import get_otx_root_path
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
+
+    from otx.core.model.base import OTXModel
 
 
 _ENGINE_AVAILABLE = True
@@ -139,7 +141,7 @@ class OTXCLI:
             "Setting this option to true will disable this behavior.",
             action="store_true",
         )
-        engine_skip = {"model", "datamodule", "optimizer", "scheduler", "work_dir"}
+        engine_skip = {"model", "datamodule", "work_dir"}
         parser.add_class_arguments(
             Engine,
             "engine",
@@ -151,14 +153,11 @@ class OTXCLI:
         # Model Settings
         from otx.core.model.base import OTXModel
 
-        model_kwargs: dict[str, Any] = {"fail_untyped": False}
-
         parser.add_subclass_arguments(
             OTXModel,
             "model",
             required=False,
-            skip={"optimizer", "scheduler"},
-            **model_kwargs,
+            fail_untyped=False,
         )
         # Datamodule Settings
         from otx.core.data.module import OTXDataModule
@@ -168,23 +167,6 @@ class OTXCLI:
             "data",
             fail_untyped=False,
             sub_configs=True,
-        )
-        # Optimizer & Scheduler Settings
-        from lightning.pytorch.cli import LRSchedulerTypeUnion, ReduceLROnPlateau
-        from torch.optim import Optimizer
-        from torch.optim.lr_scheduler import LRScheduler
-
-        add_list_type_arguments(
-            parser,
-            baseclass=(Optimizer, list[Optimizer]),
-            nested_key="optimizer",
-            skip={"params"},
-        )
-        add_list_type_arguments(
-            parser,
-            baseclass=(LRScheduler, ReduceLROnPlateau, list[LRSchedulerTypeUnion]),
-            nested_key="scheduler",
-            skip={"optimizer"},
         )
 
         parser.add_class_arguments(Workspace, "workspace")
@@ -352,7 +334,7 @@ class OTXCLI:
             self.datamodule = self.get_config_value(self.config_init, "data")
 
             # Instantiate the model and needed components
-            self.model, self.optimizer, self.scheduler = self.instantiate_model(model_config=model_config)
+            self.model = self.instantiate_model(model_config=model_config)
 
             if instantiate_engine:
                 self.engine = self.instantiate_engine()
@@ -366,14 +348,12 @@ class OTXCLI:
         engine_kwargs = self.get_config_value(self.config_init, "engine")
         return Engine(
             model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
             datamodule=self.datamodule,
             work_dir=self.workspace.work_dir,
             **engine_kwargs,
         )
 
-    def instantiate_model(self, model_config: Namespace) -> tuple:
+    def instantiate_model(self, model_config: Namespace) -> OTXModel:
         """Instantiate the model based on the subcommand.
 
         This method checks if the subcommand is one of the engine subcommands.
@@ -386,7 +366,6 @@ class OTXCLI:
             tuple: The model and optimizer and scheduler.
         """
         from otx.core.model.base import OTXModel
-        from otx.core.utils.instantiators import partial_instantiate_class
 
         skip = set()
 
@@ -406,22 +385,6 @@ class OTXCLI:
                 hlabel_info = self.datamodule.label_info
                 model_config.init_args.hlabel_info = hlabel_info
                 skip.add("hlabel_info")
-
-        optimizer_kwargs = self.get_config_value(self.config_init, "optimizer", {})
-        optimizer_kwargs = optimizer_kwargs if isinstance(optimizer_kwargs, list) else [optimizer_kwargs]
-        optimizers = partial_instantiate_class([_opt for _opt in optimizer_kwargs if _opt])
-        if optimizers:
-            # Updates the instantiated optimizer.
-            model_config.init_args.optimizer = optimizers
-            self.config_init[self.subcommand]["optimizer"] = optimizer_kwargs
-
-        scheduler_kwargs = self.get_config_value(self.config_init, "scheduler", {})
-        scheduler_kwargs = scheduler_kwargs if isinstance(scheduler_kwargs, list) else [scheduler_kwargs]
-        schedulers = partial_instantiate_class([_sch for _sch in scheduler_kwargs if _sch])
-        if schedulers:
-            # Updates the instantiated scheduler.
-            model_config.init_args.scheduler = schedulers
-            self.config_init[self.subcommand]["scheduler"] = scheduler_kwargs
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
@@ -445,7 +408,7 @@ class OTXCLI:
         # Update self.config with model
         self.config[self.subcommand].update(Namespace(model=model_config))
 
-        return model, optimizers, schedulers
+        return model
 
     def get_config_value(self, config: Namespace, key: str, default: Any = None) -> Any:  # noqa: ANN401
         """Retrieves the value of a configuration key from the given config object.
@@ -491,6 +454,7 @@ class OTXCLI:
         The configuration is saved as a YAML file in the engine's working directory.
         """
         self.config[self.subcommand].pop("workspace", None)
+        self.config[self.subcommand]["work_dir"] = str(self.workspace.work_dir.parent)
         # TODO(vinnamki): Revisit it after changing the optimizer and scheduler instantiating.
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")

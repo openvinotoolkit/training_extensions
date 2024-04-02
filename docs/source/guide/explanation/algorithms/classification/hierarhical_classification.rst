@@ -24,7 +24,7 @@ Assume, we have a label tree as below:
 
 The goal of our algorithm is to return the right branch of this tree. For example: ``Persian -> Cats -> Pets``
 
-At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
+At the training / inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
 
 Let's say, we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.
 
@@ -39,7 +39,7 @@ Dataset Format
 .. _hierarchical_dataset:
 
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
-An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_h-label>`_.
+An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/hlabel_classification>`_.
 
 .. note::
 
@@ -49,7 +49,7 @@ An example of the annotations format and dataset structure can be found in our `
 Models
 ******
 
-We use the same model templates as for Multi-class Classification. Please, refer: :ref:`Classification Models <classification_models>`.
+We use the same model recipes as for Multi-class Classification. Please, refer: :ref:`Classification Models <classification_models>`.
 
 To see which models are available for the task, the following command can be executed:
 

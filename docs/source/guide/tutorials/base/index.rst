@@ -4,15 +4,26 @@ Base Tutorials
 .. grid::
    :gutter: 1
 
-   .. grid-item-card:: Train to Export Model
+   .. grid-item-card:: Training to deployment tutorials
       :link: how_to_train/index
       :link-type: doc
       :text-align: center
 
-   .. grid-item-card:: Explain Model
+      Learn how to train a model and deploy it to use in OpenVINO™ Training Extensions.
+
+   .. grid-item-card:: XAI Tutorial
       :link: explain
       :link-type: doc
       :text-align: center
+
+      Learn how to explain a model using OpenVINO™ Training Extensions.
+
+   .. grid-item-card:: Export and demo tutorial
+      :link: export
+      :link-type: doc
+      :text-align: center
+
+      Learn how to export a model using OpenVINO™ Training Extensions and use it in self-contained demo.
 
 .. toctree::
    :maxdepth: 2
@@ -20,3 +31,4 @@ Base Tutorials
 
    how_to_train/index
    explain
+   export

@@ -44,6 +44,7 @@ class TrainerArgumentsCache:
 
     def __init__(self, **kwargs) -> None:
         self._cached_args = {**kwargs}
+        self.is_trainer_args_identical = False
 
     def update(self, **kwargs) -> None:
         """Replace cached arguments with arguments retrieved from the model."""
@@ -65,7 +66,9 @@ class TrainerArgumentsCache:
         Returns:
             bool: True if any of the cached arguments need to be updated, False otherwise.
         """
-        return any(key in self._cached_args and self._cached_args[key] != value for key, value in kwargs.items())
+        return not self.is_trainer_args_identical or any(
+            key in self._cached_args and self._cached_args[key] != value for key, value in kwargs.items()
+        )
 
     @property
     def args(self) -> dict[str, Any]:

@@ -12,13 +12,14 @@ from typing import TYPE_CHECKING, Any
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI
+from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import DiceCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
@@ -33,16 +34,14 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXSegmentationModel(
-    OTXModel[SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI, T_OTXTileBatchDataEntity],
-):
+class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
     """Base class for the detection models used in OTX."""
 
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = DiceCallable,
         torch_compile: bool = False,
     ):
@@ -75,7 +74,7 @@ class OTXSegmentationModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: SegBatchPredEntity | SegBatchPredEntityWithXAI,
+        preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> MetricInput:
         return [
@@ -99,8 +98,8 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = DiceCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -157,7 +156,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | SegBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
         from mmseg.structures import SegDataSample
 
         if self.training:
@@ -181,7 +180,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             hook_records = self.explain_hook.records
             explain_results = copy.deepcopy(hook_records[-len(outputs) :])
 
-            return SegBatchPredEntityWithXAI(
+            return SegBatchPredEntity(
                 batch_size=len(outputs),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -219,7 +218,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         return OTXNativeModelExporter(**self._export_parameters)
 
 
-class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBatchPredEntityWithXAI]):
+class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Semantic segmentation model compatible for OpenVINO IR inference.
 
     It can consume OpenVINO IR model path or model name from Intel OMZ repository
@@ -251,11 +250,11 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
         self,
         outputs: list[ImageResultWithSoftPrediction],
         inputs: SegBatchDataEntity,
-    ) -> SegBatchPredEntity | SegBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> SegBatchPredEntity | OTXBatchLossEntity:
         if outputs and outputs[0].saliency_map.size != 1:
             predicted_s_maps = [out.saliency_map for out in outputs]
             predicted_f_vectors = [out.feature_vector for out in outputs]
-            return SegBatchPredEntityWithXAI(
+            return SegBatchPredEntity(
                 batch_size=len(outputs),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,
@@ -275,7 +274,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity, SegBat
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: SegBatchPredEntity | SegBatchPredEntityWithXAI,
+        preds: SegBatchPredEntity,
         inputs: SegBatchDataEntity,
     ) -> MetricInput:
         return [

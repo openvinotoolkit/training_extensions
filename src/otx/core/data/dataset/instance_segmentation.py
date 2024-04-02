@@ -55,7 +55,7 @@ class OTXInstanceSegDataset(OTXDataset[InstanceSegDataEntity]):
                     gt_masks.append(polygon_to_bitmap([annotation], *img_shape)[0])
 
         # convert xywh to xyxy format
-        bboxes = np.array(gt_bboxes, dtype=np.float32)
+        bboxes = np.array(gt_bboxes, dtype=np.float32) if gt_bboxes else np.empty((0, 4))
         bboxes[:, 2:] += bboxes[:, :2]
 
         masks = np.stack(gt_masks, axis=0) if gt_masks else np.zeros((0, *img_shape), dtype=bool)

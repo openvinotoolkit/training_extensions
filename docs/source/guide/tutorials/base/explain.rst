@@ -1,5 +1,5 @@
-How to explain the model behavior
-=================================
+XAI Tutorial
+============
 
 This guide explains the model behavior, which is trained through :doc:`previous stage <how_to_train/index>`.
 It allows displaying the saliency maps, which provide the locality where the model gave an attention to predict a specific category.
@@ -21,42 +21,40 @@ created in the previous step.
   # or by this line, if you created an environment, using tox
   . venv/otx/bin/activate
 
-2. ``otx explain`` returns saliency maps (heatmaps with red colored areas of focus)
+2. ``otx explain`` command returns saliency maps, 
+which are heatmaps with red-colored areas indicating focus. Here's an example how to generate saliency maps from trained checkpoint:
 
 .. tab-set::
 
-    .. tab-item:: CLI
+    .. tab-item:: CLI (with work_dir)
 
         .. code-block:: shell
 
-            Need to update!
+            (otx) ...$ otx explain --work_dir otx-workspace \
+                                   --dump True # Wherether to save saliency map images or not
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx explain --config  src/otx/recipe/detection/atss_mobilenetv2.yaml \
+                                   --data_root data/wgisd \
+                                   --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt \
+                                   --dump True # Wherether to save saliency map images or not
 
     .. tab-item:: API
 
         .. code-block:: python
 
-            Need to update!
+            engine.explain(
+                checkpoint="<checkpoint-path>",
+                datamodule=OTXDataModule(...), # The data module to use for predictions
+                explain_config=ExplainConfig(postprocess=True),
+                dump=True # Wherether to save saliency map images or not
+              )
 
-
-3. To specify the algorithm of saliency map creation for classification, 
-we can define the ``--explain-algorithm`` parameter.
-
-- ``activationmap`` - for activation map classification algorithm 
-- ``eigencam`` -  for Eigen-Cam classification algorithm
-- ``classwisesaliencymap`` -  for Recipro-CAM classification algorithm, this is a default method
-
-For detection task, we can choose between the following methods:
-
-- ``activationmap`` - for activation map detection algorithm
-- ``classwisesaliencymap`` - for DetClassProbabilityMap algorithm (works for single-stage detectors only)
-
-.. note::
-
-  Learn more about Explainable AI and its algorithms in :doc:`XAI explanation section <../../explanation/additional_features/xai>`
-
-
-4. As a result we will get a folder with a pair of generated 
-images for each image in ``--input``: 
+3. The generated saliency maps will appear in  ``otx-workspace/.latest/explain/saliency_maps`` folder. 
+It will contain a pair of generated images with saliency maps for each image used for the explanation process: 
 
 - saliency map - where red color means more attention of the model
 - overlay - where the saliency map is combined with the original image:
@@ -64,3 +62,70 @@ images for each image in ``--input``:
 .. image:: ../../../../utils/images/explain_wgisd.png
   :width: 600
 
+|
+
+4. To explain the exported IR model, it should be converted with additional outputs ``saliency_map`` and ``feature_map``.
+To do that we should use ``--explain True`` parameter during export.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx export ... --explain True
+            (otx) ...$ otx explain ... --checkpoint otx-workspace/20240312_052847/exported_model.xml
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.export(..., explain=True)
+            engine.explain(..., checkpoint="<xml_weights_path>")
+
+5. We can parametrize the explanation process by specifying 
+the following parameters in ``ExplainConfig``:
+
+- ``target_explain_group`` - for which target saliency maps will be generated:
+
+  - ``IMAGE`` - a single global activation map regardless of the classes that the model can detect.
+  - ``ALL`` - saliency map for each class that the model can detect.
+  - ``PREDICTIONS`` - saliency map for each predicted class.
+
+- ``postprocess``:
+
+  - ``False`` **default** - no postprocessing, low-resolution grayscale maps are returned.
+  - ``True`` - resizes and applies colormap to the saliency map.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx explain ... --explain_config.postprocess True 
+                                       --explain_config.target_explain_group PREDICTIONS
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.explain(...,
+                           explain_config=ExplainConfig(
+                             postprocess=True,
+                             target_explain_group=TargetExplainGroup.PREDICTIONS
+                           )
+              )
+
+6. The explanation algorithm is chosen automatically 
+based on the used model:
+
+- ``Recipro-CAM`` - for CNN classification models
+- ``ViT Recipro-CAM`` - for transformer-based classification models
+
+- ``DetClassProbabilityMap`` - for single-stage detector models
+- ``MaskRCNNExplainAlgo`` - for MaskRCNN instance segmentation models
+
+.. note::
+
+  Learn more about Explainable AI and its algorithms in :doc:`XAI explanation section <../../explanation/additional_features/xai>`

@@ -1,5 +1,5 @@
-Installation
-============
+:octicon:`package` Installation
+====================================
 
 **************
 Prerequisites
@@ -11,31 +11,78 @@ The current version of OpenVINO™ Training Extensions was tested in the followi
 - Python >= 3.10
 
 
-***********************************************
-Install OpenVINO™ Training Extensions for users
-***********************************************
+**********************************************************
+Install OpenVINO™ Training Extensions for users (CUDA/CPU)
+**********************************************************
 
-1. Clone the training_extensions
-repository with the following command:
+1. Install OpenVINO™ Training Extensions package:
+
+* A local source in development mode
+
+.. tab-set::
+
+    .. tab-item:: PyPI
+
+        .. code-block:: shell
+
+            pip install otx
+
+    .. tab-item:: Source
+
+        .. code-block:: shell
+
+            # Clone the training_extensions repository with the following command:
+            git clone https://github.com/openvinotoolkit/training_extensions.git
+            cd training_extensions
+
+            # Set up a virtual environment.
+            python -m venv .otx
+            source .otx/bin/activate
+
+            pip install -e .
+
+2. Install PyTorch & Requirements for training according to your system environment.
 
 .. code-block:: shell
 
-    git clone https://github.com/openvinotoolkit/training_extensions.git
-    cd training_extensions
-    git checkout develop
+    otx install -v
 
-2. Set up a
-virtual environment.
+[Optional] Refer to the `torch official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+
+.. note::
+
+    Currently, only torch==2.1.1 was fully validated. (older versions are not supported due to security issues).
+
+
+3. Once the package is installed in the virtual environment, you can use full
+OpenVINO™ Training Extensions command line functionality.
+
+*************************************************************
+Install OpenVINO™ Training Extensions for users (XPU devices)
+*************************************************************
+
+1. Follow the first two steps from above instructions
+on cloning the repository and creating a virtual environment.
+
+2. Install Intel Extensions For Pytorch (IPEX).
+Follow the `official documentation <https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.1.10%2Bxpu>`_ to install prerequisites such as OneAPI and proper drivers.
 
 .. code-block:: shell
 
-    # Create virtual env.
-    python -m venv .otx
+    python -m pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-    # Activate virtual env.
-    source .otx/bin/activate
+3. Install MMCV.
+It is required to install mmcv from source to properly build it with IPEX.
 
-3. Install OpenVINO™ Training Extensions package from either:
+.. code-block:: shell
+
+    git clone https://github.com/open-mmlab/mmcv
+    cd mmcv
+    git checkout v2.1.0
+    MMCV_WITH_OPS=1 pip install -e .
+
+4. Install OpenVINO™ Training Extensions
+package from either:
 
 * A local source in development mode
 
@@ -49,21 +96,28 @@ virtual environment.
 
     pip install otx
 
-4. Install PyTorch & Requirements for training according to your system environment.
+5. Install requirements for training
+excluding Pytorch.
 
 .. code-block:: shell
 
-    otx install -v
+    otx install -v --do-not-install-torch
 
-[Optional] Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+6. Activate OneAPI environment
+and export required IPEX system variables
 
-.. note::
+.. code-block:: shell
 
-    Currently, only torch==2.1.1 was fully validated. (older versions are not supported due to security issues).
+    source /path/to/intel/oneapi/setvars.sh
+    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30
+    export IPEX_FP32_MATH_MODE=TF32
 
-
-5. Once the package is installed in the virtual environment, you can use full
+7. Once the package is installed in the virtual environment, you can use full
 OpenVINO™ Training Extensions command line functionality.
+
+.. code-block:: shell
+
+    otx --help
 
 ****************************************************
 Install OpenVINO™ Training Extensions for developers
@@ -141,7 +195,7 @@ Troubleshooting
 1. If you have problems when you try to use ``pip install`` command,
 please update pip version by following command:
 
-.. code-block::
+.. code-block:: shell
 
     python -m pip install --upgrade pip
 
@@ -155,3 +209,10 @@ please use pip with proxy call as demonstrated by command below:
 .. code-block:: shell
 
     python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+
+4. If you're facing a problem with CLI side of the OTX, please check the help message of the command by using ``--help`` option.
+If you still want to see more ``jsonargparse``-related messages, you can set the environment variables like below.
+
+.. code-block:: shell
+
+    export JSONARGPARSE_DEBUG=1 # 0: Off, 1: On

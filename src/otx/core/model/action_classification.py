@@ -10,17 +10,14 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 
-from otx.core.data.entity.action_classification import (
-    ActionClsBatchDataEntity,
-    ActionClsBatchPredEntity,
-    ActionClsBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
@@ -38,7 +35,6 @@ class OTXActionClsModel(
     OTXModel[
         ActionClsBatchDataEntity,
         ActionClsBatchPredEntity,
-        ActionClsBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -47,8 +43,8 @@ class OTXActionClsModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -74,7 +70,7 @@ class OTXActionClsModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ActionClsBatchPredEntity | ActionClsBatchPredEntityWithXAI,
+        preds: ActionClsBatchPredEntity,
         inputs: ActionClsBatchDataEntity,
     ) -> MetricInput:
         pred = torch.tensor(preds.labels)
@@ -97,8 +93,8 @@ class MMActionCompatibleModel(OTXActionClsModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -200,7 +196,7 @@ class MMActionCompatibleModel(OTXActionClsModel):
 
 
 class OVActionClsModel(
-    OVModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity, ActionClsBatchPredEntityWithXAI],
+    OVModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity],
 ):
     """Action Classification model compatible for OpenVINO IR inference.
 
@@ -249,6 +245,25 @@ class OVActionClsModel(
             scores=pred_scores,
             labels=pred_labels,
         )
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ActionClsBatchPredEntity,
+        inputs: ActionClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
+    def transform_fn(self, data_batch: ActionClsBatchDataEntity) -> np.array:
+        """Data transform function for PTQ."""
+        np_data = self._customize_inputs(data_batch)
+        vid = np_data["inputs"][0]
+        vid = self.model.preprocess(vid)[0][self.model.image_blob_name]
+        return self.model._change_layout(vid)  # noqa: SLF001
 
     @property
     def model_adapter_parameters(self) -> dict:

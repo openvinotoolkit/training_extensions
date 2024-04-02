@@ -13,7 +13,6 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import (
     OTXBatchDataEntity,
     OTXBatchPredEntity,
-    OTXBatchPredEntityWithXAI,
     OTXDataEntity,
     OTXPredEntity,
 )
@@ -48,7 +47,7 @@ class ActionDetDataEntity(OTXDataEntity):
 
 
 @dataclass
-class ActionDetPredEntity(ActionDetDataEntity, OTXPredEntity):
+class ActionDetPredEntity(OTXPredEntity, ActionDetDataEntity):
     """Data entity to represent the action classification model's output prediction."""
 
 
@@ -89,18 +88,17 @@ class ActionDetBatchDataEntity(OTXBatchDataEntity[ActionDetDataEntity]):
 
     def pin_memory(self) -> ActionDetBatchDataEntity:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.bboxes = [tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes]
-        self.labels = [label.pin_memory() for label in self.labels]
-        self.proposals = [tv_tensors.wrap(proposal.pin_memory(), like=proposal) for proposal in self.proposals]
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                bboxes=[tv_tensors.wrap(bbox.pin_memory(), like=bbox) for bbox in self.bboxes],
+                labels=[label.pin_memory() for label in self.labels],
+                proposals=[tv_tensors.wrap(proposal.pin_memory(), like=proposal) for proposal in self.proposals],
+            )
+        )
 
 
 @dataclass
-class ActionDetBatchPredEntity(ActionDetBatchDataEntity, OTXBatchPredEntity):
+class ActionDetBatchPredEntity(OTXBatchPredEntity, ActionDetBatchDataEntity):
     """Data entity to represent model output predictions for action classification task."""
-
-
-@dataclass
-class ActionDetBatchPredEntityWithXAI(ActionDetBatchDataEntity, OTXBatchPredEntityWithXAI):
-    """Data entity to represent model output predictions for multi-class classification task with explanations."""

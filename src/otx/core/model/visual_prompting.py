@@ -25,21 +25,20 @@ import torch
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, Points, T_OTXBatchPredEntityWithXAI
+from otx.core.data.entity.base import OTXBatchLossEntity, Points
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
-    VisualPromptingBatchPredEntityWithXAI,
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingBatchPredEntity,
-    ZeroShotVisualPromptingBatchPredEntityWithXAI,
 )
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -112,13 +111,13 @@ def _inference_step(
             ]
             _target = converted_entities["target"]
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(cvt_preds["masks"], cvt_target["masks"])
 
 
-def _inference_step_for_zeroshot(
+def _inference_step_for_zero_shot(
     model: OTXZeroShotVisualPromptingModel | OVZeroShotVisualPromptingModel,
     metric: MetricCollection,
     inputs: ZeroShotVisualPromptingBatchDataEntity,
@@ -160,7 +159,7 @@ def _inference_step_for_zeroshot(
                     _preds.append(_preds[idx] if idx < len(_preds) else pad_prediction)
 
             _metric.update(preds=_preds, target=_target)
-        elif _name in ["IoU", "F1", "Dice"]:
+        elif _name in ["iou", "f1-score", "dice"]:
             # BinaryJaccardIndex, BinaryF1Score, Dice
             for cvt_preds, cvt_target in zip(converted_entities["preds"], converted_entities["target"]):
                 _metric.update(
@@ -170,20 +169,15 @@ def _inference_step_for_zeroshot(
 
 
 class OTXVisualPromptingModel(
-    OTXModel[
-        VisualPromptingBatchDataEntity,
-        VisualPromptingBatchPredEntity,
-        VisualPromptingBatchPredEntityWithXAI,
-        T_OTXTileBatchDataEntity,
-    ],
+    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
 
     def __init__(
         self,
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -269,7 +263,7 @@ class OTXVisualPromptingModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: VisualPromptingBatchPredEntity | VisualPromptingBatchPredEntityWithXAI,
+        preds: VisualPromptingBatchPredEntity,
         inputs: VisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
@@ -284,7 +278,6 @@ class OTXZeroShotVisualPromptingModel(
     OTXModel[
         ZeroShotVisualPromptingBatchDataEntity,
         ZeroShotVisualPromptingBatchPredEntity,
-        ZeroShotVisualPromptingBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -293,8 +286,8 @@ class OTXZeroShotVisualPromptingModel(
     def __init__(
         self,
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -441,11 +434,11 @@ class OTXZeroShotVisualPromptingModel(
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        preds: ZeroShotVisualPromptingBatchPredEntity,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
@@ -460,7 +453,6 @@ class OVVisualPromptingModel(
     OVModel[
         VisualPromptingBatchDataEntity,
         VisualPromptingBatchPredEntity,
-        VisualPromptingBatchPredEntityWithXAI,
     ],
 ):
     """Visual prompting model compatible for OpenVINO IR inference.
@@ -596,7 +588,7 @@ class OVVisualPromptingModel(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: VisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> VisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> VisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         masks: list[tv_tensors.Mask] = []
         scores: list[torch.Tensor] = []
@@ -789,6 +781,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reset_feat: bool = False,
         default_threshold_reference: float = 0.3,
+        is_cascade: bool = False,
     ) -> tuple[dict[str, np.ndarray], list[np.ndarray]]:
         """`Learn` for reference features."""
         if reset_feat or self.reference_feats is None:
@@ -815,7 +808,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                     if "point_coords" in inputs_decoder:
                         # bboxes and points
                         inputs_decoder.update(image_embeddings)
-                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=False)
+                        prediction = self._predict_masks(inputs_decoder, original_shape, is_cascade=is_cascade)
                         masks = prediction["upscaled_masks"]
                     else:
                         log.warning("annotation and polygon will be supported.")
@@ -847,7 +840,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         inputs: ZeroShotVisualPromptingBatchDataEntity,
         reference_feats: np.ndarray,
         used_indices: np.ndarray,
-        is_cascade: bool = False,
+        is_cascade: bool = True,
         threshold: float = 0.0,
         num_bg_points: int = 1,
         default_threshold_target: float = 0.65,
@@ -919,7 +912,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     def forward(  # type: ignore[override]
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
         fn = self.learn if self.training else self.infer
@@ -990,7 +983,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | T_OTXBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
             return outputs
@@ -1087,9 +1080,10 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
                 has_mask_input = self.has_mask_inputs[1]
                 y, x = np.nonzero(masks)
                 box_coords = self.model["decoder"].apply_coords(
-                    np.array([[[x.min(), y.min()], [x.max(), y.max()]]], dtype=np.float32),
-                    original_size[0],
+                    np.array([[x.min(), y.min()], [x.max(), y.max()]], dtype=np.float32),
+                    original_size,
                 )
+                box_coords = np.expand_dims(box_coords, axis=0)
                 inputs.update(
                     {
                         "point_coords": np.concatenate((inputs["point_coords"], box_coords), axis=1),
@@ -1419,11 +1413,11 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         Raises:
             TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
         """
-        _inference_step_for_zeroshot(model=self, metric=self.metric, inputs=inputs)
+        _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ZeroShotVisualPromptingBatchPredEntity | ZeroShotVisualPromptingBatchPredEntityWithXAI,
+        preds: ZeroShotVisualPromptingBatchPredEntity,
         inputs: ZeroShotVisualPromptingBatchDataEntity,
     ) -> MetricInput:
         """Convert the prediction entity to the format required by the compute metric function."""
