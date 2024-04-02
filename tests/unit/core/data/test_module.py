@@ -33,11 +33,23 @@ class TestModule:
         mock.data_root = "."
         mock.mem_cache_size = "1GB"
         mock.train_subset = MagicMock(spec=SubsetConfig)
+        mock.train_subset.sampler = DictConfig(
+            {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 4}},
+        )
         mock.train_subset.num_workers = 0
+        mock.train_subset.batch_size = 4
         mock.val_subset = MagicMock(spec=SubsetConfig)
+        mock.val_subset.sampler = DictConfig(
+            {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
+        )
         mock.val_subset.num_workers = 0
+        mock.val_subset.batch_size = 3
         mock.test_subset = MagicMock(spec=SubsetConfig)
+        mock.test_subset.sampler = DictConfig(
+            {"class_path": "torch.utils.data.RandomSampler", "init_args": {"num_samples": 3}},
+        )
         mock.test_subset.num_workers = 0
+        mock.test_subset.batch_size = 1
         mock.tile_config = MagicMock(spec=TileConfig)
         mock.tile_config.enable_tiler = False
 
@@ -53,6 +65,9 @@ class TestModule:
             OTXTaskType.H_LABEL_CLS,
             OTXTaskType.DETECTION,
             OTXTaskType.SEMANTIC_SEGMENTATION,
+            OTXTaskType.INSTANCE_SEGMENTATION,
+            OTXTaskType.ACTION_CLASSIFICATION,
+            OTXTaskType.ACTION_DETECTION,
         ],
     )
     def test_init(
@@ -74,8 +89,12 @@ class TestModule:
 
         mocker.patch("otx.core.data.module.pre_filtering", side_effect=mock_data_filtering)
 
-        OTXDataModule(task=task, config=fxt_config)
+        module = OTXDataModule(task=task, config=fxt_config)
 
+        assert module.train_dataloader().batch_size == 4
+        assert module.val_dataloader().batch_size == 3
+        assert module.test_dataloader().batch_size == 1
+        assert module.predict_dataloader().batch_size == 1
         assert mock_otx_dataset_factory.create.call_count == 3
 
     @pytest.fixture()

@@ -43,8 +43,6 @@ def test_otx_e2e(
     """
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -401,13 +399,11 @@ def test_otx_ov_test(
         "anomaly_classification",
         "anomaly_detection",
         "anomaly_segmentation",
+        "action_classification",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    if task in ["action_classification"]:
-        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
     pytest.xfail("See ticket no. 135955")
 
@@ -516,8 +512,6 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
 

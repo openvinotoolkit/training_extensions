@@ -31,19 +31,18 @@ def pre_filtering(dataset: DmDataset, data_format: str, unannotated_items_ratio:
     used_background_items = set()
     msg = f"There are empty annotation items in train set, Of these, only {unannotated_items_ratio*100}% are used."
     warnings.warn(msg, stacklevel=2)
+    dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
+    dataset = remove_unused_labels(dataset, data_format)
     if unannotated_items_ratio > 0:
         empty_items = [item.id for item in dataset if item.subset == "train" and len(item.annotations) == 0]
         used_background_items = set(sample(empty_items, int(len(empty_items) * unannotated_items_ratio)))
 
-    dataset = DmDataset.filter(
+    return DmDataset.filter(
         dataset,
         lambda item: not (
             item.subset == "train" and len(item.annotations) == 0 and item.id not in used_background_items
         ),
     )
-    dataset = DmDataset.filter(dataset, is_valid_annot, filter_annotations=True)
-
-    return remove_unused_labels(dataset, data_format)
 
 
 def is_valid_annot(item: DatasetItem, annotation: Annotation) -> bool:  # noqa: ARG001

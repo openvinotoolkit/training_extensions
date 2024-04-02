@@ -80,23 +80,26 @@ class Engine:
     Example:
         The following examples show how to use the Engine class.
 
-        Auto-Configuration with data_root
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ... )
+        Auto-Configuration with data_root::
 
-        Create Engine with Custom OTXModel
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ...     model=OTXModel(...),
-        ...     checkpoint=<checkpoint/path>,
-        ... )
+            engine = Engine(
+                data_root=<dataset/path>,
+            )
 
-        Create Engine with Custom OTXDataModule
-        >>> engine = Engine(
-        ...     model = OTXModel(...),
-        ...     datamodule = OTXDataModule(...),
-        ... )
+        Create Engine with Custom OTXModel::
+
+            engine = Engine(
+                data_root=<dataset/path>,
+                model=OTXModel(...),
+                checkpoint=<checkpoint/path>,
+            )
+
+        Create Engine with Custom OTXDataModule::
+
+            engine = Engine(
+                model = OTXModel(...),
+                datamodule = OTXDataModule(...),
+            )
     """
 
     _EXPORTED_MODEL_BASE_NAME: ClassVar[str] = "exported_model"
@@ -349,6 +352,10 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+            if self.device.accelerator != "cpu":
+                msg = "IR model supports inference only on CPU device. The device is changed automatic."
+                warn(msg, stacklevel=1)
+                self.device = DeviceType.cpu  # type: ignore[assignment]
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -548,6 +555,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
+
         CLI Usage:
             To optimize a model, run
                 ```python
@@ -757,17 +765,17 @@ class Engine:
             ...     data_root=<dataset/path>,
             ... )
 
-            If you want to override configuration from default config
-            >>> overriding = {
-            ...     "data.config.train_subset.batch_size": 2,
-            ...     "data.config.test_subset.subset_name": "TESTING",
-            ... }
-            >>> engine = Engine(
-            ...     model_name="atss_mobilenetv2",
-            ...     task="DETECTION",
-            ...     data_root=<dataset/path>,
-            ...     **overriding,
-            ... )
+            If you want to override configuration from default config:
+                >>> overriding = {
+                ...     "data.config.train_subset.batch_size": 2,
+                ...     "data.config.test_subset.subset_name": "TESTING",
+                ... }
+                >>> engine = Engine(
+                ...     model_name="atss_mobilenetv2",
+                ...     task="DETECTION",
+                ...     data_root=<dataset/path>,
+                ...     **overriding,
+                ... )
         """
         default_config = DEFAULT_CONFIG_PER_TASK.get(task)
         model_path = str(default_config).split("/")
@@ -802,6 +810,7 @@ class Engine:
     def work_dir(self, work_dir: PathLike) -> None:
         self._work_dir = work_dir
         self._cache.update(default_root_dir=work_dir)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def device(self) -> DeviceConfig:
@@ -812,6 +821,7 @@ class Engine:
     def device(self, device: DeviceType) -> None:
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def trainer(self) -> Trainer:
@@ -833,6 +843,8 @@ class Engine:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
+            self._cache.is_trainer_args_identical = True
+            self._trainer.task = self.task
             self.work_dir = self._trainer.default_root_dir
 
     @property
