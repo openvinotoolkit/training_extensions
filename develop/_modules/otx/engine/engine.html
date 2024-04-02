@@ -527,6 +527,8 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="n">best_checkpoint_symlink</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">work_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;best_checkpoint.ckpt&quot;</span>
+        <span class="k">if</span> <span class="n">best_checkpoint_symlink</span><span class="o">.</span><span class="n">is_symlink</span><span class="p">():</span>
+            <span class="n">best_checkpoint_symlink</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
         <span class="n">best_checkpoint_symlink</span><span class="o">.</span><span class="n">symlink_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">callback_metrics</span></div>

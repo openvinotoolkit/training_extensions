@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.cli &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>otx.tools.converter &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.cli';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.tools.converter';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.cli.cli" href="otx.cli.cli.html" />
-    <link rel="prev" title="otx.algo.visual_prompting.decoders" href="otx.algo.visual_prompting.decoders.html" />
+    <link rel="next" title="otx.tools.translate_mmrecipe" href="otx.tools.translate_mmrecipe.html" />
+    <link rel="prev" title="otx.tools" href="otx.tools.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -305,7 +305,7 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.algo.visual_prompting.html">otx.algo.visual_prompting</a></li>
 </ul>
 </li>
-<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">otx.cli</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.cli.html">otx.cli</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="otx.cli.cli.html">otx.cli.cli</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.cli.install.html">otx.cli.install</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.cli.utils.html">otx.cli.utils</a></li>
@@ -326,8 +326,8 @@
 <li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="otx.tools.converter.html">otx.tools.converter</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.tools.converter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
@@ -373,38 +373,83 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.cli">
-<span id="otx-cli"></span><h1>otx.cli<a class="headerlink" href="#module-otx.cli" title="Link to this heading">#</a></h1>
-<p>CLI entrypoints.</p>
-<p class="rubric">Functions</p>
+  <section id="module-otx.tools.converter">
+<span id="otx-tools-converter"></span><h1>otx.tools.converter<a class="headerlink" href="#module-otx.tools.converter" title="Link to this heading">#</a></h1>
+<p>Converter for v1 config.</p>
+<p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.cli.main" title="otx.cli.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">main</span></code></a>()</p></td>
-<td><p>Entry point for OTX CLI.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.tools.converter.ConfigConverter" title="otx.tools.converter.ConfigConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigConverter</span></code></a>()</p></td>
+<td><p>Convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.cli.main">
-<span class="sig-prename descclassname"><span class="pre">otx.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/cli.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.main" title="Link to this definition">#</a></dt>
-<dd><p>Entry point for OTX CLI.</p>
-<p>This function is a single entry point for all OTX CLI related operations:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.tools.converter.</span></span><span class="sig-name descname"><span class="pre">ConfigConverter</span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p>
+<p>This class is used to convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p>
+<p class="rubric">Example</p>
+<p>The following examples show how to use the Converter class.
+We expect a config file with ModelTemplate information in json form.</p>
+<p>Convert template.json to dictionary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">converter</span> <span class="o">=</span> <span class="n">ConfigConverter</span><span class="p">()</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;template.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Instantiate an object from the configuration dictionary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="p">,</span> <span class="n">train_kwargs</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+    <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
+    <span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;tests/assets/car_tree_bug&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Train the model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">**</span><span class="n">train_kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter.convert">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter.convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter.convert" title="Link to this definition">#</a></dt>
+<dd><p>Convert a configuration file to a default configuration dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path to the configuration file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The default configuration dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<p class="rubric">Modules</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.cli.cli.html#module-otx.cli.cli" title="otx.cli.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.cli.cli</span></code></a></p></td>
-<td><p>CLI entrypoints.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="otx.cli.install.html#module-otx.cli.install" title="otx.cli.install"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.cli.install</span></code></a></p></td>
-<td><p>OTX CLI Installation.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="otx.cli.utils.html#module-otx.cli.utils" title="otx.cli.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.cli.utils</span></code></a></p></td>
-<td><p>CLI Utils.</p></td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter.instantiate">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instantiate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.12)"><span class="pre">PathLike</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.12)"><span class="pre">PathLike</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="otx.engine.html#otx.engine.Engine" title="otx.engine.engine.Engine"><span class="pre">Engine</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter.instantiate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter.instantiate" title="Link to this definition">#</a></dt>
+<dd><p>Instantiate an object from the configuration dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – The configuration dictionary.</p></li>
+<li><p><strong>work_dir</strong> (<em>PathLike</em>) – Path to the working directory.</p></li>
+<li><p><strong>data_root</strong> (<em>PathLike</em>) – The root directory for data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the engine and the train kwargs dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -415,17 +460,17 @@
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.algo.visual_prompting.decoders.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.tools.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.algo.visual_prompting.decoders</p>
+          <p class="prev-next-title">otx.tools</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.cli.cli.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.tools.translate_mmrecipe.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.cli.cli</p>
+      <p class="prev-next-title">otx.tools.translate_mmrecipe</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -446,13 +491,33 @@
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.cli.main">
+  <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter">
    <code class="docutils literal notranslate">
     <span class="pre">
-     main()
+     ConfigConverter
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter.convert">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ConfigConverter.convert()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter.instantiate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ConfigConverter.instantiate()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -471,7 +536,7 @@
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.cli.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.tools.converter.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

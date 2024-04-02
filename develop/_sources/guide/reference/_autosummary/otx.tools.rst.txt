@@ -27,5 +27,6 @@ otx.tools
    :toctree:
    :recursive:
 
+   otx.tools.converter
    otx.tools.translate_mmrecipe
 
