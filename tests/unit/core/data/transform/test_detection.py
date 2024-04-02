@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of detection data transform."""
 
-import torch
-import ast
-from torchvision import tv_tensors
+from __future__ import annotations
 
-from otx.core.data.transform.detection import MinIoURandomCrop
-from torchvision.ops.boxes import box_iou
 import pytest
+import torch
+from otx.core.data.transform.detection import MinIoURandomCrop
+from torchvision import tv_tensors
+from torchvision.ops.boxes import box_iou
 
 
 class TestMinIoURandomCrop:
@@ -27,7 +27,6 @@ class TestMinIoURandomCrop:
 
         n_samples = 5
         for _ in range(n_samples):
-
             params = transform._get_params(sample)
 
             if options == [2.0]:
