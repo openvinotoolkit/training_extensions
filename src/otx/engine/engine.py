@@ -286,6 +286,8 @@ class Engine:
             raise TypeError(msg)
 
         best_checkpoint_symlink = Path(self.work_dir) / "best_checkpoint.ckpt"
+        if best_checkpoint_symlink.is_symlink():
+            best_checkpoint_symlink.unlink()
         best_checkpoint_symlink.symlink_to(self.checkpoint)
 
         return self.trainer.callback_metrics
