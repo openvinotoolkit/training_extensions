@@ -181,7 +181,7 @@ class OTXModelExporter:
                 work_dir / "requirements.txt",
                 Path("python") / "requirements.txt",
             )
-            arch.write(work_dir.parents[5] / "LICENSE", Path("python") / "LICENSE")
+            arch.write(work_dir / "LICENSE", Path("python") / "LICENSE")
             arch.write(work_dir / "demo.py", Path("python") / "demo.py")
             arch.write(work_dir / "README.md", Path("./") / "README.md")
             arch.write(work_dir / "setup.py", Path("python") / "setup.py")
