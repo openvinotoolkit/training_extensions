@@ -20,7 +20,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
-from otx.core.model.utils.mmpretrain import ForwardExplainMixInForMMPretrain
+from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class ForwardExplainMixInForDeit(ForwardExplainMixInForMMPretrain):
+class ForwardExplainMixInForDeit(ExplainableMixInMMPretrainModel):
     """Deit model which can attach a XAI hook."""
 
     @torch.no_grad()

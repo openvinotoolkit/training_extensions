@@ -15,7 +15,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
-from otx.core.model.utils.mmpretrain import ForwardExplainMixInForMMPretrain
+from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class EfficientNetV2ForHLabelCls(ForwardExplainMixInForMMPretrain, MMPretrainHlabelClsModel):
+class EfficientNetV2ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlabelClsModel):
     """EfficientNetV2 Model for hierarchical label classification task."""
 
     def __init__(
@@ -52,7 +52,7 @@ class EfficientNetV2ForHLabelCls(ForwardExplainMixInForMMPretrain, MMPretrainHla
         return OTXv1Helper.load_cls_effnet_v2_ckpt(state_dict, "hlabel", add_prefix)
 
 
-class EfficientNetV2ForMulticlassCls(ForwardExplainMixInForMMPretrain, MMPretrainMulticlassClsModel):
+class EfficientNetV2ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMulticlassClsModel):
     """EfficientNetV2 Model for multi-label classification task."""
 
     def __init__(
@@ -80,7 +80,7 @@ class EfficientNetV2ForMulticlassCls(ForwardExplainMixInForMMPretrain, MMPretrai
         return OTXv1Helper.load_cls_effnet_v2_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class EfficientNetV2ForMultilabelCls(ForwardExplainMixInForMMPretrain, MMPretrainMultilabelClsModel):
+class EfficientNetV2ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMultilabelClsModel):
     """EfficientNetV2 Model for multi-class classification task."""
 
     def __init__(

@@ -56,12 +56,12 @@ def create_model(config: DictConfig, load_from: str | None = None) -> tuple[nn.M
     return build_mm_model(config, MODELS, load_from), classification_layers
 
 
-class ForwardExplainMixInForMMPretrain(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEntity]):
+class ExplainableMixInMMPretrainModel(Generic[T_OTXBatchPredEntity, T_OTXBatchDataEntity]):
     """Mix-in class to support XAI feature for MM Pretrained models commonly.
 
     This is a mix-in class that cannot be used as standalone. The correct usage of it will be like
     ```python
-    class MobileNetV3ForMulticlassCls(ForwardExplainMixInForMMPretrain, MMPretrainMulticlassClsModel):
+    class MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMulticlassClsModel):
     ```
     """
 
