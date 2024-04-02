@@ -1,17 +1,22 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from onnx import ModelProto
 from onnxconverter_common import float16
-from otx.core.exporter.base import OTXExportFormatType, OTXModelExporter, OTXPrecisionType, ZipFile
+from otx.core.exporter.base import OTXExportFormatType, OTXModelExporter, OTXPrecisionType
 
 
 class MockModelExporter(OTXModelExporter):
     def to_openvino(self, model, output_dir, base_model_name, precision):
-        return output_dir / f"{base_model_name}.xml"
+        ov_file = output_dir / f"{base_model_name}.xml"
+        (output_dir / f"{base_model_name}.bin").touch()
+        ov_file.touch()
+        return ov_file
 
     def to_onnx(self, model, output_dir, base_model_name, precision):
-        return output_dir / f"{base_model_name}.onnx"
+        onnx_file = output_dir / f"{base_model_name}.onnx"
+        onnx_file.touch()
+        return onnx_file
 
 
 @pytest.fixture()
@@ -21,37 +26,41 @@ def mock_model():
 
 @pytest.fixture()
 def exporter():
-    ZipFile.write = MagicMock()
     return MockModelExporter(input_size=(224, 224), mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
 
 
+@pytest.fixture()
+def output_dir(tmp_path):
+    return tmp_path
+
+
 class TestOTXModelExporter:
-    def test_to_openvino(self, mock_model, exporter, tmp_path):
-        output_dir = tmp_path
+    def test_to_openvino(self, mock_model, exporter, output_dir):
         base_model_name = "test_model"
         precision = OTXPrecisionType.FP32
         result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.OPENVINO, precision)
         assert result == output_dir / f"{base_model_name}.xml"
+        assert (output_dir / f"{base_model_name}.bin").exists()
+        assert result.exists()
 
-    def test_to_onnx(self, mock_model, exporter, tmp_path):
-        output_dir = tmp_path
+    def test_to_onnx(self, mock_model, exporter, output_dir):
         base_model_name = "test_model"
         precision = OTXPrecisionType.FP32
         result = exporter.export(mock_model, output_dir, base_model_name, OTXExportFormatType.ONNX, precision)
         assert result == output_dir / f"{base_model_name}.onnx"
+        assert result.exists()
 
-    def test_export_unsupported_format_raises(self, exporter, mock_model, tmp_path):
+    def test_export_unsupported_format_raises(self, exporter, mock_model, output_dir):
         export_format = "unsupported_format"
         with pytest.raises(ValueError, match=f"Unsupported export format: {export_format}"):
-            exporter.export(mock_model, tmp_path, export_format=export_format)
+            exporter.export(mock_model, output_dir, export_format=export_format)
 
-    def test_to_exportable_code(self, mock_model, exporter, tmp_path):
+    def test_to_exportable_code(self, mock_model, exporter, output_dir):
         base_model_name = "test_model"
-        output_dir = tmp_path / "exportable_code"
+        output_dir = output_dir / "exportable_code"
         precision = OTXPrecisionType.FP32
 
-        with patch("builtins.open", new_callable=MagicMock) and patch("zipfile.ZipFile"):
-            result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
+        result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
 
         assert result == output_dir / "exportable_code.zip"
 
