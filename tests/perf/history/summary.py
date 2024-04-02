@@ -182,62 +182,94 @@ all_data = load_all(Path(__file__).parent, normalize=True)
 
 
 TASK_METRIC_MAP = {
-    "anomaly_classification": "test/f1-score",
-    "anomaly_detection": "test/f1-score",
-    "anomaly_segmentation": "test/f1-score",
-    "classification/multi_class_cls": "test/accuracy",
-    "classification/multi_label_cls": "test/accuracy",
-    "classification/h_label_cls": "test/accuracy",
-    "detection": "test/f1-score",
-    "instance_segmentation": "test/f1-score",
-    "semantic_segmentation": "test/dice",
-    "visual_prompting": "test/dice",
-    "zero_shot_visual_prompting": "test/dice",
+    "anomaly_classification": "f1-score",
+    "anomaly_detection": "f1-score",
+    "anomaly_segmentation": "f1-score",
+    "classification/multi_class_cls": "accuracy",
+    "classification/multi_label_cls": "accuracy",
+    "classification/h_label_cls": "accuracy",
+    "detection": "f1-score",
+    "instance_segmentation": "f1-score",
+    "semantic_segmentation": "dice",
+    "visual_prompting": "dice",
+    "zero_shot_visual_prompting": "dice",
 }
+
+
+def summarize(raw_data: pd.DataFrame, metrics: list[str]|None = None) -> pd.DataFrame:
+
+    if not metrics:
+        # Add all numeric metrics
+        metrics = raw_data.select_dtypes(include=["number"]).columns.to_list()
+
+    # Aggregate base
+    data = raw_data.pivot_table(index=["task", "model", "otx_version"], columns=["data_group"], values=metrics, aggfunc=["mean", "std"])
+    data.columns = data.columns.rename(["stat", "metric", "data_group"])
+    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
+    data00 = data
+
+    # Aggregate by data_group
+    data = raw_data.pivot_table(index=["task", "model", "otx_version"], values=metrics, aggfunc=["mean", "std"])
+    columns = data.columns.to_frame()
+    columns["data_group"] = "all"
+    data.columns = pd.MultiIndex.from_frame(columns)
+    data.columns = data.columns.rename(["stat", "metric", "data_group"])
+    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
+    data01 = data
+
+    # Aggregate by model
+    data = raw_data.pivot_table(index=["task", "otx_version"], columns=["data_group"], values=metrics, aggfunc=["mean", "std"])
+    indices = data.index.to_frame()
+    indices["model"] = "all"
+    data.index = pd.MultiIndex.from_frame(indices)
+    data = data.reorder_levels(["task", "model", "otx_version"], axis=0)
+    data.columns = data.columns.rename(["stat", "metric", "data_group"])
+    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
+    data10 = data
+
+    # Aggregate by data_group & model
+    data = raw_data.pivot_table(index=["task", "otx_version"], values=metrics, aggfunc=["mean", "std"])
+    indices = data.index.to_frame()
+    indices["model"] = "all"
+    data.index = pd.MultiIndex.from_frame(indices)
+    data = data.reorder_levels(["task", "model", "otx_version"], axis=0)
+    columns = data.columns.to_frame()
+    columns["data_group"] = "all"
+    data.columns = pd.MultiIndex.from_frame(columns)
+    data.columns = data.columns.rename(["stat", "metric", "data_group"])
+    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
+    data11 = data
+
+    # Merge all
+    data0 = pd.concat([data00, data01], axis=1)
+    data1 = pd.concat([data10, data11], axis=1)
+    data = pd.concat([data0, data1], axis=0)
+    data = data.sort_index(axis=0).sort_index(axis=1)
+    data = data.dropna(axis=1, how="all").fillna("")
+    # data = data.style.set_sticky(axis="index")
+
+    return data
 
 
 def summarize_table(task: str):
     """Summarize benchmark histoy table by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
-        f"{score_metric}",
+        f"test/{score_metric}",
         "train/e2e_time",
-        # "export/iter_time",
     ]
-    column_order = [
-        (f"{score_metric}", "all"),
-        (f"{score_metric}", "small"),
-        (f"{score_metric}", "medium"),
-        (f"{score_metric}", "large"),
-        ("train/e2e_time", "all"),
-        ("train/e2e_time", "small"),
-        ("train/e2e_time", "medium"),
-        ("train/e2e_time", "large"),
-        # ("export/iter_time", "all"),
-        # ("export/iter_time", "small"),
-        # ("export/iter_time", "medium"),
-        # ("export/iter_time", "large"),
-    ]
-    data = all_data.query(f"task == '{task}'")
-    #data = data.pivot_table(index=["model", "otx_version"], columns=["data_group", "data"], values=metrics, aggfunc="mean")
-    data = data.pivot_table(index=["model", "otx_version"], columns=["data_group"], values=metrics, aggfunc=["mean", "std"])
-    # data = data.style.set_sticky(axis="index")
-    # data = data.reindex(column_order, axis=1)
-    data.columns = data.columns.rename(["stat", "metric", "data_group"])
-    data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
-    data = data.sort_index(axis=1)
-    return data.fillna("")
+    raw_data = all_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+    return summarize(raw_data, metrics)
 
 
 def summarize_graph(task: str):
     """Summarize benchmark histoy graph by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
-        f"{score_metric}",
+        f"test/{score_metric}",
         "train/e2e_time",
-        # "export/iter_time",
     ]
-    data = all_data.query(f"task == '{task}'")
+    data = all_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
     graphs = []
     for metric in metrics:
         df = data.pivot_table(index=["otx_version"], columns=["model"], values=metric, aggfunc="mean")
