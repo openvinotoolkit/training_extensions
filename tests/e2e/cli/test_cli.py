@@ -254,7 +254,7 @@ def test_otx_e2e_cli(
     pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
-def test_otx_explain_e2e(
+def test_otx_explain_e2e_cli(
     recipe: str,
     tmp_path: Path,
     fxt_accelerator: str,
@@ -370,7 +370,7 @@ def test_otx_explain_e2e(
     "ov_recipe",
     pytest.RECIPE_OV_LIST,
 )
-def test_otx_ov_test(
+def test_otx_ov_test_cli(
     ov_recipe: str,
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,
@@ -436,7 +436,7 @@ def test_otx_ov_test(
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
-def test_otx_hpo_e2e(
+def test_otx_hpo_e2e_cli(
     task: str,
     tmp_path: Path,
     fxt_accelerator: str,

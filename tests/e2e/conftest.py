@@ -117,9 +117,9 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
         "zero_shot_visual_prompting": Path(
             fxt_ci_data_root / "zero_shot_visual_prompting/coco_car_person_medium_datumaro",
         ),
-        "anomaly_classification": Path(fxt_ci_data_root / "anomaly/bottle_small/1"),
-        "anomaly_detection": Path(fxt_ci_data_root / "anomaly/hazelnut_large"),
-        "anomaly_segmentation": Path(fxt_ci_data_root / "anomaly/hazelnut_large"),
+        "anomaly_classification": Path(fxt_ci_data_root / "anomaly/mvtec/bottle_small/1"),
+        "anomaly_detection": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
+        "anomaly_segmentation": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
     }
 
 
@@ -139,7 +139,10 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [],
+        "zero_shot_visual_prompting": [
+            "--data.config.data_format",
+            "datumaro",
+        ],
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],
