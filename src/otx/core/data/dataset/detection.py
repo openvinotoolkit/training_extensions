@@ -49,11 +49,18 @@ class OTXDetectionDataset(OTXDataset[DetDataEntity]):
                 bboxes,
                 format=tv_tensors.BoundingBoxFormat.XYXY,
                 canvas_size=img_shape,
-            ),
+            ) if self.dm_subset.name == "train" else torch.as_tensor(bboxes), # to avoid resizing bounding boxes when validation and testing
             labels=torch.as_tensor([ann.label for ann in bbox_anns]),
         )
 
-        return self._apply_transforms(entity)
+        transformed_entity = self._apply_transforms(entity)
+        if self.dm_subset.name != "train":
+            transformed_entity.bboxes = tv_tensors.BoundingBoxes(
+                entity.bboxes,
+                format=tv_tensors.BoundingBoxFormat.XYXY,
+                canvas_size=entity.img_info.ori_shape,
+            )
+        return transformed_entity
 
     @property
     def collate_fn(self) -> Callable:
