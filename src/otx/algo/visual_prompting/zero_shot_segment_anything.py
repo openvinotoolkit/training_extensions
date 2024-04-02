@@ -30,6 +30,7 @@ from otx.core.data.entity.visual_prompting import (
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.visual_prompting import OTXZeroShotVisualPromptingModel
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     import numpy as np
@@ -627,8 +628,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         num_classes: int = 0,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
         root_reference_info: Path | str = "vpm_zsl_reference_infos",
@@ -862,12 +863,13 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
 
     def transforms(self, entity: ZeroShotVisualPromptingBatchDataEntity) -> ZeroShotVisualPromptingBatchDataEntity:
         """Transforms for ZeroShotVisualPromptingBatchDataEntity."""
-        entity.images = [self.preprocess(self.apply_image(image)) for image in entity.images]
-        entity.prompts = [
-            self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
-            for prompt, info in zip(entity.prompts, entity.imgs_info)
-        ]
-        return entity
+        return entity.wrap(
+            images=[self.preprocess(self.apply_image(image)) for image in entity.images],
+            prompts=[
+                self.apply_prompts(prompt, info.ori_shape, self.model.image_size)
+                for prompt, info in zip(entity.prompts, entity.imgs_info)
+            ],
+        )
 
     def initialize_reference_info(self) -> None:
         """Initialize reference information."""

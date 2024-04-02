@@ -65,19 +65,23 @@ class AnomalySegmentationDataBatch(OTXBatchDataEntity):
 
     def pin_memory(self) -> AnomalySegmentationDataBatch:
         """Pin memory for member tensor variables."""
-        super().pin_memory()
-        self.labels = [label.pin_memory() for label in self.labels]
-        self.masks = self.masks.pin_memory()
-        return self
+        return (
+            super()
+            .pin_memory()
+            .wrap(
+                labels=[label.pin_memory() for label in self.labels],
+                masks=self.masks.pin_memory(),
+            )
+        )
 
 
 @dataclass
-class AnomalySegmentationPrediction(AnomalySegmentationDataItem, OTXPredEntity):
+class AnomalySegmentationPrediction(OTXPredEntity, AnomalySegmentationDataItem):
     """Anomaly Segmentation Prediction item."""
 
 
-@dataclass
-class AnomalySegmentationBatchPrediction(AnomalySegmentationDataBatch, OTXBatchPredEntity):
+@dataclass(kw_only=True)
+class AnomalySegmentationBatchPrediction(OTXBatchPredEntity, AnomalySegmentationDataBatch):
     """Anomaly classification batch prediction."""
 
     anomaly_maps: torch.Tensor

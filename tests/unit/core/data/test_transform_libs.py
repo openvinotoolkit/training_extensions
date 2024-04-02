@@ -10,6 +10,9 @@ import torch
 from lightning.pytorch.cli import instantiate_class
 from omegaconf import OmegaConf
 from otx.core.config.data import SubsetConfig
+from otx.core.data.dataset.action_classification import OTXActionClsDataset
+from otx.core.data.dataset.classification import HLabelInfo
+from otx.core.data.dataset.instance_segmentation import OTXInstanceSegDataset
 from otx.core.data.entity.base import Points
 from otx.core.data.transform_libs.torchvision import (
     PadtoSquare,
@@ -157,19 +160,28 @@ class TestTorchVisionTransformLib:
 
     def test_transform(
         self,
+        mocker,
         fxt_config,
         fxt_dataset_and_data_entity_cls,
         fxt_mock_dm_subset,
+        fxt_mock_hlabelinfo,
     ) -> None:
         transform = TorchVisionTransformLib.generate(fxt_config)
         assert isinstance(transform, v2.Compose)
 
-        dataset_cls, data_entity_cls = fxt_dataset_and_data_entity_cls
+        dataset_cls, data_entity_cls, kwargs = fxt_dataset_and_data_entity_cls
+        if dataset_cls in [OTXInstanceSegDataset, OTXActionClsDataset]:
+            pytest.skip(
+                "Instance segmentation, and Action classification task are not suitible for torchvision transform",
+            )
+        mocker.patch.object(HLabelInfo, "from_dm_label_groups", return_value=fxt_mock_hlabelinfo)
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=transform,
             mem_cache_img_max_size=None,
+            **kwargs,
         )
+        dataset.num_classes = 1
 
         item = dataset[0]
         assert isinstance(item, data_entity_cls)
@@ -180,21 +192,30 @@ class TestTorchVisionTransformLib:
 
     def test_image_info(
         self,
+        mocker,
         fxt_config,
         fxt_dataset_and_data_entity_cls,
         fxt_mock_dm_subset,
         fxt_image_color_channel,
+        fxt_mock_hlabelinfo,
     ) -> None:
         transform = TorchVisionTransformLib.generate(fxt_config)
         assert isinstance(transform, v2.Compose)
 
-        dataset_cls, data_entity_cls = fxt_dataset_and_data_entity_cls
+        dataset_cls, data_entity_cls, kwargs = fxt_dataset_and_data_entity_cls
+        if dataset_cls in [OTXInstanceSegDataset, OTXActionClsDataset]:
+            pytest.skip(
+                "Instance segmentation, and Action classification task are not suitible for torchvision transform",
+            )
+        mocker.patch.object(HLabelInfo, "from_dm_label_groups", return_value=fxt_mock_hlabelinfo)
         dataset = dataset_cls(
             dm_subset=fxt_mock_dm_subset,
             transforms=transform,
             mem_cache_img_max_size=None,
             image_color_channel=fxt_image_color_channel,
+            **kwargs,
         )
+        dataset.num_classes = 1
 
         item = dataset[0]
         assert item.img_info.img_shape == item.image.shape[1:]

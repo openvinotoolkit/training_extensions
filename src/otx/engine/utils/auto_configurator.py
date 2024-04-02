@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING
 from warnings import warn
 
 import datumaro
-from lightning.pytorch.cli import instantiate_class
+from jsonargparse import ArgumentParser, Namespace
 
 from otx.core.config.data import DataModuleConfig, SamplerConfig, SubsetConfig, TileConfig
 from otx.core.data.module import OTXDataModule
-from otx.core.model.base import OVModel
+from otx.core.model.base import OTXModel, OVModel
 from otx.core.types import PathLike
 from otx.core.types.label import LabelInfo
 from otx.core.types.task import OTXTaskType
@@ -26,8 +26,6 @@ from otx.core.utils.instantiators import partial_instantiate_class
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from torchmetrics import Metric
-
-    from otx.core.model.base import OTXModel
 
 
 logger = logging.getLogger()
@@ -256,21 +254,26 @@ class AutoConfigurator:
             ...     label_info=<LabelInfo>,
             ... )
         """
+        # TODO(vinnamki): There are some overlaps with src/otx/cli/cli.py::OTXCLI::instantiate_model
         if model_name is not None:
             self._config = self._load_default_config(self.model_name)
-        if label_info is not None:
-            num_classes = label_info.num_classes
-            self.config["model"]["init_args"]["num_classes"] = num_classes
 
-            from otx.core.types.label import HLabelInfo
+        skip = {} if self.task != OTXTaskType.H_LABEL_CLS else {"hlabel_info"}
 
-            if isinstance(label_info, HLabelInfo):
-                init_args = self.config["model"]["init_args"]
-                init_args["num_multiclass_heads"] = label_info.num_multiclass_heads
-                init_args["num_multilabel_classes"] = label_info.num_multilabel_classes
+        model_parser = ArgumentParser()
+        model_parser.add_subclass_arguments(OTXModel, "model", skip=skip, required=False, fail_untyped=False)
 
-        logger.warning(f"Set Default Model: {self.config['model']}")
-        return instantiate_class(args=(), init=self.config["model"])
+        model_config = deepcopy(self.config["model"])
+
+        if label_info is not None and self.task != OTXTaskType.H_LABEL_CLS:
+            model_config["init_args"]["num_classes"] = label_info.num_classes
+        elif label_info is not None and self.task == OTXTaskType.H_LABEL_CLS:
+            model_config["init_args"]["hlabel_info"] = label_info
+        elif label_info is None and self.task == OTXTaskType.H_LABEL_CLS:
+            msg = "You should explicitly give label_info for `OTXTaskType.H_LABEL_CLS` task."
+            raise ValueError(msg)
+
+        return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
 
     def get_optimizer(self) -> list[OptimizerCallable] | None:
         """Returns the optimizer callable based on the configuration.
@@ -278,9 +281,16 @@ class AutoConfigurator:
         Returns:
             list[OptimizerCallable] | None: The optimizer callable.
         """
-        optimizer_config = self.config.get("optimizer", None)
-        logger.warning(f"Set Default Optimizer: {optimizer_config}")
-        return partial_instantiate_class(init=optimizer_config)
+        if (
+            (model_config := self.config.get("model", None))
+            and (init_args := model_config.get("init_args", None))
+            and (config := init_args.get("optimizer", None))
+        ):
+            if callable(config):
+                return [config]
+            return partial_instantiate_class(init=config)
+
+        return None
 
     def get_scheduler(self) -> list[LRSchedulerCallable] | None:
         """Returns the instantiated scheduler based on the configuration.
@@ -288,9 +298,16 @@ class AutoConfigurator:
         Returns:
             list[LRSchedulerCallable] | None: The instantiated scheduler.
         """
-        scheduler_config = self.config.get("scheduler", None)
-        logger.warning(f"Set Default Scheduler: {scheduler_config}")
-        return partial_instantiate_class(init=scheduler_config)
+        if (
+            (model_config := self.config.get("model", None))
+            and (init_args := model_config.get("init_args", None))
+            and (config := init_args.get("scheduler", None))
+        ):
+            if callable(config):
+                return [config]
+            return partial_instantiate_class(init=config)
+
+        return None
 
     def get_metric(self) -> Metric | None:
         """Returns the instantiated metric based on the configuration.

@@ -48,7 +48,8 @@ def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
     if not sizes:
         raise TypeError("No image, video, mask, bounding box, or point was found in the sample")  # noqa: EM101, TRY003
     elif len(sizes) > 1:  # noqa: RET506
-        raise ValueError(f"Found multiple HxW dimensions in the sample: {sequence_to_str(sorted(sizes))}")  # noqa: EM102, TRY003
+        msg = f"Found multiple HxW dimensions in the sample: {sequence_to_str(sorted(sizes))}"
+        raise ValueError(msg)
     h, w = sizes.pop()
     return h, w
 
@@ -275,10 +276,7 @@ class PackVideo(tvt_v2.Transform):
 
     def forward(self, *inputs: ActionClsDataEntity) -> ActionClsDataEntity:
         """Replace ActionClsDataEntity's image to ActionClsDataEntity's video."""
-        inputs[0].image = inputs[0].video
-        inputs[0].video = []
-
-        return inputs[0]
+        return inputs[0].wrap(image=inputs[0].video, video=[])
 
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes

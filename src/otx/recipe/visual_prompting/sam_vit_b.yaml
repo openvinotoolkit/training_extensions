@@ -12,16 +12,16 @@ model:
     return_extra_metrics: False
     stability_score_offset: 1.
 
-optimizer:
-  class_path: torch.optim.Adam
-  init_args:
-    lr: 0.00001
+    optimizer:
+      class_path: torch.optim.Adam
+      init_args:
+        lr: 0.00001
 
-scheduler:
-  class_path: torch.optim.lr_scheduler.ConstantLR
-  init_args:
-    factor: 1
-    total_iters: -1
+    scheduler:
+      class_path: torch.optim.lr_scheduler.ConstantLR
+      init_args:
+        factor: 1
+        total_iters: -1
 
 engine:
   task: VISUAL_PROMPTING

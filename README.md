@@ -22,7 +22,6 @@
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/openvinotoolkit/training_extensions/badge)](https://securityscorecards.dev/viewer/?uri=github.com/openvinotoolkit/training_extensions)
 [![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yaml)
-[![Nightly Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yaml)
 [![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yaml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Downloads](https://static.pepy.tech/personalized-badge/otx?period=total&units=international_system&left_color=grey&right_color=green&left_text=PyPI%20Downloads)](https://pepy.tech/project/otx)
@@ -34,12 +33,12 @@
 ## Introduction
 
 OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision.
-The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field.
+The API & CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field.
 OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™ toolkit](https://software.intel.com/en-us/openvino-toolkit).
 
-OpenVINO™ Training Extensions provides a "model template" for every supported task type, which consolidates necessary information to build a model.
+OpenVINO™ Training Extensions provides a "recipe" for every supported task type, which consolidates necessary information to build a model.
 Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general.
-If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv), [timm](https://github.com/huggingface/pytorch-image-models) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
+If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
 
 Furthermore, OpenVINO™ Training Extensions provides automatic configuration for ease of use.
 The framework will analyze your dataset and identify the most suitable model and figure out the best input size setting and other hyper-parameters.
@@ -55,16 +54,15 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 - **Instance segmentation** including tiling algorithm support
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
+- **Visual Prompting** tasks including segment anything model, zero-shot visual prompting
 
 OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/algorithms/index.html):
 
-- **Supervised**, incremental training, which includes class incremental scenario and contrastive learning for classification and semantic segmentation tasks
-- **Semi-supervised learning**
-- **Self-supervised learning**
+- **Supervised**, incremental training, which includes class incremental scenario.
 
 OpenVINO™ Training Extensions provides the following usability features:
 
-- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model with appropriate input size to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- [Auto-configuration](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model to provide the best accuracy/speed trade-off.
 - [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) data frontend: OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We are constantly working to extend supported formats to give more freedom of datasets format choice.
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Mixed-precision training** to save GPUs memory and use larger batch sizes
@@ -72,42 +70,129 @@ OpenVINO™ Training Extensions provides the following usability features:
 
 ---
 
-## Getting Started
-
-### Installation
+## Installation
 
 Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
+If you want to make changes to the library, then a local installation is recommended.
 
-Note: Python 3.8, 3.9 and 3.10 were tested, along with Ubuntu 18.04, 20.04 and 22.04.
+<details>
+<summary>Install from PyPI</summary>
+Installing the library with pip is the easiest way to get started with otx.
 
-### OpenVINO™ Training Extensions CLI Commands
+```bash
+pip install otx
+```
 
-- `otx find` helps you quickly find the best pre-configured models templates as well as a list of supported backbones
-- `otx build` creates the workspace folder with all necessary components to start training. It can help you configure your own model with any supported backbone and even prepare a custom split for your dataset
-- `otx train` actually starts training on your dataset
-- `otx eval` runs evaluation of your trained model in PyTorch or OpenVINO™ IR format
-- `otx optimize` runs an optimization algorithm to quantize and prune your deep learning model with help of [NNCF](https://github.com/openvinotoolkit/nncf) and [POT](https://docs.openvino.ai/latest/pot_introduction.html) tools.
-- `otx export` starts exporting your model to the OpenVINO™ IR format
-- `otx deploy` outputs the exported model together with the self-contained python package, a demo application to port and infer it outside of this repository.
-- `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
-- `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
+This will install OTX CLI. OTX requires torch and lightning by default to provide training. To use the full pipeline, you need the commands below:
 
-You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html).
+```bash
+# Get help for the installation arguments
+otx install -h
+
+# Install the full package
+otx install
+
+# Install with verbose output
+otx install -v
+
+# Install with docs option only.
+otx install --option docs
+```
+
+</details>
+
+<details>
+<summary>Install from source</summary>
+To install from source, you need to clone the repository and install the library using pip via editable mode.
+
+```bash
+# Use of virtual environment is highy recommended
+# Using conda
+yes | conda create -n otx_env python=3.10
+conda activate otx_env
+
+# Or using your favorite virtual environment
+# ...
+
+# Clone the repository and install in editable mode
+git clone https://github.com/openvinotoolkit/training_extensions.git
+cd training_extensions
+pip install -e .
+```
+
+This will install OTX CLI. OTX requires torch and lightning by default to provide training. To use the full pipeline, you need the commands below:
+
+```bash
+# Get help for the installation arguments
+otx install -h
+
+# Install the full package
+otx install
+
+# Install with verbose output
+otx install -v
+
+# Install with docs option only.
+otx install --option docs
+```
+
+</details>
+
+---
+
+## Quick-Start
+
+OpenVINO™ Training Extensions supports both API and CLI-based training. The API is more flexible and allows for more customization, while the CLI training utilizes command line interfaces, and might be easier for those who would like to use OpenVINO™ Training Extensions off-the-shelf.
+
+For the CLI, the commands below provide subcommands, how to use each subcommand, and more:
+
+```bash
+# See available subcommands
+otx --help
+
+# Print help messages from the train subcommand
+otx train --help
+```
+
+You can find details with examples in the [CLI Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html). and [API Quick-Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/api_tutorial.html).
+
+Below is how to train with auto-configuration, which is provided to users with datasets and tasks:
+
+<details>
+<summary>Training via API</summary>
+
+```python
+# Training with Auto-Configuration via Engine
+from otx.engine import Engine
+
+engine = Engine(data_root="data/wgisd", task="DETECTION")
+engine.train()
+```
+
+For more examples, see documentation: [CLI Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html)
+
+</details>
+
+<details>
+<summary>Training via CLI</summary>
+
+```bash
+otx train --data_root data/wgisd --task DETECTION
+```
+
+For more examples, see documentation: [API Quick-Guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/api_tutorial.html)
+
+</details>
+
+In addition to the examples above, please refer to the documentation for tutorials on using custom models, training parameter overrides, and [tutorial per task types](https://openvinotoolkit.github.io/training_extensions/latest/guide/tutorials/base/how_to_train/index.html), etc.
 
 ---
 
 ## Updates
 
-### v1.4.0 (3Q23)
+### v2.0.0 (1Q24)
 
-- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
-- Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
-- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (<https://github.com/openvinotoolkit/training_extensions/pull/2195>)
-- Add per-class XAI saliency maps for Mask R-CNN model (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
-- Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
-- Add new object detector DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
-- Add new visual prompting task (<https://github.com/openvinotoolkit/training_extensions/pull/2203>, <https://github.com/openvinotoolkit/training_extensions/pull/2274>, <https://github.com/openvinotoolkit/training_extensions/pull/2311>, <https://github.com/openvinotoolkit/training_extensions/pull/2354>, <https://github.com/openvinotoolkit/training_extensions/pull/2318>)
-- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
+TBD
 
 ### Release History
 
@@ -149,5 +234,17 @@ These scripts are not ready for production. They are exploratory and have not be
 Intel is committed to respecting human rights and avoiding complicity in human rights abuses.
 See Intel's [Global Human Rights Principles](https://www.intel.com/content/www/us/en/policy/policy-human-rights.html).
 Intel's products and software are intended only to be used in applications that do not cause or contribute to a violation of an internationally recognized human right.
+
+---
+
+## Contributing
+
+For those who would like to contribute to the library, see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+Thank you! we appreciate your support!
+
+<a href="https://github.com/openvinotoolkit/training_extensions/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=openvinotoolkit/training_extensions" />
+</a>
 
 ---

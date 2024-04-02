@@ -131,7 +131,7 @@ class TestOTXCLI:
             "src/otx/recipe/detection/atss_mobilenetv2.yaml",
             "--data_root",
             "tests/assets/car_tree_bug",
-            "--scheduler.monitor",
+            "--model.scheduler.monitor",
             "val/test_f1",
             "--print_config",
         ]
@@ -145,25 +145,27 @@ class TestOTXCLI:
         result_config = yaml.safe_load(out)
         expected_str = """
         scheduler:
-        - class_path: otx.algo.schedulers.LinearWarmupScheduler
+          class_path: otx.core.schedulers.LinearWarmupSchedulerCallable
           init_args:
-              num_warmup_steps: 3
-              interval: step
-        - class_path: lightning.pytorch.cli.ReduceLROnPlateau
-          init_args:
-              monitor: val/test_f1
-              mode: max
-              factor: 0.1
-              patience: 4
-              threshold: 0.0001
-              threshold_mode: rel
-              cooldown: 0
-              min_lr: 0.0
-              eps: 1.0e-08
-              verbose: false
+            num_warmup_steps: 3
+            monitor: val/test_f1
+            warmup_interval: step
+            main_scheduler_callable:
+              class_path: lightning.pytorch.cli.ReduceLROnPlateau
+              init_args:
+                monitor: val/map_50
+                mode: max
+                factor: 0.1
+                patience: 4
+                threshold: 0.0001
+                threshold_mode: rel
+                cooldown: 0
+                min_lr: 0.0
+                eps: 1.0e-08
+                verbose: false
         """
         expected_config = yaml.safe_load(expected_str)
-        assert expected_config["scheduler"] == result_config["scheduler"]
+        assert expected_config["scheduler"] == result_config["model"]["init_args"]["scheduler"]
 
     @pytest.fixture()
     def fxt_metric_override_command(self, monkeypatch) -> None:

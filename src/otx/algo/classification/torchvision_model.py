@@ -13,14 +13,11 @@ from torchvision import tv_tensors
 from torchvision.models import get_model, get_model_weights
 
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.classification import (
-    MulticlassClsBatchDataEntity,
-    MulticlassClsBatchPredEntity,
-    MulticlassClsBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import OTXMulticlassClsModel
+from otx.core.schedulers import LRSchedulerListCallable
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -182,8 +179,8 @@ class OTXTVModel(OTXMulticlassClsModel):
         backbone: TVModelType,
         num_classes: int,
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
         freeze_backbone: bool = False,
@@ -224,7 +221,7 @@ class OTXTVModel(OTXMulticlassClsModel):
         self,
         outputs: Any,  # noqa: ANN401
         inputs: MulticlassClsBatchDataEntity,
-    ) -> MulticlassClsBatchPredEntity | MulticlassClsBatchPredEntityWithXAI | OTXBatchLossEntity:
+    ) -> MulticlassClsBatchPredEntity | OTXBatchLossEntity:
         if self.training:
             return OTXBatchLossEntity(loss=outputs)
 
@@ -240,7 +237,7 @@ class OTXTVModel(OTXMulticlassClsModel):
 
             saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
 
-            return MulticlassClsBatchPredEntityWithXAI(
+            return MulticlassClsBatchPredEntity(
                 batch_size=len(preds),
                 images=inputs.images,
                 imgs_info=inputs.imgs_info,

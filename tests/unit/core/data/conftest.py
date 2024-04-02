@@ -8,23 +8,47 @@ from unittest.mock import MagicMock
 import cv2
 import numpy as np
 import pytest
-from datumaro.components.annotation import Bbox, Label, Mask
+from datumaro.components.annotation import Bbox, Label, Mask, Polygon
 from datumaro.components.dataset import DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.components.media import Image
+from otx.core.data.dataset.action_classification import (
+    ActionClsDataEntity,
+    OTXActionClsDataset,
+)
+from otx.core.data.dataset.action_detection import (
+    ActionDetDataEntity,
+    OTXActionDetDataset,
+)
+from otx.core.data.dataset.anomaly.dataset import (
+    AnomalyClassificationDataItem,
+    AnomalyDataset,
+    AnomalyDetectionDataItem,
+    AnomalySegmentationDataItem,
+)
 from otx.core.data.dataset.classification import (
+    HlabelClsDataEntity,
+    HLabelInfo,
     MulticlassClsDataEntity,
+    MultilabelClsDataEntity,
+    OTXHlabelClsDataset,
     OTXMulticlassClsDataset,
+    OTXMultilabelClsDataset,
 )
 from otx.core.data.dataset.detection import (
     DetDataEntity,
     OTXDetectionDataset,
+)
+from otx.core.data.dataset.instance_segmentation import (
+    InstanceSegDataEntity,
+    OTXInstanceSegDataset,
 )
 from otx.core.data.dataset.segmentation import (
     OTXSegmentationDataset,
     SegDataEntity,
 )
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
+from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
     from otx.core.data.dataset.base import OTXDataset, T_OTXDataEntity
@@ -54,6 +78,7 @@ def fxt_dm_item(request) -> DatasetItem:
         media = Image.from_numpy(np_img)
     else:
         raise ValueError(request.param)
+    media.path = ""
 
     return DatasetItem(
         id="item",
@@ -63,6 +88,7 @@ def fxt_dm_item(request) -> DatasetItem:
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),
             Mask(label=0, image=np.zeros(shape=(10, 10), dtype=np.uint8)),
+            Polygon(points=[399.0, 570.0, 397.0, 572.0, 397.0, 573.0, 394.0, 576.0], label=0),
         ],
     )
 
@@ -78,13 +104,64 @@ def fxt_mock_dm_subset(mocker: MockerFixture, fxt_dm_item: DatasetItem) -> Magic
 
 @pytest.fixture(
     params=[
-        (OTXMulticlassClsDataset, MulticlassClsDataEntity),
-        (OTXDetectionDataset, DetDataEntity),
-        (OTXSegmentationDataset, SegDataEntity),
+        (OTXHlabelClsDataset, HlabelClsDataEntity, {}),
+        (OTXMultilabelClsDataset, MultilabelClsDataEntity, {}),
+        (OTXMulticlassClsDataset, MulticlassClsDataEntity, {}),
+        (OTXDetectionDataset, DetDataEntity, {}),
+        (OTXInstanceSegDataset, InstanceSegDataEntity, {"include_polygons": True}),
+        (OTXSegmentationDataset, SegDataEntity, {}),
+        (OTXActionClsDataset, ActionClsDataEntity, {}),
+        (OTXActionDetDataset, ActionDetDataEntity, {}),
+        (AnomalyDataset, AnomalyClassificationDataItem, {"task_type": OTXTaskType.ANOMALY_CLASSIFICATION}),
+        (AnomalyDataset, AnomalyDetectionDataItem, {"task_type": OTXTaskType.ANOMALY_DETECTION}),
+        (AnomalyDataset, AnomalySegmentationDataItem, {"task_type": OTXTaskType.ANOMALY_SEGMENTATION}),
     ],
-    ids=["multi_class_cls", "detection", "semantic_seg"],
+    ids=[
+        "hlabel_cls",
+        "multi_label_cls",
+        "multi_class_cls",
+        "detection",
+        "instance_seg",
+        "semantic_seg",
+        "action_cls",
+        "action_det",
+        "anomaly_cls",
+        "anomaly_det",
+        "anomaly_seg",
+    ],
 )
 def fxt_dataset_and_data_entity_cls(
     request: pytest.FixtureRequest,
 ) -> tuple[OTXDataset, T_OTXDataEntity]:
     return request.param
+
+
+@pytest.fixture()
+def fxt_mock_hlabelinfo():
+    mock_dict = MagicMock()
+    mock_dict.__getitem__.return_value = (0, 0)
+    return HLabelInfo(
+        label_names=["Non-Rigid", "Rigid", "Rectangle", "Triangle", "Circle", "Lion", "Panda"],
+        label_groups=[["Non-Rigid", "Rigid"], ["Rectangle", "Triangle"], ["Circle"], ["Lion"], ["Panda"]],
+        num_multiclass_heads=2,
+        num_multilabel_classes=3,
+        head_idx_to_logits_range={"0": (0, 2), "1": (2, 4)},
+        num_single_label_classes=4,
+        class_to_group_idx=mock_dict,
+        all_groups=[["Non-Rigid", "Rigid"], ["Rectangle", "Triangle"], ["Circle"], ["Lion"], ["Panda"]],
+        label_to_idx={
+            "Rigid": 0,
+            "Rectangle": 1,
+            "Triangle": 2,
+            "Non-Rigid": 3,
+            "Circle": 4,
+            "Lion": 5,
+            "Panda": 6,
+        },
+        label_tree_edges=[
+            ["Rectangle", "Rigid"],
+            ["Triangle", "Rigid"],
+            ["Circle", "Non-Rigid"],
+        ],
+        empty_multiclass_head_indices=[],
+    )

@@ -2,6 +2,7 @@
 
 All anomaly models use the same AnomalyDetection model from ModelAPI.
 """
+
 # TODO(someone): Revisit mypy errors after OTXLitModule deprecation and anomaly refactoring
 # mypy: ignore-errors
 
@@ -12,17 +13,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from lightning.pytorch import LightningModule
-
+from otx.core.metrics.types import MetricCallable, NullMetricCallable
 from otx.core.model.anomaly import AnomalyModelInputs
-from otx.core.model.base import OTXModel, OVModel
+from otx.core.model.base import OVModel
 
 if TYPE_CHECKING:
     from openvino.model_api.models import Model
     from openvino.model_api.models.anomaly import AnomalyResult
 
 
-class AnomalyOpenVINO(OVModel, OTXModel, LightningModule):
+class AnomalyOpenVINO(OVModel):
     """Anomaly OpenVINO model."""
 
     # [TODO](ashwinvaidya17): Remove LightningModule once OTXModel is updated to use LightningModule.
@@ -36,6 +36,7 @@ class AnomalyOpenVINO(OVModel, OTXModel, LightningModule):
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         num_classes: int = 2,
+        metric: MetricCallable = NullMetricCallable,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -46,6 +47,7 @@ class AnomalyOpenVINO(OVModel, OTXModel, LightningModule):
             max_num_requests=max_num_requests,
             use_throughput_mode=use_throughput_mode,
             model_api_configuration=model_api_configuration,
+            metric=metric,
         )
 
     def _create_model(self) -> Model:

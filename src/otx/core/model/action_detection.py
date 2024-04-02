@@ -9,16 +9,13 @@ from typing import TYPE_CHECKING, Any
 
 from torchvision import tv_tensors
 
-from otx.core.data.entity.action_detection import (
-    ActionDetBatchDataEntity,
-    ActionDetBatchPredEntity,
-    ActionDetBatchPredEntityWithXAI,
-)
+from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
+from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.config import inplace_num_classes
 
 if TYPE_CHECKING:
@@ -33,7 +30,6 @@ class OTXActionDetModel(
     OTXModel[
         ActionDetBatchDataEntity,
         ActionDetBatchPredEntity,
-        ActionDetBatchPredEntityWithXAI,
         T_OTXTileBatchDataEntity,
     ],
 ):
@@ -42,8 +38,8 @@ class OTXActionDetModel(
     def __init__(
         self,
         num_classes: int,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -57,7 +53,7 @@ class OTXActionDetModel(
 
     def _convert_pred_entity_to_compute_metric(
         self,
-        preds: ActionDetBatchPredEntity | ActionDetBatchPredEntityWithXAI,
+        preds: ActionDetBatchPredEntity,
         inputs: ActionDetBatchDataEntity,
     ) -> MetricInput:
         return {
@@ -97,8 +93,8 @@ class MMActionCompatibleModel(OTXActionDetModel):
         self,
         num_classes: int,
         config: DictConfig,
-        optimizer: list[OptimizerCallable] | OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:

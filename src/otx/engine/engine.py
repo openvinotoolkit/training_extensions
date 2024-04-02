@@ -33,7 +33,6 @@ from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
     from lightning import Callback
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from lightning.pytorch.loggers import Logger
     from lightning.pytorch.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
     from pytorch_lightning.trainer.connectors.accelerator_connector import _PRECISION_INPUT
@@ -82,23 +81,26 @@ class Engine:
     Example:
         The following examples show how to use the Engine class.
 
-        Auto-Configuration with data_root
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ... )
+        Auto-Configuration with data_root::
 
-        Create Engine with Custom OTXModel
-        >>> engine = Engine(
-        ...     data_root=<dataset/path>,
-        ...     model=OTXModel(...),
-        ...     checkpoint=<checkpoint/path>,
-        ... )
+            engine = Engine(
+                data_root=<dataset/path>,
+            )
 
-        Create Engine with Custom OTXDataModule
-        >>> engine = Engine(
-        ...     model = OTXModel(...),
-        ...     datamodule = OTXDataModule(...),
-        ... )
+        Create Engine with Custom OTXModel::
+
+            engine = Engine(
+                data_root=<dataset/path>,
+                model=OTXModel(...),
+                checkpoint=<checkpoint/path>,
+            )
+
+        Create Engine with Custom OTXDataModule::
+
+            engine = Engine(
+                model = OTXModel(...),
+                datamodule = OTXDataModule(...),
+            )
     """
 
     _EXPORTED_MODEL_BASE_NAME: ClassVar[str] = "exported_model"
@@ -111,8 +113,6 @@ class Engine:
         work_dir: PathLike = "./otx-workspace",
         datamodule: OTXDataModule | None = None,
         model: OTXModel | str | None = None,
-        optimizer: list[OptimizerCallable] | OptimizerCallable | None = None,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = None,
         checkpoint: PathLike | None = None,
         device: DeviceType = DeviceType.auto,
         **kwargs,
@@ -125,10 +125,6 @@ class Engine:
             work_dir (PathLike, optional): Working directory for the engine. Defaults to "./otx-workspace".
             datamodule (OTXDataModule | None, optional): The data module for the engine. Defaults to None.
             model (OTXModel | str | None, optional): The model for the engine. Defaults to None.
-            optimizer (list[OptimizerCallable] | OptimizerCallable | None, optional): The optimizer for the engine.
-                Defaults to None.
-            scheduler (list[LRSchedulerCallable] | LRSchedulerCallable | None, optional):
-                The learning rate scheduler for the engine. Defaults to None.
             checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             device (DeviceType, optional): The device type to use. Defaults to DeviceType.auto.
             **kwargs: Additional keyword arguments for pl.Trainer.
@@ -156,12 +152,6 @@ class Engine:
                 label_info=self._datamodule.label_info if self._datamodule is not None else None,
             )
         )
-        self.optimizer: list[OptimizerCallable] | OptimizerCallable | None = (
-            optimizer if optimizer is not None else self._auto_configurator.get_optimizer()
-        )
-        self.scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None = (
-            scheduler if scheduler is not None else self._auto_configurator.get_scheduler()
-        )
 
         # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
         if self.task in (
@@ -169,7 +159,7 @@ class Engine:
             OTXTaskType.ANOMALY_DETECTION,
             OTXTaskType.ANOMALY_SEGMENTATION,
         ):
-            self._model = self._get_anomaly_model(self._model, self.optimizer, self.scheduler)
+            self._model = self._get_anomaly_model(self._model)
 
     # ------------------------------------------------------------------------ #
     # General OTX Entry Points
@@ -265,13 +255,9 @@ class Engine:
             **kwargs,
         )
         fit_kwargs: dict[str, Any] = {}
-        if resume:
-            fit_kwargs["ckpt_path"] = self.checkpoint
-        elif self.checkpoint is not None:
-            loaded_checkpoint = torch.load(self.checkpoint)
-            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
-            self.model.load_state_dict(loaded_checkpoint)
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
@@ -280,6 +266,13 @@ class Engine:
             )
             logging.warning(msg)
             self.model.label_info = self.datamodule.label_info
+
+        if resume:
+            fit_kwargs["ckpt_path"] = self.checkpoint
+        elif self.checkpoint is not None:
+            loaded_checkpoint = torch.load(self.checkpoint)
+            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
+            self.model.load_state_dict(loaded_checkpoint)
 
         with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
             self.trainer.fit(
@@ -336,6 +329,20 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         model = self.model
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
@@ -344,6 +351,10 @@ class Engine:
         if is_ir_ckpt and not isinstance(model, OVModel):
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+            if self.device.accelerator != "cpu":
+                msg = "IR model supports inference only on CPU device. The device is changed automatic."
+                warn(msg, stacklevel=1)
+                self.device = DeviceType.cpu  # type: ignore[assignment]
 
         # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
         if isinstance(model, OVModel) and isinstance(datamodule.subsets["test"], OTXTileDataset):
@@ -356,18 +367,6 @@ class Engine:
             model.load_state_dict(loaded_checkpoint)
 
         self._build_trainer(**kwargs)
-
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
 
         with override_metric_callable(model=model, new_metric_callable=metric) as model:
             self.trainer.test(
@@ -421,6 +420,20 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
+        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # This is due to smart weight loading check label name as well as number of classes.
+        if self.model.label_info != self.datamodule.label_info:
+            # TODO (vinnamki): Revisit label_info logic to make it cleaner
+            msg = (
+                "Model label_info is not equal to the Datamodule label_info. "
+                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
+            )
+            logging.warning(msg)
+            self.model.label_info = self.datamodule.label_info
+
+            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
+            # raise ValueError()
+
         model = self.model
 
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -442,18 +455,6 @@ class Engine:
         model.explain_mode = explain
 
         self._build_trainer(**kwargs)
-
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
 
         predict_result = self.trainer.predict(
             model=model,
@@ -561,6 +562,7 @@ class Engine:
             ...     datamodule=OTXDataModule(),
             ...     checkpoint=<checkpoint/path>,
             ... )
+
         CLI Usage:
             To optimize a model, run
                 ```python
@@ -737,8 +739,6 @@ class Engine:
             work_dir=instantiated_config.get("work_dir", work_dir),
             datamodule=instantiated_config.get("data"),
             model=instantiated_config.get("model"),
-            optimizer=instantiated_config.get("optimizer"),
-            scheduler=instantiated_config.get("scheduler"),
             **engine_kwargs,
         )
 
@@ -772,17 +772,17 @@ class Engine:
             ...     data_root=<dataset/path>,
             ... )
 
-            If you want to override configuration from default config
-            >>> overriding = {
-            ...     "data.config.train_subset.batch_size": 2,
-            ...     "data.config.test_subset.subset_name": "TESTING",
-            ... }
-            >>> engine = Engine(
-            ...     model_name="atss_mobilenetv2",
-            ...     task="DETECTION",
-            ...     data_root=<dataset/path>,
-            ...     **overriding,
-            ... )
+            If you want to override configuration from default config:
+                >>> overriding = {
+                ...     "data.config.train_subset.batch_size": 2,
+                ...     "data.config.test_subset.subset_name": "TESTING",
+                ... }
+                >>> engine = Engine(
+                ...     model_name="atss_mobilenetv2",
+                ...     task="DETECTION",
+                ...     data_root=<dataset/path>,
+                ...     **overriding,
+                ... )
         """
         default_config = DEFAULT_CONFIG_PER_TASK.get(task)
         model_path = str(default_config).split("/")
@@ -817,6 +817,7 @@ class Engine:
     def work_dir(self, work_dir: PathLike) -> None:
         self._work_dir = work_dir
         self._cache.update(default_root_dir=work_dir)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def device(self) -> DeviceConfig:
@@ -827,6 +828,7 @@ class Engine:
     def device(self, device: DeviceType) -> None:
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def trainer(self) -> Trainer:
@@ -848,6 +850,8 @@ class Engine:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
+            self._cache.is_trainer_args_identical = True
+            self._trainer.task = self.task
             self.work_dir = self._trainer.default_root_dir
 
     @property
@@ -894,14 +898,7 @@ class Engine:
             raise RuntimeError(msg)
         return self._datamodule
 
-    def _get_anomaly_model(
-        self,
-        model: OTXModel,
-        optimizer: list[OptimizerCallable] | OptimizerCallable | None,
-        scheduler: list[LRSchedulerCallable] | LRSchedulerCallable | None,
-    ) -> OTXModel:
+    def _get_anomaly_model(self, model: OTXModel) -> OTXModel:
         # [TODO](ashwinvaidya17): Need to revisit how task, optimizer, and scheduler are assigned to the model
         model.task = self.task
-        model.optimizer_callable = optimizer
-        model.scheduler_callable = scheduler
         return model

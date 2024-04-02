@@ -67,12 +67,6 @@ To enable tiling in OTX training, set ``data.config.tile_config.enable_tiler`` p
 
             (otx) ...$ otx train ... --data.config.tile_config.enable_tiler True
 
-.. note::
-
-    To learn how to deploy the trained model and run the exported demo, refer to :doc:`../../tutorials/base/deploy`.
-
-    To learn how to run the demo in CLI and visualize results, refer to :doc:`../../tutorials/base/demo`.
-
 
 Tile Size and Tile Overlap Optimization
 -----------------------------------------
