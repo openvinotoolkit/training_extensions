@@ -23,21 +23,129 @@ from otx.engine import Engine
 from otx.engine.utils.auto_configurator import AutoConfigurator
 
 TEMPLATE_ID_DICT = {
-    "Custom_Object_Detection_Gen3_ATSS": {
-        "task": OTXTaskType.DETECTION,
-        "model_name": "atss_mobilenetv2",
-    },
+    # MULTI_CLASS_CLS
     "Custom_Image_Classification_DeiT-Tiny": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
         "model_name": "otx_deit_tiny",
     },
+    "Custom_Image_Classification_EfficinetNet-B0": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "efficientnet_b0_light",
+    },
+    "Custom_Image_Classification_EfficientNet-V2-S": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "efficientnet_v2_light",
+    },
+    "Custom_Image_Classification_MobileNet-V3-large-1x": {
+        "task": OTXTaskType.MULTI_CLASS_CLS,
+        "model_name": "mobilenet_v3_large_light",
+    },
+    # DETECTION
+    "Custom_Object_Detection_Gen3_ATSS": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "atss_mobilenetv2",
+    },
+    "Object_Detection_ResNeXt101_ATSS": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "atss_resnext101",
+    },
+    "Custom_Object_Detection_Gen3_SSD": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "ssd_mobilenetv2",
+    },
+    "Object_Detection_YOLOX_X": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "yolox_x",
+    },
+    "Object_Detection_YOLOX_L": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "yolox_l",
+    },
+    "Object_Detection_YOLOX_S": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "yolox_s",
+    },
+    "Custom_Object_Detection_YOLOX": {
+        "task": OTXTaskType.DETECTION,
+        "model_name": "yolox_tiny",
+    },
+    # INSTANCE_SEGMENTATION
     "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50": {
         "task": OTXTaskType.INSTANCE_SEGMENTATION,
         "model_name": "maskrcnn_r50",
     },
+    "Custom_Counting_Instance_Segmentation_MaskRCNN_SwinT_FP16": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "maskrcnn_swint",
+    },
+    "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B": {
+        "task": OTXTaskType.INSTANCE_SEGMENTATION,
+        "model_name": "maskrcnn_efficientnetb2b",
+    },
+    # ROTATED_DETECTION
+    "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50": {
+        "task": OTXTaskType.ROTATED_DETECTION,
+        "model_name": "maskrcnn_r50",
+    },
+    "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B": {
+        "task": OTXTaskType.ROTATED_DETECTION,
+        "model_name": "maskrcnn_efficientnetb2b",
+    },
+    # SEMANTIC_SEGMENTATION
     "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR": {
         "task": OTXTaskType.SEMANTIC_SEGMENTATION,
         "model_name": "litehrnet_18",
+    },
+    "Custom_Semantic_Segmentation_Lite-HRNet-18_OCR": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "litehrnet_18",
+    },
+    "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "litehrnet_s",
+    },
+    "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "litehrnet_x",
+    },
+    "Custom_Semantic_Segmentation_SegNext_t": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "segnext_t",
+    },
+    "Custom_Semantic_Segmentation_SegNext_s": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "segnext_s",
+    },
+    "Custom_Semantic_Segmentation_SegNext_B": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "segnext_b",
+    },
+    # ANOMALY_CLASSIFICATION
+    "ote_anomaly_classification_padim": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "padim",
+    },
+    "ote_anomaly_classification_stfpm": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "stfpm",
+    },
+    # ANOMALY_DETECTION
+    "ote_anomaly_detection_padim": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "padim",
+    },
+    "ote_anomaly_detection_stfpm": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "stfpm",
+    },
+    # ANOMALY_SEGMENTATION
+    "ote_anomaly_segmentation_padim": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "padim",
+    },
+    "ote_anomaly_segmentation_stfpm": {
+        "task": OTXTaskType.SEMANTIC_SEGMENTATION,
+        "model_name": "stfpm",
     },
 }
 
