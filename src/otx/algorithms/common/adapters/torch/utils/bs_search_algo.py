@@ -211,8 +211,8 @@ class BsSearchAlgo:
             else:
                 return min(abs(self._mem_lower_bound - val[1], abs(val[1] - self._mem_upper_bound)))
 
-        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=lambda x : x[0])
-        for idx in range(len(bs_arr)-1, -1, -1):
+        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=lambda x: x[0])
+        for idx in range(len(bs_arr) - 1, -1, -1):
             if bs_arr[idx][1] < self._mem_upper_bound:
                 cur_max_bs_idx = idx
                 break
@@ -225,12 +225,12 @@ class BsSearchAlgo:
             # and smallest bs which uses higher memory than upper bound.
             if estimated_bs >= bs_arr[cur_max_bs_idx][0]:
                 if cur_max_bs_idx + 1 < len(bs_arr):
-                    if estimated_bs < bs_arr[cur_max_bs_idx+1][0]:
+                    if estimated_bs < bs_arr[cur_max_bs_idx + 1][0]:
                         return True
                 else:
                     return True
             return False
-            
+
         x_idx, y_idx = 0, len(bs_arr) - 1
 
         while x_idx < y_idx:
@@ -241,7 +241,7 @@ class BsSearchAlgo:
                 if check_bs_suitable(estimated_bs):
                     break
 
-            if distance_from_bound(bs_arr[x_idx+1]) < distance_from_bound(bs_arr[y_idx-1]):
+            if distance_from_bound(bs_arr[x_idx + 1]) < distance_from_bound(bs_arr[y_idx - 1]):
                 x_idx += 1
             else:
                 y_idx -= 1

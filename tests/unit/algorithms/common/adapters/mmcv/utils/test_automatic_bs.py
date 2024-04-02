@@ -81,7 +81,7 @@ def test_adapt_batch_size(
     not_increase,
     is_action_task,
     is_iter_based_runner,
-    mock_model
+    mock_model,
 ):
     # prepare
     mock_train_func = mocker.MagicMock()
@@ -147,7 +147,8 @@ class TestSubDataset:
     def test_init(self, mocker):
         class MockDataset:
             def __init__(self):
-                self.img_indices = {"cls_0" : 1, "cls_1" : 2}
+                self.img_indices = {"cls_0": 1, "cls_1": 2}
+
         fullset = MockDataset()
         subset = SubDataset(fullset, 3)
 

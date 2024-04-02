@@ -7,7 +7,11 @@ import pytest
 
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from otx.algorithms.common.adapters.torch.utils import utils as target_module
-from otx.algorithms.common.adapters.torch.utils import model_from_timm, convert_sync_batchnorm, sync_batchnorm_2_batchnorm
+from otx.algorithms.common.adapters.torch.utils import (
+    model_from_timm,
+    convert_sync_batchnorm,
+    sync_batchnorm_2_batchnorm,
+)
 
 
 class OrdinaryModule:

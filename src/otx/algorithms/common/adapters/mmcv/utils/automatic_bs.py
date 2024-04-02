@@ -317,6 +317,7 @@ class SubDataset:
 
     @property
     def img_indices(self):
+        """img_indices getter."""
         img_indices = copy(getattr(self.fullset, "img_indices", {}))
         img_indices.update(self._img_indices)
         return img_indices

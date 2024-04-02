@@ -47,12 +47,11 @@ class TestBsSearchAlgo:
                 oom = True
 
             trial_queue = args[-1]
-            trial_queue.get.return_value = {"oom" : oom, "max_memory_reserved" : mem_usage}
+            trial_queue.get.return_value = {"oom": oom, "max_memory_reserved": mem_usage}
 
             return MagicMock()
 
         self.mock_mp.get_context.return_value.Process.side_effect = mock_process
-        
 
     def get_mock_train_func(self, cuda_oom_bound: int, max_runnable_bs: int):
         def mock_train_func(batch_size):
@@ -143,8 +142,8 @@ class TestBsSearchAlgo:
                 mem_usage = 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
-        self.set_mp_process(mock_train_func)
 
+        self.set_mp_process(mock_train_func)
 
         bs_search_algo = BsSearchAlgo(mock_train_func, train_func_kwargs, 64, 1000)
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
@@ -162,6 +161,7 @@ class TestBsSearchAlgo:
                 mem_usage = 1000 + batch_size / 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
+
         self.set_mp_process(mock_train_func)
 
         bs_search_algo = BsSearchAlgo(mock_train_func, train_func_kwargs, 64, 1000)
