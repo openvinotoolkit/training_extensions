@@ -791,13 +791,6 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
             msg = "Model is already optimized by PTQ"
             raise RuntimeError(msg)
 
-        def transform_fn(data_batch: T_OTXBatchDataEntity) -> np.array:
-            np_data = self._customize_inputs(data_batch)
-            image = np_data["inputs"][0]
-            resized_image = self.model.resize(image, (self.model.w, self.model.h))
-            resized_image = self.model.input_transform(resized_image)
-            return self.model._change_layout(resized_image)  # noqa: SLF001
-
         train_dataset = data_module.train_dataloader()
 
         ptq_config_from_ir = self._read_ptq_config_from_ir(ov_model)
@@ -807,7 +800,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         else:
             ptq_config = ptq_config_from_ir
 
-        quantization_dataset = nncf.Dataset(train_dataset, transform_fn)  # type: ignore[attr-defined]
+        quantization_dataset = nncf.Dataset(train_dataset, self.transform_fn)  # type: ignore[attr-defined]
 
         compressed_model = nncf.quantize(  # type: ignore[attr-defined]
             ov_model,
@@ -818,6 +811,14 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         openvino.save_model(compressed_model, output_model_path)
 
         return output_model_path
+
+    def transform_fn(self, data_batch: T_OTXBatchDataEntity) -> np.array:
+        """Data transform function for PTQ."""
+        np_data = self._customize_inputs(data_batch)
+        image = np_data["inputs"][0]
+        resized_image = self.model.resize(image, (self.model.w, self.model.h))
+        resized_image = self.model.input_transform(resized_image)
+        return self.model._change_layout(resized_image)  # noqa: SLF001
 
     def _read_ptq_config_from_ir(self, ov_model: Model) -> dict[str, Any]:
         """Generates the PTQ (Post-Training Quantization) configuration from the meta data of the given OpenVINO model.
