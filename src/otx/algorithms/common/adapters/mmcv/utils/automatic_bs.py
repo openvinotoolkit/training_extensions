@@ -310,10 +310,16 @@ class SubDataset:
 
         self.fullset = fullset
         self.num_samples = num_samples
-        self.img_indices = {  # for class incremental case
+        self._img_indices = {  # for class incremental case
             "old": [i for i in range(num_samples // 2)],
             "new": [i for i in range(num_samples // 2, num_samples)],
         }
+
+    @property
+    def img_indices(self):
+        img_indices = copy(getattr(self.fullset, "img_indices", {}))
+        img_indices.update(self._img_indices)
+        return img_indices
 
     def __len__(self) -> int:
         """Get length of subset."""
