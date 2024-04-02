@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import torch
 
 from otx.core.config.hpo import HpoConfig
+from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.types.task import OTXTaskType
 from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
@@ -62,6 +63,8 @@ def execute_hpo(
     if engine.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:  # type: ignore[has-type]
         logger.warning("Zero shot visual prompting task doesn't support HPO.")
         return None, None
+
+    engine.model.patch_optimizer_and_scheduler_for_hpo()
 
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
@@ -175,12 +178,7 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        optimizer_conf = self._engine.model.optimizer_callable
-
-        if not callable(optimizer_conf):
-            raise TypeError(optimizer_conf)
-
-        search_space["model.optimizer_callable.keywords.lr"] = self._make_lr_search_space(optimizer_conf)
+        search_space["model.optimizer_callable.lr"] = self._make_lr_search_space(self._engine.model.optimizer_callable)
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
@@ -194,10 +192,10 @@ class HPOConfigurator:
 
     @staticmethod
     def _make_lr_search_space(optimizer_callable: OptimizerCallable) -> dict[str, Any]:
-        params = [torch.nn.Parameter(torch.zeros([0]))]
-        optimizer = optimizer_callable(params)
-        param_group = next(iter(optimizer.param_groups))
-        cur_lr = param_group["lr"]  # type: ignore[union-attr]
+        if not isinstance(optimizer_callable, OptimizerCallableSupportHPO):
+            raise TypeError(optimizer_callable)
+
+        cur_lr = optimizer_callable.lr  # type: ignore[attr-defined]
         min_lr = cur_lr / 10
         return {
             "type": "qloguniform",
