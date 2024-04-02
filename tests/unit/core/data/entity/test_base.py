@@ -62,8 +62,8 @@ class TestImageInfo:
         assert fxt_torchvision_data_entity.image.shape[1:] == transformed.img_info.ori_shape
 
         scale_factor = (
-            transformed.image.shape[1] / fxt_torchvision_data_entity.image.shape[1],
             transformed.image.shape[2] / fxt_torchvision_data_entity.image.shape[2],
+            transformed.image.shape[1] / fxt_torchvision_data_entity.image.shape[1],
         )
         assert scale_factor == transformed.img_info.scale_factor
 

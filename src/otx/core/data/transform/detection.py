@@ -59,15 +59,14 @@ class MinIoURandomCrop(RandomIoUCrop):
         sampler_options: list[float] | None = None,
         trials: int = 50,  # 40 -> 50
     ):
-        super().__init__()
-        self.min_scale = min_scale
-        self.max_scale = max_scale
-        self.min_aspect_ratio = min_aspect_ratio
-        self.max_aspect_ratio = max_aspect_ratio
-        if sampler_options is None:
-            sampler_options = [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
-        self.options = sampler_options
-        self.trials = trials
+        super().__init__(
+            min_scale=min_scale,
+            max_scale=max_scale,
+            min_aspect_ratio=min_aspect_ratio,
+            max_aspect_ratio=max_aspect_ratio,
+            sampler_options=sampler_options,
+            trials=trials,
+        )
 
     def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
         orig_h, orig_w = query_size(flat_inputs)
