@@ -209,37 +209,48 @@ class BsSearchAlgo:
                 # if memory usage is same, then lower batch size is preferred
                 return val[1] - self._mem_upper_bound + val[0] / 10000
             else:
-                return 0
+                return min(abs(self._mem_lower_bound - val[1], abs(val[1] - self._mem_upper_bound)))
 
-        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=distance_from_bound)
-        bs1 = bs_arr[0][0]
-        bs1_mem_usage = bs_arr[0][1]
-
-        for i in range(len(bs_arr) - 1, 0, -1):
-            graident = (bs_arr[i][1] - bs1_mem_usage) / (bs_arr[i][0] - bs1)
-            b = bs1_mem_usage - graident * bs1
-            if graident != 0:
+        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=lambda x : x[0])
+        for idx in range(len(bs_arr)-1, -1, -1):
+            if bs_arr[idx][1] < self._mem_upper_bound:
+                cur_max_bs_idx = idx
                 break
+        else:
+            logger.warning("All batch size tried used more memory size than upper bound.")
+            return bs_arr[0][0]
 
-        if graident == 0:  # all batch size history used same memory
-            if bs1_mem_usage < self._mem_lower_bound:
-                return bs1 + 2
-            elif bs1_mem_usage > self._mem_upper_bound:
-                if bs1 <= 2:
-                    return 2
-                return bs1 - 2
-            else:
-                return bs1
+        def check_bs_suitable(estimated_bs) -> bool:
+            # Check batch size is between largest bs which uses lower memory than uppper bound
+            # and smallest bs which uses higher memory than upper bound.
+            if estimated_bs >= bs_arr[cur_max_bs_idx][0]:
+                if cur_max_bs_idx + 1 < len(bs_arr):
+                    if estimated_bs < bs_arr[cur_max_bs_idx+1][0]:
+                        return True
+                else:
+                    return True
+            return False
+            
+        x_idx, y_idx = 0, len(bs_arr) - 1
 
-        estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
-
-        # If estimated_bs is already tried and it used memory more than upper bound,
-        # set estimated_bs as lowest value of batch sizes using memory more than uppoer bound - 2
-        if estimated_bs in self._bs_try_history and self._bs_try_history[estimated_bs] > self._mem_upper_bound:
-            for bs, mem_usage in bs_arr:
-                if mem_usage > self._mem_upper_bound:
-                    estimated_bs = bs - 2
+        while x_idx < y_idx:
+            graident = (bs_arr[y_idx][1] - bs_arr[x_idx][1]) / (bs_arr[y_idx][0] - bs_arr[x_idx][0])
+            b = bs_arr[y_idx][1] - graident * bs_arr[y_idx][0]
+            if graident != 0:
+                estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
+                if check_bs_suitable(estimated_bs):
                     break
+
+            if distance_from_bound(bs_arr[x_idx+1]) < distance_from_bound(bs_arr[y_idx-1]):
+                x_idx += 1
+            else:
+                y_idx -= 1
+
+        if x_idx == y_idx:
+            if check_bs_suitable(bs_arr[cur_max_bs_idx] + 2):
+                estimated_bs = bs_arr[cur_max_bs_idx] + 2
+            else:
+                estimated_bs = bs_arr[cur_max_bs_idx]
 
         if estimated_bs > self._max_bs:
             estimated_bs = self._max_bs
