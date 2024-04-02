@@ -112,6 +112,11 @@ def _train_func_single_iter(
 
 
 def _save_nncf_model_weight(model: torch.nn.Module, cfg: OTXConfig, save_path: Path) -> str:
+    """Save nncf model weight after nncf finishes to build a model.
+
+    NNCF analyzes and get some statistics when buliding a model, which is time consuming.
+    To skip this part, nncf model weight is saved and load it on new process.
+    """
     from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 
     file_path = save_path / "nncf_model.pth"
