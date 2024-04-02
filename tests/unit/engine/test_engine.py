@@ -2,12 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+from unittest.mock import create_autospec
 
 import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.config.device import DeviceConfig
 from otx.core.types.export import OTXExportFormatType
+from otx.core.model.entity.base import OVModel
 from otx.core.types.precision import OTXPrecisionType
 from otx.engine import Engine
 
@@ -123,6 +125,9 @@ class TestEngine:
         mock_test.assert_called_once()
         mock_torch_load.assert_not_called()
 
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.test(checkpoint="path/to/model.xml")
+
     def test_prediction_after_training(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
@@ -136,6 +141,9 @@ class TestEngine:
 
         fxt_engine.predict(checkpoint="path/to/new/checkpoint")
         mock_torch_load.assert_called_with("path/to/new/checkpoint")
+
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.predict(checkpoint="path/to/model.xml")
 
     def test_prediction_with_ov_model(self, fxt_engine, mocker) -> None:
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
