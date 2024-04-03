@@ -15,6 +15,7 @@ import numpy as np
 import openvino
 from jsonargparse import ArgumentParser
 from openvino.model_api.models import Model
+from openvino.model_api.tilers import Tiler
 from torch import nn
 
 from otx.core.data.dataset.base import LabelInfo
@@ -463,8 +464,10 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         """Data transform function for PTQ."""
         np_data = self._customize_inputs(data_batch)
         image = np_data["inputs"][0]
-        resized_image = self.model.resize(image, (self.model.w, self.model.h))
-        resized_image = self.model.input_transform(resized_image)
+        # NOTE: Tiler wraps the model, so we need to unwrap it to get the model
+        model = self.model.model if isinstance(self.model, Tiler) else self.model
+        resized_image = model.resize(image, (model.w, model.h))
+        resized_image = model.input_transform(resized_image)
         return self.model._change_layout(resized_image)  # noqa: SLF001
 
     def _read_ptq_config_from_ir(self, ov_model: Model) -> dict[str, Any]:
