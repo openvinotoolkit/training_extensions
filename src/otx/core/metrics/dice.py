@@ -13,13 +13,13 @@ from otx.core.types.label import LabelInfo
 def _segm_callable(label_info: LabelInfo) -> MetricCollection:
     return MetricCollection(
         {
-            "Dice": PatchedDice(num_classes=label_info.num_classes, ignore_index=-1, average="macro"),
+            "Dice": OTXDice(num_classes=label_info.num_classes, ignore_index=-1, average="macro"),
             "mIoU": JaccardIndex(task="multiclass", num_classes=label_info.num_classes, ignore_index=255),
         },
     )
 
 
-class PatchedDice(Dice):
+class OTXDice(Dice):
     """Dice metric used for the OTX semantic segmentation task."""
 
     def update(self, preds: Tensor, target: Tensor) -> None:
