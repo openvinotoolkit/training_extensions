@@ -253,20 +253,24 @@ class MMDetectionTask(OTXDetectionTask):
         model.train()
         model.CLASSES = target_classes
 
-        if cfg.distributed:
-            convert_sync_batchnorm(model)
-
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
-            train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            is_nncf = isinstance(self, NNCFBaseTask)
             adapt_batch_size(
-                train_func,
-                cfg,
+                train_detector,
+                model,
                 datasets,
-                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                cfg,
+                cfg.distributed,
+                is_nncf,
+                meta=meta,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+                model_builder=getattr(self, "model_builder") if is_nncf else None,
             )
+
+        if cfg.distributed:
+            convert_sync_batchnorm(model)
 
         train_detector(
             model,

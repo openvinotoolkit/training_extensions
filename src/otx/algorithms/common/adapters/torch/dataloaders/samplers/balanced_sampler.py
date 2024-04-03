@@ -61,7 +61,7 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
         self.img_indices = {k: v for k, v in self.dataset.img_indices.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
-        self.num_trials = int(self.data_length / self.num_cls)
+        self.num_trials = max(int(self.data_length / self.num_cls), 1)
 
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)

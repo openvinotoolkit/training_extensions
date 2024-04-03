@@ -106,9 +106,7 @@ def fxt_cfg_custom_ssd(num_classes: int = 3) -> Dict:
 
     cfg = dict(
         type="CustomSingleStageDetector",
-        backbone=dict(
-            type="mmdet.mobilenetv2_w1", out_indices=(4, 5), frozen_stages=-1, norm_eval=False, pretrained=True
-        ),
+        backbone=dict(type="mobilenetv2_w1", out_indices=(4, 5), frozen_stages=-1, norm_eval=False, pretrained=True),
         neck=None,
         bbox_head=dict(
             type="CustomSSDHead",
