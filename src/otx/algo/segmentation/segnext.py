@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.metrics.dice import DiceCallable
+from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -28,7 +28,7 @@ class SegNext(MMSegCompatibleModel):
         variant: Literal["b", "s", "t"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,
         torch_compile: bool = False,
     ) -> None:
         model_name = f"segnext_{variant}"

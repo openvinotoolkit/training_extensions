@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
-from otx.core.metrics.dice import DiceCallable
+from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -26,7 +26,7 @@ class DinoV2Seg(MMSegCompatibleModel):
         num_classes: int,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,
         torch_compile: bool = False,
     ) -> None:
         model_name = "dino_v2_seg"

@@ -11,7 +11,7 @@ from torch.onnx import OperatorExportTypes
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
-from otx.core.metrics.dice import DiceCallable
+from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -31,7 +31,7 @@ class LiteHRNet(MMSegCompatibleModel):
         variant: Literal["18", 18, "s", "x"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,
         torch_compile: bool = False,
     ) -> None:
         self.model_name = f"litehrnet_{variant}"
