@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import os
 import sys
 from pathlib import Path
+from typing import Any
 from zipfile import ZipFile
 
 import pandas as pd
@@ -140,64 +142,6 @@ V1_V2_NAME_MAP = {
 }
 
 
-def normalize(data: pd.DataFrame) -> pd.DataFrame:
-    """Map v1 terms -> v2"""
-    # Map v1 tiling task -> v2 tiling model
-    tiling_indices = data["task"] == "tiling_instance_segmentation"
-    data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
-    data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
-    # Map anomaly metrics
-    if "test/image_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_classification"
-        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
-        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
-        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
-        anomaly_indices = data["task"] == "anomaly_detection"
-        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
-        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
-        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
-    if "test/pixel_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_segmentation"
-        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/pixel_F1Score"]
-        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/pixel_F1Score"]
-        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/pixel_F1Score"]
-    # Map other names
-    data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
-    # Fill blanks
-    data.loc[data["model"].isna(), "model"] = "all"
-    data.loc[data["data"].isna(), "data"] = "all"
-    data.loc[data["data_group"].isna(), "data_group"] = "all"
-    return data
-
-
-# Load all csv data
-def load_all(root_dir: Path, need_normalize: bool = False, pattern="*.csv"):
-    """Load all csv files and csv in zip files."""
-
-    all_data = []
-    # Load csv files in the directory
-    csv_files = root_dir.rglob(pattern)
-    for csv_file in csv_files:
-        data = pd.read_csv(csv_file)
-        if need_normalize:
-            data = normalize(data)
-        all_data.append(data)
-    # Load csv files in zip files
-    zip_files = Path(root_dir).glob("*.zip")
-    for zip_file in zip_files:
-        with ZipFile(zip_file) as zf:
-            csv_files = fnmatch.filter(zf.namelist(), pattern)
-            for csv_file in csv_files:
-                data = pd.read_csv(csv_file)
-                if need_normalize:
-                    data = normalize(data)
-                all_data.append(data)
-    return pd.concat(all_data, ignore_index=True)
-
-
-all_data = load_all(Path(__file__).parent, need_normalize=True)
-
-
 TASK_METRIC_MAP = {
     "anomaly_classification": "f1-score",
     "anomaly_detection": "f1-score",
@@ -228,11 +172,104 @@ TASK_ABBR_MAP = {
 }
 
 
+def load(root_dir: Path, need_normalize: bool = False, pattern="*.csv") -> pd.DataFrame:
+    """Load all csv files and csv in zip files."""
+
+    all_data = []
+    # Load csv files in the directory
+    csv_files = root_dir.rglob(pattern)
+    for csv_file in csv_files:
+        data = pd.read_csv(csv_file)
+        if need_normalize:
+            data = normalize(data)
+        all_data.append(data)
+    # Load csv files in zip files
+    zip_files = Path(root_dir).glob("*.zip")
+    for zip_file in zip_files:
+        with ZipFile(zip_file) as zf:
+            csv_files = fnmatch.filter(zf.namelist(), pattern)
+            for csv_file in csv_files:
+                data = pd.read_csv(csv_file)
+                if need_normalize:
+                    data = normalize(data)
+                all_data.append(data)
+    if len(all_data) == 0:
+        return pd.DataFrame()
+    all_data = pd.concat(all_data, ignore_index=True)
+    # Post process
+    version_entry = "otx_version" if "otx_version" in all_data else "version"
+    all_data[version_entry] = all_data[version_entry].astype(str)
+    str_entries = [version_entry, "otx_ref", "machine_name", "test_commit", "test_branch"]
+    for str_entry in str_entries:
+        all_data[str_entry] = all_data[str_entry].astype(str)  # Prevent strings like '2.0.0' being loaded as float
+    all_data["seed"] = all_data["seed"].fillna(0)
+    return average(
+        all_data,
+        [version_entry, "task", "model", "data", "seed"],
+    )  # Average mulitple retrials w/ same seed
+
+
+def normalize(data: pd.DataFrame) -> pd.DataFrame:
+    """Map v1 terms -> v2"""
+    # Map v1 tiling task -> v2 tiling model
+    tiling_indices = data["task"] == "tiling_instance_segmentation"
+    data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
+    data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
+    # Map anomaly metrics
+    if "test/image_F1Score" in data:
+        anomaly_indices = data["task"] == "anomaly_classification"
+        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+        anomaly_indices = data["task"] == "anomaly_detection"
+        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+    if "test/pixel_F1Score" in data:
+        anomaly_indices = data["task"] == "anomaly_segmentation"
+        data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/pixel_F1Score"]
+        data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/pixel_F1Score"]
+        data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/pixel_F1Score"]
+    # Map other names
+    data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
+    # Fill blanks
+    data.loc[data["model"].isna(), "model"] = "all"
+    data.loc[data["data"].isna(), "data"] = "all"
+    data.loc[data["data_group"].isna(), "data_group"] = "all"
+    return data
+
+
+def average(raw_data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
+    """Average raw data w.r.t. given keys."""
+    if raw_data is None or len(raw_data) == 0:
+        return pd.DataFrame()
+    # Flatten index
+    index_names = raw_data.index.names
+    column_names = raw_data.columns
+    raw_data = raw_data.reset_index()
+    # Average by keys
+    grouped = raw_data.groupby(keys)
+    aggregated = grouped.mean(numeric_only=True)
+    # Merge index columns
+    idx_columns = set(index_names) - set(keys)
+    for col in idx_columns:
+        aggregated[col] = "all"
+    # Merge tag columns (non-numeric & non-index)
+    tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
+    for col in tag_columns:
+        # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
+        aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
+    # Recover index
+    return aggregated.reset_index().set_index(index_names)
+
+
 def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.DataFrame:
+    """Summarize raw data into pivot table w.r.t given metrics"""
+    if raw_data is None or len(raw_data) == 0:
+        return pd.DataFrame()
     if not metrics:
         # Add all numeric metrics
         metrics = raw_data.select_dtypes(include=["number"]).columns.to_list()
-
     # Aggregate base
     data = raw_data.pivot_table(
         index=["task", "model", "otx_version"],
@@ -243,7 +280,6 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     data.columns = data.columns.rename(["stat", "metric", "data_group"])
     data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
     data00 = data
-
     # Aggregate by data_group
     data = raw_data.pivot_table(index=["task", "model", "otx_version"], values=metrics, aggfunc=["mean", "std"])
     columns = data.columns.to_frame()
@@ -252,7 +288,6 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     data.columns = data.columns.rename(["stat", "metric", "data_group"])
     data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
     data01 = data
-
     # Aggregate by model
     data = raw_data.pivot_table(
         index=["task", "otx_version"],
@@ -267,7 +302,6 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     data.columns = data.columns.rename(["stat", "metric", "data_group"])
     data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
     data10 = data
-
     # Aggregate by data_group & model
     data = raw_data.pivot_table(index=["task", "otx_version"], values=metrics, aggfunc=["mean", "std"])
     indices = data.index.to_frame()
@@ -280,7 +314,6 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     data.columns = data.columns.rename(["stat", "metric", "data_group"])
     data = data.reorder_levels(["data_group", "metric", "stat"], axis=1)
     data11 = data
-
     # Merge all
     data0 = pd.concat([data00, data01], axis=1)
     data1 = pd.concat([data10, data11], axis=1)
@@ -290,25 +323,28 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     return data.dropna(axis=1, how="all").fillna("")
 
 
-def summarize_table(task: str):
+ALL_DATA = load(Path(__file__).parent, need_normalize=True)
+
+
+def summarize_table(task: str) -> pd.DataFrame:
     """Summarize benchmark histoy table by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
         f"test/{score_metric}",
         "train/e2e_time",
     ]
-    raw_data = all_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+    raw_data = ALL_DATA.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
     return summarize(raw_data, metrics)
 
 
-def summarize_graph(task: str):
+def summarize_graph(task: str) -> list[Any]:
     """Summarize benchmark histoy graph by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
         f"test/{score_metric}",
         "train/e2e_time",
     ]
-    raw_data = all_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+    raw_data = ALL_DATA.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
     graphs = []
     for metric in metrics:
         data = raw_data.pivot_table(index=["otx_version"], columns=["model"], values=metric, aggfunc="mean")
@@ -329,7 +365,7 @@ def summarize_meta():
         "user_name",
         "machine_name",
     ]
-    data = all_data.pivot_table(index=["otx_version"], values=entries, aggfunc="first")
+    data = ALL_DATA.pivot_table(index=["otx_version"], values=entries, aggfunc="first")
     # NOTE: if needed -> data = data.style.set_sticky(axis="index")
     return data.reindex(entries, axis=1)
 
@@ -346,17 +382,17 @@ if __name__ == "__main__":
     output_root = Path(args.output_root)
 
     print(f"Loading {args.pattern} in input_root...")
-    data = load_all(input_root, need_normalize=args.normalize, pattern=args.pattern)
-    if data is None:
+    raw_data = load(input_root, need_normalize=args.normalize, pattern=args.pattern)
+    if len(raw_data) == 0:
         print("No data loaded")
         sys.exit(-1)
     output_root.mkdir(parents=True, exist_ok=True)
-    data.to_csv(output_root / "perf-benchamrk-raw-all.csv")
+    raw_data.to_csv(output_root / "perf-benchamrk-raw-all.csv")
     print("Saved merged raw data to ", str(output_root / "perf-benchamrk-raw-all.csv"))
 
-    tasks = sorted(all_data["task"].unique())
+    tasks = sorted(raw_data["task"].unique())
     for task in tasks:
-        data = all_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+        data = raw_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
         data = summarize(data)
         data.to_excel(output_root / f"perf-benchmark-summary-{task.replace('/', '_')}.xlsx")
         print(f"    Saved {task} summary to ", str(output_root / f"perf-benchmark-summary-{task}.xlsx"))

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import gc
 import logging
-import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +15,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from .history import summary
 
 log = logging.getLogger(__name__)
 
@@ -279,7 +280,7 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
-        return self.average_result(result, keys=["task", "model", "data_group", "data"])
+        return summary.average(result, keys=["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         print(" ".join(command))
@@ -371,39 +372,6 @@ class Benchmark:
             return None
 
         return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
-
-    @staticmethod
-    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame | None:
-        """Average result w.r.t. given keys
-
-        Args:
-            result (pd.DataFrame): Result data frame
-            keys (list[str]): Keys to summarize whole data
-
-        Retruns:
-            pd.DataFrame: Averaged result table
-        """
-        if data is None:
-            return None
-
-        # Flatten index
-        index_names = data.index.names
-        column_names = data.columns
-        data = data.reset_index()
-        # Average by keys
-        grouped = data.groupby(keys)
-        aggregated = grouped.mean(numeric_only=True)
-        # Merge index columns
-        idx_columns = set(index_names) - set(keys)
-        for col in idx_columns:
-            aggregated[col] = "all"
-        # Merge tag columns (non-numeric & non-index)
-        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
-        for col in tag_columns:
-            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        # Recover index
-        return aggregated.reset_index().set_index(index_names)
 
     def check(self, result: pd.DataFrame, criteria: list[Criterion]):
         """Check result w.r.t. reference data.

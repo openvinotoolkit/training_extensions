@@ -17,6 +17,7 @@ from cpuinfo import get_cpu_info
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
+from .history import summary
 
 log = logging.getLogger(__name__)
 
@@ -364,15 +365,15 @@ def fxt_benchmark_summary(
     yield
 
     raw_results = Benchmark.load_result(fxt_output_root)
-    if raw_results is None:
+    if raw_results is None or len(raw_results) == 0:
         print("No benchmark results loaded in ", fxt_output_root)
         return
 
     summary_results = [
-        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
-        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
-        Benchmark.average_result(raw_results, ["task", "model"]),
-        Benchmark.average_result(raw_results, ["task"]),
+        summary.average(raw_results, ["task", "model", "data_group", "data"]),
+        summary.average(raw_results, ["task", "model", "data_group"]),
+        summary.average(raw_results, ["task", "model"]),
+        summary.average(raw_results, ["task"]),
     ]
     summary_results = pd.concat(summary_results)
 
