@@ -87,7 +87,10 @@ class OTXInstanceSegModel(
             self.tile_config.max_num_instances,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
-            output = self.forward(batch_tile_input)
+            if self.explain_mode:
+                output = self.forward_explain(batch_tile_input)
+            else:
+                output = self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
                 msg = "Loss output is not supported for tile merging"
                 raise TypeError(msg)
@@ -95,16 +98,24 @@ class OTXInstanceSegModel(
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        return InstanceSegBatchPredEntity(
-            batch_size=inputs.batch_size,
-            images=[pred_entity.image for pred_entity in pred_entities],
-            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
-            scores=[pred_entity.score for pred_entity in pred_entities],
-            bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
-            labels=[pred_entity.labels for pred_entity in pred_entities],
-            masks=[pred_entity.masks for pred_entity in pred_entities],
-            polygons=[pred_entity.polygons for pred_entity in pred_entities],
-        )
+        batch_pred_entitity_params = {
+            "batch_size": inputs.batch_size,
+            "images": [pred_entity.image for pred_entity in pred_entities],
+            "imgs_info": [pred_entity.img_info for pred_entity in pred_entities],
+            "scores": [pred_entity.score for pred_entity in pred_entities],
+            "bboxes": [pred_entity.bboxes for pred_entity in pred_entities],
+            "labels": [pred_entity.labels for pred_entity in pred_entities],
+            "masks": [pred_entity.masks for pred_entity in pred_entities],
+            "polygons": [pred_entity.polygons for pred_entity in pred_entities],
+        }
+        if self.explain_mode:
+            batch_pred_entitity_params.update(
+                {
+                    "saliency_maps": [pred_entity.saliency_map for pred_entity in pred_entities],
+                    "feature_vectors": [pred_entity.feature_vector for pred_entity in pred_entities],
+                },
+            )
+        return InstanceSegBatchPredEntity(**batch_pred_entitity_params)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -240,8 +251,12 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
+        from otx.core.data.entity.tile import OTXTileBatchDataEntity
         from otx.algo.hooks.recording_forward_hook import get_feature_vector
 
+        if isinstance(inputs, OTXTileBatchDataEntity):
+            return self.forward_tiles(inputs)
+    
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 

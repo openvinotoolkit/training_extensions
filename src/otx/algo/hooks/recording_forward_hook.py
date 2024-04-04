@@ -434,7 +434,10 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        masks, scores, labels = (pred.masks, pred.scores, pred.labels)
+        if isinstance(pred, dict):
+            masks, scores, labels = pred["masks"], pred["scores"], pred["labels"]
+        else:
+            masks, scores, labels = (pred.masks, pred.scores, pred.labels)
         _, height, width = masks.shape
 
         saliency_map = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)

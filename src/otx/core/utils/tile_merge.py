@@ -9,6 +9,8 @@ from abc import abstractmethod
 from collections import defaultdict
 from typing import Generic
 
+import cv2
+import numpy as np
 import torch
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
@@ -31,20 +33,25 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
     def __init__(
         self,
         img_infos: list[ImageInfo],
+        tile_size: int,
         iou_threshold: float = 0.45,
         max_num_instances: int = 500,
     ) -> None:
         self.img_infos = img_infos
+        self.tile_size = tile_size
         self.iou_threshold = iou_threshold
         self.max_num_instances = max_num_instances
 
     @abstractmethod
-    def _merge_entities(self, img_info: ImageInfo, entities: list[T_OTXDataEntity]) -> T_OTXDataEntity:
+    def _merge_entities(
+        self, img_info: ImageInfo, entities: list[T_OTXDataEntity], explain_mode: bool = False
+    ) -> T_OTXDataEntity:
         """Merge tile predictions to one single full-size prediction data entity.
 
         Args:
             img_info (ImageInfo): Image information about the original image before tiling.
             entities (list[T_OTXDataEntity]): List of tile prediction entities.
+            explain_mode (bool): Whether or not tiles have explain features. Default: False.
 
         Returns:
             T_OTXDataEntity: Merged prediction entity.
@@ -102,14 +109,22 @@ class DetectionTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
+        explain_mode = isinstance(batch_tile_preds[0], DetBatchPredEntityWithXAI)
+        batch_size = len(batch_tile_preds)
+        # feature_vectors: list | torch.Tensor = []
+        # saliency_maps: list | torch.Tensor = []
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores in zip(
+            saliency_maps = tile_preds.saliency_maps if explain_mode else [] * batch_size
+            feature_vectors = tile_preds.feature_vectors if explain_mode else [] * batch_size
+            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_s_map, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
                 tile_preds.scores,
+                saliency_maps,
+                feature_vectors,
             ):
                 offset_x, offset_y, _, _ = tile_attr["roi"]
                 tile_bboxes[:, 0::2] += offset_x
@@ -120,26 +135,29 @@ class DetectionTileMerge(TileMerge):
                     img_ids.append(tile_id)
                 tile_img_info.padding = tile_attr["roi"]
 
-                entities_to_merge[tile_id].append(
-                    DetPredEntity(
-                        image=torch.empty(tile_img_info.ori_shape),
-                        img_info=tile_img_info,
-                        bboxes=tile_bboxes,
-                        labels=tile_labels,
-                        score=tile_scores,
-                    ),
-                )
+                entity_params = {
+                    "image": torch.empty(tile_img_info.ori_shape),
+                    "img_info": tile_img_info,
+                    "bboxes": tile_bboxes,
+                    "labels": tile_labels,
+                    "score": tile_scores,
+                }
+                if explain_mode:
+                    entity_params.update({"feature_vector": tile_f_vect, "saliency_map": tile_s_map})
+                entities_to_merge[tile_id].append(DetPredEntity(**entity_params))
+
         return [
-            self._merge_entities(image_info, entities_to_merge[img_id])
+            self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
             for img_id, image_info in zip(img_ids, self.img_infos)
         ]
 
-    def _merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity]) -> DetPredEntity:
+    def _merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity], explain_mode: bool) -> DetPredEntity:
         """Merge tile predictions to one single prediction.
 
         Args:
             img_info (ImageInfo): Image information about the original image before tiling.
             entities (list[DetPredEntity]): List of tile prediction entities.
+            explain_mode (bool): Whether or not tiles have explain features. Default: False.
 
         Returns:
             DetPredEntity: Merged prediction entity.
@@ -147,6 +165,9 @@ class DetectionTileMerge(TileMerge):
         bboxes: list | torch.Tensor = []
         labels: list | torch.Tensor = []
         scores: list | torch.Tensor = []
+        feature_vectors = []
+        saliency_maps = []
+        tiles_coords = []
         img_size = img_info.ori_shape
         for tile_entity in entities:
             num_preds = len(tile_entity.bboxes)
@@ -154,28 +175,108 @@ class DetectionTileMerge(TileMerge):
                 bboxes.extend(tile_entity.bboxes)
                 labels.extend(tile_entity.labels)
                 scores.extend(tile_entity.score)
+            if explain_mode:
+                tiles_coords.append(tile_entity.img_info.padding)
+                feature_vectors.append(tile_entity.feature_vector)
+                saliency_maps.append(tile_entity.saliency_map)
 
         bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.empty((0, 4), device=img_info.device)
         labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
         scores = torch.stack(scores) if len(scores) > 0 else torch.empty((0,), device=img_info.device)
 
-        bboxes, labels, scores, _ = self.nms_postprocess(
-            bboxes,
-            scores,
-            labels,
-        )
+        bboxes, labels, scores, _ = self.nms_postprocess(bboxes, scores, labels)
 
-        return DetPredEntity(
-            image=torch.empty(img_size),
-            img_info=img_info,
-            score=scores,
-            bboxes=tv_tensors.BoundingBoxes(
-                bboxes,
-                canvas_size=img_size,
-                format="XYXY",
-            ),
-            labels=labels,
-        )
+        entity_params = {
+            "image": torch.empty(img_size),
+            "img_info": img_info,
+            "bboxes": tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
+            "labels": labels,
+            "score": scores,
+        }
+
+        if explain_mode:
+            merged_vector = np.mean(feature_vectors, axis=0)
+            merged_saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
+            entity_params.update({"feature_vector": merged_vector, "saliency_map": merged_saliency_map})
+            return DetPredEntityWithXAI(**entity_params)
+
+        return DetPredEntity(**entity_params)
+
+    def _merge_saliency_maps(
+        self,
+        saliency_maps: list[np.array],
+        shape: tuple[int, int],
+        tiles_coords: list[tuple[int, int, int, int]],
+    ):
+        """Merging saliency maps from each tile for PyTorch implementation.
+        OV implementation is on ModelAPI side. Unlike ModelAPI implementation,
+        it doesn't have the first tile with resized untiled image.
+
+        Args:
+            saliency_maps: list of saliency maps, shape of each map is (Nc, H, W)
+            shape: shape of the original image
+            tiles_coords: coordinates of tiles
+
+        Returns:
+            Merged saliency map with shape (Nc, H, W)
+        """
+        if len(saliency_maps[0].shape) == 1:
+            return np.ndarray([])
+
+        num_classes = saliency_maps[0].shape[0]
+        map_h, map_w = saliency_maps[0].shape[1:]
+
+        image_h, image_w = shape
+        ratio = map_h / min(image_h, self.tile_size), map_w / min(image_w, self.tile_size)
+
+        image_map_h = int(image_h * ratio[0])
+        image_map_w = int(image_w * ratio[1])
+        merged_map = np.zeros((num_classes, image_map_h, image_map_w))
+
+        for i, saliency_map in enumerate(saliency_maps):
+            for class_idx in range(num_classes):
+                if len(saliency_map.shape) == 4:
+                    saliency_map = saliency_map.squeeze(0)
+
+                cls_map = saliency_map[class_idx]
+
+                x_1, y_1, map_w, map_h = tiles_coords[i]
+                x_2, y_2 = x_1 + map_w, y_1 + map_h
+
+                y_1, x_1 = int(y_1 * ratio[0]), int(x_1 * ratio[1])
+                y_2, x_2 = int(y_2 * ratio[0]), int(x_2 * ratio[1])
+
+                map_h, map_w = cls_map.shape
+
+                if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
+                    cls_map = cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1))
+
+                map_h, map_w = y_2 - y_1, x_2 - x_1
+
+                for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
+                    map_pixel = cls_map[hi, wi]
+                    merged_pixel = merged_map[class_idx][y_1 + hi, x_1 + wi]
+                    if merged_pixel != 0:
+                        merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_pixel)
+                    else:
+                        merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
+
+        for class_idx in range(num_classes):
+            merged_map[class_idx] = _non_linear_normalization(merged_map[class_idx])
+
+        return merged_map.astype(np.uint8)
+
+
+def _non_linear_normalization(saliency_map):
+    """Use non-linear normalization y=x**1.5 for 2D saliency maps."""
+    min_soft_score = np.min(saliency_map)
+    # Make merged_map distribution positive to perform non-linear normalization y=x**1.5
+    saliency_map = (saliency_map - min_soft_score) ** 1.5
+
+    max_soft_score = np.max(saliency_map)
+    saliency_map = 255.0 / (max_soft_score + 1e-12) * saliency_map
+
+    return np.floor(saliency_map)
 
 
 class InstanceSegTileMerge(TileMerge):
@@ -195,15 +296,21 @@ class InstanceSegTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
+        explain_mode = isinstance(batch_tile_preds[0], InstanceSegBatchPredEntityWithXAI)
+        batch_size = len(batch_tile_preds)
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks in zip(
+            saliency_maps = tile_preds.saliency_maps if explain_mode else [] * batch_size
+            feature_vectors = tile_preds.feature_vectors if explain_mode else [] * batch_size
+            for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
                 tile_preds.bboxes,
                 tile_preds.labels,
                 tile_preds.scores,
                 tile_preds.masks,
+                # saliency_maps,
+                feature_vectors,
             ):
                 keep_indices = tile_masks.to_sparse().sum((1, 2)).to_dense() > 0
                 keep_indices = keep_indices.nonzero(as_tuple=True)[0]
@@ -221,24 +328,30 @@ class InstanceSegTileMerge(TileMerge):
                     img_ids.append(tile_id)
                 tile_img_info.padding = tile_attr["roi"]
 
-                entities_to_merge[tile_id].append(
-                    InstanceSegPredEntity(
-                        image=torch.empty(tile_img_info.ori_shape),
-                        img_info=tile_img_info,
-                        bboxes=_bboxes,
-                        labels=_labels,
-                        score=_scores,
-                        masks=_masks.to_sparse(),
-                        polygons=[],
-                    ),
-                )
+                entity_params = {
+                    "image": torch.empty(tile_img_info.ori_shape),
+                    "img_info": tile_img_info,
+                    "bboxes": _bboxes,
+                    "labels": _labels,
+                    "score": _scores,
+                    "masks": _masks.to_sparse(),
+                    "polygons": [],
+                }
+                if explain_mode:
+                    entity_params.update({
+                        "feature_vector": tile_f_vect, 
+                                          "saliency_map": []
+                                          })
+                    entities_to_merge[tile_id].append(InstanceSegPredEntityWithXAI(**entity_params))
+                else:
+                    entities_to_merge[tile_id].append(InstanceSegPredEntity(**entity_params))
 
         return [
-            self._merge_entities(image_info, entities_to_merge[img_id])
+            self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
             for img_id, image_info in zip(img_ids, self.img_infos)
         ]
 
-    def _merge_entities(self, img_info: ImageInfo, entities: list[InstanceSegPredEntity]) -> InstanceSegPredEntity:
+    def _merge_entities(self, img_info: ImageInfo, entities: list[InstanceSegPredEntity], explain_mode) -> InstanceSegPredEntity:
         """Merge tile predictions to one single prediction.
 
         Args:
@@ -252,6 +365,9 @@ class InstanceSegTileMerge(TileMerge):
         labels: list | torch.Tensor = []
         scores: list | torch.Tensor = []
         masks: list | torch.Tensor = []
+        feature_vectors = []
+        saliency_maps = []
+        tiles_coords = []
         img_size = img_info.ori_shape
         for tile_entity in entities:
             num_preds = len(tile_entity.bboxes)
@@ -268,6 +384,10 @@ class InstanceSegTileMerge(TileMerge):
                 masks.extend(
                     torch.sparse_coo_tensor(mask_indices, mask_values, (num_preds, *img_size)),
                 )
+            if explain_mode:
+                # tiles_coords.append(tile_entity.img_info.padding)
+                feature_vectors.append(tile_entity.feature_vector)
+                # saliency_maps.append(tile_entity.saliency_map)
 
         bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.empty((0, 4), device=img_info.device)
         labels = torch.stack(labels) if len(labels) > 0 else torch.empty((0,), device=img_info.device)
@@ -275,16 +395,29 @@ class InstanceSegTileMerge(TileMerge):
         masks = masks if len(masks) > 0 else torch.empty((0, *img_size))
 
         bboxes, labels, scores, masks = self.nms_postprocess(bboxes, scores, labels, masks)
-        return InstanceSegPredEntity(
-            image=torch.empty(img_size),
-            img_info=img_info,
-            score=scores,
-            bboxes=tv_tensors.BoundingBoxes(
-                bboxes,
-                canvas_size=img_size,
-                format="XYXY",
-            ),
-            labels=labels,
-            masks=tv_tensors.Mask(masks, dtype=bool),
-            polygons=[],
-        )
+
+        entity_params = {
+            "image": torch.empty(img_size),
+            "img_info": img_info,
+            "score": scores,
+            "bboxes": tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
+            "labels": labels,
+            "masks": tv_tensors.Mask(masks, dtype=bool),
+            "polygons": [],
+        }
+
+        if explain_mode:
+            merged_vector = np.mean(feature_vectors, axis=0)
+            # merged_saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
+            # Find a way to calculate num_classes
+            merged_saliency_map = self.get_saliency_maps_from_masks(labels, scores, masks, num_classes=3)
+            entity_params.update({"feature_vector": merged_vector, "saliency_map": merged_saliency_map})
+            return InstanceSegPredEntityWithXAI(**entity_params)
+
+        return InstanceSegPredEntity(**entity_params)
+    
+    def get_saliency_maps_from_masks(self, labels, scores, masks, num_classes):
+        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook, feature_vector_fn
+        pred = {"labels": labels, "scores": scores, "masks": masks}
+        return MaskRCNNRecordingForwardHook.average_and_normalize(pred, num_classes)
+
