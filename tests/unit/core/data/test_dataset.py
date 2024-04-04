@@ -4,6 +4,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from datumaro.components.annotation import Mask
 from otx.core.data.dataset.action_classification import OTXActionClsDataset
 from otx.core.data.dataset.classification import HLabelInfo
 from otx.core.data.dataset.segmentation import OTXSegmentationDataset
@@ -104,3 +105,39 @@ class TestOTXSegmentationDataset:
         # and others are filled with ignore_index.
         gt_seg_map = next(iter(dataset)).gt_seg_map
         assert gt_seg_map.sum() == (10 * 10 - 10) * 100
+
+    def test_overflown_ignore_index(self, fxt_mock_dm_subset):
+        dataset = OTXSegmentationDataset(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=lambda x: x,
+            mem_cache_img_max_size=None,
+            ignore_index=65536,
+        )
+        with pytest.raises(
+            ValueError,
+            match="It is not currently support an ignore index which is more than 255.",
+        ):
+            _ = next(iter(dataset))
+
+    @pytest.fixture(params=["none", "overflow"])
+    def fxt_invalid_label(self, fxt_dm_item, monkeypatch, request):
+        for ann in fxt_dm_item.annotations:
+            if isinstance(ann, Mask):
+                if request.param == "none":
+                    monkeypatch.setattr(ann, "label", None)
+                elif request.param == "overflow":
+                    monkeypatch.setattr(ann, "label", 65536)
+
+    def test_overflown_label(self, fxt_invalid_label, fxt_mock_dm_subset):
+        dataset = OTXSegmentationDataset(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=lambda x: x,
+            mem_cache_img_max_size=None,
+            ignore_index=100,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Mask's label index should not be (.*).",
+        ):
+            _ = next(iter(dataset))

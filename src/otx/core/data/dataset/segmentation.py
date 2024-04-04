@@ -110,7 +110,7 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
             raise ValueError(msg)
 
         if index > 255:
-            msg = "It is not currently support a label index which is more than 255."
+            msg = "Mask's label index should not be more than 255."
             raise ValueError(msg, index)
 
         this_class_mask = _make_index_mask(
