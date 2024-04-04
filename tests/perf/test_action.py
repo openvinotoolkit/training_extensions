@@ -21,7 +21,7 @@ class TestPerfActionClassification(PerfTestBase):
         Benchmark.Model(task="action/action_classification", name="x3d", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
             name="ucf-5percent-small",
             path=Path("action/action_classification/ucf_kinetics_5percent_small"),
@@ -105,7 +105,7 @@ class TestPerfActionDetection(PerfTestBase):
         Benchmark.Model(task="action/action_detection", name="x3d_fastrcnn", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
             name="ucf-5percent-small",
             path=Path("action/action_detection/UCF101_ava_5percent"),
