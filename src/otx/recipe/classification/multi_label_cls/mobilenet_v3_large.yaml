@@ -46,6 +46,9 @@ overrides:
     task: MULTI_LABEL_CLS
     config:
       data_format: datumaro
+      mem_cache_img_max_size:
+        - 500
+        - 500
       train_subset:
         batch_size: 64
         transforms:

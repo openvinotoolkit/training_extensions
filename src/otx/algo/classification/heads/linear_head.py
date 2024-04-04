@@ -43,7 +43,7 @@ class LinearClsHead(BaseModule):
         num_classes: int,
         in_channels: int,
         loss: nn.Module,
-        topk: int | tuple[int] = (1,),
+        topk: int | tuple = (1,),
         init_cfg: dict | None = None,
         **kwargs,
     ):

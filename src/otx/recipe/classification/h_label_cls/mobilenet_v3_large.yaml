@@ -46,6 +46,9 @@ overrides:
   data:
     task: H_LABEL_CLS
     config:
+      mem_cache_img_max_size:
+        - 500
+        - 500
       data_format: datumaro
       train_subset:
         batch_size: 64

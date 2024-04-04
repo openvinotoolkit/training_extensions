@@ -84,6 +84,7 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             head=LinearClsHead(
                 num_classes=self.num_classes,
                 in_channels=960,
+                topk=(1, 5) if self.num_classes >= 5 else (1,),
                 loss=loss if isinstance(loss, nn.Module) else loss(),
             ),
         )
@@ -198,6 +199,9 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
                 num_classes=self.num_classes,
                 in_channels=960,
                 hid_channels=1280,
+                normalized=True,
+                scale=7.0,
+                activation_callable=nn.PReLU(),
                 loss=loss if isinstance(loss, nn.Module) else loss(),
             ),
         )

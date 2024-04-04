@@ -3,6 +3,10 @@ model:
   init_args:
     mode: large
     num_classes: 1000
+    loss_callable:
+      class_path: torch.nn.CrossEntropyLoss
+      init_args:
+        reduction: none
 
     optimizer:
       class_path: torch.optim.SGD
@@ -38,6 +42,9 @@ overrides:
         patience: 3
   data:
     config:
+      mem_cache_img_max_size:
+        - 500
+        - 500
       train_subset:
         batch_size: 64
         transforms:
