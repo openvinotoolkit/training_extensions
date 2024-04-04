@@ -38,7 +38,7 @@ TEMPLATE_ID_DICT = {
     },
     "Custom_Image_Classification_MobileNet-V3-large-1x": {
         "task": OTXTaskType.MULTI_CLASS_CLS,
-        "model_name": "mobilenet_v3_large_light",
+        "model_name": "mobilenet_v3_large",
     },
     # DETECTION
     "Custom_Object_Detection_Gen3_ATSS": {

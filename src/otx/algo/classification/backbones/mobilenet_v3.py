@@ -14,6 +14,7 @@ from otx.algo.utils.mmengine_utils import load_from_http, load_checkpoint_to_mod
 import torch.nn.functional as F
 from torch import nn
 import torch
+from mmpretrain.registry import MODELS
 
 pretrained_root = "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
 pretrained_urls = {
@@ -331,6 +332,7 @@ class MobileNetV3(MobileNetV3Base):
                 m.bias.data.zero_()
 
 
+@MODELS.register_module()
 class OTXMobileNetV3(MobileNetV3):
     """MobileNetV3 model for OTX."""
 
