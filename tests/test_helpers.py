@@ -4,6 +4,8 @@
 
 """Helper functions for tests."""
 
+from pathlib import Path
+
 import numpy as np
 
 
@@ -40,3 +42,21 @@ def generate_random_bboxes(
     areas = (x_max - x_min) * (y_max - y_min)
     bboxes = np.column_stack((x_min, y_min, x_max, y_max))
     return bboxes[areas > 0]
+
+
+def find_folder(base_path: Path, folder_name: str) -> Path:
+    """
+    Find the folder with the given name within the specified base path.
+
+    Args:
+        base_path (Path): The base path to search within.
+        folder_name (str): The name of the folder to find.
+
+    Returns:
+        Path: The path to the folder.
+    """
+    for folder_path in base_path.rglob(folder_name):
+        if folder_path.is_dir():
+            return folder_path
+    msg = f"Folder {folder_name} not found in {base_path}."
+    raise FileNotFoundError(msg)
