@@ -8,8 +8,8 @@ from __future__ import annotations
 from functools import partial
 from typing import TYPE_CHECKING, Callable
 
+import cv2
 import numpy as np
-import torch
 from datumaro.components.annotation import Image, Mask
 from torchvision import tv_tensors
 
@@ -23,7 +23,113 @@ from otx.core.types.label import SegLabelInfo
 from .base import OTXDataset
 
 if TYPE_CHECKING:
-    from datumaro import DatasetSubset
+    from datumaro import DatasetItem, DatasetSubset
+
+
+# NOTE: It is copied from https://github.com/openvinotoolkit/datumaro/pull/1409
+# It will be replaced in the future.
+def _make_index_mask(
+    binary_mask: np.ndarray,
+    index: int,
+    ignore_index: int = 0,
+    dtype: np.dtype | None = None,
+) -> np.ndarray:
+    """Create an index mask from a binary mask by filling a given index value.
+
+    Args:
+        binary_mask: Binary mask to create an index mask.
+        index: Scalar value to fill the ones in the binary mask.
+        ignore_index: Scalar value to fill in the zeros in the binary mask.
+            Defaults to 0.
+        dtype: Data type for the resulting mask. If not specified,
+            it will be inferred from the provided index. Defaults to None.
+
+    Returns:
+        np.ndarray: Index mask created from the binary mask.
+
+    Raises:
+        ValueError: If dtype is not specified and incompatible scalar types are used for index
+            and ignore_index.
+
+    Examples:
+        >>> binary_mask = np.eye(2, dtype=np.bool_)
+        >>> index_mask = make_index_mask(binary_mask, index=10, ignore_index=255, dtype=np.uint8)
+        >>> print(index_mask)
+        array([[ 10, 255],
+               [255,  10]], dtype=uint8)
+    """
+    if dtype is None:
+        dtype = np.min_scalar_type(index)
+        if dtype != np.min_scalar_type(ignore_index):
+            raise ValueError
+
+    flipped_zero_np_scalar = ~np.full((), fill_value=0, dtype=dtype)
+
+    # NOTE: This dispatching rule is required for a performance boost
+    if ignore_index == flipped_zero_np_scalar:
+        flipped_index = ~np.full((), fill_value=index, dtype=dtype)
+        return ~(binary_mask * flipped_index)
+
+    mask = binary_mask * np.full((), fill_value=index, dtype=dtype)
+
+    if ignore_index == 0:
+        return mask
+
+    return np.where(binary_mask, mask, ignore_index)
+
+
+def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_index: int) -> np.ndarray:
+    """Extract class mask from Datumaro masks.
+
+    This is a temporary workaround and will be replaced with the native Datumaro interfaces
+    after some works, e.g., https://github.com/openvinotoolkit/datumaro/pull/1409 are done.
+
+    Args:
+        item: Datumaro dataset item having mask annotations.
+        img_shape: Image shape (H, W).
+        ignore_index: Scalar value to fill in the zeros in the binary mask.
+
+    Returns:
+        2D numpy array
+    """
+    if ignore_index > 255:
+        msg = "It is not currently support an ignore index which is more than 255."
+        raise ValueError(msg, ignore_index)
+
+    class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
+
+    for mask in sorted(
+        [ann for ann in item.annotations if isinstance(ann, Mask)],
+        key=lambda ann: ann.z_order,
+    ):
+        binary_mask = mask.image
+        index = mask.label
+
+        if index is None:
+            msg = "Mask's label index should not be None."
+            raise ValueError(msg)
+
+        if index > 255:
+            msg = "It is not currently support a label index which is more than 255."
+            raise ValueError(msg, index)
+
+        this_class_mask = _make_index_mask(
+            binary_mask=binary_mask,
+            index=index,
+            ignore_index=ignore_index,
+            dtype=np.uint8,
+        )
+
+        if this_class_mask.shape != img_shape:
+            this_class_mask = cv2.resize(
+                this_class_mask,
+                dsize=(img_shape[1], img_shape[0]),  # NOTE: cv2.resize() uses (width, height) format
+                interpolation=cv2.INTER_NEAREST,
+            )
+
+        class_mask = np.where(this_class_mask != ignore_index, this_class_mask, class_mask)
+
+    return class_mask
 
 
 class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
@@ -38,6 +144,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
+        ignore_index: int = 255,
     ) -> None:
         super().__init__(
             dm_subset,
@@ -52,6 +159,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
         )
+        self.ignore_index = ignore_index
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -60,13 +168,8 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
 
-        # create 2D class mask. We use np.sum() since Datumaro returns 3D masks (one for each class)
-        mask_anns = np.sum(
-            [ann.as_class_mask() for ann in item.annotations if isinstance(ann, Mask)],
-            axis=0,
-            dtype=np.uint8,
-        )
-        mask = torch.as_tensor(mask_anns, dtype=torch.long)
+        mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
+
         # assign possible ignored labels from dataset to max label class + 1.
         # it is needed to compute mDice metric.
         mask[mask == 255] = num_classes

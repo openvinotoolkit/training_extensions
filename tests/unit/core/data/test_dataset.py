@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from otx.core.data.dataset.action_classification import OTXActionClsDataset
 from otx.core.data.dataset.classification import HLabelInfo
+from otx.core.data.dataset.segmentation import OTXSegmentationDataset
 
 
 class TestDataset:
@@ -87,3 +88,19 @@ class TestDataset:
 
             assert item.image.shape[:2] == (h_expected, w_expected)
             assert item.img_info.img_shape == (h_expected, w_expected)
+
+
+class TestOTXSegmentationDataset:
+    def test_ignore_index(self, fxt_mock_dm_subset):
+        dataset = OTXSegmentationDataset(
+            dm_subset=fxt_mock_dm_subset,
+            transforms=lambda x: x,
+            mem_cache_img_max_size=None,
+            ignore_index=100,
+        )
+
+        # The mask is np.eye(10) with label_id = 0,
+        # so that the diagonal is filled with zero
+        # and others are filled with ignore_index.
+        gt_seg_map = next(iter(dataset)).gt_seg_map
+        assert gt_seg_map.sum() == (10 * 10 - 10) * 100
