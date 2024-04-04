@@ -31,7 +31,7 @@ class LiteHRNet(MMSegCompatibleModel):
         variant: Literal["18", 18, "s", "x"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
         self.model_name = f"litehrnet_{variant}"

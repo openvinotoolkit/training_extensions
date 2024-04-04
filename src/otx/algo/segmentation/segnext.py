@@ -28,7 +28,7 @@ class SegNext(MMSegCompatibleModel):
         variant: Literal["b", "s", "t"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
         model_name = f"segnext_{variant}"

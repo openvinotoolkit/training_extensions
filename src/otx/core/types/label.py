@@ -271,7 +271,7 @@ class HLabelInfo(LabelInfo):
 class SegLabelInfo(LabelInfo):
     """Meta information of Semantic Segmentation."""
 
-    def __init__(self, label_names: list[str], label_groups: list[list[str]]) -> None:
+    def __init__(self, label_names: list[str], label_groups: list[list[str]], ignore_index: int | None = 255) -> None:
         if not any(word.lower() == "background" for word in label_names):
             msg = (
                 "Currently, no background label exists for `label_names`. "
@@ -281,6 +281,7 @@ class SegLabelInfo(LabelInfo):
             warnings.warn(msg, stacklevel=2)
             label_names.insert(0, "Background")
         super().__init__(label_names, label_groups)
+        self.ignore_index = ignore_index
 
 
 @dataclass

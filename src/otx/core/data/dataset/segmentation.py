@@ -38,6 +38,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         max_refetch: int = 1000,
         image_color_channel: ImageColorChannel = ImageColorChannel.RGB,
         stack_images: bool = True,
+        ignore_index: int = 255,
     ) -> None:
         super().__init__(
             dm_subset,
@@ -51,6 +52,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
+            ignore_index=ignore_index,
         )
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:

@@ -42,7 +42,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OT
         num_classes: int,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ):
         super().__init__(
@@ -100,7 +100,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
@@ -233,7 +233,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         **kwargs,
     ) -> None:
         super().__init__(

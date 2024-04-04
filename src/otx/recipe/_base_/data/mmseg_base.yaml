@@ -6,6 +6,7 @@ config:
   data_format: common_semantic_segmentation_with_subset_dirs
   include_polygons: true
   unannotated_items_ratio: 0.0
+  ignore_index: 255
   train_subset:
     subset_name: train
     batch_size: 8
@@ -35,6 +36,7 @@ config:
         size:
           - 512
           - 512
+        pad_val: { img: 0, seg: 255 }
       - type: PackSegInputs
     sampler:
       class_path: torch.utils.data.RandomSampler

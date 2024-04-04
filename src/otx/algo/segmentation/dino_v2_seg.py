@@ -26,7 +26,7 @@ class DinoV2Seg(MMSegCompatibleModel):
         num_classes: int,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = SegmCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
         model_name = "dino_v2_seg"

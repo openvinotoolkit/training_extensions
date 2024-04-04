@@ -12,6 +12,7 @@ import torch
 from importlib_resources import files
 from omegaconf import OmegaConf
 from otx.core.model.segmentation import MMSegCompatibleModel
+from otx.core.types.label import SegLabelInfo
 
 if TYPE_CHECKING:
     from omegaconf.dictconfig import DictConfig
@@ -25,7 +26,9 @@ class TestOTXSegmentationModel:
 
     @pytest.fixture()
     def model(self, config) -> MMSegCompatibleModel:
-        return MMSegCompatibleModel(num_classes=2, config=config)
+        model = MMSegCompatibleModel(num_classes=2, config=config)
+        model.label_info = SegLabelInfo(label_names=["Background", "label_1"], label_groups=[["Background", "label_1"]])
+        return model
 
     def test_create_model(self, model) -> None:
         mmseg_model = model._create_model()
@@ -66,7 +69,9 @@ class TestOTXSegmentationModel:
         mocker_update_loss = mocker.patch.object(
             model,
             "_convert_pred_entity_to_compute_metric",
-            return_value=[{"preds": torch.randn(size=[3, 3, 3]), "target": torch.randint(0, 2, size=[3, 3])}],
+            return_value=[
+                {"preds": torch.randint(0, 2, size=[1, 3, 3]), "target": torch.randint(0, 2, size=[1, 3, 3])},
+            ],
         )
         model.validation_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
@@ -77,7 +82,9 @@ class TestOTXSegmentationModel:
         mocker_update_loss = mocker.patch.object(
             model,
             "_convert_pred_entity_to_compute_metric",
-            return_value=[{"preds": torch.randn(size=[3, 3, 3]), "target": torch.randint(0, 2, size=[3, 3])}],
+            return_value=[
+                {"preds": torch.randint(0, 2, size=[1, 3, 3]), "target": torch.randint(0, 2, size=[1, 3, 3])},
+            ],
         )
         model.test_step(fxt_seg_data_entity[2], 0)
         mocker_update_loss.assert_called_once()
