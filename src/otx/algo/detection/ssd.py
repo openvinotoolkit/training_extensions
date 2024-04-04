@@ -14,13 +14,15 @@ from datumaro.components.annotation import Bbox
 from mmdet.registry import MODELS
 from torch import nn
 
+from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.utils.build import build_mm_model, modify_num_classes
+from otx.core.utils.build import modify_num_classes
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
 
 if TYPE_CHECKING:
     import torch
@@ -28,7 +30,6 @@ if TYPE_CHECKING:
     from mmdet.models.task_modules.prior_generators.anchor_generator import AnchorGenerator
     from mmdet.structures import DetDataSample, OptSampleList, SampleList
     from mmdet.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
-    from mmengine.registry import Registry
     from omegaconf import DictConfig
     from torch import Tensor, device
 
@@ -39,7 +40,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-@MODELS.register_module(force=True)
 class SingleStageDetector(nn.Module):
     """Single stage detector implementation from mmdet."""
 
@@ -60,7 +60,8 @@ class SingleStageDetector(nn.Module):
             self.neck = MODELS.build(neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
-        self.bbox_head = MODELS.build(bbox_head)
+        bbox_head.pop("type")
+        self.bbox_head = SSDHead(**bbox_head)
         if isinstance(data_preprocessor, nn.Module):
             self.data_preprocessor = data_preprocessor
         elif isinstance(data_preprocessor, dict):
@@ -242,7 +243,11 @@ class SingleStageDetector(nn.Module):
         results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
         return self.add_pred_to_datasample(batch_data_samples, results_list)
 
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: OptSampleList = None) -> tuple[list[Tensor]]:
+    def _forward(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: OptSampleList = None,
+    ) -> tuple[list[Tensor], list[Tensor]]:
         """Network forward process.
 
         Args:
@@ -359,8 +364,6 @@ class SSD(MMDetCompatibleModel):
         from mmdet.registry import MODELS
         from mmengine.runner import load_checkpoint
 
-        from otx.core.utils.config import convert_conf_to_mmconfig_dict
-
         # NOTE: For the history of this monkey patching, please see
         # https://github.com/openvinotoolkit/training_extensions/issues/2743
         @MODELS.register_module(force=True)
@@ -374,7 +377,7 @@ class SSD(MMDetCompatibleModel):
                 else:
                     return buf.device
 
-        self.classification_layers = self.get_classification_layers(self.config, MODELS, "model.")
+        self.classification_layers = self.get_classification_layers(self.config, "model.")
         self.config.pop("type")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(self.config))
         if self.load_from is not None:
@@ -474,7 +477,6 @@ class SSD(MMDetCompatibleModel):
     @staticmethod
     def get_classification_layers(
         config: DictConfig,
-        model_registry: Registry,
         prefix: str,
     ) -> dict[str, dict[str, bool | int]]:
         """Return classification layer names by comparing two different number of classes models.
@@ -494,11 +496,12 @@ class SSD(MMDetCompatibleModel):
             so we have to update every anchors.
         """
         sample_config = deepcopy(config)
+        sample_config.pop("type")
         modify_num_classes(sample_config, 3)
-        sample_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+        sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
         modify_num_classes(sample_config, 4)
-        incremental_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+        incremental_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
