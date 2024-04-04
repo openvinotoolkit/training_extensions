@@ -17,7 +17,6 @@ otx.core.model.classification
 
    .. autosummary::
    
-      ExplainableOTXClsModel
       MMPretrainHlabelClsModel
       MMPretrainMulticlassClsModel
       MMPretrainMultilabelClsModel

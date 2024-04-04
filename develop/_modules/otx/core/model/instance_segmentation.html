@@ -490,9 +490,9 @@
         <span class="n">inputs</span><span class="p">:</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
         <span class="c1"># If customize_inputs is overridden</span>
@@ -761,8 +761,8 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-            <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
             <span class="k">return</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
@@ -773,8 +773,8 @@
                 <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
                 <span class="n">polygons</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">),</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">),</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">),</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">(</span>
@@ -919,8 +919,8 @@
                 <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
                 <span class="n">polygons</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">InstanceSegBatchPredEntity</span><span class="p">(</span>

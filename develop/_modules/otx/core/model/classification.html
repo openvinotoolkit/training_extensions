@@ -243,18 +243,13 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Accuracy</span>
 
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
-    <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
-    <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.classification</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
     <span class="n">HlabelClsBatchPredEntity</span><span class="p">,</span>
@@ -280,9 +275,7 @@
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
-    <span class="kn">from</span> <span class="nn">mmpretrain.models</span> <span class="kn">import</span> <span class="n">ImageClassifier</span>
     <span class="kn">from</span> <span class="nn">mmpretrain.models.utils</span> <span class="kn">import</span> <span class="n">ClsDataPreprocessor</span>
-    <span class="kn">from</span> <span class="nn">mmpretrain.structures</span> <span class="kn">import</span> <span class="n">DataSample</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">openvino.model_api.models.utils</span> <span class="kn">import</span> <span class="n">ClassificationResult</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
@@ -290,145 +283,10 @@
     <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span>
 
 
-<div class="viewcode-block" id="ExplainableOTXClsModel">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.ExplainableOTXClsModel">[docs]</a>
-<span class="k">class</span> <span class="nc">ExplainableOTXClsModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span><span class="p">],</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;OTX classification model which can attach a XAI hook.&quot;&quot;&quot;</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">has_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines if GAP is used right after backbone. Can be redefined at the model&#39;s level.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines parameters required to export a particular model implementation.&quot;&quot;&quot;</span>
-        <span class="n">export_params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;output_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">,</span> <span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">export_params</span>
-
-<div class="viewcode-block" id="ExplainableOTXClsModel.head_forward_fn">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.ExplainableOTXClsModel.head_forward_fn">[docs]</a>
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">head_forward_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs model&#39;s neck and head forward. Can be redefined at the model&#39;s level.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">neck</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;neck&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">head</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span>
-
-        <span class="n">output</span> <span class="o">=</span> <span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">head</span><span class="p">([</span><span class="n">output</span><span class="p">])</span></div>
-
-
-<div class="viewcode-block" id="ExplainableOTXClsModel.forward_explain">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.ExplainableOTXClsModel.forward_explain">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
-
-        <span class="c1"># If customize_inputs is overridden</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_image_classifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_inputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXClsModel</span><span class="o">.</span><span class="n">_customize_inputs</span>
-            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_image_classifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-        <span class="p">)</span>
-
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_customize_outputs</span> <span class="o">!=</span> <span class="n">ExplainableOTXClsModel</span><span class="o">.</span><span class="n">_customize_outputs</span>
-            <span class="k">else</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]</span>
-        <span class="p">)</span></div>
-
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_forward_explain_image_classifier</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">:</span> <span class="n">ImageClassifier</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataSample</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model.&quot;&quot;&quot;</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="n">backbone_feat</span> <span class="o">=</span> <span class="n">x</span>
-
-        <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
-        <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_neck</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;tensor&quot;</span><span class="p">:</span>
-            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_head</span> <span class="k">else</span> <span class="n">x</span>
-        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
-            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Invalid mode &quot;</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">&quot;.&#39;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;logits&quot;</span><span class="p">:</span> <span class="n">logits</span><span class="p">,</span>
-            <span class="s2">&quot;feature_vector&quot;</span><span class="p">:</span> <span class="n">feature_vector</span><span class="p">,</span>
-            <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
-        <span class="p">}</span>
-
-<div class="viewcode-block" id="ExplainableOTXClsModel.get_explain_fn">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.ExplainableOTXClsModel.get_explain_fn">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">ReciproCAMHook</span>
-
-        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAMHook</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">head_forward_fn</span><span class="p">,</span>
-            <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
-            <span class="n">optimize_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">has_gap</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
-
-
-    <span class="k">def</span> <span class="nf">_reset_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
-        <span class="n">forward_with_explain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_image_classifier</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span>
-
-        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="n">forward_with_explain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_restore_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Original model forward was not saved.&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-
-        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span></div>
-
-
-
 <div class="viewcode-block" id="OTXMulticlassClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXMulticlassClsModel</span><span class="p">(</span>
-    <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
+    <span class="n">OTXModel</span><span class="p">[</span>
         <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">MulticlassClsBatchPredEntity</span><span class="p">,</span>
         <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
@@ -586,8 +444,8 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-            <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 
             <span class="k">return</span> <span class="n">MulticlassClsBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
@@ -595,8 +453,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">),</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">),</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">),</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">MulticlassClsBatchPredEntity</span><span class="p">(</span>
@@ -606,6 +464,11 @@
             <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -630,7 +493,7 @@
 <div class="viewcode-block" id="OTXMultilabelClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXMultilabelClsModel</span><span class="p">(</span>
-    <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
+    <span class="n">OTXModel</span><span class="p">[</span>
         <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">MultilabelClsBatchPredEntity</span><span class="p">,</span>
         <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
@@ -789,8 +652,8 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-            <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 
             <span class="k">return</span> <span class="n">MultilabelClsBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">),</span>
@@ -798,8 +661,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">),</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">),</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">),</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">MultilabelClsBatchPredEntity</span><span class="p">(</span>
@@ -809,6 +672,11 @@
             <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -829,7 +697,7 @@
 <div class="viewcode-block" id="OTXHlabelClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel">[docs]</a>
 <span class="k">class</span> <span class="nc">OTXHlabelClsModel</span><span class="p">(</span>
-    <span class="n">ExplainableOTXClsModel</span><span class="p">[</span>
+    <span class="n">OTXModel</span><span class="p">[</span>
         <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
         <span class="n">HlabelClsBatchPredEntity</span><span class="p">,</span>
         <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
@@ -1015,8 +883,8 @@
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;No saliency maps in the model output.&quot;</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-            <span class="n">feature_vectors</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-            <span class="n">saliency_maps</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">feature_vector</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+            <span class="n">saliency_map</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
 
             <span class="k">return</span> <span class="n">HlabelClsBatchPredEntity</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span>
@@ -1024,8 +892,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vectors</span><span class="p">),</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_maps</span><span class="p">),</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">feature_vector</span><span class="p">),</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">saliency_map</span><span class="p">),</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">HlabelClsBatchPredEntity</span><span class="p">(</span>
@@ -1035,6 +903,11 @@
             <span class="n">scores</span><span class="o">=</span><span class="n">scores</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OTXNativeModelExporter</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -1104,8 +977,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">pred_scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">pred_labels</span><span class="p">,</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">MulticlassClsBatchPredEntity</span><span class="p">(</span>
@@ -1181,8 +1054,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">pred_scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="p">[],</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">MultilabelClsBatchPredEntity</span><span class="p">(</span>
@@ -1282,8 +1155,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="n">all_pred_scores</span><span class="p">,</span>
                 <span class="n">labels</span><span class="o">=</span><span class="n">all_pred_labels</span><span class="p">,</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">HlabelClsBatchPredEntity</span><span class="p">(</span>

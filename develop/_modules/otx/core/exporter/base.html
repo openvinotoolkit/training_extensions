@@ -492,15 +492,34 @@
         <span class="k">return</span> <span class="n">extra_data</span>
 
     <span class="k">def</span> <span class="nf">_postprocess_openvino_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exported_model</span><span class="p">:</span> <span class="n">openvino</span><span class="o">.</span><span class="n">Model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">openvino</span><span class="o">.</span><span class="n">Model</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_names</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">):</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The number of outputs in the exported model doesn&#39;t match with exporter parameters&quot;</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_names</span><span class="p">):</span>
-                <span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">set_names</span><span class="p">({</span><span class="n">name</span><span class="p">})</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_names</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_names</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># workaround for OVC&#39;s bug: single output doesn&#39;t have a name in OV model</span>
             <span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">set_names</span><span class="p">({</span><span class="s2">&quot;output1&quot;</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">traced_outputs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">output</span><span class="o">.</span><span class="n">get_names</span><span class="p">(),</span> <span class="n">output</span><span class="p">)</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">exported_model</span><span class="o">.</span><span class="n">outputs</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">output_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_names</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">traced_outputs</span><span class="p">:</span>
+                    <span class="c1"># TODO(vinnamkim): This is because `name` in `traced_outputs` is a list of set such as</span>
+                    <span class="c1"># [{&#39;logits&#39;, &#39;1555&#39;}, {&#39;1556&#39;, &#39;preds&#39;}, {&#39;1557&#39;, &#39;scores&#39;},</span>
+                    <span class="c1"># {&#39;saliency_map&#39;, &#39;1551&#39;}, {&#39;feature_vector&#39;, &#39;1554&#39;, &#39;input.1767&#39;}]</span>
+                    <span class="c1"># This ugly format of `name` comes from `openvino.convert_model`.</span>
+                    <span class="c1"># Find a cleaner way for this in the future.</span>
+                    <span class="k">if</span> <span class="n">output_name</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1"># NOTE: This is because without this renaming such as</span>
+                        <span class="c1"># `{&#39;saliency_map&#39;, &#39;1551&#39;}` =&gt; `{&#39;saliency_map&#39;}`</span>
+                        <span class="c1"># ModelAPI cannot produce the outputs correctly.</span>
+                        <span class="n">output</span><span class="o">.</span><span class="n">tensor</span><span class="o">.</span><span class="n">set_names</span><span class="p">({</span><span class="n">output_name</span><span class="p">})</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;Given output name to export is not in the traced_outputs, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2"> not in </span><span class="si">{</span><span class="n">traced_outputs</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">export_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extend_model_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>

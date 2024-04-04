@@ -428,8 +428,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">masks</span><span class="o">=</span><span class="n">masks</span><span class="p">,</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">explain_results</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="p">[],</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">explain_results</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="p">[],</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">SegBatchPredEntity</span><span class="p">(</span>
@@ -505,8 +505,8 @@
                 <span class="n">imgs_info</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">imgs_info</span><span class="p">,</span>
                 <span class="n">scores</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">masks</span><span class="o">=</span><span class="p">[</span><span class="n">tv_tensors</span><span class="o">.</span><span class="n">Mask</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">resultImage</span><span class="p">)</span> <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">],</span>
-                <span class="n">saliency_maps</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
-                <span class="n">feature_vectors</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
+                <span class="n">saliency_map</span><span class="o">=</span><span class="n">predicted_s_maps</span><span class="p">,</span>
+                <span class="n">feature_vector</span><span class="o">=</span><span class="n">predicted_f_vectors</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">SegBatchPredEntity</span><span class="p">(</span>

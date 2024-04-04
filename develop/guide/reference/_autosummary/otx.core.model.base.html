@@ -408,6 +408,12 @@
 <dd class="field-odd"><p><strong>num_classes</strong> – Number of classes this model can predict.</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.explain_mode">
+<span class="sig-name descname"><span class="pre">explain_mode</span></span><a class="headerlink" href="#otx.core.model.base.OTXModel.explain_mode" title="Link to this definition">#</a></dt>
+<dd><p>If true, <cite>self.predict_step()</cite> will produce a XAI output as well</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.base.OTXModel.configure_metric">
 <span class="sig-name descname"><span class="pre">configure_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.configure_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.configure_metric" title="Link to this definition">#</a></dt>
@@ -659,8 +665,8 @@ labels.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.explain_mode">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">explain_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#otx.core.model.base.OTXModel.explain_mode" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">explain_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
 <dd><p>Get model explain mode.</p>
 </dd></dl>
 
@@ -780,6 +786,15 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.explain_mode">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.explain_mode
+      </span>
+     </code>
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.configure_metric">
      <code class="docutils literal notranslate">
@@ -1015,7 +1030,7 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.explain_mode">
+    <a class="reference internal nav-link" href="#id0">
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXModel.explain_mode

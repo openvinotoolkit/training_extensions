@@ -24,6 +24,7 @@ otx.core.model.utils.mmpretrain
    .. autosummary::
    
       ClsDataPreprocessor
+      ExplainableMixInMMPretrainModel
    
    
 

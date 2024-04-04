@@ -304,9 +304,11 @@
         <span class="k">return</span>
 
     <span class="n">orig_metric_callable</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">new_metric_callable</span>
-    <span class="k">yield</span> <span class="n">model</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">orig_metric_callable</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">new_metric_callable</span>
+        <span class="k">yield</span> <span class="n">model</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">metric_callable</span> <span class="o">=</span> <span class="n">orig_metric_callable</span>
 
 
 <div class="viewcode-block" id="Engine">
@@ -692,15 +694,19 @@
             <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
             <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
-        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">predict_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
-            <span class="n">return_predictions</span><span class="o">=</span><span class="n">return_predictions</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">curr_explain_mode</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
+            <span class="n">predict_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">dataloaders</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
+                <span class="n">return_predictions</span><span class="o">=</span><span class="n">return_predictions</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">curr_explain_mode</span>
 
         <span class="k">if</span> <span class="n">explain</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">explain_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -708,7 +714,6 @@
 
             <span class="n">predict_result</span> <span class="o">=</span> <span class="n">process_saliency_maps_in_pred_entity</span><span class="p">(</span><span class="n">predict_result</span><span class="p">,</span> <span class="n">explain_config</span><span class="p">)</span>
 
-        <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">predict_result</span></div>
 
 

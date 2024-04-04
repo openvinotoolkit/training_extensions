@@ -319,6 +319,9 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        num_classes: Number of classes this model can predict.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        explain_mode: If true, `self.predict_step()` will produce a XAI output as well</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_OPTIMIZED_MODEL_BASE_NAME</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;optimized_model&quot;</span>
@@ -336,7 +339,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">LabelInfo</span><span class="o">.</span><span class="n">from_num_classes</span><span class="p">(</span><span class="n">num_classes</span><span class="p">)</span> <span class="k">if</span> <span class="n">num_classes</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">classification_layers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_callable</span> <span class="o">=</span> <span class="n">ensure_callable</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span> <span class="o">=</span> <span class="n">ensure_callable</span><span class="p">(</span><span class="n">scheduler</span><span class="p">)</span>
@@ -770,9 +773,11 @@
 
 
     <span class="k">def</span> <span class="nf">_reset_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO(vinnamkim): This will be revisited by the export refactoring</span>
         <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">_restore_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO(vinnamkim): This will be revisited by the export refactoring</span>
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="OTXModel.forward_tiles">
@@ -920,7 +925,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, Any]: parameters of exporter.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">all_labels</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">all_label_ids</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">:</span>
@@ -935,6 +940,9 @@
             <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;optimization_config&quot;</span><span class="p">):</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">optimization_config</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;label_info&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">to_json</span><span class="p">(),</span>
         <span class="p">}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;output_names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">,</span> <span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">parameters</span>
 

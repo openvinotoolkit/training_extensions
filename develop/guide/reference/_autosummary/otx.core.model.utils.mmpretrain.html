@@ -390,6 +390,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor" title="otx.core.model.utils.mmpretrain.ClsDataPreprocessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClsDataPreprocessor</span></code></a>([mean, std, ...])</p></td>
 <td><p>Class for monkey patching preprocessor.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel" title="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExplainableMixInMMPretrainModel</span></code></a>()</p></td>
+<td><p>Mix-in class to support XAI feature for MM Pretrained models commonly.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -404,6 +407,53 @@
 <dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ClsDataPreprocessor.device">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">device</span></em><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ClsDataPreprocessor.device" title="Link to this definition">#</a></dt>
 <dd><p>Which device being used.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.model.utils.mmpretrain.</span></span><span class="sig-name descname"><span class="pre">ExplainableMixInMMPretrainModel</span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T_OTXBatchPredEntity</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">T_OTXBatchDataEntity</span></code>]</p>
+<p>Mix-in class to support XAI feature for MM Pretrained models commonly.</p>
+<p>This is a mix-in class that cannot be used as standalone. The correct usage of it will be like
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">class</span> <span class="pre">MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel,</span> <span class="pre">MMPretrainMulticlassClsModel):</span>
+<span class="pre">`</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain">
+<span class="sig-name descname"><span class="pre">forward_explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T_OTXBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T_OTXBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.forward_explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain" title="Link to this definition">#</a></dt>
+<dd><p>Model forward function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn">
+<span class="sig-name descname"><span class="pre">get_explain_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.12)"><span class="pre">Callable</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.get_explain_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn" title="Link to this definition">#</a></dt>
+<dd><p>Returns explain function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Can be redefined at the model’s level.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn">
+<span class="sig-name descname"><span class="pre">head_forward_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/utils/mmpretrain.html#ExplainableMixInMMPretrainModel.head_forward_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn" title="Link to this definition">#</a></dt>
+<dd><p>Performs model’s neck and head forward.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Can be redefined at the model’s level.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_gap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><a class="headerlink" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap" title="Link to this definition">#</a></dt>
+<dd><p>Defines if GAP is used right after backbone.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Can be redefined at the model’s level.</p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -482,6 +532,53 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        ClsDataPreprocessor.device
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ExplainableMixInMMPretrainModel
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainableMixInMMPretrainModel.forward_explain()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainableMixInMMPretrainModel.get_explain_fn()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainableMixInMMPretrainModel.head_forward_fn()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.has_gap">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainableMixInMMPretrainModel.has_gap
       </span>
      </code>
     </a>

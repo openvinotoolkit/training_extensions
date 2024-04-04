@@ -242,14 +242,20 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generic</span>
 
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.models.utils</span> <span class="kn">import</span> <span class="n">ClsDataPreprocessor</span> <span class="k">as</span> <span class="n">_ClsDataPreprocessor</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 
+<span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">build_mm_model</span><span class="p">,</span> <span class="n">get_classification_layers</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mmpretrain.models.classifiers.image</span> <span class="kn">import</span> <span class="n">ImageClassifier</span>
+    <span class="kn">from</span> <span class="nn">mmpretrain.structures</span> <span class="kn">import</span> <span class="n">DataSample</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">device</span><span class="p">,</span> <span class="n">nn</span>
 
@@ -290,6 +296,153 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">classification_layers</span> <span class="o">=</span> <span class="n">get_classification_layers</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">MODELS</span><span class="p">,</span> <span class="s2">&quot;model.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">build_mm_model</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">MODELS</span><span class="p">,</span> <span class="n">load_from</span><span class="p">),</span> <span class="n">classification_layers</span></div>
+
+
+
+<div class="viewcode-block" id="ExplainableMixInMMPretrainModel">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmpretrain.html#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel">[docs]</a>
+<span class="k">class</span> <span class="nc">ExplainableMixInMMPretrainModel</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix-in class to support XAI feature for MM Pretrained models commonly.</span>
+
+<span class="sd">    This is a mix-in class that cannot be used as standalone. The correct usage of it will be like</span>
+<span class="sd">    ```python</span>
+<span class="sd">    class MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMulticlassClsModel):</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">explain_mode</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">ImageClassifier</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_gap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines if GAP is used right after backbone.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Can be redefined at the model&#39;s level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="ExplainableMixInMMPretrainModel.head_forward_fn">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmpretrain.html#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.head_forward_fn">[docs]</a>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">head_forward_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs model&#39;s neck and head forward.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Can be redefined at the model&#39;s level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">neck</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;neck&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">head</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">head</span><span class="p">([</span><span class="n">output</span><span class="p">])</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_forward_explain_image_classifier</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">ImageClassifier</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DataSample</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Can be redefined at the model&#39;s level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">backbone_feat</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="n">feature_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vector_fn</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
+        <span class="n">saliency_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_fn</span><span class="p">(</span><span class="n">backbone_feat</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_neck</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;tensor&quot;</span><span class="p">:</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_head</span> <span class="k">else</span> <span class="n">x</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;predict&quot;</span><span class="p">:</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Invalid mode &quot;</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">&quot;.&#39;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;logits&quot;</span><span class="p">:</span> <span class="n">logits</span><span class="p">,</span>
+            <span class="s2">&quot;feature_vector&quot;</span><span class="p">:</span> <span class="n">feature_vector</span><span class="p">,</span>
+            <span class="s2">&quot;saliency_map&quot;</span><span class="p">:</span> <span class="n">saliency_map</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="ExplainableMixInMMPretrainModel.get_explain_fn">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmpretrain.html#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.get_explain_fn">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_explain_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns explain function.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Can be redefined at the model&#39;s level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">ReciproCAMHook</span>
+
+        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAMHook</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_forward_fn</span><span class="p">,</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">optimize_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">has_gap</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">explainer</span><span class="o">.</span><span class="n">func</span></div>
+
+
+<div class="viewcode-block" id="ExplainableMixInMMPretrainModel.forward_explain">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.core.model.utils.mmpretrain.html#otx.core.model.utils.mmpretrain.ExplainableMixInMMPretrainModel.forward_explain">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
+        <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">],</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;forward&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">forward_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;This instance has no forward function. &quot;</span>
+                <span class="s2">&quot;Did you attach this mixin into a class derived from OTXModel?&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_model_forward</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">forward_func</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restore_model_forward</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_reset_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO(vinnamkim): This will be revisited by the export refactoring</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
+        <span class="n">forward_with_explain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_explain_image_classifier</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span>
+
+        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="n">forward_with_explain</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_restore_model_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO(vinnamkim): This will be revisited by the export refactoring</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Original model forward was not saved.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">func_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">func_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_model_forward</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 </pre></div>
 
