@@ -22,7 +22,7 @@ overrides:
   data:
     task: ZERO_SHOT_VISUAL_PROMPTING
     config:
-      data_format: datumaro
+      data_format: coco_instances
       vpm_config:
         use_bbox: True
         use_point: False

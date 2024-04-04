@@ -96,8 +96,8 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
 
     DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name="coco_car_person_medium_datumaro",
-            path=Path("zero_shot_visual_prompting/coco_car_person_medium_datumaro"),
+            name="coco_car_person_medium",
+            path=Path("zero_shot_visual_prompting/coco_car_person_medium"),
             group="medium",
             num_repeat=5,
             extra_overrides={
