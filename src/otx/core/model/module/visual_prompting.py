@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 """Class definition for visual prompting lightning module used in OTX."""
+
 from __future__ import annotations
 
 import logging as log
-import pickle
-import time
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
@@ -265,8 +263,8 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
         super().on_test_start()
-        if not self.model.load_latest_reference_info(self.device):
-            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+        if not self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device):
+            log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
@@ -275,12 +273,12 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.model.load_latest_reference_info(self.device)
+            self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.model.load_latest_reference_info(self.device):
-            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+        if not self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device):
+            log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
@@ -289,7 +287,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.model.load_latest_reference_info(self.device)
+            self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
@@ -297,25 +295,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
         if self.model.save_outputs:
-            reference_info = {
-                "reference_feats": self.model.reference_feats,
-                "used_indices": self.model.used_indices,
-            }
-            # save reference info
-            path_reference_info: Path = (
-                self.model.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
-            )
-            Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
-            if isinstance(self.model, OTXVisualPromptingModel):
-                torch.save(reference_info, path_reference_info)
-                pickle.dump(
-                    {k: v.numpy() for k, v in reference_info.items()},
-                    Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
-                )
-            else:
-                torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
-                pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
-            log.info(f"Saved reference info at {path_reference_info}.")
+            self.model.save_reference_info(self.trainer.default_root_dir)
 
     def on_validation_epoch_start(self) -> None:
         """Skip on_validation_epoch_start unused in zero-shot visual prompting."""

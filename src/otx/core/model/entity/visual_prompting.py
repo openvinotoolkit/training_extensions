@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import logging as log
-import os
 import pickle
 from collections import defaultdict
 from copy import deepcopy
@@ -357,7 +356,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        root_reference_info: str = "vpm_zsl_reference_infos",
+        reference_info_dir: Path | str = "reference_infos",
+        infer_reference_info_root: Path | str = "../.latest/train",
         save_outputs: bool = True,
     ) -> None:
         super().__init__(
@@ -369,7 +369,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             use_throughput_mode,
             model_api_configuration,
         )
-        self.root_reference_info: Path = Path(root_reference_info)
+        self.reference_info_dir: Path = Path(reference_info_dir)
+        self.infer_reference_info_root: Path = Path(infer_reference_info_root)
         self.save_outputs: bool = save_outputs
 
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
@@ -797,25 +798,24 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     ######################################
     #               Infer                #
     ######################################
-    def _find_latest_reference_info(self, root: Path) -> str | None:
-        """Find latest reference info to be used."""
-        if not Path.is_dir(root):
-            return None
-        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
-            return stamps[0]
-        return None
-
-    def load_latest_reference_info(self, *args, **kwargs) -> bool:
+    def load_latest_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
         """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info: Path = self.root_reference_info / latest_stamp / "reference_info.pickle"
-            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(latest_reference_info, "rb"))  # noqa: S301
+        _infer_reference_info_root = (
+            self.infer_reference_info_root
+            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
+            else Path(default_root_dir) / self.infer_reference_info_root
+        )
+
+        if Path.is_file(
+            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle",
+        ):
+            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(path_reference_info, "rb"))  # noqa: S301
             self.reference_feats = reference_info.get(
                 "reference_feats",
                 np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
             )
             self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
-            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
             return True
         return False
 
