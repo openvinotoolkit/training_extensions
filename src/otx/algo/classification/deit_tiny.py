@@ -16,23 +16,23 @@ from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
-    ExplainableOTXClsModel,
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmpretrain.models import ImageClassifier
+    from mmpretrain.models.classifiers import ImageClassifier
     from mmpretrain.structures import DataSample
 
     from otx.core.metrics import MetricCallable
 
 
-class ExplainableDeit(ExplainableOTXClsModel):
+class ForwardExplainMixInForDeit(ExplainableMixInMMPretrainModel):
     """Deit model which can attach a XAI hook."""
 
     @torch.no_grad()
@@ -145,7 +145,7 @@ class ExplainableDeit(ExplainableOTXClsModel):
         return {"model_type": "transformer"}
 
 
-class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
+class DeitTinyForHLabelCls(ForwardExplainMixInForDeit, MMPretrainHlabelClsModel):
     """DeitTiny Model for hierarchical label classification task."""
 
     def __init__(
@@ -172,7 +172,7 @@ class DeitTinyForHLabelCls(ExplainableDeit, MMPretrainHlabelClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
+class DeitTinyForMulticlassCls(ForwardExplainMixInForDeit, MMPretrainMulticlassClsModel):
     """DeitTiny Model for multi-label classification task."""
 
     def __init__(
@@ -198,7 +198,7 @@ class DeitTinyForMulticlassCls(ExplainableDeit, MMPretrainMulticlassClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class DeitTinyForMultilabelCls(ExplainableDeit, MMPretrainMultilabelClsModel):
+class DeitTinyForMultilabelCls(ForwardExplainMixInForDeit, MMPretrainMultilabelClsModel):
     """DeitTiny Model for multi-class classification task."""
 
     def __init__(

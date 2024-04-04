@@ -67,9 +67,11 @@ def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallabl
         return
 
     orig_metric_callable = model.metric_callable
-    model.metric_callable = new_metric_callable
-    yield model
-    model.metric_callable = orig_metric_callable
+    try:
+        model.metric_callable = new_metric_callable
+        yield model
+    finally:
+        model.metric_callable = orig_metric_callable
 
 
 class Engine:
@@ -445,15 +447,19 @@ class Engine:
             loaded_checkpoint = torch.load(checkpoint)
             model.load_state_dict(loaded_checkpoint)
 
-        model.explain_mode = explain
-
         self._build_trainer(**kwargs)
 
-        predict_result = self.trainer.predict(
-            model=model,
-            dataloaders=datamodule,
-            return_predictions=return_predictions,
-        )
+        curr_explain_mode = model.explain_mode
+
+        try:
+            model.explain_mode = explain
+            predict_result = self.trainer.predict(
+                model=model,
+                dataloaders=datamodule,
+                return_predictions=return_predictions,
+            )
+        finally:
+            model.explain_mode = curr_explain_mode
 
         if explain:
             if explain_config is None:
@@ -461,7 +467,6 @@ class Engine:
 
             predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
 
-        model.explain_mode = False
         return predict_result
 
     def export(

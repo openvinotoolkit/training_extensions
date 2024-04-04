@@ -80,6 +80,9 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     Args:
         num_classes: Number of classes this model can predict.
+
+    Attributes:
+        explain_mode: If true, `self.predict_step()` will produce a XAI output as well
     """
 
     _OPTIMIZED_MODEL_BASE_NAME: str = "optimized_model"
@@ -97,7 +100,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self._label_info = LabelInfo.from_num_classes(num_classes) if num_classes > 0 else NullLabelInfo()
         self.classification_layers: dict[str, dict[str, Any]] = {}
         self.model = self._create_model()
-        self.original_model_forward = None
+        self._explain_mode = False
 
         self.optimizer_callable = ensure_callable(optimizer)
         self.scheduler_callable = ensure_callable(scheduler)
@@ -474,9 +477,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         raise NotImplementedError
 
     def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
         pass
 
     def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
         pass
 
     def forward_tiles(
@@ -606,7 +611,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         Returns:
             dict[str, Any]: parameters of exporter.
         """
-        parameters = {}
+        parameters: dict[str, Any] = {}
         all_labels = ""
         all_label_ids = ""
         for lbl in self.label_info.label_names:
@@ -621,6 +626,9 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             ("model_info", "optimization_config"): json.dumps(optimization_config),
             ("model_info", "label_info"): self.label_info.to_json(),
         }
+
+        if self.explain_mode:
+            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
 
         return parameters
 
