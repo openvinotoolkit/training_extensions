@@ -99,6 +99,15 @@ def test_otx_e2e(
         "--checkpoint",
         str(ckpt_files[-1]),
     ]
+    # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+    if task in ["zero_shot_visual_prompting"]:
+        idx_task = str(ckpt_files[-1]).split("/").index(f"otx_train_{model_name}")
+        command_cfg.extend(
+            [
+                "--model.init_args.infer_reference_info_root",
+                str(ckpt_files[-1].parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
@@ -174,7 +183,11 @@ def test_otx_e2e(
         (p for p in ov_output_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    exported_model_path = str(ov_latest_dir / "exported_model.xml")
+    if task in ("visual_prompting", "zero_shot_visual_prompting"):
+        exported_model_path = str(ov_latest_dir / "exported_model_decoder.xml")
+        recipe = str(Path(recipe).parents[0] / "openvino_model.yaml")
+    else:
+        exported_model_path = str(ov_latest_dir / "exported_model.xml")
 
     overrides = fxt_cli_override_command_per_task[task]
     if "anomaly" in task:
@@ -195,6 +208,15 @@ def test_otx_e2e(
         "--checkpoint",
         exported_model_path,
     ]
+    # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+    if task in ["zero_shot_visual_prompting"]:
+        idx_task = str(ckpt_files[-1]).split("/").index(f"otx_train_{model_name}")
+        command_cfg.extend(
+            [
+                "--model.init_args.infer_reference_info_root",
+                str(ckpt_files[-1].parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+            ],
+        )
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
