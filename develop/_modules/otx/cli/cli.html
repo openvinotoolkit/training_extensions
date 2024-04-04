@@ -624,7 +624,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple: The model and optimizer and scheduler.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
+        <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
 
         <span class="n">skip</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
@@ -652,7 +652,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">config_init</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subcommand</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
 
         <span class="c1"># Update tile config due to adaptive tiling</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">OVModel</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tile_config</span><span class="o">.</span><span class="n">enable_tiler</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;tile_config&quot;</span><span class="p">):</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The model does not have a tile_config attribute. Please check if the model supports tiling.&quot;</span>
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
