@@ -139,7 +139,10 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [],
+        "zero_shot_visual_prompting": [
+            "--data.config.data_format",
+            "datumaro",
+        ],
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],
