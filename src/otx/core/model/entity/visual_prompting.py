@@ -798,7 +798,7 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     ######################################
     #               Infer                #
     ######################################
-    def load_latest_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
+    def load_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
         """Load latest reference info to be used."""
         _infer_reference_info_root = (
             self.infer_reference_info_root

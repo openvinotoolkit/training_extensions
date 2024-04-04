@@ -432,8 +432,8 @@ class TestOVZeroShotVisualPromptingModel:
         assert result[8:, :8].sum() == 0
         assert result[8:, 8:].sum() == 0
 
-    def test_load_latest_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
-        """Test load_latest_reference_info."""
+    def test_load_reference_info(self, mocker, ov_zero_shot_visual_prompting_model) -> None:
+        """Test load_reference_info."""
         ov_zero_shot_visual_prompting_model.model["decoder"].embed_dim = 256
 
         # get previously saved reference info
@@ -444,7 +444,7 @@ class TestOVZeroShotVisualPromptingModel:
         mocker.patch("pathlib.Path.is_file", return_value=True)
         mocker.patch("pathlib.Path.open", return_value="Mocked data")
 
-        ov_zero_shot_visual_prompting_model.load_latest_reference_info(".")
+        ov_zero_shot_visual_prompting_model.load_reference_info(".")
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (1, 1, 256)
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (1,)
 
@@ -453,7 +453,7 @@ class TestOVZeroShotVisualPromptingModel:
 
         ov_zero_shot_visual_prompting_model.reference_feats = np.zeros((0, 1, 256), dtype=np.float32)
         ov_zero_shot_visual_prompting_model.used_indices = np.array([], dtype=np.int64)
-        ov_zero_shot_visual_prompting_model.load_latest_reference_info(".")
+        ov_zero_shot_visual_prompting_model.load_reference_info(".")
 
         assert ov_zero_shot_visual_prompting_model.reference_feats.shape == (0, 1, 256)
         assert ov_zero_shot_visual_prompting_model.used_indices.shape == (0,)

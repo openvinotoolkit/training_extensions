@@ -263,7 +263,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
         super().on_test_start()
-        if not self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device):
+        if not self.model.load_reference_info(self.trainer.default_root_dir, self.device):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -273,11 +273,11 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device)
+            self.model.load_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device):
+        if not self.model.load_reference_info(self.trainer.default_root_dir, self.device):
             log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
@@ -287,7 +287,7 @@ class OTXZeroShotVisualPromptingLitModule(OTXVisualPromptingLitModule):
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.model.load_latest_reference_info(self.trainer.default_root_dir, self.device)
+            self.model.load_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""

@@ -79,7 +79,7 @@ class TestOTXZeroShotVisualPromptingLitModule:
 
     def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_lit_module) -> None:
         """Test on_test_start."""
-        otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_lit_module.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -96,7 +96,7 @@ class TestOTXZeroShotVisualPromptingLitModule:
 
     def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_lit_module) -> None:
         """Test on_predict_start."""
-        otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_lit_module.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(

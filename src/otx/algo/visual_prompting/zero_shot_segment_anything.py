@@ -863,7 +863,7 @@ class OTXZeroShotSegmentAnything(OTXVisualPromptingModel):
             pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
         log.info(f"Saved reference info at {path_reference_info}.")
 
-    def load_latest_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
+    def load_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
         """Load latest reference info to be used."""
         _infer_reference_info_root = (
             self.infer_reference_info_root
