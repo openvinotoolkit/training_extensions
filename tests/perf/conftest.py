@@ -72,9 +72,9 @@ def pytest_addoption(parser):
         help="Output root directory. Defaults to temp directory.",
     )
     parser.addoption(
-        "--summary-csv",
+        "--summary-file",
         action="store",
-        help="Path to output summary cvs file. Defaults to {output-root}/benchmark-summary.csv",
+        help="Path to output summary file. Defaults to {output-root}/benchmark-summary.csv",
     )
     parser.addoption(
         "--dry-run",
@@ -238,13 +238,13 @@ def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
 
 
 @pytest.fixture(scope="session")
-def fxt_summary_csv(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
+def fxt_summary_file(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
     """Path to benchmark result summary csv file."""
-    summary_csv = request.config.getoption("--summary-csv")
-    summary_csv = fxt_output_root / "benchmark-summary.csv" if summary_csv is None else Path(summary_csv)
-    msg = f"{summary_csv = }"
+    summary_file = request.config.getoption("--summary-file")
+    summary_file = fxt_output_root / "benchmark-summary.csv" if summary_file is None else Path(summary_file)
+    msg = f"{summary_file = }"
     log.info(msg)
-    return summary_csv
+    return summary_file
 
 
 @pytest.fixture(scope="session")
@@ -357,7 +357,7 @@ def fxt_benchmark(
 @pytest.fixture(scope="session", autouse=True)
 def fxt_benchmark_summary(
     fxt_output_root: Path,
-    fxt_summary_csv: Path,
+    fxt_summary_file: Path,
     fxt_mlflow_client: MlflowClient,
     fxt_tags: dict[str, str],
 ):
@@ -369,20 +369,19 @@ def fxt_benchmark_summary(
         print("No benchmark results loaded in ", fxt_output_root)
         return
 
-    summary_results = [
-        summary.average(raw_results, ["task", "model", "data_group", "data"]),
-        summary.average(raw_results, ["task", "model", "data_group"]),
-        summary.average(raw_results, ["task", "model"]),
-        summary.average(raw_results, ["task"]),
-    ]
-    summary_results = pd.concat(summary_results)
+    summary_results = summary.summarize(raw_results)
 
     print("=" * 20, "[Benchmark summary]")
     print(summary_results)
-    fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
-    summary_results.to_csv(fxt_summary_csv)
-    raw_results.to_csv(fxt_summary_csv.parent / "perf-benchmark-raw.csv")
-    print(f"  -> Saved to {fxt_summary_csv}.")
+    fxt_summary_file.parent.mkdir(parents=True, exist_ok=True)
+    raw_results.to_csv(fxt_summary_file.parent / "perf-benchmark-raw.csv")
+    if fxt_summary_file.suffix == ".xlsx":
+        summary_results.to_excel(fxt_summary_file)
+    else:
+        if fxt_summary_file.suffix != ".csv":
+            print(f"{fxt_summary_file.suffix} output is not supported.")
+        summary_results.to_csv(fxt_summary_file.with_suffix(".csv"))
+    print(f"  -> Saved to {fxt_summary_file}.")
 
     if fxt_mlflow_client:
         try:
