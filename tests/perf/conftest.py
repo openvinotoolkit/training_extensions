@@ -14,98 +14,12 @@ from urllib.parse import urlparse
 import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
+
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
 
 log = logging.getLogger(__name__)
-
-
-def pytest_addoption(parser):
-    """Add custom options for perf tests."""
-    parser.addoption(
-        "--model-category",
-        action="store",
-        default="all",
-        choices=("speed", "balance", "accuracy", "default", "other", "all"),
-        help="Choose speed|balcence|accuracy|default|other|all. Defaults to all.",
-    )
-    parser.addoption(
-        "--data-group",
-        action="store",
-        default="all",
-        choices=("small", "medium", "large", "all"),
-        help="Choose small|medium|large|all. Defaults to all.",
-    )
-    parser.addoption(
-        "--num-repeat",
-        action="store",
-        default=0,
-        help="Overrides default per-data-group number of repeat setting. "
-        "Random seeds are set to 0 ~ num_repeat-1 for the trials. "
-        "Defaults to 0 (small=3, medium=3, large=1).",
-    )
-    parser.addoption(
-        "--num-epoch",
-        action="store",
-        default=0,
-        help="Overrides default per-model number of epoch setting. "
-        "Defaults to 0 (per-model epoch & early-stopping).",
-    )
-    parser.addoption(
-        "--eval-upto",
-        action="store",
-        default="train",
-        choices=("train", "export", "optimize"),
-        help="Choose train|export|optimize. Defaults to train.",
-    )
-    parser.addoption(
-        "--data-root",
-        action="store",
-        default="data",
-        help="Dataset root directory.",
-    )
-    parser.addoption(
-        "--output-root",
-        action="store",
-        help="Output root directory. Defaults to temp directory.",
-    )
-    parser.addoption(
-        "--summary-csv",
-        action="store",
-        help="Path to output summary cvs file. Defaults to {output-root}/benchmark-summary.csv",
-    )
-    parser.addoption(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="Print OTX commands without execution.",
-    )
-    parser.addoption(
-        "--deterministic",
-        action="store_true",
-        default=False,
-        help="Turn on deterministic training.",
-    )
-    parser.addoption(
-        "--user-name",
-        type=str,
-        default="anonymous",
-        help='Sign-off the user name who launched the regression tests this time, e.g., `--user-name "John Doe"`.',
-    )
-    parser.addoption(
-        "--mlflow-tracking-uri",
-        type=str,
-        help="URI for MLFlow Tracking server to store the regression test results.",
-    )
-    parser.addoption(
-        "--otx-ref",
-        type=str,
-        default="__CURRENT_BRANCH_COMMIT__",
-        help="Target OTX ref (tag / branch name / commit hash) on main repo to test. Defaults to the current branch. "
-        "`pip install otx[full]@https://github.com/openvinotoolkit/training_extensions.git@{otx_ref}` will be executed before run, "
-        "and reverted after run. Works only for v2.x assuming CLI compatibility.",
-    )
 
 
 @pytest.fixture(scope="session")

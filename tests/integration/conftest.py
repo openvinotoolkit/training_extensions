@@ -12,23 +12,6 @@ from mmengine.config import Config as MMConfig
 from otx.core.types.task import OTXTaskType
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--open-subprocess",
-        action="store_true",
-        help="Open subprocess for each CLI integration test case. "
-        "This option can be used for easy memory management "
-        "while running consecutive multiple tests (default: false).",
-    )
-    parser.addoption(
-        "--task",
-        action="store",
-        default="all",
-        type=str,
-        help="Task type of OTX to use integration test.",
-    )
-
-
 @pytest.fixture(scope="module", autouse=True)
 def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
     """Open subprocess for each CLI integration test case.
