@@ -367,7 +367,7 @@ def summarize_meta(history: pd.DataFrame):
     """Summarize benchmark metadata by version."""
     data = history.pivot_table(index=["otx_version"], values=METADATA_ENTRIES, aggfunc="first")
     # NOTE: if needed -> data = data.style.set_sticky(axis="index")
-    return data.reindex(entries, axis=1)
+    return data.reindex(METADATA_ENTRIES, axis=1)
 
 
 if __name__ == "__main__":
@@ -381,14 +381,14 @@ if __name__ == "__main__":
     input_root = Path(args.input_root)
     output_root = Path(args.output_root)
 
-    print(f"Loading {args.pattern} in input_root...")
+    print(f"Loading {args.pattern} in {input_root}...")
     raw_data = load(input_root, need_normalize=args.normalize, pattern=args.pattern)
     if len(raw_data) == 0:
         print("No data loaded")
         sys.exit(-1)
     output_root.mkdir(parents=True, exist_ok=True)
     raw_data.to_csv(output_root / "perf-benchmark-raw-all.csv", index=False)
-    print("Saved merged raw data to ", str(output_root / "perf-benchmark-raw-all.csv"))
+    print("Saved merged raw data to", str(output_root / "perf-benchmark-raw-all.csv"))
 
     tasks = sorted(raw_data["task"].unique())
     for task in tasks:
@@ -396,4 +396,4 @@ if __name__ == "__main__":
         data = summarize(data)
         task_str = task.replace("/", "_")
         data.to_excel(output_root / f"perf-benchmark-summary-{task_str}.xlsx")
-        print(f"    Saved {task} summary to ", str(output_root / f"perf-benchmark-summary-{task_str}.xlsx"))
+        print(f"    Saved {task} summary to", str(output_root / f"perf-benchmark-summary-{task_str}.xlsx"))
