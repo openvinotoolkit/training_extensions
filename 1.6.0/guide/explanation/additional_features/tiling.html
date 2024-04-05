@@ -1,13 +1,9 @@
-
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Improve Small Object Detection with Image Tiling &#8212; OpenVINO™ Training Extensions 1.6.0 documentation</title>
   
@@ -19,153 +15,122 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/documentation_options.js?v=cf6e66ff"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/tiling';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Configurable Input Size" href="config_input_size.html" />
     <link rel="prev" title="Fast Data Loading" href="fast_data_loading.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +139,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,21 +199,23 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
@@ -395,73 +350,44 @@ document.write(`
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Guide</a></li>
-    
-    
-    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Additional Features</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">Improve...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <section id="improve-small-object-detection-with-image-tiling">
-<h1>Improve Small Object Detection with Image Tiling<a class="headerlink" href="#improve-small-object-detection-with-image-tiling" title="Permalink to this heading">#</a></h1>
+<h1>Improve Small Object Detection with Image Tiling<a class="headerlink" href="#improve-small-object-detection-with-image-tiling" title="Link to this heading">#</a></h1>
 <p>The OpenVINO Training Extensions introduces the concept of image tiling to enhance the accuracy of detection algorithms and instance segmentation algorithms, particularly for small and densely packed objects in high-resolution images.</p>
 <p>Image tiling involves dividing the original full-resolution image into multiple smaller tiles or patches. This division allows objects within the tiles to appear larger in relation to the tile size, effectively addressing the challenge of objects becoming nearly invisible in deeper layers of feature maps due to downsampling operations. Image tiling proves especially beneficial for datasets where objects can be as small as 20 by 20 pixels in a 4K image.</p>
 <p>However, it’s important to consider the trade-off associated with image tiling. Dividing a single image sample into several tiles increases the number of samples for training, evaluation, and testing. This trade-off impacts the execution speed, as processing more images requires additional computational resources. To strike a balance between patch size and computational efficiency, the OpenVINO Training  incorporates tile dataset samples and adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
 <p>By leveraging image tiling, the OpenVINO Training Extensions empowers detection and instance segmentation algorithms to effectively detect and localize small and crowded objects in large-resolution images, ultimately leading to improved overall performance and accuracy.</p>
 <section id="tiling-strategies">
-<h2>Tiling Strategies<a class="headerlink" href="#tiling-strategies" title="Permalink to this heading">#</a></h2>
+<h2>Tiling Strategies<a class="headerlink" href="#tiling-strategies" title="Link to this heading">#</a></h2>
 <p>Below we provided an example of tiling used on one of the image from <a class="reference external" href="https://captain-whu.github.io/DOTA/dataset.html">DOTA</a>.</p>
 <a class="reference internal image-reference" href="../../../_images/dota_tiling_example.jpg"><img alt="this image uploaded from this `source &lt;https://captain-whu.github.io/DOTA/dataset.html&gt;`_" src="../../../_images/dota_tiling_example.jpg" style="width: 800px;" /></a>
 <p>In this example, the full image is cropped into 9 tiles. During training, only the tiles with annotations (bounding boxes or masks) are used for training.</p>
@@ -483,7 +409,7 @@ The below context will be provided during evaluation:</p>
 </div>
 </section>
 <section id="enable-tiling-via-otx-training-cli">
-<h2>Enable Tiling via OTX Training CLI<a class="headerlink" href="#enable-tiling-via-otx-training-cli" title="Permalink to this heading">#</a></h2>
+<h2>Enable Tiling via OTX Training CLI<a class="headerlink" href="#enable-tiling-via-otx-training-cli" title="Link to this heading">#</a></h2>
 <p>Currently, tiling is supported for both detection and instance segmentation models. Please refer to <a class="reference internal" href="../algorithms/object_detection/object_detection.html"><span class="doc">Object Detection</span></a> and <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a> for more details.</p>
 <p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code> parameter to 1. Here’s an example of enabling tiling for the SSD model template:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
@@ -496,7 +422,7 @@ The below context will be provided during evaluation:</p>
 </div>
 </section>
 <section id="enable-tiling-via-otx-build">
-<h2>Enable Tiling via OTX Build<a class="headerlink" href="#enable-tiling-via-otx-build" title="Permalink to this heading">#</a></h2>
+<h2>Enable Tiling via OTX Build<a class="headerlink" href="#enable-tiling-via-otx-build" title="Link to this heading">#</a></h2>
 <p>Here’s another way of enabling tiling for the SSD model template using the workspace:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">build</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span>
 </pre></div>
@@ -520,7 +446,7 @@ The below context will be provided during evaluation:</p>
 </pre></div>
 </div>
 <section id="tile-size-and-tile-overlap-optimization">
-<h3>Tile Size and Tile Overlap Optimization<a class="headerlink" href="#tile-size-and-tile-overlap-optimization" title="Permalink to this heading">#</a></h3>
+<h3>Tile Size and Tile Overlap Optimization<a class="headerlink" href="#tile-size-and-tile-overlap-optimization" title="Link to this heading">#</a></h3>
 <p>By default, the OpenVINO Training Extensions automatically optimize tile size and tile overlap to ensure efficient execution without compromising accuracy.</p>
 <p>To strike a balance between patch size and computational efficiency, the OpenVINO Training Extensions incorporate adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
 <p>Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels.</p>
@@ -539,7 +465,7 @@ This calculation ensures that the largest object on the border of a tile is not 
 <p>You can also manually configure the tile overlap using <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span> <span class="pre">parameter</span></code> parameter. For more details, please refer to the section on <a class="reference internal" href="#manual-tiling-parameter-configuration">Manual Tiling Parameter Configuration</a> .</p>
 </section>
 <section id="tiling-sampling-strategy">
-<h3>Tiling Sampling Strategy<a class="headerlink" href="#tiling-sampling-strategy" title="Permalink to this heading">#</a></h3>
+<h3>Tiling Sampling Strategy<a class="headerlink" href="#tiling-sampling-strategy" title="Link to this heading">#</a></h3>
 <p>To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training.</p>
 <p>Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.</p>
 <p>It’s important to note that sampling is applied to the training and validation datasets, not the test dataset.</p>
@@ -554,7 +480,7 @@ This calculation ensures that the largest object on the border of a tile is not 
 </div>
 </section>
 <section id="manual-tiling-parameter-configuration">
-<h3>Manual Tiling Parameter Configuration<a class="headerlink" href="#manual-tiling-parameter-configuration" title="Permalink to this heading">#</a></h3>
+<h3>Manual Tiling Parameter Configuration<a class="headerlink" href="#manual-tiling-parameter-configuration" title="Link to this heading">#</a></h3>
 <p>Users can disable adaptive tiling and customize the tiling process by setting the following parameters:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
     <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
@@ -578,7 +504,7 @@ This calculation ensures that the largest object on the border of a tile is not 
 </section>
 </section>
 <section id="run-tiling-on-openvino-exported-model">
-<h2>Run Tiling on OpenVINO Exported Model<a class="headerlink" href="#run-tiling-on-openvino-exported-model" title="Permalink to this heading">#</a></h2>
+<h2>Run Tiling on OpenVINO Exported Model<a class="headerlink" href="#run-tiling-on-openvino-exported-model" title="Link to this heading">#</a></h2>
 <p>After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_trained_model</span><span class="o">&gt;/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> <span class="o">--</span><span class="n">output</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;</span>
 </pre></div>
@@ -598,126 +524,155 @@ by adjusting the batch size value in <code class="docutils literal notranslate">
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="fast_data_loading.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="fast_data_loading.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Fast Data Loading</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Fast Data Loading</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="config_input_size.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Configurable Input Size</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="config_input_size.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Configurable Input Size</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tiling-strategies">Tiling Strategies</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiling-via-otx-training-cli">Enable Tiling via OTX Training CLI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-tiling-via-otx-build">Enable Tiling via OTX Build</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">Tile Size and Tile Overlap Optimization</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tiling-sampling-strategy">Tiling Sampling Strategy</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">Manual Tiling Parameter Configuration</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">Run Tiling on OpenVINO Exported Model</a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#tiling-strategies">
+   Tiling Strategies
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-training-cli">
+   Enable Tiling via OTX Training CLI
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-build">
+   Enable Tiling via OTX Build
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">
+     Tile Size and Tile Overlap Optimization
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tiling-sampling-strategy">
+     Tiling Sampling Strategy
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">
+     Manual Tiling Parameter Configuration
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">
+   Run Tiling on OpenVINO Exported Model
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

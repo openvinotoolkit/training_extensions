@@ -1,13 +1,9 @@
-
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>otx.cli.tools.utils.demo.images_capture &#8212; OpenVINO™ Training Extensions 1.6.0 documentation</title>
   
@@ -19,153 +15,122 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/documentation_options.js?v=cf6e66ff"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.cli.tools.utils.demo.images_capture';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="otx.cli.tools.utils.demo.visualization" href="otx.cli.tools.utils.demo.visualization.html" />
     <link rel="prev" title="otx.cli.tools.utils.demo" href="otx.cli.tools.utils.demo.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +139,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,21 +199,23 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
@@ -395,72 +350,38 @@ document.write(`
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Guide</a></li>
-    
-    
-    <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
-    
-    
-    <li class="breadcrumb-item"><a href="otx.cli.tools.utils.demo.html" class="nav-link">otx.cli.tools.utils.demo</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">otx.cli.tool...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <section id="module-otx.cli.tools.utils.demo.images_capture">
-<span id="otx-cli-tools-utils-demo-images-capture"></span><h1>otx.cli.tools.utils.demo.images_capture<a class="headerlink" href="#module-otx.cli.tools.utils.demo.images_capture" title="Permalink to this heading">#</a></h1>
+<span id="otx-cli-tools-utils-demo-images-capture"></span><h1>otx.cli.tools.utils.demo.images_capture<a class="headerlink" href="#module-otx.cli.tools.utils.demo.images_capture" title="Link to this heading">#</a></h1>
 <p>Images capturing module.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable table autosummary">
@@ -503,38 +424,38 @@ document.write(`
 </table>
 <dl class="py exception">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.InvalidInput">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">InvalidInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#InvalidInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.InvalidInput" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">InvalidInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#InvalidInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.InvalidInput" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 <p>Exception for wrong input format.</p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.OpenError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">OpenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#OpenError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.OpenError" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">OpenError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#OpenError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.OpenError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 <p>Exception for error opening reader.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.CameraCapWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">CameraCapWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_resolution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">CameraCapWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_resolution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="otx.cli.tools.utils.demo.images_capture.ImagesCapture"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImagesCapture</span></code></a></p>
 <p>Class for capturing images from camera.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.fps">
-<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.fps" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.fps" title="Link to this definition">#</a></dt>
 <dd><p>Returns a frequency of getting images from source.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.get_type" title="Link to this definition">#</a></dt>
 <dd><p>Returns type of image capture.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.read" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#CameraCapWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.read" title="Link to this definition">#</a></dt>
 <dd><p>Returns captured image.</p>
 </dd></dl>
 
@@ -542,24 +463,24 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.DirReader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">DirReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">DirReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="otx.cli.tools.utils.demo.images_capture.ImagesCapture"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImagesCapture</span></code></a></p>
 <p>Class for reading images from directory.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.DirReader.fps">
-<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.fps" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.fps" title="Link to this definition">#</a></dt>
 <dd><p>Returns a frequency of getting images from source.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.DirReader.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.get_type" title="Link to this definition">#</a></dt>
 <dd><p>Returns type of image capture.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.DirReader.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.read" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#DirReader.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.DirReader.read" title="Link to this definition">#</a></dt>
 <dd><p>Returns captured image.</p>
 </dd></dl>
 
@@ -567,24 +488,24 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImagesCapture">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">ImagesCapture</span></span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">ImagesCapture</span></span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Images capturing base class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImagesCapture.fps">
-<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.fps" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.fps" title="Link to this definition">#</a></dt>
 <dd><p>Returns a frequency of getting images from source.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImagesCapture.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.get_type" title="Link to this definition">#</a></dt>
 <dd><p>Returns type of image capture.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImagesCapture.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.read" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImagesCapture.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.read" title="Link to this definition">#</a></dt>
 <dd><p>Returns captured image.</p>
 </dd></dl>
 
@@ -592,24 +513,24 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImreadWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">ImreadWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">ImreadWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="otx.cli.tools.utils.demo.images_capture.ImagesCapture"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImagesCapture</span></code></a></p>
 <p>Class for reading an image from file.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImreadWrapper.fps">
-<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.fps" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.fps" title="Link to this definition">#</a></dt>
 <dd><p>Returns a frequency of getting images from source.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImreadWrapper.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.get_type" title="Link to this definition">#</a></dt>
 <dd><p>Returns type of image capture.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.ImreadWrapper.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.read" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#ImreadWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.read" title="Link to this definition">#</a></dt>
 <dd><p>Returns captured image.</p>
 </dd></dl>
 
@@ -617,24 +538,24 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.VideoCapWrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">VideoCapWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">VideoCapWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture" title="otx.cli.tools.utils.demo.images_capture.ImagesCapture"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImagesCapture</span></code></a></p>
 <p>Class for capturing images from video.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.fps">
-<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.fps" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.fps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.fps" title="Link to this definition">#</a></dt>
 <dd><p>Returns a frequency of getting images from source.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.get_type">
-<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.get_type" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.get_type" title="Link to this definition">#</a></dt>
 <dd><p>Returns type of image capture.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.read" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#VideoCapWrapper.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.read" title="Link to this definition">#</a></dt>
 <dd><p>Returns captured image.</p>
 </dd></dl>
 
@@ -642,157 +563,342 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.cli.tools.utils.demo.images_capture.open_images_capture">
-<span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">open_images_capture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1280,</span> <span class="pre">720)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#open_images_capture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.open_images_capture" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.cli.tools.utils.demo.images_capture.</span></span><span class="sig-name descname"><span class="pre">open_images_capture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1280,</span> <span class="pre">720)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/cli/tools/utils/demo/images_capture.html#open_images_capture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.cli.tools.utils.demo.images_capture.open_images_capture" title="Link to this definition">#</a></dt>
 <dd><p>Opens images capture.</p>
 </dd></dl>
 
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="otx.cli.tools.utils.demo.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="otx.cli.tools.utils.demo.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">otx.cli.tools.utils.demo</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">otx.cli.tools.utils.demo</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="otx.cli.tools.utils.demo.visualization.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.cli.tools.utils.demo.visualization</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="otx.cli.tools.utils.demo.visualization.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">otx.cli.tools.utils.demo.visualization</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.InvalidInput"><code class="docutils literal notranslate"><span class="pre">InvalidInput</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.OpenError"><code class="docutils literal notranslate"><span class="pre">OpenError</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper"><code class="docutils literal notranslate"><span class="pre">CameraCapWrapper</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.fps"><code class="docutils literal notranslate"><span class="pre">CameraCapWrapper.fps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.get_type"><code class="docutils literal notranslate"><span class="pre">CameraCapWrapper.get_type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.read"><code class="docutils literal notranslate"><span class="pre">CameraCapWrapper.read()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader"><code class="docutils literal notranslate"><span class="pre">DirReader</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.fps"><code class="docutils literal notranslate"><span class="pre">DirReader.fps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.get_type"><code class="docutils literal notranslate"><span class="pre">DirReader.get_type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.read"><code class="docutils literal notranslate"><span class="pre">DirReader.read()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture"><code class="docutils literal notranslate"><span class="pre">ImagesCapture</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.fps"><code class="docutils literal notranslate"><span class="pre">ImagesCapture.fps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.get_type"><code class="docutils literal notranslate"><span class="pre">ImagesCapture.get_type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.read"><code class="docutils literal notranslate"><span class="pre">ImagesCapture.read()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper"><code class="docutils literal notranslate"><span class="pre">ImreadWrapper</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.fps"><code class="docutils literal notranslate"><span class="pre">ImreadWrapper.fps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.get_type"><code class="docutils literal notranslate"><span class="pre">ImreadWrapper.get_type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.read"><code class="docutils literal notranslate"><span class="pre">ImreadWrapper.read()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper"><code class="docutils literal notranslate"><span class="pre">VideoCapWrapper</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.fps"><code class="docutils literal notranslate"><span class="pre">VideoCapWrapper.fps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.get_type"><code class="docutils literal notranslate"><span class="pre">VideoCapWrapper.get_type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.read"><code class="docutils literal notranslate"><span class="pre">VideoCapWrapper.read()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.open_images_capture"><code class="docutils literal notranslate"><span class="pre">open_images_capture()</span></code></a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.cli.tools.utils.demo.images_capture.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.InvalidInput">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     InvalidInput
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.OpenError">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OpenError
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CameraCapWrapper
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.fps">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CameraCapWrapper.fps()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.get_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CameraCapWrapper.get_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.CameraCapWrapper.read">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CameraCapWrapper.read()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DirReader
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.fps">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DirReader.fps()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.get_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DirReader.get_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.DirReader.read">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DirReader.read()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ImagesCapture
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.fps">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImagesCapture.fps()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.get_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImagesCapture.get_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImagesCapture.read">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImagesCapture.read()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ImreadWrapper
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.fps">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImreadWrapper.fps()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.get_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImreadWrapper.get_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.ImreadWrapper.read">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ImreadWrapper.read()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     VideoCapWrapper
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.fps">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VideoCapWrapper.fps()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.get_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VideoCapWrapper.get_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.VideoCapWrapper.read">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VideoCapWrapper.read()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.cli.tools.utils.demo.images_capture.open_images_capture">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     open_images_capture()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.cli.tools.utils.demo.images_capture.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

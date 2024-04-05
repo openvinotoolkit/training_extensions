@@ -1,13 +1,9 @@
-
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en" data-content_root="../../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Anomaly Detection &#8212; OpenVINO™ Training Extensions 1.6.0 documentation</title>
   
@@ -19,153 +15,122 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/clipboard.min.js"></script>
-    <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/documentation_options.js?v=cf6e66ff"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/anomaly/index';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Action Recognition" href="../action/index.html" />
     <link rel="prev" title="Instance Segmentation" href="../segmentation/instance_segmentation.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>
-    <script>document.write(`<img src="../../../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +139,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,21 +199,23 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../get_started/installation.html">Installation</a></li>
@@ -395,71 +350,42 @@ document.write(`
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Guide</a></li>
-    
-    
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Algorithms</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">Anomaly Detection</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <section id="anomaly-detection">
-<h1>Anomaly Detection<a class="headerlink" href="#anomaly-detection" title="Permalink to this heading">#</a></h1>
+<h1>Anomaly Detection<a class="headerlink" href="#anomaly-detection" title="Link to this heading">#</a></h1>
 <p>The datasets from real-world applications such as industrial, medical, and security are extremely unbalanced, with an abundance of normal images and a severe lack of abnormal samples. A second issue is that the definition and type of abnormality are constantly evolving, making it difficult to train a supervised model once and use it permanently.  An alternative approach is to train a model using only normal samples to learn normality.  During the validation or testing phases, a deviation from this would indicate an anomaly. The process of identifying such deviations or anomalies in data is known as anomaly detection.</p>
 <p>This section examines the solutions for anomaly detection offered by the OpenVINO Training Extensions library.</p>
 <section id="task-types">
-<h2>Task Types<a class="headerlink" href="#task-types" title="Permalink to this heading">#</a></h2>
+<h2>Task Types<a class="headerlink" href="#task-types" title="Link to this heading">#</a></h2>
 <p>OpenVINO Training Extensions supports the following anomaly task types:</p>
 <ul class="simple">
 <li><p>Anomaly Classification - (Image-level detection)</p></li>
@@ -471,26 +397,26 @@ document.write(`
 <p>All anomaly task types are only trained on normal images. The different task types use the same models for generating the raw predictions, but differ in the post-processing that is applied to the raw predictions to localize the anomalous regions. Anomaly detection generates bounding-box predictions, while anomaly segmentation generates pixel-mask predictions. Anomaly classification does not perform localization of the anomalous regions within the image, but just outputs a normal vs. anomalous label for the entire image.</p>
 </div>
 <section id="anomaly-classification">
-<h3>Anomaly Classification<a class="headerlink" href="#anomaly-classification" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Classification<a class="headerlink" href="#anomaly-classification" title="Link to this heading">#</a></h3>
 <p>Anomaly classification is the task of predicting normal and abnormal images at the image level. As noted above, a model is trained on only normal images. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by the algo backend. An image is classified as abnormal if the anomaly score is above the threshold.</p>
 </section>
 <section id="id1">
-<h3>Anomaly Detection<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Detection<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Anomaly detection is the task of predicting normal and abnormal images at the box level. Similar to anomaly classification, a model is trained on normal images only. During the testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a bounding box around the anomaly.</p>
 </section>
 <section id="anomaly-segmentation">
-<h3>Anomaly Segmentation<a class="headerlink" href="#anomaly-segmentation" title="Permalink to this heading">#</a></h3>
+<h3>Anomaly Segmentation<a class="headerlink" href="#anomaly-segmentation" title="Link to this heading">#</a></h3>
 <p>The anomaly segmentation task locates anomalies at the pixel level. Similar to anomaly classification and detection, a model is trained on only normal images. During the validation and testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.</p>
 <figure class="align-center" id="id4">
 <span id="fig-anomaly-tasks"></span><a class="reference internal image-reference" href="../../../../_images/anomaly_tasks.png"><img alt="Anomaly Task Types" src="../../../../_images/anomaly_tasks.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id4" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
 </section>
 <section id="dataset-format">
-<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
+<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Link to this heading">#</a></h2>
 <p>At the moment, the anomaly tasks support the MVTec AD dataset format, which is one of the most popular formats for detecting anomalies.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MVTec/&lt;category&gt;
 ├── ground_truth
@@ -521,7 +447,7 @@ document.write(`
 <p>Future releases of OpenVINO Training Extensions will support other benchmark datasets, such as Amazon’s <a class="reference external" href="https://github.com/amazon-science/spot-diff#data-download">Visual Anomaly (VisA)</a> dataset. Meanwhile, you can use the <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad/">MVTec AD dataset</a> to train and test anomaly detection models, or use MVTec dataset structure to train and test anomaly detection models on your own dataset.</p>
 </section>
 <section id="models">
-<h2>Models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h2>
+<h2>Models<a class="headerlink" href="#models" title="Link to this heading">#</a></h2>
 <p>As mentioned above, the goal of visual anomaly detection is to learn a representation of normal behaviour in the data and then identify instances that deviate from this normal behaviour. OpenVINO Training Extensions supports several deep learning approaches to this task, including the following:</p>
 <table class="table">
 <thead>
@@ -558,10 +484,10 @@ document.write(`
 </tbody>
 </table>
 <section id="clustering-based-models">
-<h3>Clustering-based Models<a class="headerlink" href="#clustering-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Clustering-based Models<a class="headerlink" href="#clustering-based-models" title="Link to this heading">#</a></h3>
 <p>These models initially extract features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2011.08785.pdf">PADIM</a>.</p>
 <section id="id2">
-<h4>PADIM<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h4>
+<h4>PADIM<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/padim.png"><img alt="Anomaly Task Types" src="../../../../_images/padim.png" style="width: 600px;" /></a>
 </figure>
@@ -575,10 +501,10 @@ document.write(`
 </section>
 </section>
 <section id="knowledge-distillation-based-models">
-<h3>Knowledge Distillation-based Models<a class="headerlink" href="#knowledge-distillation-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Knowledge Distillation-based Models<a class="headerlink" href="#knowledge-distillation-based-models" title="Link to this heading">#</a></h3>
 <p>Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2103.04257.pdf">STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection</a>.</p>
 <section id="stfpm">
-<h4>STFPM<a class="headerlink" href="#stfpm" title="Permalink to this heading">#</a></h4>
+<h4>STFPM<a class="headerlink" href="#stfpm" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/stfpm.png"><img alt="Anomaly Task Types" src="../../../../_images/stfpm.png" style="width: 600px;" /></a>
 </figure>
@@ -586,7 +512,7 @@ document.write(`
 <p>Multiple-scale feature matching is utilized to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network’s feature pyramid is compared to the teacher network’s feature pyramid.</p>
 <p>The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.</p>
 <section id="training-parameters">
-<h5>Training Parameters<a class="headerlink" href="#training-parameters" title="Permalink to this heading">#</a></h5>
+<h5>Training Parameters<a class="headerlink" href="#training-parameters" title="Link to this heading">#</a></h5>
 <p>Since STFPM trains the student network, we use the following parameters for its training:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Backbone</span></code>: The default backbone is <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code>. You can also use <code class="docutils literal notranslate"><span class="pre">Wide</span> <span class="pre">ResNet50</span></code>.</p></li>
@@ -613,16 +539,16 @@ document.write(`
 </section>
 </section>
 <section id="reconstruction-based-models">
-<h3>Reconstruction-based Models<a class="headerlink" href="#reconstruction-based-models" title="Permalink to this heading">#</a></h3>
+<h3>Reconstruction-based Models<a class="headerlink" href="#reconstruction-based-models" title="Link to this heading">#</a></h3>
 <p>These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2108.07610v2.pdf">DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection</a>.</p>
 <section id="draem">
-<h4>DRÆM<a class="headerlink" href="#draem" title="Permalink to this heading">#</a></h4>
+<h4>DRÆM<a class="headerlink" href="#draem" title="Link to this heading">#</a></h4>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../../../../_images/draem.png"><img alt="Anomaly Task Types" src="../../../../_images/draem.png" style="width: 600px;" /></a>
 </figure>
 <p>A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.</p>
 <section id="id3">
-<h5>Training Parameters<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h5>
+<h5>Training Parameters<a class="headerlink" href="#id3" title="Link to this heading">#</a></h5>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span></code>: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.</p></li>
@@ -641,145 +567,202 @@ document.write(`
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="../segmentation/instance_segmentation.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="../segmentation/instance_segmentation.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Instance Segmentation</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Instance Segmentation</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="../action/index.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Action Recognition</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="../action/index.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Action Recognition</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#task-types">Task Types</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#anomaly-classification">Anomaly Classification</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Anomaly Detection</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#anomaly-segmentation">Anomaly Segmentation</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dataset-format">Dataset Format</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#models">Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering-based-models">Clustering-based Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">PADIM</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#knowledge-distillation-based-models">Knowledge Distillation-based Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#stfpm">STFPM</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#training-parameters">Training Parameters</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reconstruction-based-models">Reconstruction-based Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#draem">DRÆM</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Training Parameters</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../../../_sources/guide/explanation/algorithms/anomaly/index.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#task-types">
+   Task Types
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#anomaly-classification">
+     Anomaly Classification
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Anomaly Detection
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#anomaly-segmentation">
+     Anomaly Segmentation
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset-format">
+   Dataset Format
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#models">
+   Models
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#clustering-based-models">
+     Clustering-based Models
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id2">
+       PADIM
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#knowledge-distillation-based-models">
+     Knowledge Distillation-based Models
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#stfpm">
+       STFPM
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h5 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#training-parameters">
+         Training Parameters
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#reconstruction-based-models">
+     Reconstruction-based Models
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#draem">
+       DRÆM
+      </a>
+      <ul class="nav section-nav flex-column">
+       <li class="toc-h5 nav-item toc-entry">
+        <a class="reference internal nav-link" href="#id3">
+         Training Parameters
+        </a>
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../../_sources/guide/explanation/algorithms/anomaly/index.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>

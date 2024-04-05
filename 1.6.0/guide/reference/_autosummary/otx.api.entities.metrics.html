@@ -1,13 +1,9 @@
-
-
 <!DOCTYPE html>
 
-
-<html lang="en" data-content_root="" >
-
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>otx.api.entities.metrics &#8212; OpenVINO™ Training Extensions 1.6.0 documentation</title>
   
@@ -19,153 +15,122 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
 
   
-  <link href="../../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d626d52b" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
-  <script src="../../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/clipboard.min.js"></script>
-    <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/documentation_options.js?v=cf6e66ff"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.api.entities.metrics';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="otx.api.entities.model" href="otx.api.entities.model.html" />
     <link rel="prev" title="otx.api.entities.metadata" href="otx.api.entities.metadata.html" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="docsearch:language" content="en"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
   </head>
   
   
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
 
   
   
-  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
-  
-  <div id="pst-scroll-pixel-helper"></div>
-  
-  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
-    <i class="fa-solid fa-arrow-up"></i>
-    Back to top
-  </button>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__primary"
-          id="__primary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
   <label class="overlay overlay-primary" for="__primary"></label>
+
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          name="__secondary"
-          id="__secondary"/>
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
   <label class="overlay overlay-secondary" for="__secondary"></label>
+
   
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
-<form class="bd-search d-flex align-items-center"
-      action="../../../search.html"
-      method="get">
+      
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
   <i class="fa-solid fa-magnifying-glass"></i>
-  <input type="search"
-         class="form-control"
-         name="q"
-         id="search-input"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
-         autocomplete="off"
-         autocorrect="off"
-         autocapitalize="off"
-         spellcheck="false"/>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
+</form>
+    </div>
   </div>
-  
-    <header class="bd-header navbar navbar-expand-lg bd-navbar">
-<div class="bd-header__inner bd-page-width">
-  <label class="sidebar-toggle primary-toggle" for="__primary">
-    <span class="fa-solid fa-bars"></span>
-  </label>
-  
-  
-  <div class="col-lg-3 navbar-header-items__start">
-    
-      <div class="navbar-item">
 
   
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
 
 <a class="navbar-brand logo" href="../../../index.html">
+
   
   
   
   
   
-    
-    
-      
-    
-    
-    <img src="../../../_static/otx-logo.png" class="logo__image only-light" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>
-    <script>document.write(`<img src="../../../_static/otx-logo.png" class="logo__image only-dark" alt="OpenVINO™ Training Extensions 1.6.0 documentation - Home"/>`);</script>
   
   
-</a></div>
+
+  
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
     
   </div>
+
   
   <div class="col-lg-9 navbar-header-items">
-    
-    
-    <div class="navbar-header-items__end">
+    <div id="navbar-center" class="mr-auto">
       
-        <div class="navbar-item navbar-persistent--container">
-          
+    </div>
 
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
         </div>
       
       
-        <div class="navbar-item">
-
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
-        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -174,70 +139,58 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
+      </ul>
+      </div>
       
     </div>
-    
   </div>
+
+
   
   
     <div class="navbar-persistent--mobile">
-
- <script>
- document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script>
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
     </div>
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
       <span class="fa-solid fa-outdent"></span>
-    </label>
+  </label>
   
-</div>
 
-    </header>
+</div>
+  </nav>
   
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
       
-      
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
-
   
   <div class="sidebar-header-items sidebar-primary__section">
     
     
-    
-    
-      <div class="sidebar-header-items__end">
-        
-          <div class="navbar-item">
 
-<script>
-document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
-  </button>
-`);
-</script></div>
-        
-          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
-    aria-label="Icon Links">
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
         <li class="nav-item">
           
           
@@ -246,21 +199,23 @@ document.write(`
           
           
           
-          
-          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
         </li>
-</ul></div>
-        
+      </ul>
       </div>
+      
+    </div>
     
   </div>
+
   
-    <div class="sidebar-primary-items__start sidebar-primary__section">
-        <div class="sidebar-primary-item">
-<nav class="bd-docs-nav bd-links"
-     aria-label="Section Navigation">
-  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/installation.html">Installation</a></li>
@@ -395,72 +350,38 @@ document.write(`
 </ul>
 </li>
 </ul>
-</div>
-</nav></div>
-    </div>
-  
-  
-  <div class="sidebar-primary-items__end sidebar-primary__section">
+
   </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
   
   <div id="rtd-footer-container"></div>
 
-
       </div>
-      
       <main id="main-content" class="bd-main">
         
         
-          <div class="bd-content">
-            <div class="bd-article-container">
-              
-              <div class="bd-header-article">
-<div class="header-article-items header-article__inner">
-  
-    <div class="header-article-items__start">
-      
-        <div class="header-article-item">
-
-
-
-
-
-<nav aria-label="Breadcrumb">
-  <ul class="bd-breadcrumbs">
-    
-    <li class="breadcrumb-item breadcrumb-home">
-      <a href="../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
-      </a>
-    </li>
-    
-    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Guide</a></li>
-    
-    
-    <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
-    
-    
-    <li class="breadcrumb-item"><a href="otx.api.entities.html" class="nav-link">otx.api.entities</a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page">otx.api.enti...</li>
-  </ul>
-</nav>
-</div>
-      
-    </div>
-  
-  
-</div>
-</div>
-              
-              
-              
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
                 
-<div id="searchbox"></div>
-                <article class="bd-article">
-                  
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
   <section id="module-otx.api.entities.metrics">
-<span id="otx-api-entities-metrics"></span><h1>otx.api.entities.metrics<a class="headerlink" href="#module-otx.api.entities.metrics" title="Permalink to this heading">#</a></h1>
+<span id="otx-api-entities-metrics"></span><h1>otx.api.entities.metrics<a class="headerlink" href="#module-otx.api.entities.metrics" title="Link to this heading">#</a></h1>
 <p>This module implements the Metric entities.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
@@ -541,14 +462,14 @@ document.write(`
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.BarChartInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">BarChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">VisualizationType.BAR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#BarChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.BarChartInfo" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">BarChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">VisualizationType.BAR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#BarChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.BarChartInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.VisualizationInfo" title="otx.api.entities.metrics.VisualizationInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisualizationInfo</span></code></a></p>
 <p>This represents a visualization using a bar chart.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.BarMetricsGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">BarMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><span class="pre">CountMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.BarChartInfo" title="otx.api.entities.metrics.BarChartInfo"><span class="pre">BarChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#BarMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.BarMetricsGroup" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">BarMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><span class="pre">CountMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.BarChartInfo" title="otx.api.entities.metrics.BarChartInfo"><span class="pre">BarChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#BarMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.BarMetricsGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScoreMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">CountMetric</span></code></a>], <a class="reference internal" href="#otx.api.entities.metrics.BarChartInfo" title="otx.api.entities.metrics.BarChartInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">BarChartInfo</span></code></a>]</p>
 <p>This class represent a bar or radial bar chart in the UI.</p>
 <p>Each metric in the metrics group represents the value of a single bar/radial bar in the chart.</p>
@@ -556,7 +477,7 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.ColorPalette">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">ColorPalette</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ColorPalette"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ColorPalette" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">ColorPalette</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ColorPalette"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ColorPalette" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>Enum class specifying the color palette to be used by the UI to display statistics.</p>
 <p>If the statistics are per label, set to LABEL so the UI will use the label color palette.
@@ -565,7 +486,7 @@ Otherwise, set to DEFAULT (allow the UI to choose a color palette)</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CountMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">CountMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CountMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CountMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">CountMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CountMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CountMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents an integer value.</p>
 <dl class="field-list simple">
@@ -583,7 +504,7 @@ Otherwise, set to DEFAULT (allow the UI to choose a color palette)</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CountMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CountMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CountMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CountMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CountMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -591,7 +512,7 @@ Otherwise, set to DEFAULT (allow the UI to choose a color palette)</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CurveMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">CurveMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CurveMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">CurveMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CurveMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a curve. The coordinates are represented as x and y lists.</p>
 <p class="rubric">Example</p>
@@ -617,19 +538,19 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CurveMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CurveMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#CurveMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CurveMetric.xs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.xs" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.xs" title="Link to this definition">#</a></dt>
 <dd><p>Returns the list of floats on x-axis.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.CurveMetric.ys">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ys</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.ys" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ys</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.CurveMetric.ys" title="Link to this definition">#</a></dt>
 <dd><p>Returns the list of floats on y-axis.</p>
 </dd></dl>
 
@@ -637,7 +558,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DateMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">DateMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.12)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DateMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DateMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">DateMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.12)"><span class="pre">datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DateMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DateMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a date time value.</p>
 <dl class="field-list simple">
@@ -655,7 +576,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DateMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DateMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DateMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DateMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DateMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -663,7 +584,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DurationMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">DurationMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">minute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">DurationMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">minute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a duration metric, which include hour (int), minute (int), and second (float).</p>
 <dl class="field-list simple">
@@ -683,7 +604,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DurationMetric.from_seconds">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_seconds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.metrics.DurationMetric" title="otx.api.entities.metrics.DurationMetric"><span class="pre">DurationMetric</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.from_seconds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.from_seconds" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_seconds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.metrics.DurationMetric" title="otx.api.entities.metrics.DurationMetric"><span class="pre">DurationMetric</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.from_seconds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.from_seconds" title="Link to this definition">#</a></dt>
 <dd><p>Returns a duration metrics, with name and converted durations from seconds.</p>
 <p class="rubric">Example</p>
 <p>Converting 70 seconds to duration metric.</p>
@@ -711,7 +632,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DurationMetric.get_duration_string">
-<span class="sig-name descname"><span class="pre">get_duration_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.get_duration_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.get_duration_string" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_duration_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.get_duration_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.get_duration_string" title="Link to this definition">#</a></dt>
 <dd><p>Returns the string representation of the duration.</p>
 <p class="rubric">Example</p>
 <p>Duration string of 1 hour 1 minute and 1.50 seconds.</p>
@@ -730,7 +651,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.DurationMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#DurationMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.DurationMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -738,7 +659,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.InfoMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">InfoMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#InfoMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.InfoMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">InfoMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#InfoMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.InfoMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a string value.</p>
 <dl class="field-list simple">
@@ -756,7 +677,7 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.InfoMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#InfoMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.InfoMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#InfoMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.InfoMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -764,14 +685,14 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.LineChartInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">LineChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_axis_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_axis_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#LineChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.LineChartInfo" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">LineChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_axis_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_axis_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#LineChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.LineChartInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.VisualizationInfo" title="otx.api.entities.metrics.VisualizationInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisualizationInfo</span></code></a></p>
 <p>This represents a visualization using a line chart.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.LineMetricsGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">LineMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">CurveMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.LineChartInfo" title="otx.api.entities.metrics.LineChartInfo"><span class="pre">LineChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#LineMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.LineMetricsGroup" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">LineMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">CurveMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.LineChartInfo" title="otx.api.entities.metrics.LineChartInfo"><span class="pre">LineChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#LineMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.LineMetricsGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a>[<a class="reference internal" href="#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">CurveMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.LineChartInfo" title="otx.api.entities.metrics.LineChartInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">LineChartInfo</span></code></a>]</p>
 <p>This class represent a line chart in the UI.</p>
 <p>Multiple lines can be displayed in a single chart.</p>
@@ -779,14 +700,14 @@ The x values will be automatically generated as a 1-based index (1, 2, 3, …)</
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixChartInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixChartInfo" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixChartInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.VisualizationInfo" title="otx.api.entities.metrics.VisualizationInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisualizationInfo</span></code></a></p>
 <p>This represents a visualization using a matrix.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a matrix. The cells are represented as a list of lists of integers.</p>
 <p>In the case of a confusion matrix, the rows represent the ground truth items and the columns represent the
@@ -810,31 +731,31 @@ predicted items.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric.normalize">
-<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.normalize" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.normalize" title="Link to this definition">#</a></dt>
 <dd><p>Normalizes the confusion matrix by dividing by the sum of the rows.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric.column_labels">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column_labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.column_labels" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column_labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.column_labels" title="Link to this definition">#</a></dt>
 <dd><p>Returns the column labels.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric.matrix_values">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">matrix_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.matrix_values" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">matrix_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.matrix_values" title="Link to this definition">#</a></dt>
 <dd><p>Returns the matrix data.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetric.row_labels">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">row_labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.row_labels" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">row_labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetric.row_labels" title="Link to this definition">#</a></dt>
 <dd><p>Returns the row labels.</p>
 </dd></dl>
 
@@ -842,7 +763,7 @@ predicted items.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MatrixMetricsGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.MatrixChartInfo" title="otx.api.entities.metrics.MatrixChartInfo"><span class="pre">MatrixChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetricsGroup" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MatrixMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.MatrixChartInfo" title="otx.api.entities.metrics.MatrixChartInfo"><span class="pre">MatrixChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MatrixMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MatrixMetricsGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a>[<a class="reference internal" href="#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatrixMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.MatrixChartInfo" title="otx.api.entities.metrics.MatrixChartInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatrixChartInfo</span></code></a>]</p>
 <p>This class represent a matrix chart in the UI.</p>
 <p>Multiple matrices can be displayed in the same chart.</p>
@@ -850,20 +771,20 @@ predicted items.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MetricEntity">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MetricEntity</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MetricEntity</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This interface represents a metric, which is the smallest building block for the performance statistics.</p>
 <p>It only contains the name of the metric.
 See also <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a> and <a class="reference internal" href="#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><code class="xref py py-class docutils literal notranslate"><span class="pre">Performance</span></code></a> for the structure of performance statistics.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MetricEntity.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricEntity.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricEntity.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity, e.g. “curve.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MetricEntity.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity.name" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#otx.api.entities.metrics.MetricEntity.name" title="Link to this definition">#</a></dt>
 <dd><p>Returns the name of the Metric Entity.</p>
 </dd></dl>
 
@@ -871,7 +792,7 @@ See also <a class="reference internal" href="#otx.api.entities.metrics.MetricsGr
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MetricsGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">_Metric</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_VisualizationInfo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricsGroup" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><span class="pre">_Metric</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_VisualizationInfo</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MetricsGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">_Metric</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">_VisualizationInfo</span></code>]</p>
 <p>This class aggregates a list of metric entities and defines how this group will be visualized on the UI.</p>
 <p>This class is the parent class to the different types of MetricsGroup that each represent a different type of chart
@@ -896,7 +817,7 @@ in the UI.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MultiScorePerformance">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MultiScorePerformance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primary_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MultiScorePerformance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">MultiScorePerformance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primary_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#MultiScorePerformance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><code class="xref py py-class docutils literal notranslate"><span class="pre">Performance</span></code></a></p>
 <p>This class can be used in tasks where performance is measured by multiple metrics.</p>
 <dl class="field-list simple">
@@ -913,13 +834,13 @@ charts, curves, and other additional info.</p></li>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MultiScorePerformance.additional_scores">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">additional_scores</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance.additional_scores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">additional_scores</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance.additional_scores" title="Link to this definition">#</a></dt>
 <dd><p>Return the additional score metrics.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.MultiScorePerformance.primary_score">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_score</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance.primary_score" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_score</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.MultiScorePerformance.primary_score" title="Link to this definition">#</a></dt>
 <dd><p>Return the primary score metric.</p>
 </dd></dl>
 
@@ -927,12 +848,12 @@ charts, curves, and other additional info.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.NullMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">NullMetric</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">NullMetric</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>Represents ‘Metric not found’.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.NullMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -940,14 +861,14 @@ charts, curves, and other additional info.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.NullPerformance">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">NullPerformance</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullPerformance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullPerformance" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">NullPerformance</span></span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#NullPerformance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.NullPerformance" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><code class="xref py py-class docutils literal notranslate"><span class="pre">Performance</span></code></a></p>
 <p>This is used to represent ‘Performance not found’.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.Performance">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">Performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#Performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.Performance" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">Performance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#Performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.Performance" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This performance class wraps the statistics of an entity (e.g., Model, Resultset).</p>
 <dl class="field-list simple">
@@ -962,7 +883,7 @@ charts, curves, and other additional info.</p></li>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.Performance.score">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">score</span></span><a class="headerlink" href="#otx.api.entities.metrics.Performance.score" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">score</span></span><a class="headerlink" href="#otx.api.entities.metrics.Performance.score" title="Link to this definition">#</a></dt>
 <dd><p>Return the score metric.</p>
 </dd></dl>
 
@@ -970,7 +891,7 @@ charts, curves, and other additional info.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.ScoreMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">ScoreMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ScoreMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ScoreMetric" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">ScoreMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ScoreMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ScoreMetric" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricEntity" title="otx.api.entities.metrics.MetricEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricEntity</span></code></a></p>
 <p>This metric represents a float value.</p>
 <p>This metric is typically used for storing performance metrics, such as accuracy, f-measure, dice score, etc.</p>
@@ -989,7 +910,7 @@ charts, curves, and other additional info.</p></li>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.ScoreMetric.type">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ScoreMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ScoreMetric.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#ScoreMetric.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.ScoreMetric.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the MetricEntity.</p>
 </dd></dl>
 
@@ -997,14 +918,14 @@ charts, curves, and other additional info.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.TextChartInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">TextChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#TextChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.TextChartInfo" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">TextChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#TextChartInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.TextChartInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.VisualizationInfo" title="otx.api.entities.metrics.VisualizationInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">VisualizationInfo</span></code></a></p>
 <p>This represents a visualization using text, which uses only a single string.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.TextMetricsGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">TextMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><span class="pre">CountMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.InfoMetric" title="otx.api.entities.metrics.InfoMetric"><span class="pre">InfoMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.DateMetric" title="otx.api.entities.metrics.DateMetric"><span class="pre">DateMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.DurationMetric" title="otx.api.entities.metrics.DurationMetric"><span class="pre">DurationMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.TextChartInfo" title="otx.api.entities.metrics.TextChartInfo"><span class="pre">TextChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#TextMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.TextMetricsGroup" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">TextMetricsGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><span class="pre">CountMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.InfoMetric" title="otx.api.entities.metrics.InfoMetric"><span class="pre">InfoMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.DateMetric" title="otx.api.entities.metrics.DateMetric"><span class="pre">DateMetric</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.DurationMetric" title="otx.api.entities.metrics.DurationMetric"><span class="pre">DurationMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.TextChartInfo" title="otx.api.entities.metrics.TextChartInfo"><span class="pre">TextChartInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#TextMetricsGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.TextMetricsGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScoreMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.CountMetric" title="otx.api.entities.metrics.CountMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">CountMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.InfoMetric" title="otx.api.entities.metrics.InfoMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">InfoMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.DateMetric" title="otx.api.entities.metrics.DateMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">DateMetric</span></code></a>, <a class="reference internal" href="#otx.api.entities.metrics.DurationMetric" title="otx.api.entities.metrics.DurationMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">DurationMetric</span></code></a>], <a class="reference internal" href="#otx.api.entities.metrics.TextChartInfo" title="otx.api.entities.metrics.TextChartInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">TextChartInfo</span></code></a>]</p>
 <p>This class represent a text chart in the UI.</p>
 <p>Text charts contain only one metric, which can be of type CountMetric, ScoreMetric, DateMetric, DurationMetric or
@@ -1013,12 +934,12 @@ InfoMetric.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.VisualizationInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">VisualizationInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualisation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#VisualizationInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.VisualizationInfo" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">VisualizationInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualisation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#VisualizationInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.VisualizationInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>This represents the visualization info a metrics group. See <a class="reference internal" href="#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a>.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.VisualizationInfo.type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.VisualizationInfo.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></em><a class="headerlink" href="#otx.api.entities.metrics.VisualizationInfo.type" title="Link to this definition">#</a></dt>
 <dd><p>Returns the type of the visualization.</p>
 </dd></dl>
 
@@ -1026,7 +947,7 @@ InfoMetric.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.metrics.VisualizationType">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">VisualizationType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#VisualizationType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.VisualizationType" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">VisualizationType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/api/entities/metrics.html#VisualizationType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.metrics.VisualizationType" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>This enum defines how the metrics will be visualized on the UI.</p>
 </dd></dl>
@@ -1034,187 +955,556 @@ InfoMetric.</p>
 </section>
 
 
-                </article>
-              
-              
-              
-              
-              
-                <footer class="prev-next-footer">
-                  
-<div class="prev-next-area">
-    <a class="left-prev"
-       href="otx.api.entities.metadata.html"
-       title="previous page">
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="otx.api.entities.metadata.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">otx.api.entities.metadata</p>
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">otx.api.entities.metadata</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="otx.api.entities.model.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">otx.api.entities.model</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
-</div>
-                </footer>
-              
-            </div>
-            
-            
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
+  </a>
+  <a class='right-next' id="next-link" href="otx.api.entities.model.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">otx.api.entities.model</p>
   </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.BarChartInfo"><code class="docutils literal notranslate"><span class="pre">BarChartInfo</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.BarMetricsGroup"><code class="docutils literal notranslate"><span class="pre">BarMetricsGroup</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.ColorPalette"><code class="docutils literal notranslate"><span class="pre">ColorPalette</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CountMetric"><code class="docutils literal notranslate"><span class="pre">CountMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CountMetric.type"><code class="docutils literal notranslate"><span class="pre">CountMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric"><code class="docutils literal notranslate"><span class="pre">CurveMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.type"><code class="docutils literal notranslate"><span class="pre">CurveMetric.type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.xs"><code class="docutils literal notranslate"><span class="pre">CurveMetric.xs</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.ys"><code class="docutils literal notranslate"><span class="pre">CurveMetric.ys</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DateMetric"><code class="docutils literal notranslate"><span class="pre">DateMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DateMetric.type"><code class="docutils literal notranslate"><span class="pre">DateMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric"><code class="docutils literal notranslate"><span class="pre">DurationMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.from_seconds"><code class="docutils literal notranslate"><span class="pre">DurationMetric.from_seconds()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.get_duration_string"><code class="docutils literal notranslate"><span class="pre">DurationMetric.get_duration_string()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.type"><code class="docutils literal notranslate"><span class="pre">DurationMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.InfoMetric"><code class="docutils literal notranslate"><span class="pre">InfoMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.InfoMetric.type"><code class="docutils literal notranslate"><span class="pre">InfoMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.LineChartInfo"><code class="docutils literal notranslate"><span class="pre">LineChartInfo</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.LineMetricsGroup"><code class="docutils literal notranslate"><span class="pre">LineMetricsGroup</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixChartInfo"><code class="docutils literal notranslate"><span class="pre">MatrixChartInfo</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric"><code class="docutils literal notranslate"><span class="pre">MatrixMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.normalize"><code class="docutils literal notranslate"><span class="pre">MatrixMetric.normalize()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.type"><code class="docutils literal notranslate"><span class="pre">MatrixMetric.type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.column_labels"><code class="docutils literal notranslate"><span class="pre">MatrixMetric.column_labels</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.matrix_values"><code class="docutils literal notranslate"><span class="pre">MatrixMetric.matrix_values</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.row_labels"><code class="docutils literal notranslate"><span class="pre">MatrixMetric.row_labels</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetricsGroup"><code class="docutils literal notranslate"><span class="pre">MatrixMetricsGroup</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity"><code class="docutils literal notranslate"><span class="pre">MetricEntity</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity.type"><code class="docutils literal notranslate"><span class="pre">MetricEntity.type()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity.name"><code class="docutils literal notranslate"><span class="pre">MetricEntity.name</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricsGroup"><code class="docutils literal notranslate"><span class="pre">MetricsGroup</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance"><code class="docutils literal notranslate"><span class="pre">MultiScorePerformance</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance.additional_scores"><code class="docutils literal notranslate"><span class="pre">MultiScorePerformance.additional_scores</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance.primary_score"><code class="docutils literal notranslate"><span class="pre">MultiScorePerformance.primary_score</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.NullMetric"><code class="docutils literal notranslate"><span class="pre">NullMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.NullMetric.type"><code class="docutils literal notranslate"><span class="pre">NullMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.NullPerformance"><code class="docutils literal notranslate"><span class="pre">NullPerformance</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.Performance"><code class="docutils literal notranslate"><span class="pre">Performance</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.Performance.score"><code class="docutils literal notranslate"><span class="pre">Performance.score</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.ScoreMetric"><code class="docutils literal notranslate"><span class="pre">ScoreMetric</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.ScoreMetric.type"><code class="docutils literal notranslate"><span class="pre">ScoreMetric.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.TextChartInfo"><code class="docutils literal notranslate"><span class="pre">TextChartInfo</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.TextMetricsGroup"><code class="docutils literal notranslate"><span class="pre">TextMetricsGroup</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationInfo"><code class="docutils literal notranslate"><span class="pre">VisualizationInfo</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationInfo.type"><code class="docutils literal notranslate"><span class="pre">VisualizationInfo.type</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationType"><code class="docutils literal notranslate"><span class="pre">VisualizationType</span></code></a></li>
-</ul>
-  </nav></div>
-
-  <div class="sidebar-secondary-item">
-
-  <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.api.entities.metrics.rst.txt">
-      <i class="fa-solid fa-file-lines"></i> Show Source
-    </a>
-  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
 </div>
-
-</div></div>
-              
+            </footer>
             
           </div>
-          <footer class="bd-footer-content">
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.BarChartInfo">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     BarChartInfo
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.BarMetricsGroup">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     BarMetricsGroup
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.ColorPalette">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ColorPalette
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.CountMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CountMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.CountMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CountMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CurveMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CurveMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.xs">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CurveMetric.xs
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.CurveMetric.ys">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CurveMetric.ys
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.DateMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DateMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.DateMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DateMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DurationMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.from_seconds">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DurationMetric.from_seconds()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.get_duration_string">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DurationMetric.get_duration_string()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.DurationMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DurationMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.InfoMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     InfoMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.InfoMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InfoMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.LineChartInfo">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     LineChartInfo
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.LineMetricsGroup">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     LineMetricsGroup
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixChartInfo">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MatrixChartInfo
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MatrixMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.normalize">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MatrixMetric.normalize()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MatrixMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.column_labels">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MatrixMetric.column_labels
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.matrix_values">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MatrixMetric.matrix_values
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetric.row_labels">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MatrixMetric.row_labels
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MatrixMetricsGroup">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MatrixMetricsGroup
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MetricEntity
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricEntity.type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricEntity.name">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricEntity.name
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MetricsGroup">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MetricsGroup
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MultiScorePerformance
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance.additional_scores">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MultiScorePerformance.additional_scores
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.MultiScorePerformance.primary_score">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MultiScorePerformance.primary_score
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.NullMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NullMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.NullMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NullMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.NullPerformance">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NullPerformance
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.Performance">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Performance
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.Performance.score">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Performance.score
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.ScoreMetric">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ScoreMetric
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.ScoreMetric.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ScoreMetric.type()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.TextChartInfo">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TextChartInfo
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.TextMetricsGroup">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TextMetricsGroup
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationInfo">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     VisualizationInfo
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationInfo.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       VisualizationInfo.type
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.metrics.VisualizationType">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     VisualizationType
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.api.entities.metrics.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
             
-          </footer>
+          </div>
+        </footer>
         
       </main>
     </div>
   </div>
+
   
+    
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
-<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+  <script src="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
 
-  <footer class="bd-footer">
-<div class="bd-footer__inner bd-page-width">
+  <footer class="bd-footer"><div class="bd-footer__inner container">
   
-    <div class="footer-items__start">
-      
-        <div class="footer-item">
-
-  <p class="copyright">
+  <div class="footer-item">
     
-      © Copyright 2023, OpenVINO™ Training Extensions Contributors.
-      <br/>
+<p class="copyright">
+
+    &copy; Copyright 2024, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
     
-  </p>
-</div>
-      
-        <div class="footer-item">
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+</p>
 
-  <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
-    <br/>
-  </p>
-</div>
-      
-    </div>
-  
-  
-  
-    <div class="footer-items__end">
-      
-        <div class="footer-item">
-<p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
-</p></div>
-      
-    </div>
+  </div>
   
 </div>
-
   </footer>
   </body>
 </html>
