@@ -14,6 +14,8 @@ from mmdet.registry import MODELS, TASK_UTILS
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
+from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
+from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 
 if TYPE_CHECKING:
     from mmdet.utils import ConfigType, InstanceList, MultiConfig, OptInstanceList
@@ -85,7 +87,8 @@ class SSDHead(AnchorHead):
         self.act_cfg = act_cfg
 
         self.cls_out_channels = num_classes + 1  # add background class
-        self.prior_generator = TASK_UTILS.build(anchor_generator)
+        anchor_generator.pop("type")
+        self.prior_generator = SSDAnchorGeneratorClustered(**anchor_generator)
 
         # Usually the numbers of anchors for each level are the same
         # except SSD detectors. So it is an int in the most dense
@@ -103,7 +106,8 @@ class SSDHead(AnchorHead):
 
         self._init_layers()
 
-        self.bbox_coder = TASK_UTILS.build(bbox_coder)
+        bbox_coder.pop("type")
+        self.bbox_coder = DeltaXYWHBBoxCoder(**bbox_coder)
         self.reg_decoded_bbox = reg_decoded_bbox
         self.use_sigmoid_cls = False
         self.cls_focal_loss = False
