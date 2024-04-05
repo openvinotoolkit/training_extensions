@@ -165,6 +165,15 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
+    def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.__orig_model_forward = self.model.forward
+        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+
+    def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+
 
 class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
     """MobileNetV3 Model for multi-class classification task."""
@@ -282,6 +291,15 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
+    def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.__orig_model_forward = self.model.forward
+        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+
+    def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+
 
 class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
     """MobileNetV3 Model for hierarchical label classification task."""
@@ -354,8 +372,12 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             return OTXBatchLossEntity(loss=outputs)
 
         # To list, batch-wise
-        scores = outputs["pred_scores"].unbind(0)
-        labels = outputs["pred_labels"].unbind(0)
+        if isinstance(outputs, dict):
+            scores = outputs["pred_scores"]
+            labels = outputs["pred_labels"]
+        else:
+            scores = outputs
+            labels = outputs.argmax(-1, keepdim=True)
 
         return HlabelClsBatchPredEntity(
             batch_size=inputs.batch_size,
@@ -421,3 +443,12 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             saliency_map=outputs["saliency_map"],
             feature_vector=outputs["feature_vector"],
         )
+
+    def _reset_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.__orig_model_forward = self.model.forward
+        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+
+    def _restore_model_forward(self) -> None:
+        # TODO(vinnamkim): This will be revisited by the export refactoring
+        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]

@@ -212,8 +212,8 @@ class ImageClassifier(BaseModel):
         pred_results = self.head._get_predictions(logits)  # noqa: SLF001
         # H-Label Classification Case
         if isinstance(pred_results, dict):
-            scores = pred_results["pred_scores"].unbind(0)
-            preds = pred_results["pred_labels"].unbind(0)
+            scores = pred_results["pred_scores"]
+            preds = pred_results["pred_labels"]
         else:
             scores = pred_results.unbind(0)
             preds = logits.argmax(-1, keepdim=True).unbind(0)
