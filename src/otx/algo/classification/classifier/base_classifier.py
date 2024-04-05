@@ -112,7 +112,7 @@ class ImageClassifier(BaseModel):
             feats = self.extract_feat(images)
             return self.head(feats)
         if mode == "loss":
-            return self.loss(images, labels)
+            return self.loss(images, labels, **kwargs)
         if mode == "predict":
             return self.predict(images)
         if mode == "explain":
@@ -156,7 +156,7 @@ class ImageClassifier(BaseModel):
 
         return self.head(x)
 
-    def loss(self, inputs: torch.Tensor, labels: torch.Tensor) -> dict:
+    def loss(self, inputs: torch.Tensor, labels: torch.Tensor, **kwargs) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -169,7 +169,7 @@ class ImageClassifier(BaseModel):
             dict[str, Tensor]: a dictionary of loss components
         """
         feats = self.extract_feat(inputs)
-        return self.head.loss(feats, labels)
+        return self.head.loss(feats, labels, **kwargs)
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[torch.Tensor]:
         """Predict results from a batch of inputs.

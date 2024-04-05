@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import Callable
 
 import torch
@@ -12,6 +13,7 @@ from mmengine.model import BaseModule
 from torch import nn
 
 from otx.algo.utils.mmengine_utils import constant_init, normal_init
+from otx.core.data.entity.base import ImageInfo
 
 
 class HierarchicalClsHead(BaseModule):
@@ -20,6 +22,42 @@ class HierarchicalClsHead(BaseModule):
     This class defines the methods for pre-processing the features,
     calculating the loss, and making predictions for hierarchical classification.
     """
+
+    def __init__(
+        self,
+        num_multiclass_heads: int,
+        num_multilabel_classes: int,
+        head_idx_to_logits_range: dict[str, tuple[int, int]],
+        num_single_label_classes: int,
+        empty_multiclass_head_indices: list[int],
+        in_channels: int,
+        num_classes: int,
+        multiclass_loss: nn.Module,
+        multilabel_loss: nn.Module | None = None,
+        thr: float = 0.5,
+        init_cfg: dict | None = None,
+        **kwargs,
+    ):
+        super().__init__(init_cfg=init_cfg)
+        self.num_multiclass_heads = num_multiclass_heads
+        self.num_multilabel_classes = num_multilabel_classes
+        self.head_idx_to_logits_range = head_idx_to_logits_range
+        self.num_single_label_classes = num_single_label_classes
+        self.empty_multiclass_head_indices = empty_multiclass_head_indices
+        self.in_channels = in_channels
+        self.num_classes = num_classes
+        self.thr = thr
+
+        if self.num_multiclass_heads == 0:
+            msg = "num_multiclass_head should be larger than 0"
+            raise ValueError(msg)
+
+        self.multiclass_loss = multiclass_loss
+        self.multilabel_loss = None
+        self.is_ignored_label_loss = False
+        if num_multilabel_classes > 0 and multilabel_loss is not None:
+            self.multilabel_loss = multilabel_loss
+            self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.multilabel_loss.forward).args
 
     def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head."""
@@ -75,24 +113,32 @@ class HierarchicalClsHead(BaseModule):
             head_logits = cls_scores[:, self.num_single_label_classes :]
             valid_mask = head_gt > 0
             head_gt = head_gt[valid_mask]
-            if len(head_gt) > 0:
-                # img_metas = [data_sample.metainfo for data_sample in data_samples]
-                # head_logits = head_logits[valid_mask]
-                # valid_label_mask = self.get_valid_label_mask(img_metas).to(head_logits.device)
-                # valid_label_mask = valid_label_mask[:, self.num_single_label_classes :]
-                # valid_label_mask = valid_label_mask[valid_mask]
-                # TODO(harimkang): need to add logic to generate a valid_label_mask for ignored_label.
-                loss_score += self.multilabel_loss(head_logits, head_gt)
+            if len(head_gt) > 0 and self.multilabel_loss is not None:
+                head_logits = head_logits[valid_mask]
+                imgs_info = kwargs.pop("imgs_info", None)
+                if imgs_info is not None and self.is_ignored_label_loss:
+                    valid_label_mask = self.get_valid_label_mask(imgs_info).to(head_logits.device)
+                    valid_label_mask = valid_label_mask[:, self.num_single_label_classes :]
+                    valid_label_mask = valid_label_mask[valid_mask]
+                    kwargs["valid_label_mask"] = valid_label_mask
+                loss_score += self.multilabel_loss(head_logits, head_gt, **kwargs)
 
         return loss_score
 
-    def get_valid_label_mask(self, img_metas: list[dict]) -> torch.Tensor:
-        """Get valid label mask using ignored_label."""
+    def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
+        """Get valid label mask using ignored_label.
+
+        Args:
+            img_metas (list[ImageInfo]): The metadata of the input images.
+
+        Returns:
+            torch.Tensor: The valid label mask.
+        """
         valid_label_mask = []
         for meta in img_metas:
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if meta.get("ignored_labels"):
-                mask[meta["ignored_labels"]] = 0
+            if meta.ignored_labels:
+                mask[meta.ignored_labels] = 0
             valid_label_mask.append(mask)
         return torch.stack(valid_label_mask, dim=0)
 
@@ -188,25 +234,23 @@ class HierarchicalLinearClsHead(HierarchicalClsHead):
         multiclass_loss: nn.Module,
         multilabel_loss: nn.Module | None = None,
         thr: float = 0.5,
+        init_cfg: dict | None = None,
         **kwargs,
     ):
-        super().__init__()
-        self.num_multiclass_heads = num_multiclass_heads
-        self.num_multilabel_classes = num_multilabel_classes
-        self.head_idx_to_logits_range = head_idx_to_logits_range
-        self.num_single_label_classes = num_single_label_classes
-        self.empty_multiclass_head_indices = empty_multiclass_head_indices
-        self.in_channels = in_channels
-        self.num_classes = num_classes
-        self.thr = thr
-
-        if self.num_multiclass_heads == 0:
-            msg = "num_multiclass_head should be larger than 0"
-            raise ValueError(msg)
-
-        self.multiclass_loss = multiclass_loss
-        if num_multilabel_classes > 0:
-            self.multilabel_loss = multilabel_loss
+        super().__init__(
+            num_multiclass_heads=num_multiclass_heads,
+            num_multilabel_classes=num_multilabel_classes,
+            head_idx_to_logits_range=head_idx_to_logits_range,
+            num_single_label_classes=num_single_label_classes,
+            empty_multiclass_head_indices=empty_multiclass_head_indices,
+            in_channels=in_channels,
+            num_classes=num_classes,
+            multiclass_loss=multiclass_loss,
+            multilabel_loss=multilabel_loss,
+            thr=thr,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
         self._init_layers()
@@ -258,28 +302,26 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
         hid_channels: int = 1280,
         activation_callable: Callable[[], nn.Module] = nn.ReLU,
         dropout: bool = False,
+        init_cfg: dict | None = None,
         **kwargs,
     ):
-        super().__init__()
-        self.num_multiclass_heads = num_multiclass_heads
-        self.num_multilabel_classes = num_multilabel_classes
-        self.head_idx_to_logits_range = head_idx_to_logits_range
-        self.num_single_label_classes = num_single_label_classes
-        self.empty_multiclass_head_indices = empty_multiclass_head_indices
-        self.in_channels = in_channels
-        self.num_classes = num_classes
-        self.thr = thr
+        super().__init__(
+            num_multiclass_heads=num_multiclass_heads,
+            num_multilabel_classes=num_multilabel_classes,
+            head_idx_to_logits_range=head_idx_to_logits_range,
+            num_single_label_classes=num_single_label_classes,
+            empty_multiclass_head_indices=empty_multiclass_head_indices,
+            in_channels=in_channels,
+            num_classes=num_classes,
+            multiclass_loss=multiclass_loss,
+            multilabel_loss=multilabel_loss,
+            thr=thr,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
         self.hid_channels = hid_channels
         self.dropout = dropout
-
-        if self.num_multiclass_heads == 0:
-            msg = "num_multiclass_head should be larger than 0"
-            raise ValueError(msg)
-
-        self.multiclass_loss = multiclass_loss
-        if num_multilabel_classes > 0:
-            self.multilabel_loss = multilabel_loss
 
         self.activation_callable = activation_callable
 

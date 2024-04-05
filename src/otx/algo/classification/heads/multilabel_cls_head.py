@@ -11,6 +11,7 @@ you can refer https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/mode
 
 from __future__ import annotations
 
+import inspect
 from typing import Callable
 
 import torch
@@ -19,6 +20,7 @@ from torch import nn
 from torch.nn import functional
 
 from otx.algo.utils.mmengine_utils import constant_init, normal_init
+from otx.core.data.entity.base import ImageInfo
 
 
 class AnglularLinear(nn.Module):
@@ -64,6 +66,33 @@ class MultiLabelClsHead(BaseModule):
         predict(feats, labels): Inference without augmentation.
     """
 
+    def __init__(
+        self,
+        num_classes: int,
+        in_channels: int,
+        loss: nn.Module,
+        normalized: bool = False,
+        scale: float = 1.0,
+        thr: float | None = None,
+        topk: int | None = None,
+        init_cfg: dict | None = None,
+        **kwargs,
+    ):
+        super().__init__(init_cfg=init_cfg)
+
+        self.num_classes = num_classes
+        self.in_channels = in_channels
+        self.normalized = normalized
+        self.scale = scale
+        self.loss_module = loss
+        self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.loss_module.forward).args
+
+        if thr is None and topk is None:
+            thr = 0.5
+
+        self.thr = thr
+        self.topk = topk
+
     def loss(self, feats: tuple[torch.Tensor], labels: torch.Tensor, **kwargs) -> torch.Tensor:
         """Calculate losses from the classification score.
 
@@ -79,21 +108,18 @@ class MultiLabelClsHead(BaseModule):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        # img_metas = [data_sample.metainfo for data_sample in data_samples]
-        # cls_score = self(feats) * self.scale
-        # valid_label_mask = self.get_valid_label_mask(img_metas).to(cls_score.device)
-        # losses = super()._get_loss(cls_score, data_samples, valid_label_mask=valid_label_mask, **kwargs)
-
         cls_score = self(feats) * self.scale
-        # TODO(harimkang): need to add logic to generate a valid_label_mask for ignored_label.
-        loss = self.loss_module(cls_score, labels)
+        imgs_info = kwargs.pop("imgs_info", None)
+        if imgs_info is not None and self.is_ignored_label_loss:
+            kwargs["valid_label_mask"] = self.get_valid_label_mask(imgs_info).to(cls_score.device)
+        loss = self.loss_module(cls_score, labels, **kwargs)
         return (loss.sum() / cls_score.size(0)) / self.scale
 
-    def get_valid_label_mask(self, img_metas: list[dict]) -> torch.Tensor:
+    def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
         """Get valid label mask using ignored_label.
 
         Args:
-            img_metas (list[dict]): The metadata of the input images.
+            img_metas (list[ImageInfo]): The metadata of the input images.
 
         Returns:
             torch.Tensor: The valid label mask.
@@ -101,8 +127,8 @@ class MultiLabelClsHead(BaseModule):
         valid_label_mask = []
         for meta in img_metas:
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if meta.get("ignored_labels"):
-                mask[meta["ignored_labels"]] = 0
+            if meta.ignored_labels:
+                mask[meta.ignored_labels] = 0
             valid_label_mask.append(mask)
         return torch.stack(valid_label_mask, dim=0)
 
@@ -167,20 +193,20 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         thr: float | None = None,
         topk: int | None = None,
         init_cfg: dict | None = None,
+        **kwargs,
     ):
-        super().__init__(init_cfg=init_cfg)
+        super().__init__(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            loss=loss,
+            normalized=normalized,
+            scale=scale,
+            thr=thr,
+            topk=topk,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
-        self.num_classes = num_classes
-        self.in_channels = in_channels
-        self.normalized = normalized
-        self.scale = scale
-        self.loss_module = loss
-
-        if thr is None and topk is None:
-            thr = 0.5
-
-        self.thr = thr
-        self.topk = topk
         self._init_layers()
 
     def _init_layers(self) -> None:
@@ -233,29 +259,27 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
         thr: float | None = None,
         topk: int | None = None,
         init_cfg: dict | None = None,
+        **kwargs,
     ):
-        super().__init__(init_cfg=init_cfg)
+        super().__init__(
+            num_classes=num_classes,
+            in_channels=in_channels,
+            loss=loss,
+            normalized=normalized,
+            scale=scale,
+            thr=thr,
+            topk=topk,
+            init_cfg=init_cfg,
+            **kwargs,
+        )
 
-        self.in_channels = in_channels
-        self.num_classes = num_classes
         self.hid_channels = hid_channels
         self.dropout = dropout
-        self.normalized = normalized
-        self.scale = scale
         self.activation_callable = activation_callable
 
         if self.num_classes <= 0:
             msg = f"num_classes={num_classes} must be a positive integer"
             raise ValueError(msg)
-
-        self.loss_module = loss
-
-        if thr is None and topk is None:
-            thr = 0.5
-
-        self.thr = thr
-        self.topk = topk
-        self._init_layers()
 
         self._init_layers()
 
