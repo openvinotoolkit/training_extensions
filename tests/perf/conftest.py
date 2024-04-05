@@ -374,13 +374,14 @@ def fxt_benchmark_summary(
     print("=" * 20, "[Benchmark summary]")
     print(summary_results)
     fxt_summary_file.parent.mkdir(parents=True, exist_ok=True)
-    raw_results.to_csv(fxt_summary_file.parent / "perf-benchmark-raw.csv")
+    raw_results.to_csv(fxt_summary_file.parent / "perf-benchmark-raw.csv", index=False)
     if fxt_summary_file.suffix == ".xlsx":
         summary_results.to_excel(fxt_summary_file)
     else:
         if fxt_summary_file.suffix != ".csv":
             print(f"{fxt_summary_file.suffix} output is not supported.")
-        summary_results.to_csv(fxt_summary_file.with_suffix(".csv"))
+            fxt_summary_file = fxt_summary_file.with_suffix(".csv")
+        summary_results.to_csv(fxt_summary_file, index=False)
     print(f"  -> Saved to {fxt_summary_file}.")
 
     if fxt_mlflow_client:

@@ -1,12 +1,13 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""OTX perfomance benchamrk history summary utilities."""
+"""OTX perfomance benchmark history summary utilities."""
 
 from __future__ import annotations
 
 import argparse
 import fnmatch
+import io
 import os
 import sys
 from pathlib import Path
@@ -171,40 +172,49 @@ TASK_ABBR_MAP = {
     "zero_shot_visual_prompting": "zvp",
 }
 
+METADATA_ENTRIES = [
+    "date",
+    "otx_ref",
+    "test_branch",
+    "test_commit",
+    "cpu_info",
+    "accelerator_info",
+    "user_name",
+    "machine_name",
+]
+
 
 def load(root_dir: Path, need_normalize: bool = False, pattern="*.csv") -> pd.DataFrame:
     """Load all csv files and csv in zip files."""
 
-    all_data = []
+    history = []
     # Load csv files in the directory
     csv_files = root_dir.rglob(pattern)
     for csv_file in csv_files:
         data = pd.read_csv(csv_file)
         if need_normalize:
             data = normalize(data)
-        all_data.append(data)
+        history.append(data)
     # Load csv files in zip files
-    zip_files = Path(root_dir).glob("*.zip")
+    zip_files = Path(root_dir).rglob("*.zip")
     for zip_file in zip_files:
         with ZipFile(zip_file) as zf:
             csv_files = fnmatch.filter(zf.namelist(), pattern)
             for csv_file in csv_files:
-                data = pd.read_csv(csv_file)
+                csv_bytes = io.BytesIO(zf.read(csv_file))
+                data = pd.read_csv(csv_bytes)
                 if need_normalize:
                     data = normalize(data)
-                all_data.append(data)
-    if len(all_data) == 0:
+                history.append(data)
+    if len(history) == 0:
         return pd.DataFrame()
-    all_data = pd.concat(all_data, ignore_index=True)
+    history = pd.concat(history, ignore_index=True)
     # Post process
-    version_entry = "otx_version" if "otx_version" in all_data else "version"
-    all_data[version_entry] = all_data[version_entry].astype(str)
-    str_entries = [version_entry, "otx_ref", "machine_name", "test_commit", "test_branch"]
-    for str_entry in str_entries:
-        all_data[str_entry] = all_data[str_entry].astype(str)  # Prevent strings like '2.0.0' being loaded as float
-    all_data["seed"] = all_data["seed"].fillna(0)
+    version_entry = "otx_version" if "otx_version" in history else "version"
+    history[version_entry] = history[version_entry].astype(str)
+    history["seed"] = history["seed"].fillna(0)
     return average(
-        all_data,
+        history,
         [version_entry, "task", "model", "data", "seed"],
     )  # Average mulitple retrials w/ same seed
 
@@ -247,6 +257,9 @@ def average(raw_data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     index_names = raw_data.index.names
     column_names = raw_data.columns
     raw_data = raw_data.reset_index()
+    # Preproc
+    for col in METADATA_ENTRIES:
+        raw_data[col] = raw_data[col].astype(str)  # Prevent strings like '2.0.0' being loaded as float
     # Average by keys
     grouped = raw_data.groupby(keys)
     aggregated = grouped.mean(numeric_only=True)
@@ -323,49 +336,36 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
     return data.dropna(axis=1, how="all").fillna("")
 
 
-ALL_DATA = load(Path(__file__).parent, need_normalize=True)
-
-
-def summarize_table(task: str) -> pd.DataFrame:
+def summarize_table(history: pd.DataFrame, task: str) -> pd.DataFrame:
     """Summarize benchmark histoy table by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
         f"test/{score_metric}",
         "train/e2e_time",
     ]
-    raw_data = ALL_DATA.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+    raw_data = history.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
     return summarize(raw_data, metrics)
 
 
-def summarize_graph(task: str) -> list[Any]:
+def summarize_graph(history: pd.DataFrame, task: str) -> list[Any]:
     """Summarize benchmark histoy graph by task."""
     score_metric = TASK_METRIC_MAP[task]
     metrics = [
         f"test/{score_metric}",
         "train/e2e_time",
     ]
-    raw_data = ALL_DATA.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
+    raw_data = history.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
     graphs = []
     for metric in metrics:
         data = raw_data.pivot_table(index=["otx_version"], columns=["model"], values=metric, aggfunc="mean")
-        ax = data.plot(title=metric)
+        ax = data.plot(title=metric, marker="o")
         graphs.append(ax)
     return graphs
 
 
-def summarize_meta():
+def summarize_meta(history: pd.DataFrame):
     """Summarize benchmark metadata by version."""
-    entries = [
-        "date",
-        "otx_ref",
-        "test_branch",
-        "test_commit",
-        "cpu_info",
-        "accelerator_info",
-        "user_name",
-        "machine_name",
-    ]
-    data = ALL_DATA.pivot_table(index=["otx_version"], values=entries, aggfunc="first")
+    data = history.pivot_table(index=["otx_version"], values=METADATA_ENTRIES, aggfunc="first")
     # NOTE: if needed -> data = data.style.set_sticky(axis="index")
     return data.reindex(entries, axis=1)
 
@@ -387,12 +387,13 @@ if __name__ == "__main__":
         print("No data loaded")
         sys.exit(-1)
     output_root.mkdir(parents=True, exist_ok=True)
-    raw_data.to_csv(output_root / "perf-benchamrk-raw-all.csv")
-    print("Saved merged raw data to ", str(output_root / "perf-benchamrk-raw-all.csv"))
+    raw_data.to_csv(output_root / "perf-benchmark-raw-all.csv", index=False)
+    print("Saved merged raw data to ", str(output_root / "perf-benchmark-raw-all.csv"))
 
     tasks = sorted(raw_data["task"].unique())
     for task in tasks:
         data = raw_data.query(f"task == '{task}' and data != 'all' and data_group != 'all'")
         data = summarize(data)
-        data.to_excel(output_root / f"perf-benchmark-summary-{task.replace('/', '_')}.xlsx")
-        print(f"    Saved {task} summary to ", str(output_root / f"perf-benchmark-summary-{task}.xlsx"))
+        task_str = task.replace("/", "_")
+        data.to_excel(output_root / f"perf-benchmark-summary-{task_str}.xlsx")
+        print(f"    Saved {task} summary to ", str(output_root / f"perf-benchmark-summary-{task_str}.xlsx"))
