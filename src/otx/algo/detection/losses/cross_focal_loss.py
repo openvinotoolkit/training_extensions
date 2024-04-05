@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-from mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
-from mmdet.registry import MODELS
+
+from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
+
+from otx.algo.instance_segmentation.mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
 
 
 def cross_sigmoid_focal_loss(

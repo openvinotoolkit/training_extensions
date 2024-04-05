@@ -34,7 +34,7 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors.base import TwoStageDetector
+    from mmdet.models.detectors.two_stage import TwoStageDetector
     from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
