@@ -47,7 +47,6 @@ class SingleStageDetector(nn.Module):
     def __init__(
         self,
         backbone: ConfigType,
-        neck: OptConfigType = None,
         bbox_head: OptConfigType = None,
         train_cfg: OptConfigType = None,
         test_cfg: OptConfigType = None,
@@ -57,8 +56,6 @@ class SingleStageDetector(nn.Module):
         super().__init__()
         self._is_init = False
         self.backbone = _build_pytorchcv_model(**backbone)
-        if neck is not None:
-            self.neck = MODELS.build(neck)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
         bbox_head.pop("type")
