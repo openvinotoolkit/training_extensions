@@ -468,7 +468,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OT
         model = self.model.model if isinstance(self.model, Tiler) else self.model
         resized_image = model.resize(image, (model.w, model.h))
         resized_image = model.input_transform(resized_image)
-        return self.model._change_layout(resized_image)  # noqa: SLF001
+        return model._change_layout(resized_image)  # noqa: SLF001
 
     def _read_ptq_config_from_ir(self, ov_model: Model) -> dict[str, Any]:
         """Generates the PTQ (Post-Training Quantization) configuration from the meta data of the given OpenVINO model.
