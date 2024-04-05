@@ -11,9 +11,8 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import statistics
-import sys
+import subprocess
 from abc import ABC, abstractmethod
 from copy import copy, deepcopy
 from dataclasses import dataclass, field
