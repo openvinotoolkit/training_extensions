@@ -142,7 +142,8 @@ class Benchmark:
 
         # Merge experiments
         data = pd.concat(results, ignore_index=True)
-        data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
+        if "train_e2e_time" in data:
+            data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
         data = data.rename(columns={"repeat": "seed"})
         return data.set_index(["task", "model", "data_group", "data"])
 
