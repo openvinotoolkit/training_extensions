@@ -76,8 +76,8 @@ class CustomRTMDetInsSepBNHead(RTMDetInsSepBNHead):
                 F.interpolate(
                     mask_logits[:, inds],
                     size=[
-                        img_w,
                         img_h,
+                        img_w,
                     ],
                     mode="bilinear",
                     align_corners=False,
