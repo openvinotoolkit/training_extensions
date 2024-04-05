@@ -2,4 +2,4 @@
 from .base_roi_extractor import BaseRoIExtractor
 from .single_level_roi_extractor import SingleRoIExtractor
 
-__all__ = ['BaseRoIExtractor', 'SingleRoIExtractor']
+__all__ = ["BaseRoIExtractor", "SingleRoIExtractor"]

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch.nn as nn
+from torch import nn
 
 
 def accuracy(pred, target, topk=1, thresh=None):
@@ -23,19 +23,18 @@ def accuracy(pred, target, topk=1, thresh=None):
     """
     assert isinstance(topk, (int, tuple))
     if isinstance(topk, int):
-        topk = (topk, )
+        topk = (topk,)
         return_single = True
     else:
         return_single = False
 
     maxk = max(topk)
     if pred.size(0) == 0:
-        accu = [pred.new_tensor(0.) for i in range(len(topk))]
+        accu = [pred.new_tensor(0.0) for i in range(len(topk))]
         return accu[0] if return_single else accu
     assert pred.ndim == 2 and target.ndim == 1
     assert pred.size(0) == target.size(0)
-    assert maxk <= pred.size(1), \
-        f'maxk {maxk} exceeds pred dimension {pred.size(1)}'
+    assert maxk <= pred.size(1), f"maxk {maxk} exceeds pred dimension {pred.size(1)}"
     pred_value, pred_label = pred.topk(maxk, dim=1)
     pred_label = pred_label.t()  # transpose to shape (maxk, N)
     correct = pred_label.eq(target.view(1, -1).expand_as(pred_label))
@@ -50,8 +49,7 @@ def accuracy(pred, target, topk=1, thresh=None):
 
 
 class Accuracy(nn.Module):
-
-    def __init__(self, topk=(1, ), thresh=None):
+    def __init__(self, topk=(1,), thresh=None):
         """Module to calculate the accuracy.
 
         Args:

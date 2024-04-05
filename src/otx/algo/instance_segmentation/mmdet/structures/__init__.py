@@ -2,5 +2,7 @@
 from .det_data_sample import DetDataSample, OptSampleList, SampleList
 
 __all__ = [
-    'DetDataSample', 'SampleList', 'OptSampleList',
+    "DetDataSample",
+    "SampleList",
+    "OptSampleList",
 ]

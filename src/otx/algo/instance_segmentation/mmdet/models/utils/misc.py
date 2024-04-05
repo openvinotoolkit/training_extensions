@@ -3,20 +3,14 @@ from functools import partial
 from typing import List, Union
 
 import torch
+from mmengine.structures import InstanceData
+from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
 from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, get_box_type
-
-from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
-
 from torch import Tensor
 
-from mmengine.structures import InstanceData
 
-
-
-
-def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]],
-                dim: int = 0) -> Union[Tensor, BaseBoxes]:
+def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
     """Stack boxes with type of tensor or box type.
 
     Args:
@@ -37,16 +31,16 @@ def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]],
 def samplelist_boxtype2tensor(batch_data_samples: SampleList):
     """Convert the box type in SampleList to tensor."""
     for data_samples in batch_data_samples:
-        if 'gt_instances' in data_samples:
-            bboxes = data_samples.gt_instances.get('bboxes', None)
+        if "gt_instances" in data_samples:
+            bboxes = data_samples.gt_instances.get("bboxes", None)
             if isinstance(bboxes, BaseBoxes):
                 data_samples.gt_instances.bboxes = bboxes.tensor
-        if 'pred_instances' in data_samples:
-            bboxes = data_samples.pred_instances.get('bboxes', None)
+        if "pred_instances" in data_samples:
+            bboxes = data_samples.pred_instances.get("bboxes", None)
             if isinstance(bboxes, BaseBoxes):
                 data_samples.pred_instances.bboxes = bboxes.tensor
-        if 'ignored_instances' in data_samples:
-            bboxes = data_samples.ignored_instances.get('bboxes', None)
+        if "ignored_instances" in data_samples:
+            bboxes = data_samples.ignored_instances.get("bboxes", None)
             if isinstance(bboxes, BaseBoxes):
                 data_samples.ignored_instances.bboxes = bboxes.tensor
 
@@ -91,12 +85,13 @@ def multi_apply(func, *args, **kwargs):
 
 def unmap(data, count, inds, fill=0):
     """Unmap a subset of item (data) back to the original set of items (of size
-    count)"""
+    count)
+    """
     if data.dim() == 1:
-        ret = data.new_full((count, ), fill)
+        ret = data.new_full((count,), fill)
         ret[inds.type(torch.bool)] = data
     else:
-        new_size = (count, ) + data.size()[1:]
+        new_size = (count,) + data.size()[1:]
         ret = data.new_full(new_size, fill)
         ret[inds.type(torch.bool), :] = data
     return ret
@@ -146,8 +141,7 @@ def filter_scores_and_topk(scores, score_thr, topk, results=None):
         elif isinstance(results, torch.Tensor):
             filtered_results = results[keep_idxs]
         else:
-            raise NotImplementedError(f'Only supports dict or list or Tensor, '
-                                      f'but get {type(results)}.')
+            raise NotImplementedError(f"Only supports dict or list or Tensor, but get {type(results)}.")
     return scores, labels, keep_idxs, filtered_results
 
 
@@ -172,13 +166,9 @@ def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
     num_levels = len(mlvl_tensors)
 
     if detach:
-        mlvl_tensor_list = [
-            mlvl_tensors[i][batch_id].detach() for i in range(num_levels)
-        ]
+        mlvl_tensor_list = [mlvl_tensors[i][batch_id].detach() for i in range(num_levels)]
     else:
-        mlvl_tensor_list = [
-            mlvl_tensors[i][batch_id] for i in range(num_levels)
-        ]
+        mlvl_tensor_list = [mlvl_tensors[i][batch_id] for i in range(num_levels)]
     return mlvl_tensor_list
 
 
@@ -210,7 +200,7 @@ def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
     for data_sample in batch_data_samples:
         batch_img_metas.append(data_sample.metainfo)
         batch_gt_instances.append(data_sample.gt_instances)
-        if 'ignored_instances' in data_sample:
+        if "ignored_instances" in data_sample:
             batch_gt_instances_ignore.append(data_sample.ignored_instances)
         else:
             batch_gt_instances_ignore.append(None)
@@ -218,15 +208,17 @@ def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
     return batch_gt_instances, batch_gt_instances_ignore, batch_img_metas
 
 
-def empty_instances(batch_img_metas: List[dict],
-                    device: torch.device,
-                    task_type: str,
-                    instance_results: OptInstanceList = None,
-                    mask_thr_binary: Union[int, float] = 0,
-                    box_type: Union[str, type] = 'hbox',
-                    use_box_type: bool = False,
-                    num_classes: int = 80,
-                    score_per_cls: bool = False) -> List[InstanceData]:
+def empty_instances(
+    batch_img_metas: List[dict],
+    device: torch.device,
+    task_type: str,
+    instance_results: OptInstanceList = None,
+    mask_thr_binary: Union[int, float] = 0,
+    box_type: Union[str, type] = "hbox",
+    use_box_type: bool = False,
+    num_classes: int = 80,
+    score_per_cls: bool = False,
+) -> List[InstanceData]:
     """Handle predicted instances when RoI is empty.
 
     Note: If ``instance_results`` is not None, it will be modified
@@ -252,8 +244,7 @@ def empty_instances(batch_img_metas: List[dict],
     Returns:
         list[:obj:`InstanceData`]: Detection results of each image
     """
-    assert task_type in ('bbox', 'mask'), 'Only support bbox and mask,' \
-                                          f' but got {task_type}'
+    assert task_type in ("bbox", "mask"), "Only support bbox and mask," f" but got {task_type}"
 
     if instance_results is not None:
         assert len(instance_results) == len(batch_img_metas)
@@ -266,20 +257,18 @@ def empty_instances(batch_img_metas: List[dict],
         else:
             results = InstanceData()
 
-        if task_type == 'bbox':
+        if task_type == "bbox":
             _, box_type = get_box_type(box_type)
             bboxes = torch.zeros(0, box_type.box_dim, device=device)
             if use_box_type:
                 bboxes = box_type(bboxes, clone=False)
             results.bboxes = bboxes
-            score_shape = (0, num_classes + 1) if score_per_cls else (0, )
+            score_shape = (0, num_classes + 1) if score_per_cls else (0,)
             results.scores = torch.zeros(score_shape, device=device)
-            results.labels = torch.zeros((0, ),
-                                         device=device,
-                                         dtype=torch.long)
+            results.labels = torch.zeros((0,), device=device, dtype=torch.long)
         else:
             # TODO: Handle the case where rescale is false
-            img_h, img_w = batch_img_metas[img_id]['ori_shape'][:2]
+            img_h, img_w = batch_img_metas[img_id]["ori_shape"][:2]
             # the type of `im_mask` will be torch.bool or torch.uint8,
             # where uint8 if for visualization and debugging.
             im_mask = torch.zeros(
@@ -287,7 +276,8 @@ def empty_instances(batch_img_metas: List[dict],
                 img_h,
                 img_w,
                 device=device,
-                dtype=torch.bool if mask_thr_binary >= 0 else torch.uint8)
+                dtype=torch.bool if mask_thr_binary >= 0 else torch.uint8,
+            )
             results.masks = im_mask
         results_list.append(results)
     return results_list

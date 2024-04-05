@@ -27,10 +27,12 @@ def reduce_loss(loss: Tensor, reduction: str) -> Tensor:
         return loss.sum()
 
 
-def weight_reduce_loss(loss: Tensor,
-                       weight: Optional[Tensor] = None,
-                       reduction: str = 'mean',
-                       avg_factor: Optional[float] = None) -> Tensor:
+def weight_reduce_loss(
+    loss: Tensor,
+    weight: Optional[Tensor] = None,
+    reduction: str = "mean",
+    avg_factor: Optional[float] = None,
+) -> Tensor:
     """Apply element-wise weight and reduce loss.
 
     Args:
@@ -54,13 +56,13 @@ def weight_reduce_loss(loss: Tensor,
         loss = reduce_loss(loss, reduction)
     else:
         # if reduction is mean, then average the loss by avg_factor
-        if reduction == 'mean':
+        if reduction == "mean":
             # Avoid causing ZeroDivisionError when avg_factor is 0.0,
             # i.e., all labels of an image belong to ignore index.
             eps = torch.finfo(torch.float32).eps
             loss = loss.sum() / (avg_factor + eps)
         # if reduction is 'none', then do nothing, otherwise raise an error
-        elif reduction != 'none':
+        elif reduction != "none":
             raise ValueError('avg_factor can not be used with reduction="sum"')
     return loss
 
@@ -97,14 +99,15 @@ def weighted_loss(loss_func: Callable) -> Callable:
     """
 
     @functools.wraps(loss_func)
-    def wrapper(pred: Tensor,
-                target: Tensor,
-                weight: Optional[Tensor] = None,
-                reduction: str = 'mean',
-                avg_factor: Optional[int] = None,
-                **kwargs) -> Tensor:
-        """
-        Args:
+    def wrapper(
+        pred: Tensor,
+        target: Tensor,
+        weight: Optional[Tensor] = None,
+        reduction: str = "mean",
+        avg_factor: Optional[int] = None,
+        **kwargs,
+    ) -> Tensor:
+        """Args:
             pred (Tensor): The prediction.
             target (Tensor): Target bboxes.
             weight (Optional[Tensor], optional): The weight of loss for each

@@ -3,12 +3,10 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Optional, Tuple
 
 import torch
-import torch.nn as nn
-from torchvision import ops
 from mmengine.model import BaseModule
-from torch import Tensor
-
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
+from torch import Tensor, nn
+from torchvision import ops
 
 
 class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
@@ -23,11 +21,13 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
             dict], optional): Initialization config dict. Defaults to None.
     """
 
-    def __init__(self,
-                 roi_layer: ConfigType,
-                 out_channels: int,
-                 featmap_strides: List[int],
-                 init_cfg: OptMultiConfig = None) -> None:
+    def __init__(
+        self,
+        roi_layer: ConfigType,
+        out_channels: int,
+        featmap_strides: List[int],
+        init_cfg: OptMultiConfig = None,
+    ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.roi_layers = self.build_roi_layers(roi_layer, featmap_strides)
         self.out_channels = out_channels
@@ -40,7 +40,6 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
 
     def build_roi_layers(self, layer_cfg: ConfigType, featmap_strides: List[int]) -> nn.ModuleList:
         """Build RoI operator to extract feature from each level feature map.
-
 
         Args:
             layer_cfg (:obj:`ConfigDict` or dict): Dictionary to construct and
@@ -55,16 +54,14 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
             :obj:`nn.ModuleList`: The RoI extractor modules for each level
                 feature map.
         """
-
         cfg = layer_cfg.copy()
-        layer_type = cfg.pop('type')
+        layer_type = cfg.pop("type")
         if isinstance(layer_type, str):
             assert hasattr(ops, layer_type)
             layer_cls = getattr(ops, layer_type)
         else:
             layer_cls = layer_type
-        roi_layers = nn.ModuleList(
-            [layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
+        roi_layers = nn.ModuleList([layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
         return roi_layers
 
     def roi_rescale(self, rois: Tensor, scale_factor: float) -> Tensor:
@@ -77,7 +74,6 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         Returns:
             Tensor: Scaled RoI.
         """
-
         cx = (rois[:, 1] + rois[:, 3]) * 0.5
         cy = (rois[:, 2] + rois[:, 4]) * 0.5
         w = rois[:, 3] - rois[:, 1]
@@ -92,10 +88,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         return new_rois
 
     @abstractmethod
-    def forward(self,
-                feats: Tuple[Tensor],
-                rois: Tensor,
-                roi_scale_factor: Optional[float] = None) -> Tensor:
+    def forward(self, feats: Tuple[Tensor], rois: Tensor, roi_scale_factor: Optional[float] = None) -> Tensor:
         """Extractor ROI feats.
 
         Args:
@@ -108,4 +101,3 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         Returns:
             Tensor: RoI feature.
         """
-        pass

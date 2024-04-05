@@ -1,16 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Tuple, Union
 
-import torch.nn as nn
-
 # TODO(Eugene): replace this
 from mmcv.cnn import ConvModule
-
-
 from mmengine.config import ConfigDict
-from torch import Tensor
-
 from mmengine.registry import MODELS
+from torch import Tensor, nn
+
 from .bbox_head import BBoxHead
 
 
@@ -24,25 +20,26 @@ class ConvFCBBoxHead(BBoxHead):
                                     /-> cls convs -> cls fcs -> cls
         shared convs -> shared fcs
                                     \-> reg convs -> reg fcs -> reg
-    """  # noqa: W605
+    """
 
-    def __init__(self,
-                 num_shared_convs: int = 0,
-                 num_shared_fcs: int = 0,
-                 num_cls_convs: int = 0,
-                 num_cls_fcs: int = 0,
-                 num_reg_convs: int = 0,
-                 num_reg_fcs: int = 0,
-                 conv_out_channels: int = 256,
-                 fc_out_channels: int = 1024,
-                 conv_cfg: Optional[Union[dict, ConfigDict]] = None,
-                 norm_cfg: Optional[Union[dict, ConfigDict]] = None,
-                 init_cfg: Optional[Union[dict, ConfigDict]] = None,
-                 *args,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        num_shared_convs: int = 0,
+        num_shared_fcs: int = 0,
+        num_cls_convs: int = 0,
+        num_cls_fcs: int = 0,
+        num_reg_convs: int = 0,
+        num_reg_fcs: int = 0,
+        conv_out_channels: int = 256,
+        fc_out_channels: int = 1024,
+        conv_cfg: Optional[Union[dict, ConfigDict]] = None,
+        norm_cfg: Optional[Union[dict, ConfigDict]] = None,
+        init_cfg: Optional[Union[dict, ConfigDict]] = None,
+        *args,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, init_cfg=init_cfg, **kwargs)
-        assert (num_shared_convs + num_shared_fcs + num_cls_convs +
-                num_cls_fcs + num_reg_convs + num_reg_fcs > 0)
+        assert num_shared_convs + num_shared_fcs + num_cls_convs + num_cls_fcs + num_reg_convs + num_reg_fcs > 0
         if num_cls_convs > 0 or num_reg_convs > 0:
             assert num_shared_fcs == 0
         if not self.with_cls:
@@ -61,21 +58,27 @@ class ConvFCBBoxHead(BBoxHead):
         self.norm_cfg = norm_cfg
 
         # add shared convs and fcs
-        self.shared_convs, self.shared_fcs, last_layer_dim = \
-            self._add_conv_fc_branch(
-                self.num_shared_convs, self.num_shared_fcs, self.in_channels,
-                True)
+        self.shared_convs, self.shared_fcs, last_layer_dim = self._add_conv_fc_branch(
+            self.num_shared_convs,
+            self.num_shared_fcs,
+            self.in_channels,
+            True,
+        )
         self.shared_out_channels = last_layer_dim
 
         # add cls specific branch
-        self.cls_convs, self.cls_fcs, self.cls_last_dim = \
-            self._add_conv_fc_branch(
-                self.num_cls_convs, self.num_cls_fcs, self.shared_out_channels)
+        self.cls_convs, self.cls_fcs, self.cls_last_dim = self._add_conv_fc_branch(
+            self.num_cls_convs,
+            self.num_cls_fcs,
+            self.shared_out_channels,
+        )
 
         # add reg specific branch
-        self.reg_convs, self.reg_fcs, self.reg_last_dim = \
-            self._add_conv_fc_branch(
-                self.num_reg_convs, self.num_reg_fcs, self.shared_out_channels)
+        self.reg_convs, self.reg_fcs, self.reg_last_dim = self._add_conv_fc_branch(
+            self.num_reg_convs,
+            self.num_reg_fcs,
+            self.shared_out_channels,
+        )
 
         if self.num_shared_fcs == 0 and not self.with_avg_pool:
             if self.num_cls_fcs == 0:
@@ -91,17 +94,14 @@ class ConvFCBBoxHead(BBoxHead):
             else:
                 cls_channels = self.num_classes + 1
             cls_predictor_cfg_ = self.cls_predictor_cfg.copy()
-            cls_predictor_cfg_.update(
-                in_features=self.cls_last_dim, out_features=cls_channels)
+            cls_predictor_cfg_.update(in_features=self.cls_last_dim, out_features=cls_channels)
             self.fc_cls = MODELS.build(cls_predictor_cfg_)
         if self.with_reg:
             box_dim = self.bbox_coder.encode_size
-            out_dim_reg = box_dim if self.reg_class_agnostic else \
-                box_dim * self.num_classes
+            out_dim_reg = box_dim if self.reg_class_agnostic else box_dim * self.num_classes
             reg_predictor_cfg_ = self.reg_predictor_cfg.copy()
             if isinstance(reg_predictor_cfg_, (dict, ConfigDict)):
-                reg_predictor_cfg_.update(
-                    in_features=self.reg_last_dim, out_features=out_dim_reg)
+                reg_predictor_cfg_.update(in_features=self.reg_last_dim, out_features=out_dim_reg)
             self.fc_reg = MODELS.build(reg_predictor_cfg_)
 
         if init_cfg is None:
@@ -114,20 +114,23 @@ class ConvFCBBoxHead(BBoxHead):
             # for `shared_fcs`, `cls_fcs` and `reg_fcs`
             self.init_cfg += [
                 dict(
-                    type='Xavier',
-                    distribution='uniform',
+                    type="Xavier",
+                    distribution="uniform",
                     override=[
-                        dict(name='shared_fcs'),
-                        dict(name='cls_fcs'),
-                        dict(name='reg_fcs')
-                    ])
+                        dict(name="shared_fcs"),
+                        dict(name="cls_fcs"),
+                        dict(name="reg_fcs"),
+                    ],
+                ),
             ]
 
-    def _add_conv_fc_branch(self,
-                            num_branch_convs: int,
-                            num_branch_fcs: int,
-                            in_channels: int,
-                            is_shared: bool = False) -> tuple:
+    def _add_conv_fc_branch(
+        self,
+        num_branch_convs: int,
+        num_branch_fcs: int,
+        in_channels: int,
+        is_shared: bool = False,
+    ) -> tuple:
         """Add shared or separable branch.
 
         convs -> avg pool (optional) -> fcs
@@ -137,8 +140,7 @@ class ConvFCBBoxHead(BBoxHead):
         branch_convs = nn.ModuleList()
         if num_branch_convs > 0:
             for i in range(num_branch_convs):
-                conv_in_channels = (
-                    last_layer_dim if i == 0 else self.conv_out_channels)
+                conv_in_channels = last_layer_dim if i == 0 else self.conv_out_channels
                 branch_convs.append(
                     ConvModule(
                         conv_in_channels,
@@ -146,21 +148,20 @@ class ConvFCBBoxHead(BBoxHead):
                         3,
                         padding=1,
                         conv_cfg=self.conv_cfg,
-                        norm_cfg=self.norm_cfg))
+                        norm_cfg=self.norm_cfg,
+                    ),
+                )
             last_layer_dim = self.conv_out_channels
         # add branch specific fc layers
         branch_fcs = nn.ModuleList()
         if num_branch_fcs > 0:
             # for shared branch, only consider self.with_avg_pool
             # for separated branches, also consider self.num_shared_fcs
-            if (is_shared
-                    or self.num_shared_fcs == 0) and not self.with_avg_pool:
+            if (is_shared or self.num_shared_fcs == 0) and not self.with_avg_pool:
                 last_layer_dim *= self.roi_feat_area
             for i in range(num_branch_fcs):
-                fc_in_channels = (
-                    last_layer_dim if i == 0 else self.fc_out_channels)
-                branch_fcs.append(
-                    nn.Linear(fc_in_channels, self.fc_out_channels))
+                fc_in_channels = last_layer_dim if i == 0 else self.fc_out_channels
+                branch_fcs.append(nn.Linear(fc_in_channels, self.fc_out_channels))
             last_layer_dim = self.fc_out_channels
         return branch_convs, branch_fcs, last_layer_dim
 
@@ -223,7 +224,6 @@ class ConvFCBBoxHead(BBoxHead):
 
 @MODELS.register_module()
 class Shared2FCBBoxHead(ConvFCBBoxHead):
-
     def __init__(self, fc_out_channels: int = 1024, *args, **kwargs) -> None:
         super().__init__(
             num_shared_convs=0,
@@ -234,5 +234,5 @@ class Shared2FCBBoxHead(ConvFCBBoxHead):
             num_reg_fcs=0,
             fc_out_channels=fc_out_channels,
             *args,
-            **kwargs)
-
+            **kwargs,
+        )

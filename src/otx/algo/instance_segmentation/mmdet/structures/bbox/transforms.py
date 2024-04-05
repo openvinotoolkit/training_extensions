@@ -3,9 +3,8 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
-from torch import Tensor
-
 from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes
+from torch import Tensor
 
 
 def find_inside_bboxes(bboxes: Tensor, img_h: int, img_w: int) -> Tensor:
@@ -19,14 +18,11 @@ def find_inside_bboxes(bboxes: Tensor, img_h: int, img_w: int) -> Tensor:
     Returns:
         Tensor: Index of the remaining bboxes.
     """
-    inside_inds = (bboxes[:, 0] < img_w) & (bboxes[:, 2] > 0) \
-        & (bboxes[:, 1] < img_h) & (bboxes[:, 3] > 0)
+    inside_inds = (bboxes[:, 0] < img_w) & (bboxes[:, 2] > 0) & (bboxes[:, 1] < img_h) & (bboxes[:, 3] > 0)
     return inside_inds
 
 
-def bbox_flip(bboxes: Tensor,
-              img_shape: Tuple[int],
-              direction: str = 'horizontal') -> Tensor:
+def bbox_flip(bboxes: Tensor, img_shape: Tuple[int], direction: str = "horizontal") -> Tensor:
     """Flip bboxes horizontally or vertically.
 
     Args:
@@ -39,12 +35,12 @@ def bbox_flip(bboxes: Tensor,
         Tensor: Flipped bboxes.
     """
     assert bboxes.shape[-1] % 4 == 0
-    assert direction in ['horizontal', 'vertical', 'diagonal']
+    assert direction in ["horizontal", "vertical", "diagonal"]
     flipped = bboxes.clone()
-    if direction == 'horizontal':
+    if direction == "horizontal":
         flipped[..., 0::4] = img_shape[1] - bboxes[..., 2::4]
         flipped[..., 2::4] = img_shape[1] - bboxes[..., 0::4]
-    elif direction == 'vertical':
+    elif direction == "vertical":
         flipped[..., 1::4] = img_shape[0] - bboxes[..., 3::4]
         flipped[..., 3::4] = img_shape[0] - bboxes[..., 1::4]
     else:
@@ -55,11 +51,13 @@ def bbox_flip(bboxes: Tensor,
     return flipped
 
 
-def bbox_mapping(bboxes: Tensor,
-                 img_shape: Tuple[int],
-                 scale_factor: Union[float, Tuple[float]],
-                 flip: bool,
-                 flip_direction: str = 'horizontal') -> Tensor:
+def bbox_mapping(
+    bboxes: Tensor,
+    img_shape: Tuple[int],
+    scale_factor: Union[float, Tuple[float]],
+    flip: bool,
+    flip_direction: str = "horizontal",
+) -> Tensor:
     """Map bboxes from the original image scale to testing scale."""
     new_bboxes = bboxes * bboxes.new_tensor(scale_factor)
     if flip:
@@ -67,14 +65,15 @@ def bbox_mapping(bboxes: Tensor,
     return new_bboxes
 
 
-def bbox_mapping_back(bboxes: Tensor,
-                      img_shape: Tuple[int],
-                      scale_factor: Union[float, Tuple[float]],
-                      flip: bool,
-                      flip_direction: str = 'horizontal') -> Tensor:
+def bbox_mapping_back(
+    bboxes: Tensor,
+    img_shape: Tuple[int],
+    scale_factor: Union[float, Tuple[float]],
+    flip: bool,
+    flip_direction: str = "horizontal",
+) -> Tensor:
     """Map bboxes from testing scale to original image scale."""
-    new_bboxes = bbox_flip(bboxes, img_shape,
-                           flip_direction) if flip else bboxes
+    new_bboxes = bbox_flip(bboxes, img_shape, flip_direction) if flip else bboxes
     new_bboxes = new_bboxes.view(-1, 4) / new_bboxes.new_tensor(scale_factor)
     return new_bboxes.view(bboxes.shape)
 
@@ -115,16 +114,18 @@ def roi2bbox(rois: Tensor) -> List[Tensor]:
     bbox_list = []
     img_ids = torch.unique(rois[:, 0].cpu(), sorted=True)
     for img_id in img_ids:
-        inds = (rois[:, 0] == img_id.item())
+        inds = rois[:, 0] == img_id.item()
         bbox = rois[inds, 1:]
         bbox_list.append(bbox)
     return bbox_list
 
 
 # TODO remove later
-def bbox2result(bboxes: Union[Tensor, np.ndarray], labels: Union[Tensor,
-                                                                 np.ndarray],
-                num_classes: int) -> List[np.ndarray]:
+def bbox2result(
+    bboxes: Union[Tensor, np.ndarray],
+    labels: Union[Tensor, np.ndarray],
+    num_classes: int,
+) -> List[np.ndarray]:
     """Convert detection results to a list of numpy arrays.
 
     Args:
@@ -147,8 +148,7 @@ def bbox2result(bboxes: Union[Tensor, np.ndarray], labels: Union[Tensor,
 def distance2bbox(
     points: Tensor,
     distance: Tensor,
-    max_shape: Optional[Union[Sequence[int], Tensor,
-                              Sequence[Sequence[int]]]] = None
+    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
 ) -> Tensor:
     """Decode distance prediction to bounding box.
 
@@ -165,7 +165,6 @@ def distance2bbox(
     Returns:
         Tensor: Boxes with shape (N, 4) or (B, N, 4)
     """
-
     x1 = points[..., 0] - distance[..., 0]
     y1 = points[..., 1] - distance[..., 1]
     x2 = points[..., 0] + distance[..., 2]
@@ -184,6 +183,7 @@ def distance2bbox(
         if torch.onnx.is_in_onnx_export():
             # TODO: delete
             from mmdet.core.export import dynamic_clip_for_onnx
+
             x1, y1, x2, y2 = dynamic_clip_for_onnx(x1, y1, x2, y2, max_shape)
             bboxes = torch.stack([x1, y1, x2, y2], dim=-1)
             return bboxes
@@ -195,18 +195,14 @@ def distance2bbox(
             assert max_shape.size(0) == bboxes.size(0)
 
         min_xy = x1.new_tensor(0)
-        max_xy = torch.cat([max_shape, max_shape],
-                           dim=-1).flip(-1).unsqueeze(-2)
+        max_xy = torch.cat([max_shape, max_shape], dim=-1).flip(-1).unsqueeze(-2)
         bboxes = torch.where(bboxes < min_xy, min_xy, bboxes)
         bboxes = torch.where(bboxes > max_xy, max_xy, bboxes)
 
     return bboxes
 
 
-def bbox2distance(points: Tensor,
-                  bbox: Tensor,
-                  max_dis: Optional[float] = None,
-                  eps: float = 0.1) -> Tensor:
+def bbox2distance(points: Tensor, bbox: Tensor, max_dis: Optional[float] = None, eps: float = 0.1) -> Tensor:
     """Decode bounding box based on distances.
 
     Args:
@@ -296,6 +292,7 @@ def bbox2corner(bboxes: torch.Tensor) -> torch.Tensor:
 
     Args:
         bboxes (Tensor): Shape (n, 4) for bboxes.
+
     Returns:
         Tensor: Shape (n*4, 2) for corners.
     """
@@ -309,6 +306,7 @@ def corner2bbox(corners: torch.Tensor) -> torch.Tensor:
 
     Args:
         corners (Tensor): Shape (n*4, 2) for corners.
+
     Returns:
         Tensor: Shape (n, 4) for bboxes.
     """
@@ -321,7 +319,7 @@ def corner2bbox(corners: torch.Tensor) -> torch.Tensor:
 def bbox_project(
     bboxes: Union[torch.Tensor, np.ndarray],
     homography_matrix: Union[torch.Tensor, np.ndarray],
-    img_shape: Optional[Tuple[int, int]] = None
+    img_shape: Optional[Tuple[int, int]] = None,
 ) -> Union[torch.Tensor, np.ndarray]:
     """Geometric transformation for bbox.
 
@@ -330,6 +328,7 @@ def bbox_project(
         homography_matrix (Union[torch.Tensor, np.ndarray]):
             Shape (3, 3) for geometric transformation.
         img_shape (Tuple[int, int], optional): Image shape. Defaults to None.
+
     Returns:
         Union[torch.Tensor, np.ndarray]: Converted bboxes.
     """
@@ -339,8 +338,7 @@ def bbox_project(
     if isinstance(homography_matrix, np.ndarray):
         homography_matrix = torch.from_numpy(homography_matrix)
     corners = bbox2corner(bboxes)
-    corners = torch.cat(
-        [corners, corners.new_ones(corners.shape[0], 1)], dim=1)
+    corners = torch.cat([corners, corners.new_ones(corners.shape[0], 1)], dim=1)
     corners = torch.matmul(homography_matrix, corners.t()).t()
     # Convert to homogeneous coordinates by normalization
     corners = corners[:, :2] / corners[:, 2:3]
@@ -353,8 +351,7 @@ def bbox_project(
     return bboxes
 
 
-def cat_boxes(data_list: List[Union[Tensor, BaseBoxes]],
-              dim: int = 0) -> Union[Tensor, BaseBoxes]:
+def cat_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
     """Concatenate boxes with type of tensor or box type.
 
     Args:
@@ -372,8 +369,7 @@ def cat_boxes(data_list: List[Union[Tensor, BaseBoxes]],
         return torch.cat(data_list, dim=dim)
 
 
-def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]],
-                dim: int = 0) -> Union[Tensor, BaseBoxes]:
+def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
     """Stack boxes with type of tensor or box type.
 
     Args:
@@ -391,8 +387,7 @@ def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]],
         return torch.stack(data_list, dim=dim)
 
 
-def scale_boxes(boxes: Union[Tensor, BaseBoxes],
-                scale_factor: Tuple[float, float]) -> Union[Tensor, BaseBoxes]:
+def scale_boxes(boxes: Union[Tensor, BaseBoxes], scale_factor: Tuple[float, float]) -> Union[Tensor, BaseBoxes]:
     """Scale boxes with type of tensor or box type.
 
     Args:
@@ -489,6 +484,7 @@ def bbox_cxcyah_to_xyxy(bboxes: torch.Tensor) -> torch.Tensor:
 
     Args:
         bbox (Tensor): Shape (n, 4) for bboxes.
+
     Returns:
         Tensor: Converted bboxes.
     """

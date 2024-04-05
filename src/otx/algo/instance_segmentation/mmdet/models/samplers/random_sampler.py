@@ -2,12 +2,11 @@
 from typing import Union
 
 import torch
-from numpy import ndarray
-from torch import Tensor
-
 from mmengine.registry import TASK_UTILS
+from numpy import ndarray
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.samplers.base_sampler import BaseSampler
+from torch import Tensor
 
 
 @TASK_UTILS.register_module()
@@ -23,22 +22,18 @@ class RandomSampler(BaseSampler):
             boxes as proposals. Defaults to True.
     """
 
-    def __init__(self,
-                 num: int,
-                 pos_fraction: float,
-                 neg_pos_ub: int = -1,
-                 add_gt_as_proposals: bool = True,
-                 **kwargs):
+    def __init__(self, num: int, pos_fraction: float, neg_pos_ub: int = -1, add_gt_as_proposals: bool = True, **kwargs):
         from .sampling_result import ensure_rng
+
         super().__init__(
             num=num,
             pos_fraction=pos_fraction,
             neg_pos_ub=neg_pos_ub,
-            add_gt_as_proposals=add_gt_as_proposals)
-        self.rng = ensure_rng(kwargs.get('rng', None))
+            add_gt_as_proposals=add_gt_as_proposals,
+        )
+        self.rng = ensure_rng(kwargs.get("rng", None))
 
-    def random_choice(self, gallery: Union[Tensor, ndarray, list],
-                      num: int) -> Union[Tensor, ndarray]:
+    def random_choice(self, gallery: Union[Tensor, ndarray, list], num: int) -> Union[Tensor, ndarray]:
         """Random select some elements from the gallery.
 
         If `gallery` is a Tensor, the returned indices will be a Tensor;
@@ -59,7 +54,7 @@ class RandomSampler(BaseSampler):
             if torch.cuda.is_available():
                 device = torch.cuda.current_device()
             else:
-                device = 'cpu'
+                device = "cpu"
             gallery = torch.tensor(gallery, dtype=torch.long, device=device)
         # This is a temporary fix. We can revert the following code
         # when PyTorch fixes the abnormal return of torch.randperm.
@@ -70,8 +65,7 @@ class RandomSampler(BaseSampler):
             rand_inds = rand_inds.cpu().numpy()
         return rand_inds
 
-    def _sample_pos(self, assign_result: AssignResult, num_expected: int,
-                    **kwargs) -> Union[Tensor, ndarray]:
+    def _sample_pos(self, assign_result: AssignResult, num_expected: int, **kwargs) -> Union[Tensor, ndarray]:
         """Randomly sample some positive samples.
 
         Args:
@@ -89,8 +83,7 @@ class RandomSampler(BaseSampler):
         else:
             return self.random_choice(pos_inds, num_expected)
 
-    def _sample_neg(self, assign_result: AssignResult, num_expected: int,
-                    **kwargs) -> Union[Tensor, ndarray]:
+    def _sample_neg(self, assign_result: AssignResult, num_expected: int, **kwargs) -> Union[Tensor, ndarray]:
         """Randomly sample some negative samples.
 
         Args:

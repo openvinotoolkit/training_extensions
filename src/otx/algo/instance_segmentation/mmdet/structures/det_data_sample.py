@@ -127,7 +127,7 @@ class DetDataSample(BaseDataElement):
 
     @proposals.setter
     def proposals(self, value: InstanceData):
-        self.set_field(value, '_proposals', dtype=InstanceData)
+        self.set_field(value, "_proposals", dtype=InstanceData)
 
     @proposals.deleter
     def proposals(self):
@@ -139,7 +139,7 @@ class DetDataSample(BaseDataElement):
 
     @gt_instances.setter
     def gt_instances(self, value: InstanceData):
-        self.set_field(value, '_gt_instances', dtype=InstanceData)
+        self.set_field(value, "_gt_instances", dtype=InstanceData)
 
     @gt_instances.deleter
     def gt_instances(self):
@@ -151,7 +151,7 @@ class DetDataSample(BaseDataElement):
 
     @pred_instances.setter
     def pred_instances(self, value: InstanceData):
-        self.set_field(value, '_pred_instances', dtype=InstanceData)
+        self.set_field(value, "_pred_instances", dtype=InstanceData)
 
     @pred_instances.deleter
     def pred_instances(self):
@@ -166,7 +166,7 @@ class DetDataSample(BaseDataElement):
 
     @pred_track_instances.setter
     def pred_track_instances(self, value: InstanceData):
-        self.set_field(value, '_pred_track_instances', dtype=InstanceData)
+        self.set_field(value, "_pred_track_instances", dtype=InstanceData)
 
     @pred_track_instances.deleter
     def pred_track_instances(self):
@@ -178,7 +178,7 @@ class DetDataSample(BaseDataElement):
 
     @ignored_instances.setter
     def ignored_instances(self, value: InstanceData):
-        self.set_field(value, '_ignored_instances', dtype=InstanceData)
+        self.set_field(value, "_ignored_instances", dtype=InstanceData)
 
     @ignored_instances.deleter
     def ignored_instances(self):
@@ -190,7 +190,7 @@ class DetDataSample(BaseDataElement):
 
     @gt_panoptic_seg.setter
     def gt_panoptic_seg(self, value: PixelData):
-        self.set_field(value, '_gt_panoptic_seg', dtype=PixelData)
+        self.set_field(value, "_gt_panoptic_seg", dtype=PixelData)
 
     @gt_panoptic_seg.deleter
     def gt_panoptic_seg(self):
@@ -202,7 +202,7 @@ class DetDataSample(BaseDataElement):
 
     @pred_panoptic_seg.setter
     def pred_panoptic_seg(self, value: PixelData):
-        self.set_field(value, '_pred_panoptic_seg', dtype=PixelData)
+        self.set_field(value, "_pred_panoptic_seg", dtype=PixelData)
 
     @pred_panoptic_seg.deleter
     def pred_panoptic_seg(self):
@@ -214,7 +214,7 @@ class DetDataSample(BaseDataElement):
 
     @gt_sem_seg.setter
     def gt_sem_seg(self, value: PixelData):
-        self.set_field(value, '_gt_sem_seg', dtype=PixelData)
+        self.set_field(value, "_gt_sem_seg", dtype=PixelData)
 
     @gt_sem_seg.deleter
     def gt_sem_seg(self):
@@ -226,7 +226,7 @@ class DetDataSample(BaseDataElement):
 
     @pred_sem_seg.setter
     def pred_sem_seg(self, value: PixelData):
-        self.set_field(value, '_pred_sem_seg', dtype=PixelData)
+        self.set_field(value, "_pred_sem_seg", dtype=PixelData)
 
     @pred_sem_seg.deleter
     def pred_sem_seg(self):

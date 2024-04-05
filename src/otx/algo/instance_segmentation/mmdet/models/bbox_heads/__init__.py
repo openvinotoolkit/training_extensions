@@ -3,5 +3,7 @@ from .bbox_head import BBoxHead
 from .convfc_bbox_head import ConvFCBBoxHead, Shared2FCBBoxHead
 
 __all__ = [
-    'BBoxHead', 'ConvFCBBoxHead', 'Shared2FCBBoxHead',
+    "BBoxHead",
+    "ConvFCBBoxHead",
+    "Shared2FCBBoxHead",
 ]

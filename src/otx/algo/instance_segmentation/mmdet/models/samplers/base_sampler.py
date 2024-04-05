@@ -3,10 +3,9 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 from mmengine.structures import InstanceData
-
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.samplers.sampling_result import SamplingResult
+from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes
 
 
 class BaseSampler(metaclass=ABCMeta):
@@ -21,12 +20,14 @@ class BaseSampler(metaclass=ABCMeta):
             boxes as proposals. Defaults to True.
     """
 
-    def __init__(self,
-                 num: int,
-                 pos_fraction: float,
-                 neg_pos_ub: int = -1,
-                 add_gt_as_proposals: bool = True,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        num: int,
+        pos_fraction: float,
+        neg_pos_ub: int = -1,
+        add_gt_as_proposals: bool = True,
+        **kwargs,
+    ) -> None:
         self.num = num
         self.pos_fraction = pos_fraction
         self.neg_pos_ub = neg_pos_ub
@@ -35,19 +36,20 @@ class BaseSampler(metaclass=ABCMeta):
         self.neg_sampler = self
 
     @abstractmethod
-    def _sample_pos(self, assign_result: AssignResult, num_expected: int,
-                    **kwargs):
+    def _sample_pos(self, assign_result: AssignResult, num_expected: int, **kwargs):
         """Sample positive samples."""
-        pass
 
     @abstractmethod
-    def _sample_neg(self, assign_result: AssignResult, num_expected: int,
-                    **kwargs):
+    def _sample_neg(self, assign_result: AssignResult, num_expected: int, **kwargs):
         """Sample negative samples."""
-        pass
 
-    def sample(self, assign_result: AssignResult, pred_instances: InstanceData,
-               gt_instances: InstanceData, **kwargs) -> SamplingResult:
+    def sample(
+        self,
+        assign_result: AssignResult,
+        pred_instances: InstanceData,
+        gt_instances: InstanceData,
+        **kwargs,
+    ) -> SamplingResult:
         """Sample positive and negative bboxes.
 
         This is a simple implementation of bbox sampling given candidates,
@@ -95,12 +97,11 @@ class BaseSampler(metaclass=ABCMeta):
         if len(priors.shape) < 2:
             priors = priors[None, :]
 
-        gt_flags = priors.new_zeros((priors.shape[0], ), dtype=torch.uint8)
+        gt_flags = priors.new_zeros((priors.shape[0],), dtype=torch.uint8)
         if self.add_gt_as_proposals and len(gt_bboxes) > 0:
             # When `gt_bboxes` and `priors` are all box type, convert
             # `gt_bboxes` type to `priors` type.
-            if (isinstance(gt_bboxes, BaseBoxes)
-                    and isinstance(priors, BaseBoxes)):
+            if isinstance(gt_bboxes, BaseBoxes) and isinstance(priors, BaseBoxes):
                 gt_bboxes_ = gt_bboxes.convert_to(type(priors))
             else:
                 gt_bboxes_ = gt_bboxes
@@ -110,8 +111,7 @@ class BaseSampler(metaclass=ABCMeta):
             gt_flags = torch.cat([gt_ones, gt_flags])
 
         num_expected_pos = int(self.num * self.pos_fraction)
-        pos_inds = self.pos_sampler._sample_pos(
-            assign_result, num_expected_pos, bboxes=priors, **kwargs)
+        pos_inds = self.pos_sampler._sample_pos(assign_result, num_expected_pos, bboxes=priors, **kwargs)
         # We found that sampled indices have duplicated items occasionally.
         # (may be a bug of PyTorch)
         pos_inds = pos_inds.unique()
@@ -122,8 +122,7 @@ class BaseSampler(metaclass=ABCMeta):
             neg_upper_bound = int(self.neg_pos_ub * _pos)
             if num_expected_neg > neg_upper_bound:
                 num_expected_neg = neg_upper_bound
-        neg_inds = self.neg_sampler._sample_neg(
-            assign_result, num_expected_neg, bboxes=priors, **kwargs)
+        neg_inds = self.neg_sampler._sample_neg(assign_result, num_expected_neg, bboxes=priors, **kwargs)
         neg_inds = neg_inds.unique()
 
         sampling_result = SamplingResult(
@@ -132,5 +131,6 @@ class BaseSampler(metaclass=ABCMeta):
             priors=priors,
             gt_bboxes=gt_bboxes,
             assign_result=assign_result,
-            gt_flags=gt_flags)
+            gt_flags=gt_flags,
+        )
         return sampling_result

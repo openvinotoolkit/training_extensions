@@ -3,18 +3,23 @@ import warnings
 from typing import List, Optional, Tuple, Union
 
 import torch
-import torch.nn as nn
-from mmengine.structures import InstanceData
-from torch import Tensor
-
 from mmengine.registry import MODELS, TASK_UTILS
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
-from otx.algo.instance_segmentation.mmdet.models.utils import (ConfigType, InstanceList, OptConfigType,
-                         OptInstanceList, OptMultiConfig)
-
-from otx.algo.instance_segmentation.mmdet.models.prior_generators import (AnchorGenerator, anchor_inside_flags)
+from mmengine.structures import InstanceData
+from otx.algo.instance_segmentation.mmdet.models.prior_generators import AnchorGenerator, anchor_inside_flags
 from otx.algo.instance_segmentation.mmdet.models.samplers import PseudoSampler
-from otx.algo.instance_segmentation.mmdet.models.utils import images_to_levels, multi_apply, unmap
+from otx.algo.instance_segmentation.mmdet.models.utils import (
+    ConfigType,
+    InstanceList,
+    OptConfigType,
+    OptInstanceList,
+    OptMultiConfig,
+    images_to_levels,
+    multi_apply,
+    unmap,
+)
+from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
+from torch import Tensor, nn
+
 from .base_dense_head import BaseDenseHead
 
 
@@ -39,7 +44,7 @@ class AnchorHead(BaseDenseHead):
         train_cfg (dict): Training config of anchor head.
         test_cfg (dict): Testing config of anchor head.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-    """  # noqa: W605
+    """
 
     def __init__(
         self,
@@ -47,37 +52,36 @@ class AnchorHead(BaseDenseHead):
         in_channels: int,
         feat_channels: int = 256,
         anchor_generator: ConfigType = dict(
-            type='AnchorGenerator',
+            type="AnchorGenerator",
             scales=[8, 16, 32],
             ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64]),
+            strides=[4, 8, 16, 32, 64],
+        ),
         bbox_coder: ConfigType = dict(
-            type='DeltaXYWHBBoxCoder',
+            type="DeltaXYWHBBoxCoder",
             clip_border=True,
-            target_means=(.0, .0, .0, .0),
-            target_stds=(1.0, 1.0, 1.0, 1.0)),
+            target_means=(0.0, 0.0, 0.0, 0.0),
+            target_stds=(1.0, 1.0, 1.0, 1.0),
+        ),
         reg_decoded_bbox: bool = False,
-        loss_cls: ConfigType = dict(
-            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox: ConfigType = dict(
-            type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0),
+        loss_cls: ConfigType = dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
+        loss_bbox: ConfigType = dict(type="SmoothL1Loss", beta=1.0 / 9.0, loss_weight=1.0),
         train_cfg: OptConfigType = None,
         test_cfg: OptConfigType = None,
-        init_cfg: OptMultiConfig = dict(
-            type='Normal', layer='Conv2d', std=0.01)
+        init_cfg: OptMultiConfig = dict(type="Normal", layer="Conv2d", std=0.01),
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.feat_channels = feat_channels
-        self.use_sigmoid_cls = loss_cls.get('use_sigmoid', False)
+        self.use_sigmoid_cls = loss_cls.get("use_sigmoid", False)
         if self.use_sigmoid_cls:
             self.cls_out_channels = num_classes
         else:
             self.cls_out_channels = num_classes + 1
 
         if self.cls_out_channels <= 0:
-            raise ValueError(f'num_classes={num_classes} is too small')
+            raise ValueError(f"num_classes={num_classes} is too small")
         self.reg_decoded_bbox = reg_decoded_bbox
 
         self.bbox_coder = TASK_UTILS.build(bbox_coder)
@@ -86,10 +90,9 @@ class AnchorHead(BaseDenseHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            self.assigner = TASK_UTILS.build(self.train_cfg['assigner'])
-            if train_cfg.get('sampler', None) is not None:
-                self.sampler = TASK_UTILS.build(
-                    self.train_cfg['sampler'], default_args=dict(context=self))
+            self.assigner = TASK_UTILS.build(self.train_cfg["assigner"])
+            if train_cfg.get("sampler", None) is not None:
+                self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
             else:
                 self.sampler = PseudoSampler(context=self)
 
@@ -105,25 +108,23 @@ class AnchorHead(BaseDenseHead):
 
     @property
     def num_anchors(self) -> int:
-        warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-                      'for consistency or also use '
-                      '`num_base_priors` instead')
+        warnings.warn(
+            "DeprecationWarning: `num_anchors` is deprecated, "
+            "for consistency or also use "
+            "`num_base_priors` instead",
+        )
         return self.prior_generator.num_base_priors[0]
 
     @property
     def anchor_generator(self) -> AnchorGenerator:
-        warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
-                      'please use "prior_generator" instead')
+        warnings.warn("DeprecationWarning: anchor_generator is deprecated, " 'please use "prior_generator" instead')
         return self.prior_generator
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
-        self.conv_cls = nn.Conv2d(self.in_channels,
-                                  self.num_base_priors * self.cls_out_channels,
-                                  1)
+        self.conv_cls = nn.Conv2d(self.in_channels, self.num_base_priors * self.cls_out_channels, 1)
         reg_dim = self.bbox_coder.encode_size
-        self.conv_reg = nn.Conv2d(self.in_channels,
-                                  self.num_base_priors * reg_dim, 1)
+        self.conv_reg = nn.Conv2d(self.in_channels, self.num_base_priors * reg_dim, 1)
 
     def forward_single(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """Forward feature of a single scale level.
@@ -161,11 +162,12 @@ class AnchorHead(BaseDenseHead):
         """
         return multi_apply(self.forward_single, x)
 
-    def get_anchors(self,
-                    featmap_sizes: List[tuple],
-                    batch_img_metas: List[dict],
-                    device: Union[torch.device, str] = 'cuda') \
-            -> Tuple[List[List[Tensor]], List[List[Tensor]]]:
+    def get_anchors(
+        self,
+        featmap_sizes: List[tuple],
+        batch_img_metas: List[dict],
+        device: Union[torch.device, str] = "cuda",
+    ) -> Tuple[List[List[Tensor]], List[List[Tensor]]]:
         """Get anchors according to feature map sizes.
 
         Args:
@@ -185,26 +187,26 @@ class AnchorHead(BaseDenseHead):
 
         # since feature map sizes of all images are the same, we only compute
         # anchors for one time
-        multi_level_anchors = self.prior_generator.grid_priors(
-            featmap_sizes, device=device)
+        multi_level_anchors = self.prior_generator.grid_priors(featmap_sizes, device=device)
         anchor_list = [multi_level_anchors for _ in range(num_imgs)]
 
         # for each image, we compute valid flags of multi level anchors
         valid_flag_list = []
         for img_id, img_meta in enumerate(batch_img_metas):
-            multi_level_flags = self.prior_generator.valid_flags(
-                featmap_sizes, img_meta['pad_shape'], device)
+            multi_level_flags = self.prior_generator.valid_flags(featmap_sizes, img_meta["pad_shape"], device)
             valid_flag_list.append(multi_level_flags)
 
         return anchor_list, valid_flag_list
 
-    def _get_targets_single(self,
-                            flat_anchors: Union[Tensor, BaseBoxes],
-                            valid_flags: Tensor,
-                            gt_instances: InstanceData,
-                            img_meta: dict,
-                            gt_instances_ignore: Optional[InstanceData] = None,
-                            unmap_outputs: bool = True) -> tuple:
+    def _get_targets_single(
+        self,
+        flat_anchors: Union[Tensor, BaseBoxes],
+        valid_flags: Tensor,
+        gt_instances: InstanceData,
+        img_meta: dict,
+        gt_instances_ignore: Optional[InstanceData] = None,
+        unmap_outputs: bool = True,
+    ) -> tuple:
         """Compute regression and classification targets for anchors in a
         single image.
 
@@ -237,35 +239,34 @@ class AnchorHead(BaseDenseHead):
                 - neg_inds (Tensor): negative samples indexes.
                 - sampling_result (:obj:`SamplingResult`): Sampling results.
         """
-        inside_flags = anchor_inside_flags(flat_anchors, valid_flags,
-                                           img_meta['img_shape'][:2],
-                                           self.train_cfg['allowed_border'])
+        inside_flags = anchor_inside_flags(
+            flat_anchors,
+            valid_flags,
+            img_meta["img_shape"][:2],
+            self.train_cfg["allowed_border"],
+        )
         if not inside_flags.any():
             raise ValueError(
-                'There is no valid anchor inside the image boundary. Please '
-                'check the image size and anchor sizes, or set '
-                '``allowed_border`` to -1 to skip the condition.')
+                "There is no valid anchor inside the image boundary. Please "
+                "check the image size and anchor sizes, or set "
+                "``allowed_border`` to -1 to skip the condition.",
+            )
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags]
 
         pred_instances = InstanceData(priors=anchors)
-        assign_result = self.assigner.assign(pred_instances, gt_instances,
-                                             gt_instances_ignore)
+        assign_result = self.assigner.assign(pred_instances, gt_instances, gt_instances_ignore)
         # No sampling is required except for RPN and
         # Guided Anchoring algorithms
-        sampling_result = self.sampler.sample(assign_result, pred_instances,
-                                              gt_instances)
+        sampling_result = self.sampler.sample(assign_result, pred_instances, gt_instances)
 
         num_valid_anchors = anchors.shape[0]
-        target_dim = gt_instances.bboxes.size(-1) if self.reg_decoded_bbox \
-            else self.bbox_coder.encode_size
+        target_dim = gt_instances.bboxes.size(-1) if self.reg_decoded_bbox else self.bbox_coder.encode_size
         bbox_targets = anchors.new_zeros(num_valid_anchors, target_dim)
         bbox_weights = anchors.new_zeros(num_valid_anchors, target_dim)
 
         # TODO: Considering saving memory, is it necessary to be long?
-        labels = anchors.new_full((num_valid_anchors, ),
-                                  self.num_classes,
-                                  dtype=torch.long)
+        labels = anchors.new_full((num_valid_anchors,), self.num_classes, dtype=torch.long)
         label_weights = anchors.new_zeros(num_valid_anchors, dtype=torch.float)
 
         pos_inds = sampling_result.pos_inds
@@ -275,8 +276,7 @@ class AnchorHead(BaseDenseHead):
         # box type `pos_bbox_targets` to tensor.
         if len(pos_inds) > 0:
             if not self.reg_decoded_bbox:
-                pos_bbox_targets = self.bbox_coder.encode(
-                    sampling_result.pos_priors, sampling_result.pos_gt_bboxes)
+                pos_bbox_targets = self.bbox_coder.encode(sampling_result.pos_priors, sampling_result.pos_gt_bboxes)
             else:
                 pos_bbox_targets = sampling_result.pos_gt_bboxes
                 pos_bbox_targets = get_box_tensor(pos_bbox_targets)
@@ -284,35 +284,33 @@ class AnchorHead(BaseDenseHead):
             bbox_weights[pos_inds, :] = 1.0
 
             labels[pos_inds] = sampling_result.pos_gt_labels
-            if self.train_cfg['pos_weight'] <= 0:
+            if self.train_cfg["pos_weight"] <= 0:
                 label_weights[pos_inds] = 1.0
             else:
-                label_weights[pos_inds] = self.train_cfg['pos_weight']
+                label_weights[pos_inds] = self.train_cfg["pos_weight"]
         if len(neg_inds) > 0:
             label_weights[neg_inds] = 1.0
 
         # map up to original set of anchors
         if unmap_outputs:
             num_total_anchors = flat_anchors.size(0)
-            labels = unmap(
-                labels, num_total_anchors, inside_flags,
-                fill=self.num_classes)  # fill bg label
-            label_weights = unmap(label_weights, num_total_anchors,
-                                  inside_flags)
+            labels = unmap(labels, num_total_anchors, inside_flags, fill=self.num_classes)  # fill bg label
+            label_weights = unmap(label_weights, num_total_anchors, inside_flags)
             bbox_targets = unmap(bbox_targets, num_total_anchors, inside_flags)
             bbox_weights = unmap(bbox_weights, num_total_anchors, inside_flags)
 
-        return (labels, label_weights, bbox_targets, bbox_weights, pos_inds,
-                neg_inds, sampling_result)
+        return (labels, label_weights, bbox_targets, bbox_weights, pos_inds, neg_inds, sampling_result)
 
-    def get_targets(self,
-                    anchor_list: List[List[Tensor]],
-                    valid_flag_list: List[List[Tensor]],
-                    batch_gt_instances: InstanceList,
-                    batch_img_metas: List[dict],
-                    batch_gt_instances_ignore: OptInstanceList = None,
-                    unmap_outputs: bool = True,
-                    return_sampling_results: bool = False) -> tuple:
+    def get_targets(
+        self,
+        anchor_list: List[List[Tensor]],
+        valid_flag_list: List[List[Tensor]],
+        batch_gt_instances: InstanceList,
+        batch_img_metas: List[dict],
+        batch_gt_instances_ignore: OptInstanceList = None,
+        unmap_outputs: bool = True,
+        return_sampling_results: bool = False,
+    ) -> tuple:
         """Compute regression and classification targets for anchors in
         multiple images.
 
@@ -382,40 +380,50 @@ class AnchorHead(BaseDenseHead):
             batch_gt_instances,
             batch_img_metas,
             batch_gt_instances_ignore,
-            unmap_outputs=unmap_outputs)
-        (all_labels, all_label_weights, all_bbox_targets, all_bbox_weights,
-         pos_inds_list, neg_inds_list, sampling_results_list) = results[:7]
+            unmap_outputs=unmap_outputs,
+        )
+        (
+            all_labels,
+            all_label_weights,
+            all_bbox_targets,
+            all_bbox_weights,
+            pos_inds_list,
+            neg_inds_list,
+            sampling_results_list,
+        ) = results[:7]
         rest_results = list(results[7:])  # user-added return values
         # Get `avg_factor` of all images, which calculate in `SamplingResult`.
         # When using sampling method, avg_factor is usually the sum of
         # positive and negative priors. When using `PseudoSampler`,
         # `avg_factor` is usually equal to the number of positive priors.
-        avg_factor = sum(
-            [results.avg_factor for results in sampling_results_list])
+        avg_factor = sum([results.avg_factor for results in sampling_results_list])
         # update `_raw_positive_infos`, which will be used when calling
         # `get_positive_infos`.
         self._raw_positive_infos.update(sampling_results=sampling_results_list)
         # split targets to a list w.r.t. multiple levels
         labels_list = images_to_levels(all_labels, num_level_anchors)
-        label_weights_list = images_to_levels(all_label_weights,
-                                              num_level_anchors)
-        bbox_targets_list = images_to_levels(all_bbox_targets,
-                                             num_level_anchors)
-        bbox_weights_list = images_to_levels(all_bbox_weights,
-                                             num_level_anchors)
-        res = (labels_list, label_weights_list, bbox_targets_list,
-               bbox_weights_list, avg_factor)
+        label_weights_list = images_to_levels(all_label_weights, num_level_anchors)
+        bbox_targets_list = images_to_levels(all_bbox_targets, num_level_anchors)
+        bbox_weights_list = images_to_levels(all_bbox_weights, num_level_anchors)
+        res = (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor)
         if return_sampling_results:
-            res = res + (sampling_results_list, )
+            res = res + (sampling_results_list,)
         for i, r in enumerate(rest_results):  # user-added return values
             rest_results[i] = images_to_levels(r, num_level_anchors)
 
         return res + tuple(rest_results)
 
-    def loss_by_feat_single(self, cls_score: Tensor, bbox_pred: Tensor,
-                            anchors: Tensor, labels: Tensor,
-                            label_weights: Tensor, bbox_targets: Tensor,
-                            bbox_weights: Tensor, avg_factor: int) -> tuple:
+    def loss_by_feat_single(
+        self,
+        cls_score: Tensor,
+        bbox_pred: Tensor,
+        anchors: Tensor,
+        labels: Tensor,
+        label_weights: Tensor,
+        bbox_targets: Tensor,
+        bbox_weights: Tensor,
+        avg_factor: int,
+    ) -> tuple:
         """Calculate the loss of a single scale level based on the features
         extracted by the detection head.
 
@@ -442,17 +450,13 @@ class AnchorHead(BaseDenseHead):
         # classification loss
         labels = labels.reshape(-1)
         label_weights = label_weights.reshape(-1)
-        cls_score = cls_score.permute(0, 2, 3,
-                                      1).reshape(-1, self.cls_out_channels)
-        loss_cls = self.loss_cls(
-            cls_score, labels, label_weights, avg_factor=avg_factor)
+        cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels)
+        loss_cls = self.loss_cls(cls_score, labels, label_weights, avg_factor=avg_factor)
         # regression loss
         target_dim = bbox_targets.size(-1)
         bbox_targets = bbox_targets.reshape(-1, target_dim)
         bbox_weights = bbox_weights.reshape(-1, target_dim)
-        bbox_pred = bbox_pred.permute(0, 2, 3,
-                                      1).reshape(-1,
-                                                 self.bbox_coder.encode_size)
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, self.bbox_coder.encode_size)
         if self.reg_decoded_bbox:
             # When the regression loss (e.g. `IouLoss`, `GIouLoss`)
             # is applied directly on the decoded bounding boxes, it
@@ -460,17 +464,17 @@ class AnchorHead(BaseDenseHead):
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
             bbox_pred = get_box_tensor(bbox_pred)
-        loss_bbox = self.loss_bbox(
-            bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
+        loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
         return loss_cls, loss_bbox
 
     def loss_by_feat(
-            self,
-            cls_scores: List[Tensor],
-            bbox_preds: List[Tensor],
-            batch_gt_instances: InstanceList,
-            batch_img_metas: List[dict],
-            batch_gt_instances_ignore: OptInstanceList = None) -> dict:
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        batch_gt_instances: InstanceList,
+        batch_img_metas: List[dict],
+        batch_gt_instances_ignore: OptInstanceList = None,
+    ) -> dict:
         """Calculate the loss based on the features extracted by the detection
         head.
 
@@ -497,16 +501,15 @@ class AnchorHead(BaseDenseHead):
 
         device = cls_scores[0].device
 
-        anchor_list, valid_flag_list = self.get_anchors(
-            featmap_sizes, batch_img_metas, device=device)
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, batch_img_metas, device=device)
         cls_reg_targets = self.get_targets(
             anchor_list,
             valid_flag_list,
             batch_gt_instances,
             batch_img_metas,
-            batch_gt_instances_ignore=batch_gt_instances_ignore)
-        (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list,
-         avg_factor) = cls_reg_targets
+            batch_gt_instances_ignore=batch_gt_instances_ignore,
+        )
+        (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor) = cls_reg_targets
 
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
@@ -514,8 +517,7 @@ class AnchorHead(BaseDenseHead):
         concat_anchor_list = []
         for i in range(len(anchor_list)):
             concat_anchor_list.append(cat_boxes(anchor_list[i]))
-        all_anchor_list = images_to_levels(concat_anchor_list,
-                                           num_level_anchors)
+        all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
 
         losses_cls, losses_bbox = multi_apply(
             self.loss_by_feat_single,
@@ -526,5 +528,6 @@ class AnchorHead(BaseDenseHead):
             label_weights_list,
             bbox_targets_list,
             bbox_weights_list,
-            avg_factor=avg_factor)
+            avg_factor=avg_factor,
+        )
         return dict(loss_cls=losses_cls, loss_bbox=losses_bbox)

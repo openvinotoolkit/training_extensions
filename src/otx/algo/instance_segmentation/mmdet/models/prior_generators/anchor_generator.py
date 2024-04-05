@@ -4,11 +4,10 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from torch import Tensor
-from torch.nn.modules.utils import _pair
-
 from mmengine.registry import TASK_UTILS
 from otx.algo.instance_segmentation.mmdet.structures.bbox import HorizontalBoxes
+from torch import Tensor
+from torch.nn.modules.utils import _pair
 
 DeviceType = Union[str, torch.device]
 
@@ -65,52 +64,48 @@ class AnchorGenerator:
         tensor([[-9., -9., 9., 9.]])]
     """
 
-    def __init__(self,
-                 strides: Union[List[int], List[Tuple[int, int]]],
-                 ratios: List[float],
-                 scales: Optional[List[int]] = None,
-                 base_sizes: Optional[List[int]] = None,
-                 scale_major: bool = True,
-                 octave_base_scale: Optional[int] = None,
-                 scales_per_octave: Optional[int] = None,
-                 centers: Optional[List[Tuple[float, float]]] = None,
-                 center_offset: float = 0.,
-                 use_box_type: bool = False) -> None:
+    def __init__(
+        self,
+        strides: Union[List[int], List[Tuple[int, int]]],
+        ratios: List[float],
+        scales: Optional[List[int]] = None,
+        base_sizes: Optional[List[int]] = None,
+        scale_major: bool = True,
+        octave_base_scale: Optional[int] = None,
+        scales_per_octave: Optional[int] = None,
+        centers: Optional[List[Tuple[float, float]]] = None,
+        center_offset: float = 0.0,
+        use_box_type: bool = False,
+    ) -> None:
         # check center and center_offset
         if center_offset != 0:
-            assert centers is None, 'center cannot be set when center_offset' \
-                                    f'!=0, {centers} is given.'
+            assert centers is None, "center cannot be set when center_offset" f"!=0, {centers} is given."
         if not (0 <= center_offset <= 1):
-            raise ValueError('center_offset should be in range [0, 1], '
-                             f'{center_offset} is given.')
+            raise ValueError("center_offset should be in range [0, 1], " f"{center_offset} is given.")
         if centers is not None:
-            assert len(centers) == len(strides), \
-                'The number of strides should be the same as centers, got ' \
-                f'{strides} and {centers}'
+            assert len(centers) == len(strides), (
+                "The number of strides should be the same as centers, got " f"{strides} and {centers}"
+            )
 
         # calculate base sizes of anchors
         self.strides = [_pair(stride) for stride in strides]
-        self.base_sizes = [min(stride) for stride in self.strides
-                           ] if base_sizes is None else base_sizes
-        assert len(self.base_sizes) == len(self.strides), \
-            'The number of strides should be the same as base sizes, got ' \
-            f'{self.strides} and {self.base_sizes}'
+        self.base_sizes = [min(stride) for stride in self.strides] if base_sizes is None else base_sizes
+        assert len(self.base_sizes) == len(self.strides), (
+            "The number of strides should be the same as base sizes, got " f"{self.strides} and {self.base_sizes}"
+        )
 
         # calculate scales of anchors
-        assert ((octave_base_scale is not None
-                 and scales_per_octave is not None) ^ (scales is not None)), \
-            'scales and octave_base_scale with scales_per_octave cannot' \
-            ' be set at the same time'
+        assert (octave_base_scale is not None and scales_per_octave is not None) ^ (
+            scales is not None
+        ), "scales and octave_base_scale with scales_per_octave cannot be set at the same time"
         if scales is not None:
             self.scales = torch.Tensor(scales)
         elif octave_base_scale is not None and scales_per_octave is not None:
-            octave_scales = np.array(
-                [2**(i / scales_per_octave) for i in range(scales_per_octave)])
+            octave_scales = np.array([2 ** (i / scales_per_octave) for i in range(scales_per_octave)])
             scales = octave_scales * octave_base_scale
             self.scales = torch.Tensor(scales)
         else:
-            raise ValueError('Either scales or octave_base_scale with '
-                             'scales_per_octave should be set')
+            raise ValueError("Either scales or octave_base_scale with scales_per_octave should be set")
 
         self.octave_base_scale = octave_base_scale
         self.scales_per_octave = scales_per_octave
@@ -129,7 +124,8 @@ class AnchorGenerator:
     @property
     def num_base_priors(self) -> List[int]:
         """list[int]: The number of priors (anchors) at a point
-        on the feature grid"""
+        on the feature grid
+        """
         return [base_anchors.size(0) for base_anchors in self.base_anchors]
 
     @property
@@ -150,19 +146,17 @@ class AnchorGenerator:
             if self.centers is not None:
                 center = self.centers[i]
             multi_level_base_anchors.append(
-                self.gen_single_level_base_anchors(
-                    base_size,
-                    scales=self.scales,
-                    ratios=self.ratios,
-                    center=center))
+                self.gen_single_level_base_anchors(base_size, scales=self.scales, ratios=self.ratios, center=center),
+            )
         return multi_level_base_anchors
 
-    def gen_single_level_base_anchors(self,
-                                      base_size: Union[int, float],
-                                      scales: Tensor,
-                                      ratios: Tensor,
-                                      center: Optional[Tuple[float]] = None) \
-            -> Tensor:
+    def gen_single_level_base_anchors(
+        self,
+        base_size: Union[int, float],
+        scales: Tensor,
+        ratios: Tensor,
+        center: Optional[Tuple[float]] = None,
+    ) -> Tensor:
         """Generate base anchors of a single level.
 
         Args:
@@ -196,17 +190,16 @@ class AnchorGenerator:
         # use float anchor and the anchor's center is aligned with the
         # pixel center
         base_anchors = [
-            x_center - 0.5 * ws, y_center - 0.5 * hs, x_center + 0.5 * ws,
-            y_center + 0.5 * hs
+            x_center - 0.5 * ws,
+            y_center - 0.5 * hs,
+            x_center + 0.5 * ws,
+            y_center + 0.5 * hs,
         ]
         base_anchors = torch.stack(base_anchors, dim=-1)
 
         return base_anchors
 
-    def _meshgrid(self,
-                  x: Tensor,
-                  y: Tensor,
-                  row_major: bool = True) -> Tuple[Tensor]:
+    def _meshgrid(self, x: Tensor, y: Tensor, row_major: bool = True) -> Tuple[Tensor]:
         """Generate mesh grid of x and y.
 
         Args:
@@ -226,10 +219,12 @@ class AnchorGenerator:
         else:
             return yy, xx
 
-    def grid_priors(self,
-                    featmap_sizes: List[Tuple],
-                    dtype: torch.dtype = torch.float32,
-                    device: DeviceType = 'cuda') -> List[Tensor]:
+    def grid_priors(
+        self,
+        featmap_sizes: List[Tuple],
+        dtype: torch.dtype = torch.float32,
+        device: DeviceType = "cuda",
+    ) -> List[Tensor]:
         """Generate grid anchors in multiple feature levels.
 
         Args:
@@ -250,16 +245,17 @@ class AnchorGenerator:
         assert self.num_levels == len(featmap_sizes)
         multi_level_anchors = []
         for i in range(self.num_levels):
-            anchors = self.single_level_grid_priors(
-                featmap_sizes[i], level_idx=i, dtype=dtype, device=device)
+            anchors = self.single_level_grid_priors(featmap_sizes[i], level_idx=i, dtype=dtype, device=device)
             multi_level_anchors.append(anchors)
         return multi_level_anchors
 
-    def single_level_grid_priors(self,
-                                 featmap_size: Tuple[int, int],
-                                 level_idx: int,
-                                 dtype: torch.dtype = torch.float32,
-                                 device: DeviceType = 'cuda') -> Tensor:
+    def single_level_grid_priors(
+        self,
+        featmap_size: Tuple[int, int],
+        level_idx: int,
+        dtype: torch.dtype = torch.float32,
+        device: DeviceType = "cuda",
+    ) -> Tensor:
         """Generate grid anchors of a single level.
 
         Note:
@@ -276,7 +272,6 @@ class AnchorGenerator:
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
         """
-
         base_anchors = self.base_anchors[level_idx].to(device).to(dtype)
         feat_h, feat_w = featmap_size
         stride_w, stride_h = self.strides[level_idx]
@@ -299,12 +294,14 @@ class AnchorGenerator:
             all_anchors = HorizontalBoxes(all_anchors)
         return all_anchors
 
-    def sparse_priors(self,
-                      prior_idxs: Tensor,
-                      featmap_size: Tuple[int, int],
-                      level_idx: int,
-                      dtype: torch.dtype = torch.float32,
-                      device: DeviceType = 'cuda') -> Tensor:
+    def sparse_priors(
+        self,
+        prior_idxs: Tensor,
+        featmap_size: Tuple[int, int],
+        level_idx: int,
+        dtype: torch.dtype = torch.float32,
+        device: DeviceType = "cuda",
+    ) -> Tensor:
         """Generate sparse anchors according to the ``prior_idxs``.
 
         Args:
@@ -317,26 +314,23 @@ class AnchorGenerator:
                 ``torch.float32``.
             device (str | torch.device): The device where the points is
                 located.
+
         Returns:
             Tensor: Anchor with shape (N, 4), N should be equal to
                 the length of ``prior_idxs``.
         """
-
         height, width = featmap_size
         num_base_anchors = self.num_base_anchors[level_idx]
         base_anchor_id = prior_idxs % num_base_anchors
-        x = (prior_idxs //
-             num_base_anchors) % width * self.strides[level_idx][0]
-        y = (prior_idxs // width //
-             num_base_anchors) % height * self.strides[level_idx][1]
-        priors = torch.stack([x, y, x, y], 1).to(dtype).to(device) + \
-            self.base_anchors[level_idx][base_anchor_id, :].to(device)
+        x = (prior_idxs // num_base_anchors) % width * self.strides[level_idx][0]
+        y = (prior_idxs // width // num_base_anchors) % height * self.strides[level_idx][1]
+        priors = torch.stack([x, y, x, y], 1).to(dtype).to(device) + self.base_anchors[level_idx][base_anchor_id, :].to(
+            device,
+        )
 
         return priors
 
-    def grid_anchors(self,
-                     featmap_sizes: List[Tuple],
-                     device: DeviceType = 'cuda') -> List[Tensor]:
+    def grid_anchors(self, featmap_sizes: List[Tuple], device: DeviceType = "cuda") -> List[Tensor]:
         """Generate grid anchors in multiple feature levels.
 
         Args:
@@ -352,8 +346,7 @@ class AnchorGenerator:
                 are the sizes of the corresponding feature level, \
                 num_base_anchors is the number of anchors for that level.
         """
-        warnings.warn('``grid_anchors`` would be deprecated soon. '
-                      'Please use ``grid_priors`` ')
+        warnings.warn("``grid_anchors`` would be deprecated soon. Please use ``grid_priors`` ")
 
         assert self.num_levels == len(featmap_sizes)
         multi_level_anchors = []
@@ -362,15 +355,18 @@ class AnchorGenerator:
                 self.base_anchors[i].to(device),
                 featmap_sizes[i],
                 self.strides[i],
-                device=device)
+                device=device,
+            )
             multi_level_anchors.append(anchors)
         return multi_level_anchors
 
-    def single_level_grid_anchors(self,
-                                  base_anchors: Tensor,
-                                  featmap_size: Tuple[int, int],
-                                  stride: Tuple[int, int] = (16, 16),
-                                  device: DeviceType = 'cuda') -> Tensor:
+    def single_level_grid_anchors(
+        self,
+        base_anchors: Tensor,
+        featmap_size: Tuple[int, int],
+        stride: Tuple[int, int] = (16, 16),
+        device: DeviceType = "cuda",
+    ) -> Tensor:
         """Generate grid anchors of a single level.
 
         Note:
@@ -387,10 +383,9 @@ class AnchorGenerator:
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
         """
-
         warnings.warn(
-            '``single_level_grid_anchors`` would be deprecated soon. '
-            'Please use ``single_level_grid_priors`` ')
+            "``single_level_grid_anchors`` would be deprecated soon. Please use ``single_level_grid_priors`` ",
+        )
 
         # keep featmap_size as Tensor instead of int, so that we
         # can convert to ONNX correctly
@@ -411,10 +406,12 @@ class AnchorGenerator:
         # then (0, 1), (0, 2), ...
         return all_anchors
 
-    def valid_flags(self,
-                    featmap_sizes: List[Tuple[int, int]],
-                    pad_shape: Tuple,
-                    device: DeviceType = 'cuda') -> List[Tensor]:
+    def valid_flags(
+        self,
+        featmap_sizes: List[Tuple[int, int]],
+        pad_shape: Tuple,
+        device: DeviceType = "cuda",
+    ) -> List[Tensor]:
         """Generate valid flags of anchors in multiple feature levels.
 
         Args:
@@ -435,18 +432,22 @@ class AnchorGenerator:
             h, w = pad_shape[:2]
             valid_feat_h = min(int(np.ceil(h / anchor_stride[1])), feat_h)
             valid_feat_w = min(int(np.ceil(w / anchor_stride[0])), feat_w)
-            flags = self.single_level_valid_flags((feat_h, feat_w),
-                                                  (valid_feat_h, valid_feat_w),
-                                                  self.num_base_anchors[i],
-                                                  device=device)
+            flags = self.single_level_valid_flags(
+                (feat_h, feat_w),
+                (valid_feat_h, valid_feat_w),
+                self.num_base_anchors[i],
+                device=device,
+            )
             multi_level_flags.append(flags)
         return multi_level_flags
 
-    def single_level_valid_flags(self,
-                                 featmap_size: Tuple[int, int],
-                                 valid_size: Tuple[int, int],
-                                 num_base_anchors: int,
-                                 device: DeviceType = 'cuda') -> Tensor:
+    def single_level_valid_flags(
+        self,
+        featmap_size: Tuple[int, int],
+        valid_size: Tuple[int, int],
+        num_base_anchors: int,
+        device: DeviceType = "cuda",
+    ) -> Tensor:
         """Generate the valid flags of anchor in a single feature map.
 
         Args:
@@ -470,26 +471,23 @@ class AnchorGenerator:
         valid_y[:valid_h] = 1
         valid_xx, valid_yy = self._meshgrid(valid_x, valid_y)
         valid = valid_xx & valid_yy
-        valid = valid[:, None].expand(valid.size(0),
-                                      num_base_anchors).contiguous().view(-1)
+        valid = valid[:, None].expand(valid.size(0), num_base_anchors).contiguous().view(-1)
         return valid
 
     def __repr__(self) -> str:
         """str: a string that describes the module"""
-        indent_str = '    '
-        repr_str = self.__class__.__name__ + '(\n'
-        repr_str += f'{indent_str}strides={self.strides},\n'
-        repr_str += f'{indent_str}ratios={self.ratios},\n'
-        repr_str += f'{indent_str}scales={self.scales},\n'
-        repr_str += f'{indent_str}base_sizes={self.base_sizes},\n'
-        repr_str += f'{indent_str}scale_major={self.scale_major},\n'
-        repr_str += f'{indent_str}octave_base_scale='
-        repr_str += f'{self.octave_base_scale},\n'
-        repr_str += f'{indent_str}scales_per_octave='
-        repr_str += f'{self.scales_per_octave},\n'
-        repr_str += f'{indent_str}num_levels={self.num_levels}\n'
-        repr_str += f'{indent_str}centers={self.centers},\n'
-        repr_str += f'{indent_str}center_offset={self.center_offset})'
+        indent_str = "    "
+        repr_str = self.__class__.__name__ + "(\n"
+        repr_str += f"{indent_str}strides={self.strides},\n"
+        repr_str += f"{indent_str}ratios={self.ratios},\n"
+        repr_str += f"{indent_str}scales={self.scales},\n"
+        repr_str += f"{indent_str}base_sizes={self.base_sizes},\n"
+        repr_str += f"{indent_str}scale_major={self.scale_major},\n"
+        repr_str += f"{indent_str}octave_base_scale="
+        repr_str += f"{self.octave_base_scale},\n"
+        repr_str += f"{indent_str}scales_per_octave="
+        repr_str += f"{self.scales_per_octave},\n"
+        repr_str += f"{indent_str}num_levels={self.num_levels}\n"
+        repr_str += f"{indent_str}centers={self.centers},\n"
+        repr_str += f"{indent_str}center_offset={self.center_offset})"
         return repr_str
-
-

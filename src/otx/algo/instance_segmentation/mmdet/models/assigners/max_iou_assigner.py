@@ -3,20 +3,15 @@ import copy
 from typing import Optional, Union
 
 import torch
+from mmengine.registry import TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor
 
-from mmengine.registry import TASK_UTILS
 from .assign_result import AssignResult
 from .base_assigner import BaseAssigner
 
 
-def _perm_box(bboxes,
-              iou_calculator,
-              iou_thr=0.97,
-              perm_range=0.01,
-              counter=0,
-              max_iter=5):
+def _perm_box(bboxes, iou_calculator, iou_thr=0.97, perm_range=0.01, counter=0, max_iter=5):
     """Compute the permuted bboxes.
 
     Args:
@@ -26,14 +21,14 @@ def _perm_box(bboxes,
         perm_range (float): The scale of permutation.
         counter (int): Counter of permutation iteration.
         max_iter (int): The max iterations of permutation.
+
     Returns:
         Tensor: The permuted bboxes.
     """
     ori_bboxes = copy.deepcopy(bboxes)
     is_valid = True
     N = bboxes.size(0)
-    perm_factor = bboxes.new_empty(N, 4).uniform_(1 - perm_range,
-                                                  1 + perm_range)
+    perm_factor = bboxes.new_empty(N, 4).uniform_(1 - perm_range, 1 + perm_range)
     bboxes *= perm_factor
     new_wh = bboxes[:, 2:] - bboxes[:, :2]
     if (new_wh <= 0).any():
@@ -46,7 +41,8 @@ def _perm_box(bboxes,
             ori_bboxes,
             iou_calculator,
             perm_range=max(perm_range - counter * 0.001, 1e-3),
-            counter=counter + 1)
+            counter=counter + 1,
+        )
     return bboxes
 
 
@@ -57,27 +53,24 @@ def perm_repeat_bboxes(bboxes, iou_calculator=None, perm_repeat_cfg=None):
         bboxes (Tensor): Shape (n, 4) for , "xyxy" format.
         iou_calculator (obj): Overlaps Calculator.
         perm_repeat_cfg (Dict): Config of permutation.
+
     Returns:
         Tensor: Bboxes after permuted repeated bboxes.
     """
     assert isinstance(bboxes, torch.Tensor)
     if iou_calculator is None:
         import torchvision
+
         iou_calculator = torchvision.ops.box_iou
     bboxes = copy.deepcopy(bboxes)
     unique_bboxes = bboxes.unique(dim=0)
-    iou_thr = perm_repeat_cfg.get('iou_thr', 0.97)
-    perm_range = perm_repeat_cfg.get('perm_range', 0.01)
+    iou_thr = perm_repeat_cfg.get("iou_thr", 0.97)
+    perm_range = perm_repeat_cfg.get("perm_range", 0.01)
     for box in unique_bboxes:
         inds = (bboxes == box).sum(-1).float() == 4
         if inds.float().sum().item() == 1:
             continue
-        bboxes[inds] = _perm_box(
-            bboxes[inds],
-            iou_calculator,
-            iou_thr=iou_thr,
-            perm_range=perm_range,
-            counter=0)
+        bboxes[inds] = _perm_box(bboxes[inds], iou_calculator, iou_thr=iou_thr, perm_range=perm_range, counter=0)
     return bboxes
 
 
@@ -119,17 +112,19 @@ class MaxIoUAssigner(BaseAssigner):
         perm_repeat_gt_cfg (dict): Config of permute repeated gt bboxes.
     """
 
-    def __init__(self,
-                 pos_iou_thr: float,
-                 neg_iou_thr: Union[float, tuple],
-                 min_pos_iou: float = .0,
-                 gt_max_assign_all: bool = True,
-                 ignore_iof_thr: float = -1,
-                 ignore_wrt_candidates: bool = True,
-                 match_low_quality: bool = True,
-                 gpu_assign_thr: float = -1,
-                 iou_calculator: dict = dict(type='BboxOverlaps2D'),
-                 perm_repeat_gt_cfg=None):
+    def __init__(
+        self,
+        pos_iou_thr: float,
+        neg_iou_thr: Union[float, tuple],
+        min_pos_iou: float = 0.0,
+        gt_max_assign_all: bool = True,
+        ignore_iof_thr: float = -1,
+        ignore_wrt_candidates: bool = True,
+        match_low_quality: bool = True,
+        gpu_assign_thr: float = -1,
+        iou_calculator: dict = dict(type="BboxOverlaps2D"),
+        perm_repeat_gt_cfg=None,
+    ):
         self.pos_iou_thr = pos_iou_thr
         self.neg_iou_thr = neg_iou_thr
         self.min_pos_iou = min_pos_iou
@@ -141,11 +136,13 @@ class MaxIoUAssigner(BaseAssigner):
         self.iou_calculator = TASK_UTILS.build(iou_calculator)
         self.perm_repeat_gt_cfg = perm_repeat_gt_cfg
 
-    def assign(self,
-               pred_instances: InstanceData,
-               gt_instances: InstanceData,
-               gt_instances_ignore: Optional[InstanceData] = None,
-               **kwargs) -> AssignResult:
+    def assign(
+        self,
+        pred_instances: InstanceData,
+        gt_instances: InstanceData,
+        gt_instances_ignore: Optional[InstanceData] = None,
+        **kwargs,
+    ) -> AssignResult:
         """Assign gt to bboxes.
 
         This method assign a gt bbox to every bbox (proposal/anchor), each bbox
@@ -200,8 +197,7 @@ class MaxIoUAssigner(BaseAssigner):
         else:
             gt_bboxes_ignore = None
 
-        assign_on_cpu = True if (self.gpu_assign_thr > 0) and (
-            gt_bboxes.shape[0] > self.gpu_assign_thr) else False
+        assign_on_cpu = True if (self.gpu_assign_thr > 0) and (gt_bboxes.shape[0] > self.gpu_assign_thr) else False
         # compute overlap and assign gt on CPU when number of GT is large
         if assign_on_cpu:
             device = priors.device
@@ -212,22 +208,22 @@ class MaxIoUAssigner(BaseAssigner):
                 gt_bboxes_ignore = gt_bboxes_ignore.cpu()
 
         if self.perm_repeat_gt_cfg is not None and priors.numel() > 0:
-            gt_bboxes_unique = perm_repeat_bboxes(gt_bboxes,
-                                                  self.iou_calculator,
-                                                  self.perm_repeat_gt_cfg)
+            gt_bboxes_unique = perm_repeat_bboxes(gt_bboxes, self.iou_calculator, self.perm_repeat_gt_cfg)
         else:
             gt_bboxes_unique = gt_bboxes
         overlaps = self.iou_calculator(gt_bboxes_unique, priors)
 
-        if (self.ignore_iof_thr > 0 and gt_bboxes_ignore is not None
-                and gt_bboxes_ignore.numel() > 0 and priors.numel() > 0):
+        if (
+            self.ignore_iof_thr > 0
+            and gt_bboxes_ignore is not None
+            and gt_bboxes_ignore.numel() > 0
+            and priors.numel() > 0
+        ):
             if self.ignore_wrt_candidates:
-                ignore_overlaps = self.iou_calculator(
-                    priors, gt_bboxes_ignore, mode='iof')
+                ignore_overlaps = self.iou_calculator(priors, gt_bboxes_ignore, mode="iof")
                 ignore_max_overlaps, _ = ignore_overlaps.max(dim=1)
             else:
-                ignore_overlaps = self.iou_calculator(
-                    gt_bboxes_ignore, priors, mode='iof')
+                ignore_overlaps = self.iou_calculator(gt_bboxes_ignore, priors, mode="iof")
                 ignore_max_overlaps, _ = ignore_overlaps.max(dim=0)
             overlaps[:, ignore_max_overlaps > self.ignore_iof_thr] = -1
 
@@ -239,8 +235,7 @@ class MaxIoUAssigner(BaseAssigner):
                 assign_result.labels = assign_result.labels.to(device)
         return assign_result
 
-    def assign_wrt_overlaps(self, overlaps: Tensor,
-                            gt_labels: Tensor) -> AssignResult:
+    def assign_wrt_overlaps(self, overlaps: Tensor, gt_labels: Tensor) -> AssignResult:
         """Assign w.r.t. the overlaps of priors with gts.
 
         Args:
@@ -254,16 +249,12 @@ class MaxIoUAssigner(BaseAssigner):
         num_gts, num_bboxes = overlaps.size(0), overlaps.size(1)
 
         # 1. assign -1 by default
-        assigned_gt_inds = overlaps.new_full((num_bboxes, ),
-                                             -1,
-                                             dtype=torch.long)
+        assigned_gt_inds = overlaps.new_full((num_bboxes,), -1, dtype=torch.long)
 
         if num_gts == 0 or num_bboxes == 0:
             # No ground truth or boxes, return empty assignment
-            max_overlaps = overlaps.new_zeros((num_bboxes, ))
-            assigned_labels = overlaps.new_full((num_bboxes, ),
-                                                -1,
-                                                dtype=torch.long)
+            max_overlaps = overlaps.new_zeros((num_bboxes,))
+            assigned_labels = overlaps.new_full((num_bboxes,), -1, dtype=torch.long)
             if num_gts == 0:
                 # No truth, assign everything to background
                 assigned_gt_inds[:] = 0
@@ -271,7 +262,8 @@ class MaxIoUAssigner(BaseAssigner):
                 num_gts=num_gts,
                 gt_inds=assigned_gt_inds,
                 max_overlaps=max_overlaps,
-                labels=assigned_labels)
+                labels=assigned_labels,
+            )
 
         # for each anchor, which gt best overlaps with it
         # for each anchor, the max iou of all gts
@@ -283,12 +275,10 @@ class MaxIoUAssigner(BaseAssigner):
         # 2. assign negative: below
         # the negative inds are set to be 0
         if isinstance(self.neg_iou_thr, float):
-            assigned_gt_inds[(max_overlaps >= 0)
-                             & (max_overlaps < self.neg_iou_thr)] = 0
+            assigned_gt_inds[(max_overlaps >= 0) & (max_overlaps < self.neg_iou_thr)] = 0
         elif isinstance(self.neg_iou_thr, tuple):
             assert len(self.neg_iou_thr) == 2
-            assigned_gt_inds[(max_overlaps >= self.neg_iou_thr[0])
-                             & (max_overlaps < self.neg_iou_thr[1])] = 0
+            assigned_gt_inds[(max_overlaps >= self.neg_iou_thr[0]) & (max_overlaps < self.neg_iou_thr[1])] = 0
 
         # 3. assign positive: above positive IoU threshold
         pos_inds = max_overlaps >= self.pos_iou_thr
@@ -311,15 +301,14 @@ class MaxIoUAssigner(BaseAssigner):
                     else:
                         assigned_gt_inds[gt_argmax_overlaps[i]] = i + 1
 
-        assigned_labels = assigned_gt_inds.new_full((num_bboxes, ), -1)
-        pos_inds = torch.nonzero(
-            assigned_gt_inds > 0, as_tuple=False).squeeze()
+        assigned_labels = assigned_gt_inds.new_full((num_bboxes,), -1)
+        pos_inds = torch.nonzero(assigned_gt_inds > 0, as_tuple=False).squeeze()
         if pos_inds.numel() > 0:
-            assigned_labels[pos_inds] = gt_labels[assigned_gt_inds[pos_inds] -
-                                                  1]
+            assigned_labels[pos_inds] = gt_labels[assigned_gt_inds[pos_inds] - 1]
 
         return AssignResult(
             num_gts=num_gts,
             gt_inds=assigned_gt_inds,
             max_overlaps=max_overlaps,
-            labels=assigned_labels)
+            labels=assigned_labels,
+        )

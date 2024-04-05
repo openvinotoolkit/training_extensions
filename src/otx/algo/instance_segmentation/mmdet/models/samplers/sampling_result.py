@@ -3,12 +3,10 @@ import warnings
 
 import numpy as np
 import torch
-from torch import Tensor
-
-from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
-
-from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
+from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
+from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
+from torch import Tensor
 
 
 def random_boxes(num=1, scale=1, rng=None):
@@ -83,21 +81,22 @@ class SamplingResult(util_mixins.NiceRepr):
         })>
     """
 
-    def __init__(self,
-                 pos_inds: Tensor,
-                 neg_inds: Tensor,
-                 priors: Tensor,
-                 gt_bboxes: Tensor,
-                 assign_result: AssignResult,
-                 gt_flags: Tensor,
-                 avg_factor_with_neg: bool = True) -> None:
+    def __init__(
+        self,
+        pos_inds: Tensor,
+        neg_inds: Tensor,
+        priors: Tensor,
+        gt_bboxes: Tensor,
+        assign_result: AssignResult,
+        gt_flags: Tensor,
+        avg_factor_with_neg: bool = True,
+    ) -> None:
         self.pos_inds = pos_inds
         self.neg_inds = neg_inds
         self.num_pos = max(pos_inds.numel(), 1)
         self.num_neg = max(neg_inds.numel(), 1)
         self.avg_factor_with_neg = avg_factor_with_neg
-        self.avg_factor = self.num_pos + self.num_neg \
-            if avg_factor_with_neg else self.num_pos
+        self.avg_factor = self.num_pos + self.num_neg if avg_factor_with_neg else self.num_pos
         self.pos_priors = priors[pos_inds]
         self.neg_priors = priors[neg_inds]
         self.pos_is_gt = gt_flags[pos_inds]
@@ -123,20 +122,17 @@ class SamplingResult(util_mixins.NiceRepr):
     @property
     def bboxes(self):
         """torch.Tensor: concatenated positive and negative boxes"""
-        warnings.warn('DeprecationWarning: bboxes is deprecated, '
-                      'please use "priors" instead')
+        warnings.warn("DeprecationWarning: bboxes is deprecated, " 'please use "priors" instead')
         return self.priors
 
     @property
     def pos_bboxes(self):
-        warnings.warn('DeprecationWarning: pos_bboxes is deprecated, '
-                      'please use "pos_priors" instead')
+        warnings.warn("DeprecationWarning: pos_bboxes is deprecated, " 'please use "pos_priors" instead')
         return self.pos_priors
 
     @property
     def neg_bboxes(self):
-        warnings.warn('DeprecationWarning: neg_bboxes is deprecated, '
-                      'please use "neg_priors" instead')
+        warnings.warn("DeprecationWarning: neg_bboxes is deprecated, " 'please use "neg_priors" instead')
         return self.neg_priors
 
     def to(self, device):
@@ -156,32 +152,31 @@ class SamplingResult(util_mixins.NiceRepr):
 
     def __nice__(self):
         data = self.info.copy()
-        data['pos_priors'] = data.pop('pos_priors').shape
-        data['neg_priors'] = data.pop('neg_priors').shape
+        data["pos_priors"] = data.pop("pos_priors").shape
+        data["neg_priors"] = data.pop("neg_priors").shape
         parts = [f"'{k}': {v!r}" for k, v in sorted(data.items())]
-        body = '    ' + ',\n    '.join(parts)
-        return '{\n' + body + '\n}'
+        body = "    " + ",\n    ".join(parts)
+        return "{\n" + body + "\n}"
 
     @property
     def info(self):
         """Returns a dictionary of info about the object."""
         return {
-            'pos_inds': self.pos_inds,
-            'neg_inds': self.neg_inds,
-            'pos_priors': self.pos_priors,
-            'neg_priors': self.neg_priors,
-            'pos_is_gt': self.pos_is_gt,
-            'num_gts': self.num_gts,
-            'pos_assigned_gt_inds': self.pos_assigned_gt_inds,
-            'num_pos': self.num_pos,
-            'num_neg': self.num_neg,
-            'avg_factor': self.avg_factor
+            "pos_inds": self.pos_inds,
+            "neg_inds": self.neg_inds,
+            "pos_priors": self.pos_priors,
+            "neg_priors": self.neg_priors,
+            "pos_is_gt": self.pos_is_gt,
+            "num_gts": self.num_gts,
+            "pos_assigned_gt_inds": self.pos_assigned_gt_inds,
+            "num_pos": self.num_pos,
+            "num_neg": self.num_neg,
+            "avg_factor": self.avg_factor,
         }
 
     @classmethod
     def random(cls, rng=None, **kwargs):
-        """
-        Args:
+        """Args:
             rng (None | int | numpy.random.RandomState): seed or state.
             kwargs (keyword arguments):
                 - num_preds: Number of predicted boxes.
@@ -199,10 +194,10 @@ class SamplingResult(util_mixins.NiceRepr):
             >>> self = SamplingResult.random()
             >>> print(self.__dict__)
         """
-        from mmengine.structures import InstanceData
-
         from mmdet.models.task_modules.assigners import AssignResult
         from mmdet.models.task_modules.samplers import RandomSampler
+        from mmengine.structures import InstanceData
+
         rng = ensure_rng(rng)
 
         # make probabilistic?
@@ -215,8 +210,7 @@ class SamplingResult(util_mixins.NiceRepr):
         # Note we could just compute an assignment
         priors = random_boxes(assign_result.num_preds, rng=rng)
         gt_bboxes = random_boxes(assign_result.num_gts, rng=rng)
-        gt_labels = torch.randint(
-            0, 5, (assign_result.num_gts, ), dtype=torch.long)
+        gt_labels = torch.randint(0, 5, (assign_result.num_gts,), dtype=torch.long)
 
         pred_instances = InstanceData()
         pred_instances.priors = priors
@@ -232,9 +226,7 @@ class SamplingResult(util_mixins.NiceRepr):
             pos_fraction,
             neg_pos_ub=neg_pos_ub,
             add_gt_as_proposals=add_gt_as_proposals,
-            rng=rng)
-        self = sampler.sample(
-            assign_result=assign_result,
-            pred_instances=pred_instances,
-            gt_instances=gt_instances)
+            rng=rng,
+        )
+        self = sampler.sample(assign_result=assign_result, pred_instances=pred_instances, gt_instances=gt_instances)
         return self
