@@ -156,7 +156,7 @@ class Benchmark:
                 "--engine.device",
                 self.accelerator,
             ]
-            for key, value in dataset.extra_overrides.items():
+            for key, value in dataset.extra_overrides.get("train", {}).items():
                 command.append(f"--{key}")
                 command.append(str(value))
             command.extend(["--seed", str(seed)])
@@ -183,6 +183,9 @@ class Benchmark:
                 "--work_dir",
                 str(sub_work_dir),
             ]
+            for key, value in dataset.extra_overrides.get("test", {}).items():
+                command.append(f"--{key}")
+                command.append(str(value))
             self._run_command(command)
             self._rename_raw_data(
                 work_dir=sub_work_dir / ".latest" / "test",
@@ -198,6 +201,9 @@ class Benchmark:
                     "--work_dir",
                     str(sub_work_dir),
                 ]
+                for key, value in dataset.extra_overrides.get("export", {}).items():
+                    command.append(f"--{key}")
+                    command.append(str(value))
                 self._run_command(command)
 
                 exported_model_path = sub_work_dir / ".latest" / "export" / "exported_model.xml"
@@ -214,6 +220,9 @@ class Benchmark:
                     "--work_dir",
                     str(sub_work_dir),
                 ]
+                for key, value in dataset.extra_overrides.get("test", {}).items():
+                    command.append(f"--{key}")
+                    command.append(str(value))
                 self._run_command(command)
 
                 self._rename_raw_data(
@@ -235,6 +244,9 @@ class Benchmark:
                     "--work_dir",
                     str(sub_work_dir),
                 ]
+                for key, value in dataset.extra_overrides.get("optimize", {}).items():
+                    command.append(f"--{key}")
+                    command.append(str(value))
                 self._run_command(command)
 
                 optimized_model_path = sub_work_dir / ".latest" / "optimize" / "optimized_model.xml"
@@ -252,6 +264,9 @@ class Benchmark:
                     "--work_dir",
                     str(sub_work_dir),
                 ]
+                for key, value in dataset.extra_overrides.get("test", {}).items():
+                    command.append(f"--{key}")
+                    command.append(str(value))
                 self._run_command(command)
 
                 self._rename_raw_data(
@@ -267,9 +282,8 @@ class Benchmark:
         return self.average_result(result, keys=["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
-        if self.dry_run:
-            print(" ".join(command))
-        else:
+        print(" ".join(command))
+        if not self.dry_run:
             subprocess.run(command, check=True)  # noqa: S603
 
     def _log_metrics(

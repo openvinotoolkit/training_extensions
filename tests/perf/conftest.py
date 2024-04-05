@@ -380,7 +380,7 @@ def fxt_benchmark_summary(
     print(summary_results)
     fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
     summary_results.to_csv(fxt_summary_csv)
-    raw_results.to_csv(fxt_summary_csv.parent / "benchmark-raw.csv")
+    raw_results.to_csv(fxt_summary_csv.parent / "perf-benchmark-raw.csv")
     print(f"  -> Saved to {fxt_summary_csv}.")
 
     if fxt_mlflow_client:
