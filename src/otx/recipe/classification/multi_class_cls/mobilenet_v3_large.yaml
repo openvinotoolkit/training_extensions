@@ -45,6 +45,7 @@ overrides:
       mem_cache_img_max_size:
         - 500
         - 500
+      stack_images: True
       train_subset:
         batch_size: 64
         transforms:

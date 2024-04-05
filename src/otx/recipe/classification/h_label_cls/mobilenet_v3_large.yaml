@@ -4,6 +4,7 @@ model:
     mode: large
     multiclass_loss_callable:
       class_path: torch.nn.CrossEntropyLoss
+
     multilabel_loss_callable:
       class_path: otx.algo.classification.losses.AsymmetricAngularLossWithIgnore
       init_args:
@@ -49,6 +50,7 @@ overrides:
       mem_cache_img_max_size:
         - 500
         - 500
+      stack_images: True
       data_format: datumaro
       train_subset:
         batch_size: 64

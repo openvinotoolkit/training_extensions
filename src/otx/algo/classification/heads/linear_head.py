@@ -71,7 +71,6 @@ class LinearClsHead(BaseModule):
         """The forward process."""
         if isinstance(feats, tuple):
             feats = feats[-1]
-        # pre_logits = self.pre_logits(feats)
         # The final classification head.
         return self.fc(feats)
 
@@ -87,8 +86,6 @@ class LinearClsHead(BaseModule):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[DataSample]): The annotation data of
-                every samples.
             **kwargs: Other keyword arguments to forward the loss module.
 
         Returns:
@@ -118,4 +115,8 @@ class LinearClsHead(BaseModule):
         cls_score = self(feats)
 
         # The part can not be traced by torch.fx
+        return self._get_predictions(cls_score)
+
+    def _get_predictions(self, cls_score: torch.Tensor) -> torch.Tensor:
+        """Get the score from the classification score."""
         return functional.softmax(cls_score, dim=1)

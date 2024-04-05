@@ -126,6 +126,10 @@ class MultiLabelClsHead(BaseModule):
         cls_score = self(feats)
 
         # The part can not be traced by torch.fx
+        return self._get_predictions(cls_score=cls_score)
+
+    def _get_predictions(self, cls_score: torch.Tensor) -> torch.Tensor:
+        """Get the score from the classification score."""
         return torch.sigmoid(cls_score)
 
     def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
