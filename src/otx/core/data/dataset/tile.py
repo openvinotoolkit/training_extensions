@@ -6,14 +6,18 @@
 from __future__ import annotations
 
 import logging as log
+from copy import deepcopy
 from itertools import product
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
+import shapely.geometry as sg
 import torch
 from datumaro import Bbox, DatasetItem, DatasetSubset, Image, Polygon
 from datumaro import Dataset as DmDataset
+from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.tiling import Tile
+from datumaro.plugins.tiling.tile import _apply_offset
 from datumaro.plugins.tiling.util import (
     clip_x1y1x2y2,
     cxcywh_to_x1y1x2y2,
@@ -76,10 +80,45 @@ class OTXTileTransform(Tile):
             threshold_drop_ann=threshold_drop_ann,
         )
         self._tile_size = tile_size
-        # TODO (Eugene): Bug found in original Datumaro tile polygon function.
-        # https://github.com/eugene123tw/training_extensions/tree/eugene/fix-tile-polygon-func
-        # It lacks polygon validation, potentially leading to GeometryCollection or MultiPolygon results,
-        # which the current function doesn't handle.
+        self._tile_ann_func_map[AnnotationType.polygon] = OTXTileTransform._tile_polygon
+
+    @staticmethod
+    def _tile_polygon(
+        ann: Polygon,
+        roi_box: sg.Polygon,
+        threshold_drop_ann: float = 0.8,
+        *args,  # noqa: ARG004
+        **kwargs,  # noqa: ARG004
+    ) -> Polygon | None:
+        polygon = sg.Polygon(ann.get_points())
+
+        # NOTE: polygon may be invalid, e.g. self-intersecting
+        if not roi_box.intersects(polygon) or not polygon.is_valid:
+            return None
+
+        # NOTE: intersection may return a GeometryCollection or MultiPolygon
+        inter = polygon.intersection(roi_box)
+        if isinstance(inter, (sg.GeometryCollection, sg.MultiPolygon)):
+            shapes = [(geom, geom.area) for geom in list(inter.geoms) if geom.is_valid]
+            shapes.sort(key=lambda x: x[1], reverse=True)
+            if shapes:
+                inter = shapes[0][0]
+                if not isinstance(inter, sg.Polygon) and not inter.is_valid:
+                    return None
+            else:
+                return None
+
+        prop_area = inter.area / polygon.area
+
+        if prop_area < threshold_drop_ann:
+            return None
+
+        inter = _apply_offset(inter, roi_box)
+
+        return ann.wrap(
+            points=[p for xy in inter.exterior.coords for p in xy],
+            attributes=deepcopy(ann.attributes),
+        )
 
     def _extract_rois(self, image: Image) -> list[BboxIntCoords]:
         """Extracts Tile ROIs from the given image.
