@@ -209,11 +209,19 @@ class ImageClassifier(BaseModel):
             x = self.neck(x)
 
         logits = self.head(x)
+        pred_results = self.head._get_predictions(logits)  # noqa: SLF001
+        # H-Label Classification Case
+        if isinstance(pred_results, dict):
+            scores = pred_results["pred_scores"].unbind(0)
+            preds = pred_results["pred_labels"].unbind(0)
+        else:
+            scores = pred_results.unbind(0)
+            preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         return {
             "logits": logits,
-            "preds": logits.argmax(-1, keepdim=True).unbind(0),
-            "scores": self.head._get_predictions(logits).unbind(0),  # noqa: SLF001
+            "preds": preds,
+            "scores": scores,
             "saliency_map": saliency_map,
             "feature_vector": feature_vector,
         }

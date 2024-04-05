@@ -4,6 +4,8 @@ model:
     mode: large
     multiclass_loss_callable:
       class_path: torch.nn.CrossEntropyLoss
+      init_args:
+        reduction: none
 
     multilabel_loss_callable:
       class_path: otx.algo.classification.losses.AsymmetricAngularLossWithIgnore

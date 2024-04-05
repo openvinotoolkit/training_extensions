@@ -354,8 +354,8 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             return OTXBatchLossEntity(loss=outputs)
 
         # To list, batch-wise
-        scores = outputs["pred_scores"]
-        labels = outputs["pred_labels"]
+        scores = outputs["pred_scores"].unbind(0)
+        labels = outputs["pred_labels"].unbind(0)
 
         return HlabelClsBatchPredEntity(
             batch_size=inputs.batch_size,

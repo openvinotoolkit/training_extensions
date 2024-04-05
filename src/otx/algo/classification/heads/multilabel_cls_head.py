@@ -112,8 +112,8 @@ class MultiLabelClsHead(BaseModule):
         imgs_info = kwargs.pop("imgs_info", None)
         if imgs_info is not None and self.is_ignored_label_loss:
             kwargs["valid_label_mask"] = self.get_valid_label_mask(imgs_info).to(cls_score.device)
-        loss = self.loss_module(cls_score, labels, **kwargs)
-        return (loss.sum() / cls_score.size(0)) / self.scale
+        loss = self.loss_module(cls_score, labels, avg_factor=cls_score.size(0), **kwargs)
+        return loss / self.scale
 
     def get_valid_label_mask(self, img_metas: list[ImageInfo]) -> torch.Tensor:
         """Get valid label mask using ignored_label.
