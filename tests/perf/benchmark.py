@@ -233,6 +233,8 @@ class Benchmark:
             return  # No configurable parameter for num_epoch
         elif "stfpm" in model_id:
             train_params["learning_parameters.max_epochs"] = num_epoch
+        elif "SAM" in model_id:
+            train_params["learning_parameters.trainer.max_epochs"] = num_epoch
         else:
             train_params["learning_parameters.num_iters"] = num_epoch
 
