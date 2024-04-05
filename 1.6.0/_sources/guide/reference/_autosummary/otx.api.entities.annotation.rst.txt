@@ -1,0 +1,32 @@
+otx.api.entities.annotation
+===========================
+
+.. automodule:: otx.api.entities.annotation
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Annotation
+      AnnotationSceneEntity
+      AnnotationSceneKind
+      NullAnnotationSceneEntity
+   
+   
+
+   
+   
+   
+
+
+

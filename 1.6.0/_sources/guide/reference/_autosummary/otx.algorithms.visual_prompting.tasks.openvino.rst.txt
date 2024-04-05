@@ -1,0 +1,33 @@
+otx.algorithms.visual\_prompting.tasks.openvino
+===============================================
+
+.. automodule:: otx.algorithms.visual_prompting.tasks.openvino
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXOpenVinoDataLoader
+      OpenVINOVisualPromptingInferencer
+      OpenVINOVisualPromptingTask
+      OpenVINOZeroShotVisualPromptingInferencer
+      OpenVINOZeroShotVisualPromptingTask
+   
+   
+
+   
+   
+   
+
+
+

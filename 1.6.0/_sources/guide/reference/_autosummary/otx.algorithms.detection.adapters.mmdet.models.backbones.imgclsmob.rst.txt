@@ -1,0 +1,33 @@
+otx.algorithms.detection.adapters.mmdet.models.backbones.imgclsmob
+==================================================================
+
+.. automodule:: otx.algorithms.detection.adapters.mmdet.models.backbones.imgclsmob
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      init_weights
+      multioutput_forward
+      replace_activation
+      replace_norm
+      train
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

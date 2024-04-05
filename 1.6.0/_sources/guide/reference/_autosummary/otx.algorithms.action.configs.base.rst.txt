@@ -1,0 +1,29 @@
+otx.algorithms.action.configs.base
+==================================
+
+.. automodule:: otx.algorithms.action.configs.base
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionConfig
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,23 @@
+otx.algorithms.action.configs.classification.movinet.model
+==========================================================
+
+.. automodule:: otx.algorithms.action.configs.classification.movinet.model
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

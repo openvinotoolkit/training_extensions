@@ -1,0 +1,23 @@
+otx.algorithms.segmentation.configs.ocr\_lite\_hrnet\_18.supcon.data\_pipeline
+==============================================================================
+
+.. automodule:: otx.algorithms.segmentation.configs.ocr_lite_hrnet_18.supcon.data_pipeline
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,30 @@
+otx.algorithms.visual\_prompting.adapters.pytorch\_lightning.callbacks.inference
+================================================================================
+
+.. automodule:: otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks.inference
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InferenceCallback
+      ZeroShotInferenceCallback
+   
+   
+
+   
+   
+   
+
+
+

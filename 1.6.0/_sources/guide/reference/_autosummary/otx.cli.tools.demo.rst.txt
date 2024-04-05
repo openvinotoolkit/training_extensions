@@ -1,0 +1,31 @@
+otx.cli.tools.demo
+==================
+
+.. automodule:: otx.cli.tools.demo
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_args
+      get_predictions
+      main
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,35 @@
+otx.cli.utils.report
+====================
+
+.. automodule:: otx.cli.utils.report
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      data_config_to_str
+      env_info_to_str
+      get_otx_cli_ascii_banner
+      get_otx_report
+      sub_title_to_str
+      task_config_to_str
+      template_info_to_str
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

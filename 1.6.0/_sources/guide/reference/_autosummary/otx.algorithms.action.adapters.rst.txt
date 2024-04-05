@@ -1,0 +1,30 @@
+otx.algorithms.action.adapters
+==============================
+
+.. automodule:: otx.algorithms.action.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OTXOVActionCls
+      OTXOVActionDet
+   
+   
+
+   
+   
+   
+
+
+

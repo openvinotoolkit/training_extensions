@@ -1,0 +1,30 @@
+otx.algorithms.segmentation.adapters.openvino
+=============================================
+
+.. automodule:: otx.algorithms.segmentation.adapters.openvino
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      OpenVINOSegmentationTask
+      OpenVINOSegmentationInferencer
+   
+   
+
+   
+   
+   
+
+
+

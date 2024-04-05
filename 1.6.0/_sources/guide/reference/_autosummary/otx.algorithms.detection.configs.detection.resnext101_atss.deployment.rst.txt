@@ -1,0 +1,23 @@
+otx.algorithms.detection.configs.detection.resnext101\_atss.deployment
+======================================================================
+
+.. automodule:: otx.algorithms.detection.configs.detection.resnext101_atss.deployment
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

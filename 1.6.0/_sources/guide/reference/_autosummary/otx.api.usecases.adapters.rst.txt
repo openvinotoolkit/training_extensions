@@ -1,0 +1,31 @@
+otx.api.usecases.adapters
+=========================
+
+.. automodule:: otx.api.usecases.adapters
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   otx.api.usecases.adapters.model_adapter
+

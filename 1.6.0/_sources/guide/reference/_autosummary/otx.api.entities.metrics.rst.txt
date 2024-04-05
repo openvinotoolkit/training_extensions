@@ -1,0 +1,52 @@
+otx.api.entities.metrics
+========================
+
+.. automodule:: otx.api.entities.metrics
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BarChartInfo
+      BarMetricsGroup
+      ColorPalette
+      CountMetric
+      CurveMetric
+      DateMetric
+      DurationMetric
+      InfoMetric
+      LineChartInfo
+      LineMetricsGroup
+      MatrixChartInfo
+      MatrixMetric
+      MatrixMetricsGroup
+      MetricEntity
+      MetricsGroup
+      MultiScorePerformance
+      NullMetric
+      NullPerformance
+      Performance
+      ScoreMetric
+      TextChartInfo
+      TextMetricsGroup
+      VisualizationInfo
+      VisualizationType
+   
+   
+
+   
+   
+   
+
+
+
