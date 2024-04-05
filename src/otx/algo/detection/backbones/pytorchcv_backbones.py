@@ -6,45 +6,14 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import torch
-from mmcv.cnn import build_activation_layer, build_norm_layer
-from mmdet.registry import MODELS
-from mmengine.dist import get_dist_info
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-if TYPE_CHECKING:
-    from mmdet.registry import Registry
-    from mmengine.config import Config, ConfigDict
-
 # ruff: noqa: SLF001
-
-
-def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
-    """Replace activate funtion."""
-    for name, module in model._modules.items():
-        if len(list(module.children())) > 0:
-            model._modules[name] = replace_activation(module, activation_cfg)
-        if "activ" in name:
-            if activation_cfg["type"] == "torch_swish":
-                model._modules[name] = nn.SiLU()
-            else:
-                model._modules[name] = build_activation_layer(activation_cfg)
-    return model
-
-
-def replace_norm(model: nn.Module, cfg: dict) -> nn.Module:
-    """Replace norm funtion."""
-    for name, module in model._modules.items():
-        if len(list(module.children())) > 0:
-            model._modules[name] = replace_norm(module, cfg)
-        if "bn" in name:
-            model._modules[name] = build_norm_layer(cfg, num_features=module.num_features)[1]
-    return model
 
 
 def multioutput_forward(self: nn.Module, x: torch.Tensor) -> list[torch.Tensor]:
@@ -86,7 +55,14 @@ def train(self: nn.Module, mode: bool = True) -> None:
 def init_weights(self: nn.Module, pretrained: bool = True) -> None:
     """Init weights function for new model (copy from mmdet)."""
     if pretrained:
-        rank, world_size = get_dist_info()
+        if distributed.is_available() and distributed.is_initialized():
+            group = distributed.distributed_c10d._get_default_group()
+            rank = distributed.get_rank(group)
+            world_size = distributed.get_world_size(group)
+        else:
+            rank = 0
+            world_size = 1
+
         if rank == 0:
             # Make sure that model is fetched to the local storage.
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=self.models_cache_root)
@@ -98,44 +74,12 @@ def init_weights(self: nn.Module, pretrained: bool = True) -> None:
             download_model(net=self, model_name=self.model_name, local_model_store_dir_path=self.models_cache_root)
 
 
-ori_build_func = MODELS.build_func
-
-
-def _pytorchcv_model_reduce(self) -> nn.Module:  # noqa: ANN001
-    return (_build_model_including_pytorchcv, (self.otx_cfg,))
-
-
-def _build_model_including_pytorchcv(
-    cfg: dict | ConfigDict | Config,
-    registry: Registry = MODELS,
-    default_args: dict | ConfigDict | Config | None = None,
-) -> nn.Module:
-    """Try to build model from mmdet first and build from pytorchcv."""
-    try:
-        model = ori_build_func(cfg, registry, default_args)
-    except KeyError:  # build from pytorchcv
-        args = cfg.copy()
-        if default_args is not None:
-            for name, value in default_args.items():
-                args.setdefault(name, value)
-
-        model = _build_pytorchcv_model(**args)
-
-        # support pickle
-        model.otx_cfg = args
-        model.__class__.__reduce__ = _pytorchcv_model_reduce.__get__(model, model.__class__)
-
-    return model
-
-
 def _build_pytorchcv_model(
     type: str,  # noqa: A002
     out_indices: list[int],
     frozen_stages: int = 0,
     norm_eval: bool = False,
     verbose: bool = False,
-    activation_cfg: dict | None = None,
-    norm_cfg: dict | None = None,
     **kwargs,
 ) -> nn.Module:
     """Build pytorchcv model."""
@@ -145,10 +89,6 @@ def _build_pytorchcv_model(
         f"Init model {type}, pretrained={is_pretrained}, models cache {models_cache_root}",
     )
     model = _models[type](**kwargs)
-    if activation_cfg:
-        model = replace_activation(model, activation_cfg)
-    if norm_cfg:
-        model = replace_norm(model, norm_cfg)
     model.out_indices = out_indices
     model.frozen_stages = frozen_stages
     model.norm_eval = norm_eval
@@ -174,6 +114,3 @@ def _build_pytorchcv_model(
         )
 
     return model
-
-
-MODELS.build_func = _build_model_including_pytorchcv

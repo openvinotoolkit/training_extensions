@@ -14,6 +14,7 @@ from datumaro.components.annotation import Bbox
 from mmdet.registry import MODELS
 from torch import nn
 
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
 from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -55,7 +56,7 @@ class SingleStageDetector(nn.Module):
     ) -> None:
         super().__init__()
         self._is_init = False
-        self.backbone = MODELS.build(backbone)
+        self.backbone = _build_pytorchcv_model(**backbone)
         if neck is not None:
             self.neck = MODELS.build(neck)
         bbox_head.update(train_cfg=train_cfg)
