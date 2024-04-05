@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Tuple, Union
 
 import torch
 from mmengine.model import BaseModel
@@ -13,7 +14,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
 from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, OptSampleList, SampleList
 from torch import Tensor
 
-ForwardResults = Union[Dict[str, torch.Tensor], List[DetDataSample], Tuple[torch.Tensor], torch.Tensor]
+ForwardResults = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
 
 
 class BaseDetector(BaseModel, metaclass=ABCMeta):
@@ -32,26 +33,25 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
 
     @property
     def with_neck(self) -> bool:
-        """bool: whether the detector has a neck"""
+        """bool: whether the detector has a neck."""
         return hasattr(self, "neck") and self.neck is not None
 
-    # TODO: these properties need to be carefully handled
     # for both single stage & two stage detectors
     @property
     def with_shared_head(self) -> bool:
-        """bool: whether the detector has a shared head in the RoI Head"""
+        """bool: whether the detector has a shared head in the RoI Head."""
         return hasattr(self, "roi_head") and self.roi_head.with_shared_head
 
     @property
     def with_bbox(self) -> bool:
-        """bool: whether the detector has a bbox head"""
+        """bool: whether the detector has a bbox head."""
         return (hasattr(self, "roi_head") and self.roi_head.with_bbox) or (
             hasattr(self, "bbox_head") and self.bbox_head is not None
         )
 
     @property
     def with_mask(self) -> bool:
-        """bool: whether the detector has a mask head"""
+        """bool: whether the detector has a mask head."""
         return (hasattr(self, "roi_head") and self.roi_head.with_mask) or (
             hasattr(self, "mask_head") and self.mask_head is not None
         )
@@ -88,25 +88,23 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """
         if mode == "loss":
             return self.loss(inputs, data_samples)
-        elif mode == "predict":
+        if mode == "predict":
             return self.predict(inputs, data_samples)
-        elif mode == "tensor":
+        if mode == "tensor":
             return self._forward(inputs, data_samples)
-        else:
-            raise RuntimeError(f'Invalid mode "{mode}". ' "Only supports loss, predict and tensor mode")
+        msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode."
+        raise RuntimeError(msg)
 
     @abstractmethod
-    def loss(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> Union[dict, tuple]:
+    def loss(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> dict | tuple:
         """Calculate losses from a batch of inputs and data samples."""
 
     @abstractmethod
     def predict(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> SampleList:
-        """Predict results from a batch of inputs and data samples with post-
-        processing.
-        """
+        """Predict results from a batch of inputs and data samples with post-processing."""
 
     @abstractmethod
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: OptSampleList = None):
+    def _forward(self, batch_inputs: Tensor, batch_data_samples: OptSampleList = None) -> tuple:
         """Network forward process.
 
         Usually includes backbone, neck and head forward without any post-
@@ -114,7 +112,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def extract_feat(self, batch_inputs: Tensor):
+    def extract_feat(self, batch_inputs: Tensor) -> tuple:
         """Extract features from images."""
 
     def add_pred_to_datasample(self, data_samples: SampleList, results_list: InstanceList) -> SampleList:

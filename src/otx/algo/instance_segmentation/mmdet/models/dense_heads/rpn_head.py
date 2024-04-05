@@ -1,16 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import copy
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F
 
 # TODO(Eugene): replace this with torchvision
 from mmcv.cnn import ConvModule
-from mmengine.config import ConfigDict
 from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, MultiConfig, OptInstanceList
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     cat_boxes,
     empty_box_as,
@@ -22,6 +22,10 @@ from torch import Tensor, nn
 from torchvision.ops import batched_nms
 
 from .anchor_head import AnchorHead
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, MultiConfig, OptInstanceList
 
 
 @MODELS.register_module()
@@ -47,7 +51,9 @@ class RPNHead(AnchorHead):
         **kwargs,
     ) -> None:
         self.num_convs = num_convs
-        assert num_classes == 1
+        if num_classes != 1:
+            msg = "num_classes must be 1 for RPNHead"
+            raise ValueError(msg)
         super().__init__(num_classes=num_classes, in_channels=in_channels, init_cfg=init_cfg, **kwargs)
 
     def _init_layers(self) -> None:
@@ -55,10 +61,7 @@ class RPNHead(AnchorHead):
         if self.num_convs > 1:
             rpn_convs = []
             for i in range(self.num_convs):
-                if i == 0:
-                    in_channels = self.in_channels
-                else:
-                    in_channels = self.feat_channels
+                in_channels = self.in_channels if i == 0 else self.feat_channels
                 # use ``inplace=False`` to avoid error: one of the variables
                 # needed for gradient computation has been modified by an
                 # inplace operation.
@@ -70,7 +73,7 @@ class RPNHead(AnchorHead):
         reg_dim = self.bbox_coder.encode_size
         self.rpn_reg = nn.Conv2d(self.feat_channels, self.num_base_priors * reg_dim, 1)
 
-    def forward_single(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward_single(self, x: Tensor) -> tuple[Tensor, Tensor]:
         """Forward feature of a single scale level.
 
         Args:
@@ -91,14 +94,13 @@ class RPNHead(AnchorHead):
 
     def loss_by_feat(
         self,
-        cls_scores: List[Tensor],
-        bbox_preds: List[Tensor],
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
         batch_gt_instances: InstanceList,
-        batch_img_metas: List[dict],
+        batch_img_metas: list[dict],
         batch_gt_instances_ignore: OptInstanceList = None,
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection
-        head.
+        """Calculate the loss based on the features extracted by the detection head.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level,
@@ -127,17 +129,16 @@ class RPNHead(AnchorHead):
 
     def _predict_by_feat_single(
         self,
-        cls_score_list: List[Tensor],
-        bbox_pred_list: List[Tensor],
-        score_factor_list: List[Tensor],
-        mlvl_priors: List[Tensor],
+        cls_score_list: list[Tensor],
+        bbox_pred_list: list[Tensor],
+        score_factor_list: list[Tensor],
+        mlvl_priors: list[Tensor],
         img_meta: dict,
         cfg: ConfigDict,
         rescale: bool = False,
         with_nms: bool = True,
     ) -> InstanceData:
-        """Transform a single image's features extracted from the head into
-        bbox results.
+        """Transform a single image's features extracted from the head into bbox results.
 
         Args:
             cls_score_list (list[Tensor]): Box scores from all scale
@@ -182,17 +183,14 @@ class RPNHead(AnchorHead):
         mlvl_scores = []
         level_ids = []
         for level_idx, (cls_score, bbox_pred, priors) in enumerate(zip(cls_score_list, bbox_pred_list, mlvl_priors)):
-            assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
+            if cls_score.size()[-2:] != bbox_pred.size()[-2:]:
+                msg = "cls_score and bbox_pred should have the same size"
+                raise RuntimeError(msg)
 
             reg_dim = self.bbox_coder.encode_size
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)
             cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
-            if self.use_sigmoid_cls:
-                scores = cls_score.sigmoid()
-            else:
-                # remind that we set FG labels to [0] since mmdet v2.0
-                # BG cat_id: 1
-                scores = cls_score.softmax(-1)[:, :-1]
+            scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             scores = torch.squeeze(scores)
             if 0 < nms_pre < scores.shape[0]:
@@ -228,7 +226,7 @@ class RPNHead(AnchorHead):
         cfg: ConfigDict,
         rescale: bool = False,
         with_nms: bool = True,
-        img_meta: Optional[dict] = None,
+        img_meta: dict | None = None,
     ) -> InstanceData:
         """Bbox post-processing method.
 
@@ -257,9 +255,15 @@ class RPNHead(AnchorHead):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        assert with_nms, "`with_nms` must be True in RPNHead"
+        if not with_nms:
+            msg = "`with_nms` must be True in RPNHead"
+            raise RuntimeError(msg)
+
         if rescale:
-            assert img_meta.get("scale_factor") is not None
+            if img_meta.get("scale_factor") is None:
+                msg = "scale_factor is required when rescale is True"
+                raise ValueError(msg)
+
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
             results.bboxes = scale_boxes(results.bboxes, scale_factor)
 
@@ -277,7 +281,7 @@ class RPNHead(AnchorHead):
             # some nms would reweight the score, such as softnms
             results.scores = det_bboxes[:, -1]
             results = results[: cfg.max_per_img]
-            # TODO: This would unreasonably show the 0th class label
+
             #  in visualization
             results.labels = results.scores.new_zeros(len(results), dtype=torch.long)
             del results.level_ids

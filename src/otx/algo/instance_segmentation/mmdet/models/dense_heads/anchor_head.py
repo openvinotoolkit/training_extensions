@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import warnings
-from typing import List, Optional, Tuple, Union
 
 import torch
 from mmengine.registry import MODELS, TASK_UTILS
@@ -81,7 +82,8 @@ class AnchorHead(BaseDenseHead):
             self.cls_out_channels = num_classes + 1
 
         if self.cls_out_channels <= 0:
-            raise ValueError(f"num_classes={num_classes} is too small")
+            msg = f"num_classes={num_classes} is too small"
+            raise ValueError(msg)
         self.reg_decoded_bbox = reg_decoded_bbox
 
         self.bbox_coder = TASK_UTILS.build(bbox_coder)
@@ -108,16 +110,22 @@ class AnchorHead(BaseDenseHead):
 
     @property
     def num_anchors(self) -> int:
+        """Number of anchors in total."""
         warnings.warn(
             "DeprecationWarning: `num_anchors` is deprecated, "
             "for consistency or also use "
             "`num_base_priors` instead",
+            stacklevel=2,
         )
         return self.prior_generator.num_base_priors[0]
 
     @property
     def anchor_generator(self) -> AnchorGenerator:
-        warnings.warn("DeprecationWarning: anchor_generator is deprecated, " 'please use "prior_generator" instead')
+        """Anchor generator."""
+        warnings.warn(
+            "DeprecationWarning: anchor_generator is deprecated, please use prior_generator instead",
+            stacklevel=2,
+        )
         return self.prior_generator
 
     def _init_layers(self) -> None:
@@ -126,7 +134,7 @@ class AnchorHead(BaseDenseHead):
         reg_dim = self.bbox_coder.encode_size
         self.conv_reg = nn.Conv2d(self.in_channels, self.num_base_priors * reg_dim, 1)
 
-    def forward_single(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward_single(self, x: Tensor) -> tuple[Tensor, Tensor]:
         """Forward feature of a single scale level.
 
         Args:
@@ -143,7 +151,7 @@ class AnchorHead(BaseDenseHead):
         bbox_pred = self.conv_reg(x)
         return cls_score, bbox_pred
 
-    def forward(self, x: Tuple[Tensor]) -> Tuple[List[Tensor]]:
+    def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor]]:
         """Forward features from the upstream network.
 
         Args:
@@ -164,10 +172,10 @@ class AnchorHead(BaseDenseHead):
 
     def get_anchors(
         self,
-        featmap_sizes: List[tuple],
-        batch_img_metas: List[dict],
-        device: Union[torch.device, str] = "cuda",
-    ) -> Tuple[List[List[Tensor]], List[List[Tensor]]]:
+        featmap_sizes: list[tuple],
+        batch_img_metas: list[dict],
+        device: torch.device | str = "cuda",
+    ) -> tuple[list[list[Tensor]], list[list[Tensor]]]:
         """Get anchors according to feature map sizes.
 
         Args:
@@ -200,15 +208,14 @@ class AnchorHead(BaseDenseHead):
 
     def _get_targets_single(
         self,
-        flat_anchors: Union[Tensor, BaseBoxes],
+        flat_anchors: Tensor | BaseBoxes,
         valid_flags: Tensor,
         gt_instances: InstanceData,
         img_meta: dict,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        gt_instances_ignore: InstanceData | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
-        """Compute regression and classification targets for anchors in a
-        single image.
+        """Compute regression and classification targets for anchors in a single image.
 
         Args:
             flat_anchors (Tensor or :obj:`BaseBoxes`): Multi-level anchors
@@ -246,11 +253,12 @@ class AnchorHead(BaseDenseHead):
             self.train_cfg["allowed_border"],
         )
         if not inside_flags.any():
-            raise ValueError(
+            msg = (
                 "There is no valid anchor inside the image boundary. Please "
                 "check the image size and anchor sizes, or set "
                 "``allowed_border`` to -1 to skip the condition.",
             )
+            raise ValueError(msg)
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags]
 
@@ -265,7 +273,6 @@ class AnchorHead(BaseDenseHead):
         bbox_targets = anchors.new_zeros(num_valid_anchors, target_dim)
         bbox_weights = anchors.new_zeros(num_valid_anchors, target_dim)
 
-        # TODO: Considering saving memory, is it necessary to be long?
         labels = anchors.new_full((num_valid_anchors,), self.num_classes, dtype=torch.long)
         label_weights = anchors.new_zeros(num_valid_anchors, dtype=torch.float)
 
@@ -303,16 +310,15 @@ class AnchorHead(BaseDenseHead):
 
     def get_targets(
         self,
-        anchor_list: List[List[Tensor]],
-        valid_flag_list: List[List[Tensor]],
+        anchor_list: list[list[Tensor]],
+        valid_flag_list: list[list[Tensor]],
         batch_gt_instances: InstanceList,
-        batch_img_metas: List[dict],
+        batch_img_metas: list[dict],
         batch_gt_instances_ignore: OptInstanceList = None,
         unmap_outputs: bool = True,
         return_sampling_results: bool = False,
     ) -> tuple:
-        """Compute regression and classification targets for anchors in
-        multiple images.
+        """Compute regression and classification targets for anchors in multiple images.
 
         Args:
             anchor_list (list[list[Tensor]]): Multi level anchors of each
@@ -357,7 +363,9 @@ class AnchorHead(BaseDenseHead):
                 The results will be concatenated after the end
         """
         num_imgs = len(batch_img_metas)
-        assert len(anchor_list) == len(valid_flag_list) == num_imgs
+        if not (len(anchor_list) == len(valid_flag_list) == num_imgs):
+            msg = "anchor_list, valid_flag_list and batch_gt_instances should have the same length"
+            raise ValueError(msg)
 
         if batch_gt_instances_ignore is None:
             batch_gt_instances_ignore = [None] * num_imgs
@@ -368,7 +376,9 @@ class AnchorHead(BaseDenseHead):
         concat_anchor_list = []
         concat_valid_flag_list = []
         for i in range(num_imgs):
-            assert len(anchor_list[i]) == len(valid_flag_list[i])
+            if len(anchor_list[i]) != len(valid_flag_list[i]):
+                msg = "anchor_list and valid_flag_list should have the same length"
+                raise ValueError(msg)
             concat_anchor_list.append(cat_boxes(anchor_list[i]))
             concat_valid_flag_list.append(torch.cat(valid_flag_list[i]))
 
@@ -407,7 +417,7 @@ class AnchorHead(BaseDenseHead):
         bbox_weights_list = images_to_levels(all_bbox_weights, num_level_anchors)
         res = (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor)
         if return_sampling_results:
-            res = res + (sampling_results_list,)
+            res = (*res, sampling_results_list)
         for i, r in enumerate(rest_results):  # user-added return values
             rest_results[i] = images_to_levels(r, num_level_anchors)
 
@@ -424,8 +434,7 @@ class AnchorHead(BaseDenseHead):
         bbox_weights: Tensor,
         avg_factor: int,
     ) -> tuple:
-        """Calculate the loss of a single scale level based on the features
-        extracted by the detection head.
+        """Calculate the loss of a single scale level based on the features extracted by the detection head.
 
         Args:
             cls_score (Tensor): Box scores for each scale level
@@ -469,14 +478,13 @@ class AnchorHead(BaseDenseHead):
 
     def loss_by_feat(
         self,
-        cls_scores: List[Tensor],
-        bbox_preds: List[Tensor],
+        cls_scores: list[Tensor],
+        bbox_preds: list[Tensor],
         batch_gt_instances: InstanceList,
-        batch_img_metas: List[dict],
+        batch_img_metas: list[dict],
         batch_gt_instances_ignore: OptInstanceList = None,
     ) -> dict:
-        """Calculate the loss based on the features extracted by the detection
-        head.
+        """Calculate the loss based on the features extracted by the detection head.
 
         Args:
             cls_scores (list[Tensor]): Box scores for each scale level
@@ -497,7 +505,9 @@ class AnchorHead(BaseDenseHead):
             dict: A dictionary of loss components.
         """
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-        assert len(featmap_sizes) == self.prior_generator.num_levels
+        if len(featmap_sizes) != self.prior_generator.num_levels:
+            msg = "The number of input features should be equal to the number of levels of anchors"
+            raise ValueError(msg)
 
         device = cls_scores[0].device
 
@@ -514,9 +524,8 @@ class AnchorHead(BaseDenseHead):
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
         # concat all level anchors and flags to a single tensor
-        concat_anchor_list = []
-        for i in range(len(anchor_list)):
-            concat_anchor_list.append(cat_boxes(anchor_list[i]))
+        concat_anchor_list = [cat_boxes(anchor_list[i]) for i in range(len(anchor_list))]
+
         all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
 
         losses_cls, losses_bbox = multi_apply(
