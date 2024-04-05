@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
-- Add support for the training and validation on the XPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
+- Add support for the training and validation on the Intel Max GPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
 
 ### Enhancements
 
@@ -21,7 +21,7 @@ All notable changes to this project will be documented in this file.
 
 > **NOTES**
 >
-> OpenVINO™ Training Extension v1.5.2 does not include the latest functional and security updates. OpenVINO™ Training Extension v2.0.0 is targeted to be released in April 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+> OpenVINO™ Training Extension v1.5.2 does not include the latest functional and security updates. OpenVINO™ Training Extension v1.6.0 is targeted to be released in April 2024 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
 ### Bug fixes
 
