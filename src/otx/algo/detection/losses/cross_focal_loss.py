@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import torch
 import torch.nn.functional as F  # noqa: N812
-
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd

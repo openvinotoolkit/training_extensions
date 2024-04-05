@@ -8,12 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from otx.algo.instance_segmentation.mmdet.models.losses import accuracy
-from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
-from otx.algo.instance_segmentation.mmdet.models.standard_roi_head import StandardRoIHead
-from otx.algo.instance_segmentation.mmdet.models.utils import multi_apply, unpack_gt_instances
 from mmengine.registry import MODELS
-from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 from torch import Tensor
 
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -22,12 +17,18 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 from otx.algo.detection.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
+from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
+from otx.algo.instance_segmentation.mmdet.models.losses import accuracy
+from otx.algo.instance_segmentation.mmdet.models.standard_roi_head import StandardRoIHead
+from otx.algo.instance_segmentation.mmdet.models.utils import multi_apply, unpack_gt_instances
+from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 if TYPE_CHECKING:
-    from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
-    from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
-    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList
     from mmengine.config import ConfigDict
+
+    from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
+    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList
+    from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
 
 
 @MODELS.register_module()
