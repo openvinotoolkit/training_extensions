@@ -1,4 +1,4 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 """Custom SSD head for OTX template."""
 
@@ -10,12 +10,13 @@ import torch
 from mmdet.models.losses import smooth_l1_loss
 from mmdet.models.task_modules.samplers import PseudoSampler
 from mmdet.models.utils import multi_apply
-from mmdet.registry import MODELS, TASK_UTILS
+from mmdet.registry import MODELS
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
+from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
 
 if TYPE_CHECKING:
     from mmdet.utils import ConfigType, InstanceList, MultiConfig, OptInstanceList
@@ -114,11 +115,10 @@ class SSDHead(AnchorHead):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
-            self.assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-            if self.train_cfg.get("sampler", None) is not None:
-                self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
-            else:
-                self.sampler = PseudoSampler(context=self)
+            assigner_args = self.train_cfg["assigner"]
+            assigner_args.pop("type")
+            self.assigner = MaxIoUAssigner(**assigner_args)
+            self.sampler = PseudoSampler(context=self)
 
     def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], list[Tensor]]:
         """Forward features from the upstream network.
