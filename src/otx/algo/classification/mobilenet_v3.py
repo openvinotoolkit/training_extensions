@@ -236,14 +236,13 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         # To list, batch-wise
         logits = outputs if isinstance(outputs, torch.Tensor) else outputs["logits"]
         scores = torch.unbind(logits, 0)
-        preds = logits.argmax(-1, keepdim=True).unbind(0)
 
         return MultilabelClsBatchPredEntity(
             batch_size=inputs.batch_size,
             images=inputs.images,
             imgs_info=inputs.imgs_info,
             scores=scores,
-            labels=preds,
+            labels=logits.argmax(-1, keepdim=True).unbind(0),
         )
 
     @property
@@ -268,6 +267,20 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
         parameters.update(export_params)
 
         return parameters
+
+    def forward_explain(self, inputs: MultilabelClsBatchDataEntity) -> MultilabelClsBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
+
+        return MultilabelClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
+        )
 
 
 class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
@@ -394,3 +407,17 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
         parameters.update(export_params)
 
         return parameters
+
+    def forward_explain(self, inputs: HlabelClsBatchDataEntity) -> HlabelClsBatchPredEntity:
+        """Model forward explain function."""
+        outputs = self.model(images=inputs.stacked_images, mode="explain")
+
+        return HlabelClsBatchPredEntity(
+            batch_size=len(outputs["preds"]),
+            images=inputs.images,
+            imgs_info=inputs.imgs_info,
+            labels=outputs["preds"],
+            scores=outputs["scores"],
+            saliency_map=outputs["saliency_map"],
+            feature_vector=outputs["feature_vector"],
+        )

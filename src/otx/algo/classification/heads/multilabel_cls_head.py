@@ -158,7 +158,7 @@ class MultiLabelClsHead(BaseModule):
         """Get the score from the classification score."""
         return torch.sigmoid(cls_score)
 
-    def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The process before the final classification head.
 
         The input ``feats`` is a tuple of tensor, and each tensor is the
@@ -167,7 +167,9 @@ class MultiLabelClsHead(BaseModule):
         """
         # The obtain the MultiLabelLinearClsHead doesn't have other module,
         # just return after unpacking.
-        return feats[-1]
+        if isinstance(feats, tuple):
+            return feats[-1]
+        return feats
 
 
 class MultiLabelLinearClsHead(MultiLabelClsHead):
@@ -225,7 +227,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
     # Copy from mmpretrain.models.heads.MultiLabelLinearClsHead
     # ------------------------------------------------------------------------ #
 
-    def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         # The final classification head.
@@ -308,7 +310,7 @@ class MultiLabelNonLinearClsHead(MultiLabelClsHead):
             elif isinstance(module, nn.BatchNorm1d):
                 constant_init(module, 1)
 
-    def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)

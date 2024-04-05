@@ -59,9 +59,11 @@ class HierarchicalClsHead(BaseModule):
             self.multilabel_loss = multilabel_loss
             self.is_ignored_label_loss = "valid_label_mask" in inspect.getfullargspec(self.multilabel_loss.forward).args
 
-    def pre_logits(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def pre_logits(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The process before the final classification head."""
-        return feats[-1]
+        if isinstance(feats, tuple):
+            return feats[-1]
+        return feats
 
     def _get_head_idx_to_logits_range(self, idx: int) -> tuple[int, int]:
         """Get head_idx_to_logits_range information from hlabel information."""
@@ -259,7 +261,7 @@ class HierarchicalLinearClsHead(HierarchicalClsHead):
         """Initialize weights of the layers."""
         normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-    def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         return self.fc(pre_logits)
@@ -348,7 +350,7 @@ class HierarchicalNonLinearClsHead(HierarchicalClsHead):
             elif isinstance(module, nn.BatchNorm1d):
                 constant_init(module, 1)
 
-    def forward(self, feats: tuple[torch.Tensor]) -> torch.Tensor:
+    def forward(self, feats: tuple[torch.Tensor] | torch.Tensor) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         return self.classifier(pre_logits)

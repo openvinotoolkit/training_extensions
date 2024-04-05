@@ -212,8 +212,8 @@ class ImageClassifier(BaseModel):
 
         return {
             "logits": logits,
-            "preds": logits.argmax(-1, keepdim=False),
-            "scores": self.head._get_predictions(logits),  # noqa: SLF001
+            "preds": logits.argmax(-1, keepdim=True).unbind(0),
+            "scores": self.head._get_predictions(logits).unbind(0),  # noqa: SLF001
             "saliency_map": saliency_map,
             "feature_vector": feature_vector,
         }
