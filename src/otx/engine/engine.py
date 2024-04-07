@@ -539,20 +539,12 @@ class Engine:
                 label_info=self.datamodule.label_info,
             )
 
-        lit_module = self._build_lightning_module(
-            model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-        )
-
         if not is_ir_ckpt:
             loaded_checkpoint = torch.load(ckpt_path)
-            lit_module.label_info = loaded_checkpoint["state_dict"]["label_info"]
-            self.model.label_info = lit_module.label_info
-            lit_module.load_state_dict(loaded_checkpoint)
+            self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
+            self.model.load_state_dict(loaded_checkpoint)
 
         self.model.explain_mode = explain
-
         exported_model_path = self.model.export(
             output_dir=Path(self.work_dir),
             base_name=self._EXPORTED_MODEL_BASE_NAME,

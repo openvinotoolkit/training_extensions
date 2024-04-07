@@ -208,9 +208,10 @@ class TestEngine:
         )
 
         # check exportable code with IR OpenVINO model
+        mock_export = mocker.patch("otx.engine.engine.OVModel.export")
         fxt_engine.checkpoint = "path/to/checkpoint.xml"
-        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-        fxt_engine.export(export_format=OTXExportFormatType.OPENVINO)
+        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model", return_value=OVModel(model_name="efficientnet-b0-pytorch", model_type="classification"))
+        fxt_engine.export(export_format=OTXExportFormatType.EXPORTABLE_CODE, checkpoint="path/to/checkpoint.xml")
         mock_get_ov_model.assert_called_once()
         mock_export.assert_called_with(
             output_dir=Path(fxt_engine.work_dir),
