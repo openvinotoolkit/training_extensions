@@ -32,10 +32,10 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import LabelInfo, NullLabelInfo
