@@ -370,7 +370,7 @@
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">SEMANTIC_SEGMENTATION</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.segmentation</span> <span class="kn">import</span> <span class="n">OTXSegmentationDataset</span>
 
-            <span class="k">return</span> <span class="n">OTXSegmentationDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OTXSegmentationDataset</span><span class="p">(</span><span class="o">**</span><span class="n">common_kwargs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="n">cfg_data_module</span><span class="o">.</span><span class="n">ignore_index</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="n">OTXTaskType</span><span class="o">.</span><span class="n">ACTION_CLASSIFICATION</span><span class="p">:</span>
             <span class="kn">from</span> <span class="nn">.dataset.action_classification</span> <span class="kn">import</span> <span class="n">OTXActionClsDataset</span>
