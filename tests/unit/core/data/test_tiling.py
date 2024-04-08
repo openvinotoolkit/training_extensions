@@ -25,8 +25,8 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
-from otx.core.model.entity.detection import OTXDetectionModel
-from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
+from otx.core.model.detection import OTXDetectionModel
+from otx.core.model.instance_segmentation import OTXInstanceSegModel
 from otx.core.types.task import OTXTaskType
 from torchvision import tv_tensors
 
