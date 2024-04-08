@@ -9,8 +9,10 @@ from unittest.mock import create_autospec
 
 import numpy as np
 import pytest
+import shapely.geometry as sg
 import torch
 from datumaro import Dataset as DmDataset
+from datumaro import Polygon
 from omegaconf import DictConfig, OmegaConf
 from otx.core.config.data import (
     DataModuleConfig,
@@ -23,8 +25,8 @@ from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntit
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
 from otx.core.data.module import OTXDataModule
-from otx.core.model.detection import OTXDetectionModel
-from otx.core.model.instance_segmentation import OTXInstanceSegModel
+from otx.core.model.entity.detection import OTXDetectionModel
+from otx.core.model.entity.instance_segmentation import OTXInstanceSegModel
 from otx.core.types.task import OTXTaskType
 from torchvision import tv_tensors
 
@@ -135,6 +137,22 @@ class TestOTXTiling:
         num_tile_rows = (height + h_stride - 1) // h_stride
         num_tile_cols = (width + w_stride - 1) // w_stride
         assert len(tiled_dataset) == (num_tile_rows * num_tile_cols * len(dataset)), "Incorrect number of tiles"
+
+    def test_tile_polygon_func(self):
+        points = np.array([(1, 2), (3, 5), (4, 2), (4, 6), (1, 6)])
+        polygon = Polygon(points=points.flatten().tolist())
+        roi = sg.Polygon([(0, 0), (5, 0), (5, 5), (0, 5)])
+
+        inter_polygon = OTXTileTransform._tile_polygon(polygon, roi, threshold_drop_ann=0.0)
+        assert isinstance(inter_polygon, Polygon), "Intersection should be a Polygon"
+        assert inter_polygon.get_area() > 0, "Intersection area should be greater than 0"
+
+        assert (
+            OTXTileTransform._tile_polygon(polygon, roi, threshold_drop_ann=1.0) is None
+        ), "Intersection should be None"
+
+        invalid_polygon = Polygon(points=[0, 0, 5, 0, 5, 5, 5, 0])
+        assert OTXTileTransform._tile_polygon(invalid_polygon, roi) is None, "Invalid polygon should be None"
 
     def test_adaptive_tiling(self, fxt_det_data_config):
         # Enable tile adapter
