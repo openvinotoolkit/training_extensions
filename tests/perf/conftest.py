@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
+
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark

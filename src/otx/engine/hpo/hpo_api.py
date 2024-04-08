@@ -178,7 +178,9 @@ class HPOConfigurator:
         """Set learning rate and batch size as search space."""
         search_space = {}
 
-        search_space["model.optimizer_callable.lr"] = self._make_lr_search_space(self._engine.model.optimizer_callable)
+        search_space["model.optimizer_callable.optimizer_kwargs.lr"] = self._make_lr_search_space(
+            self._engine.model.optimizer_callable,
+        )
 
         cur_bs = self._engine.datamodule.config.train_subset.batch_size
         search_space["datamodule.config.train_subset.batch_size"] = {
