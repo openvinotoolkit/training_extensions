@@ -144,8 +144,7 @@ if [ "$DEBUG_CONTAINER" = true ]; then
     # shellcheck disable=SC2086
     docker run -itd \
         --runtime=nvidia \
-        --ipc=private \
-        --shm-size=24g \
+        --ipc=host \
         "$CPU_OPTIONS" \
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
@@ -168,8 +167,7 @@ else
     # shellcheck disable=SC2086
     docker run -itd \
         --runtime=nvidia \
-        --ipc=private \
-        --shm-size=24g \
+        --ipc=host \
         "$CPU_OPTIONS" \
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
