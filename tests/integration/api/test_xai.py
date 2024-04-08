@@ -98,9 +98,6 @@ def test_predict_with_explain(
     if "ssd_mobilenetv2" in model_name:
         pytest.skip("There's issue with SSD model. Skip for now.")
 
-    if "maskrcnn_efficientnetb2b" in model_name:
-        pytest.xfail("Please see ticket no. 138035")
-
     tmp_path = tmp_path / f"otx_xai_{model_name}"
     engine = Engine.from_config(
         config_path=recipe,
