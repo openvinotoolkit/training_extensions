@@ -5,5 +5,7 @@ from .mask_rcnn import MaskRCNN
 from .two_stage import TwoStageDetector
 
 __all__ = [
-    "BaseDetector", "MaskRCNN", "TwoStageDetector",
+    "BaseDetector",
+    "MaskRCNN",
+    "TwoStageDetector",
 ]
