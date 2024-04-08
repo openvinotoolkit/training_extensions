@@ -23,7 +23,7 @@ from otx import __version__
 # -- Project information ----------------------------------------------------- #
 
 project = 'OpenVINO™ Training Extensions'
-copyright = '2023, OpenVINO™ Training Extensions Contributors'
+copyright = '2024, OpenVINO™ Training Extensions Contributors'
 author = 'OpenVINO™ Training Extensions Contributors'
 release = __version__
 

@@ -4,6 +4,17 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+
+v1.6.0 (2Q24)
+-------------
+
+- Add zero-shot visual prompting
+- Add support for the training and validation on the Intel Max GPU devices
+- Upgrade OpenVINO to 2023.3
+- Automate performance benchmark
+- Bump ONNX version to 1.16.0 to resolve CVE-2022-25882
+
+
 v1.5.2 (1Q24)
 -------------
 
