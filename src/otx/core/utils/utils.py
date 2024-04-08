@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from multiprocessing import cpu_count
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import torch
 from datumaro.components.annotation import AnnotationType, LabelCategories
@@ -41,19 +41,25 @@ def is_ckpt_for_finetuning(ckpt: dict) -> bool:
     return "state_dict" in ckpt
 
 
-def get_mean_std_from_data_processing(config: DictConfig) -> dict[str, Any]:
+def get_mean_std_from_data_processing(
+    config: DictConfig,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     """Get mean and std value from data_processing.
 
     Args:
         config (DictConfig): MM framework model config.
 
     Returns:
-        dict[str, Any]: Dictionary with mean and std value.
+        tuple[tuple[float, float, float], tuple[float, float, float]]:
+            Tuple of mean and std values.
+
+    Examples:
+        >>> mean, std = get_mean_std_from_data_processing(config)
     """
-    return {
-        "mean": config["data_preprocessor"]["mean"],
-        "std": config["data_preprocessor"]["std"],
-    }
+    return (
+        config["data_preprocessor"]["mean"],
+        config["data_preprocessor"]["std"],
+    )
 
 
 def get_adaptive_num_workers(num_dataloader: int = 1) -> int | None:

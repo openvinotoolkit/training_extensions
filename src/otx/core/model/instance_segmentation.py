@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging as log
 import types
-from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import numpy as np
@@ -21,15 +20,14 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
 from otx.core.data.entity.tile import TileBatchInstSegDataEntity
-from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -107,40 +105,15 @@ class OTXInstanceSegModel(
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "MaskRCNN",
-                ("model_info", "task_type"): "instance_segmentation",
-                ("model_info", "confidence_threshold"): str(
-                    self.hparams.get("best_confidence_threshold", 0.0),
-                ),  # it was able to be set in OTX 1.X
-                ("model_info", "iou_threshold"): str(0.5),
-            },
+        return super()._export_parameters.wrap(
+            model_type="MaskRCNN",
+            task_type="instance_segmentation",
+            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.0),
+            iou_threshold=0.5,
+            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
-
-        # Instance segmentation needs to add empty label
-        all_labels = "otx_empty_lbl "
-        all_label_ids = "None "
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
-
-        parameters["metadata"][("model_info", "labels")] = all_labels.strip()
-        parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
-
-        if self.tile_config.enable_tiler:
-            parameters["metadata"].update(
-                {
-                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
-                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
-                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
-                },
-            )
-
-        return parameters
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state_dict from checkpoint.
@@ -330,12 +303,12 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
 
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
-        return parameters
+    # @property
+    # def _export_parameters(self) -> dict[str, Any]:
+    #     """Defines parameters required to export a particular model implementation."""
+    #     parameters = super()._export_parameters
+    #     parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
+    #     return parameters
 
 
 class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
@@ -361,21 +334,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        if self.image_size is None:
-            error_msg = "self.image_size shouldn't be None to use mmdeploy."
-            raise ValueError(error_msg)
-
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
-        export_params["test_pipeline"] = self._make_fake_test_pipeline()
-
-        return export_params
 
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
@@ -530,13 +488,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             polygons=[],
             labels=labels,
         )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        from otx.core.exporter.mmdeploy import MMdeployExporter
-
-        return MMdeployExporter(**self._export_parameters)
 
 
 class OVInstanceSegmentationModel(

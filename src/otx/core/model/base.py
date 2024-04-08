@@ -35,7 +35,7 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
-from otx.core.types.export import OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
@@ -601,7 +601,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         raise NotImplementedError(msg)
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation.
 
         To export OTXModel, you should define an appropriate parameters."
@@ -609,28 +609,32 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
         "Please refer to `otx.core.exporter.*` for detailed examples."
         Returns:
-            dict[str, Any]: parameters of exporter.
+            Collection of exporter parameters that can be defined at a task level.
         """
-        parameters: dict[str, Any] = {}
-        all_labels = ""
-        all_label_ids = ""
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
+        return TaskLevelExportParameters(
+            model_type="null",
+            task_type="null",
+            label_info=self.label_info,
+            optimization_config=self._optimization_config,
+        )
+        # all_labels = ""
+        # all_label_ids = ""
+        # for lbl in self.label_info.label_names:
+        #     all_labels += lbl.replace(" ", "_") + " "
+        #     all_label_ids += lbl.replace(" ", "_") + " "
 
-        # not every model requires ptq_config
-        optimization_config = self._optimization_config
-        parameters["metadata"] = {
-            ("model_info", "labels"): all_labels.strip(),
-            ("model_info", "label_ids"): all_label_ids.strip(),
-            ("model_info", "optimization_config"): json.dumps(optimization_config),
-            ("model_info", "label_info"): self.label_info.to_json(),
-        }
+        # # not every model requires ptq_config
+        # optimization_config = self._optimization_config
 
-        if self.explain_mode:
-            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
-
-        return parameters
+        # return TaskLevelExportParameters(
+        #     metadata={
+        #         ("model_info", "labels"): all_labels.strip(),
+        #         ("model_info", "label_ids"): all_label_ids.strip(),
+        #         ("model_info", "optimization_config"): json.dumps(optimization_config),
+        #         ("model_info", "label_info"): self.label_info.to_json(),
+        #     },
+        #     output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        # )
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.

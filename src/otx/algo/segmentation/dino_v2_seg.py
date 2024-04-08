@@ -7,10 +7,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.dice import DiceCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.segmentation import MMSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -39,13 +42,25 @@ class DinoV2Seg(MMSegCompatibleModel):
             metric=metric,
             torch_compile=torch_compile,
         )
+        self.image_size = (1, 3, 560, 560)
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        parent_parameters = super()._export_parameters
-        parent_parameters["input_size"] = (1, 3, 560, 560)
-        return parent_parameters
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        mean, std = get_mean_std_from_data_processing(self.config)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
 
     @property
     def _optimization_config(self) -> dict[str, Any]:

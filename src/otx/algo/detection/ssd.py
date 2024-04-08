@@ -14,6 +14,8 @@ from datumaro.components.annotation import Bbox
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
@@ -262,16 +264,23 @@ class SSD(MMDetCompatibleModel):
             state_dict[prefix + param_name] = model_param
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.ssd_mobilenetv2"
-        export_params["input_size"] = self.image_size
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
 
-        return export_params
+        return MMdeployExporter(
+            model_builder=self._create_model,
+            model_cfg=deepcopy(self.config),
+            deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
+            test_pipeline=self._make_fake_test_pipeline(),
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def _set_anchors_hook(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
         """Pre hook for pop anchor statistics from checkpoint state_dict."""

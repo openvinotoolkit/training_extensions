@@ -5,9 +5,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from copy import deepcopy
+from typing import TYPE_CHECKING, Literal
 
 from otx.algo.utils.mmconfig import read_mmconfig
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
@@ -45,13 +48,20 @@ class RTMDetInst(MMDetInstanceSegCompatibleModel):
         self.tile_image_size = self.image_size
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.algo.instance_segmentation.mmdeploy.rtmdet_inst"
-        export_params["input_size"] = self.image_size
-        export_params["resize_mode"] = "fit_to_window_letterbox"
-        export_params["pad_value"] = 114
-        export_params["swap_rgb"] = False
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
 
-        return export_params
+        return MMdeployExporter(
+            model_builder=self._create_model,
+            model_cfg=deepcopy(self.config),
+            deploy_cfg="otx.algo.instance_segmentation.mmdeploy.rtmdet_inst",
+            test_pipeline=self._make_fake_test_pipeline(),
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            resize_mode="fit_to_window_letterbox",
+            pad_value=114,
+            swap_rgb=False,
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
