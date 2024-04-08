@@ -153,3 +153,7 @@ def test_engine_from_tile_recipe(
     assert isinstance(ov_model.model, Tiler), "Model should be an instance of Tiler"
     assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
     assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+
+    # Test PTQ optimization with IR Model
+    optimized_model = engine.optimize(checkpoint=exported_model_path)
+    assert optimized_model.exists()
