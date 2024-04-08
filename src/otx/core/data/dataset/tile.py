@@ -104,7 +104,7 @@ class OTXTileTransform(Tile):
             if not shapes:
                 return None
 
-            inter = max(shapes, key=operator.itemgetter(1))
+            inter, _ = max(shapes, key=operator.itemgetter(1))
 
             if not isinstance(inter, sg.Polygon) and not inter.is_valid:
                 return None
