@@ -64,13 +64,6 @@ class OTXActionClsModel(
             model_type="Action Classification",
             task_type="action classification",
         )
-        # parameters["metadata"].update(
-        #     {
-        #         ("model_info", "model_type"): "Action Classification",
-        #         ("model_info", "task_type"): "action classification",
-        #     },
-        # )
-        # return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,

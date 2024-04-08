@@ -303,13 +303,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
 
-    # @property
-    # def _export_parameters(self) -> dict[str, Any]:
-    #     """Defines parameters required to export a particular model implementation."""
-    #     parameters = super()._export_parameters
-    #     parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
-    #     return parameters
-
 
 class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""

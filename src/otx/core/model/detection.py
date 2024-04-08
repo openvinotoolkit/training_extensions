@@ -286,13 +286,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         return [1] * 10
 
-    # @property
-    # def _export_parameters(self) -> dict[str, Any]:
-    #     """Defines parameters required to export a particular model implementation."""
-    #     parameters = super()._export_parameters
-    #     parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
-    #     return parameters
-
 
 class MMDetCompatibleModel(ExplainableOTXDetModel):
     """Detection model compatible for MMDet.
@@ -451,21 +444,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             bboxes=bboxes,
             labels=labels,
         )
-
-    # @property
-    # def _export_parameters(self) -> dict[str, Any]:
-    #     """Parameters for an exporter."""
-    #     if self.image_size is None:
-    #         error_msg = "self.image_size shouldn't be None to use mmdeploy."
-    #         raise ValueError(error_msg)
-
-    #     export_params = super()._export_parameters
-    #     export_params.update(get_mean_std_from_data_processing(self.config))
-    #     export_params["model_builder"] = self._create_model
-    #     export_params["model_cfg"] = copy.copy(self.config)
-    #     export_params["test_pipeline"] = self._make_fake_test_pipeline()
-
-    #     return export_params
 
 
 class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):
