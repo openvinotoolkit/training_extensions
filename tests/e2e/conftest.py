@@ -14,23 +14,6 @@ from otx.core.types.task import OTXTaskType
 from tests.test_helpers import find_folder
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--open-subprocess",
-        action="store_true",
-        help="Open subprocess for each CLI test case. "
-        "This option can be used for easy memory management "
-        "while running consecutive multiple tests (default: false).",
-    )
-    parser.addoption(
-        "--task",
-        action="store",
-        default="all",
-        type=str,
-        help="Task type of OTX to use test.",
-    )
-
-
 @pytest.fixture(scope="session")
 def fxt_ci_data_root() -> Path:
     data_root = Path(os.environ.get("CI_DATA_ROOT", "/home/validation/data/v2"))
