@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, get_box_type
 from torch import Tensor
+
+from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, get_box_type
 
 if TYPE_CHECKING:
     from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList

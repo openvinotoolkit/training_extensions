@@ -1,10 +1,5 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
@@ -13,11 +8,19 @@ import warnings
 
 import torch
 from mmengine.registry import MODELS
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType, OptMultiConfig
-from otx.algo.instance_segmentation.mmdet.structures import SampleList
 from torch import Tensor
 
+from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
+from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
+from otx.algo.instance_segmentation.mmdet.models.necks import FPN
+from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType, OptMultiConfig
+from otx.algo.instance_segmentation.mmdet.structures import SampleList
+
 from .base import BaseDetector
+
+NECKS = ["FPN"]
+RPN_HEADS = ["RPNHead"]
+ROI_HEADS = ["CustomRoIHead"]
 
 
 @MODELS.register_module()
@@ -43,7 +46,12 @@ class TwoStageDetector(BaseDetector):
         self.backbone = MODELS.build(backbone)
 
         if neck is not None:
-            self.neck = MODELS.build(neck)
+            if neck.type not in NECKS:
+                msg = f"neck type must be one of {NECKS}, but got {neck.type}"
+                raise ValueError(msg)
+            # pop out type for FPN
+            neck.pop("type")
+            self.neck = FPN(**neck)
 
         if rpn_head is not None:
             rpn_train_cfg = train_cfg.rpn if train_cfg is not None else None
@@ -59,14 +67,24 @@ class TwoStageDetector(BaseDetector):
                     "rpn_head.num_classes = 1 in your config file.",
                 )
                 rpn_head_.update(num_classes=1)
-            self.rpn_head = MODELS.build(rpn_head_)
+            if rpn_head_.type not in RPN_HEADS:
+                msg = f"rpn_head type must be one of {RPNHead}, but got {rpn_head_.type}"
+                raise ValueError(msg)
+            # pop out type for RPNHead
+            rpn_head_.pop("type")
+            self.rpn_head = RPNHead(**rpn_head_)
 
         if roi_head is not None:
             # update train and test cfg here for now
             rcnn_train_cfg = train_cfg.rcnn if train_cfg is not None else None
             roi_head.update(train_cfg=rcnn_train_cfg)
             roi_head.update(test_cfg=test_cfg.rcnn)
-            self.roi_head = MODELS.build(roi_head)
+            if roi_head.type not in ROI_HEADS:
+                msg = f"roi_head type must be one of {ROI_HEADS}, but got {roi_head.type}"
+                raise ValueError(msg)
+            # pop out type for RoIHead
+            roi_head.pop("type")
+            self.roi_head = CustomRoIHead(**roi_head)
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg

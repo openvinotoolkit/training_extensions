@@ -7,8 +7,9 @@ from typing import Sequence, TypeVar, Union
 
 import numpy as np
 import torch
-from otx.algo.instance_segmentation.mmdet.structures.mask.structures import BitmapMasks, PolygonMasks
 from torch import BoolTensor, Tensor
+
+from otx.algo.instance_segmentation.mmdet.structures.mask.structures import BitmapMasks, PolygonMasks
 
 T = TypeVar("T")
 DeviceType = Union[str, torch.device]

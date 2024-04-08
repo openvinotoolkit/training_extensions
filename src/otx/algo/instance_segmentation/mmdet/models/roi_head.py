@@ -1,27 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
-from typing import List, Optional, Tuple
+
+from typing import TYPE_CHECKING, Optional
 
 import torch
 from mmengine.registry import MODELS, TASK_UTILS
-from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
-from otx.algo.instance_segmentation.mmdet.models.utils import (
-    ConfigType,
-    InstanceList,
-    empty_instances,
-    unpack_gt_instances,
-)
-from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
-from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
-from torch import Tensor
-
-from .base_roi_head import BaseRoIHead
-from .roi_extractors import SingleRoIExtractor
-
-from typing import TYPE_CHECKING
-
-import torch
-from mmengine.registry import MODELS
 from torch import Tensor
 
 from otx.algo.detection.heads.class_incremental_mixin import (
@@ -30,8 +13,19 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.models.roi_head import StandardRoIHead
-from otx.algo.instance_segmentation.mmdet.models.utils import multi_apply, unpack_gt_instances
+from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
+from otx.algo.instance_segmentation.mmdet.models.utils import (
+    ConfigType,
+    InstanceList,
+    empty_instances,
+    multi_apply,
+    unpack_gt_instances,
+)
+from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
+
+from .base_roi_head import BaseRoIHead
+from .roi_extractors import SingleRoIExtractor
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
@@ -92,7 +86,7 @@ class StandardRoIHead(BaseRoIHead):
         self.mask_head = MODELS.build(mask_head)
 
     # TODO: Need to refactor later
-    def forward(self, x: Tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList = None) -> tuple:
+    def forward(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList = None) -> tuple:
         """Network forward process. Usually includes backbone, neck and head
         forward without any post-processing.
 
@@ -123,7 +117,7 @@ class StandardRoIHead(BaseRoIHead):
             results = results + (mask_results["mask_preds"],)
         return results
 
-    def loss(self, x: Tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: List[DetDataSample]) -> dict:
+    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
         """Perform forward propagation and loss calculation of the detection
         roi on the features of the upstream network.
 
@@ -172,7 +166,7 @@ class StandardRoIHead(BaseRoIHead):
 
         return losses
 
-    def _bbox_forward(self, x: Tuple[Tensor], rois: Tensor) -> dict:
+    def _bbox_forward(self, x: tuple[Tensor], rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
 
         Args:
@@ -196,7 +190,7 @@ class StandardRoIHead(BaseRoIHead):
         bbox_results = dict(cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
         return bbox_results
 
-    def bbox_loss(self, x: Tuple[Tensor], sampling_results: List[SamplingResult]) -> dict:
+    def bbox_loss(self, x: tuple[Tensor], sampling_results: list[SamplingResult]) -> dict:
         """Perform forward propagation and loss calculation of the bbox head on
         the features of the upstream network.
 
@@ -228,8 +222,8 @@ class StandardRoIHead(BaseRoIHead):
 
     def mask_loss(
         self,
-        x: Tuple[Tensor],
-        sampling_results: List[SamplingResult],
+        x: tuple[Tensor],
+        sampling_results: list[SamplingResult],
         bbox_feats: Tensor,
         batch_gt_instances: InstanceList,
     ) -> dict:
@@ -278,7 +272,7 @@ class StandardRoIHead(BaseRoIHead):
 
     def _mask_forward(
         self,
-        x: Tuple[Tensor],
+        x: tuple[Tensor],
         rois: Tensor = None,
         pos_inds: Optional[Tensor] = None,
         bbox_feats: Optional[Tensor] = None,
@@ -314,8 +308,8 @@ class StandardRoIHead(BaseRoIHead):
 
     def predict_bbox(
         self,
-        x: Tuple[Tensor],
-        batch_img_metas: List[dict],
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
         rpn_results_list: InstanceList,
         rcnn_test_cfg: ConfigType,
         rescale: bool = False,
@@ -389,8 +383,8 @@ class StandardRoIHead(BaseRoIHead):
 
     def predict_mask(
         self,
-        x: Tuple[Tensor],
-        batch_img_metas: List[dict],
+        x: tuple[Tensor],
+        batch_img_metas: list[dict],
         results_list: InstanceList,
         rescale: bool = False,
     ) -> InstanceList:
