@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging as log
+import operator
 from copy import deepcopy
 from itertools import product
 from typing import TYPE_CHECKING, Callable
@@ -103,7 +104,7 @@ class OTXTileTransform(Tile):
             if not shapes:
                 return None
 
-            inter = max(x, key=operator.itemgetter(1))
+            inter = max(shapes, key=operator.itemgetter(1))
 
             if not isinstance(inter, sg.Polygon) and not inter.is_valid:
                 return None
