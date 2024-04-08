@@ -27,7 +27,7 @@ def test_get_det_model_api_configuration():
         }
     )
     model_api_cfg = get_det_model_api_configuration(
-        label_schema, TaskType.DETECTION, det_thr, tiling_parameters, use_ellipse_shapes=False
+        label_schema, TaskType.DETECTION, det_thr, tiling_parameters, use_ellipse_shapes=False, nms_iou_threshold=0.4
     )
 
     assert len(model_api_cfg) > 0
@@ -39,5 +39,6 @@ def test_get_det_model_api_configuration():
     assert ("model_info", "labels") in model_api_cfg
     assert ("model_info", "label_ids") in model_api_cfg
     assert model_api_cfg[("model_info", "use_ellipse_shapes")] == "False"
+    assert model_api_cfg[("model_info", "iou_threshold")] == "0.4"
     assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "labels")].split())
     assert len(label_schema.get_labels(include_empty=False)) == len(model_api_cfg[("model_info", "label_ids")].split())
