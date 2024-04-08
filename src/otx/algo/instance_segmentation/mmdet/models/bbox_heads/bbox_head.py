@@ -15,7 +15,7 @@ from mmengine.model import BaseModule
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
-from otx.algo.instance_segmentation.mmdet.models.losses import accuracy
+from otx.algo.detection.losses import accuracy
 from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     ConfigType,

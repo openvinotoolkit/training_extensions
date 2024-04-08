@@ -1,23 +1,22 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 from functools import partial
-from typing import List, Union
+from typing import TYPE_CHECKING
 
 import torch
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
-from otx.algo.instance_segmentation.mmdet.structures import SampleList
 from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, get_box_type
 from torch import Tensor
 
+if TYPE_CHECKING:
+    from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
+    from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
-def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
+
+def stack_boxes(data_list: list[Tensor | BaseBoxes], dim: int = 0) -> Tensor | BaseBoxes:
     """Stack boxes with type of tensor or box type.
 
     Args:
@@ -52,7 +51,7 @@ def samplelist_boxtype2tensor(batch_data_samples: SampleList):
                 data_samples.ignored_instances.bboxes = bboxes.tensor
 
 
-def images_to_levels(target, num_levels):
+def images_to_levels(target: list[Tensor | BaseBoxes], num_levels: list[int]):
     """Convert targets by image to targets by feature level.
 
     [target_img0, target_img1] -> [target_level0, target_level1, ...]
@@ -91,9 +90,7 @@ def multi_apply(func, *args, **kwargs):
 
 
 def unmap(data, count, inds, fill=0):
-    """Unmap a subset of item (data) back to the original set of items (of size
-    count)
-    """
+    """Unmap a subset of item (data) back to the original set of items (of size count)."""
     if data.dim() == 1:
         ret = data.new_full((count,), fill)
         ret[inds.type(torch.bool)] = data
@@ -153,8 +150,7 @@ def filter_scores_and_topk(scores, score_thr, topk, results=None):
 
 
 def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
-    """Extract a multi-scale single image tensor from a multi-scale batch
-    tensor based on batch index.
+    """Extract a multi-scale single image tensor from a multi-scale batch tensor based on batch index.
 
     Note: The default value of detach is True, because the proposal gradient
     needs to be detached during the training of the two-stage model. E.g
@@ -180,8 +176,7 @@ def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
 
 
 def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
-    """Unpack ``gt_instances``, ``gt_instances_ignore`` and ``img_metas`` based
-    on ``batch_data_samples``
+    """Unpack ``gt_instances``, ``gt_instances_ignore`` and ``img_metas`` based on ``batch_data_samples.``
 
     Args:
         batch_data_samples (List[:obj:`DetDataSample`]): The Data
@@ -216,16 +211,16 @@ def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
 
 
 def empty_instances(
-    batch_img_metas: List[dict],
+    batch_img_metas: list[dict],
     device: torch.device,
     task_type: str,
     instance_results: OptInstanceList = None,
-    mask_thr_binary: Union[int, float] = 0,
-    box_type: Union[str, type] = "hbox",
+    mask_thr_binary: int | float = 0,
+    box_type: str | type = "hbox",
     use_box_type: bool = False,
     num_classes: int = 80,
     score_per_cls: bool = False,
-) -> List[InstanceData]:
+) -> list[InstanceData]:
     """Handle predicted instances when RoI is empty.
 
     Note: If ``instance_results`` is not None, it will be modified

@@ -11,7 +11,7 @@ from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
 
-from otx.algo.instance_segmentation.mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
+from otx.algo.detection.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
 
 
 def cross_sigmoid_focal_loss(
