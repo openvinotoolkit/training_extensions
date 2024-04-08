@@ -3,6 +3,11 @@
 #
 """Custom ROI head for OTX template."""
 
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
