@@ -294,6 +294,23 @@ postprocessing:
     value: 0.01
     visible_in_ui: true
     warning: null
+  nms_iou_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: 0.0
+    description: IoU Threshold for NMS Postprocessing. Defaults to 0, which means per-model default values.
+    editable: true
+    header: NMS IoU Threshold
+    max_value: 1
+    min_value: 0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
+    visible_in_ui: true
+    warning: null
   max_num_detections:
     affects_outcome_of: INFERENCE
     default_value: 0

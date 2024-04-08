@@ -77,11 +77,14 @@ class OTXDetectionTask(OTXTask, ABC):
 
         self.confidence_threshold = 0.0
         self.max_num_detections = 0
+        self.nms_iou_threshold = 0.0
         if hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
             if hasattr(self._hyperparams.postprocessing, "max_num_detections"):
                 self.max_num_detections = self._hyperparams.postprocessing.max_num_detections
+            if hasattr(self._hyperparams.postprocessing, "nms_iou_threshold"):
+                self.nms_iou_threshold = self._hyperparams.postprocessing.nms_iou_threshold
 
         if task_environment.model is not None:
             self._load_model()
@@ -119,6 +122,10 @@ class OTXDetectionTask(OTXTask, ABC):
             # Prefer new hparam value set by user (>0) intentionally than trained value
             if self.max_num_detections == 0:
                 self.max_num_detections = trained_max_num_detections
+        if "nms_iou_threshold" in loaded_postprocessing:
+            ckpt_nms_iou_threshold = loaded_postprocessing["nms_iou_threshold"]["value"]
+            if self.nms_iou_threshold == 0:
+                self.nms_iou_threshold = ckpt_nms_iou_threshold
 
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.
@@ -349,6 +356,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold,
             self._hyperparams.tiling_parameters,
             self.use_ellipse_shapes,
+            self.nms_iou_threshold if self.nms_iou_threshold != 0.0 else self._get_model_nms_threshold(),
         )
 
         if export_type == ExportType.ONNX:
@@ -545,6 +553,10 @@ class OTXDetectionTask(OTXTask, ABC):
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
             )
+
+    def _get_model_nms_threshold(self) -> float:
+        """Return NMS threshold, which is defined in object detector by default."""
+        raise NotImplementedError
 
     @staticmethod
     def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:

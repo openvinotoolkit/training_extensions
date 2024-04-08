@@ -231,6 +231,15 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        nms_iou_threshold = configurable_float(
+            default_value=0.0,
+            min_value=0,
+            max_value=1,
+            header="NMS IoU Threshold",
+            description="IoU Threshold for NMS Postprocessing. Defaults to 0, which means per-model default values.",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
         max_num_detections = configurable_integer(
             header="Maximum number of detection per image",
             description="Extra detection outputs will be discared in non-maximum suppression process. "
