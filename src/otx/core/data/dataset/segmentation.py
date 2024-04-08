@@ -168,7 +168,7 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
         mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
-        
+
         entity = SegDataEntity(
             image=img_data,
             img_info=ImageInfo(

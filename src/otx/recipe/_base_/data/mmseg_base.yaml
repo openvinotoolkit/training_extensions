@@ -36,7 +36,9 @@ config:
         size:
           - 512
           - 512
-        pad_val: { img: 0, seg: 255 }
+        pad_val:
+          img: 0
+          seg: 255
       - type: PackSegInputs
     sampler:
       class_path: torch.utils.data.RandomSampler
