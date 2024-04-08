@@ -1,3 +1,4 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 # Copyright (c) OpenMMLab. All rights reserved.
 from .bbox_head import BBoxHead
 from .convfc_bbox_head import ConvFCBBoxHead, Shared2FCBBoxHead

@@ -1,3 +1,5 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from .mask_target import mask_target
 from .structures import BaseInstanceMasks, BitmapMasks, PolygonMasks, bitmap_to_polygon, polygon_to_bitmap

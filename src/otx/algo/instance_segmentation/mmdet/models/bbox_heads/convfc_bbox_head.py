@@ -1,7 +1,15 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Tuple, Union
 
-# TODO(Eugene): replace this
+# TODO(Eugene): replace mmcv.ConvModule with torch.nn.Conv2d + torch.nn.BatchNorm2d + torch.nn.ReLU
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.cnn import ConvModule
 from mmengine.config import ConfigDict
 from mmengine.registry import MODELS

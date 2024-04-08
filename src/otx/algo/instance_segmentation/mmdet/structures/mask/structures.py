@@ -1,3 +1,10 @@
+"""The original source code is from mmdet.mask.structures. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
 from abc import ABCMeta, abstractmethod
@@ -6,6 +13,7 @@ from typing import Sequence, Type, TypeVar
 import cv2
 
 # TODO(Eugene): remove mmcv
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
 import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
@@ -892,7 +900,7 @@ class PolygonMasks(BaseInstanceMasks):
 
         Return:
             float: the are of the component
-        """  # noqa: 501
+        """
         return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
     def to_ndarray(self):

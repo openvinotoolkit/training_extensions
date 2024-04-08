@@ -1,4 +1,15 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import torch
 import torch.nn.functional as F
 from mmengine.registry import MODELS
@@ -9,8 +20,20 @@ from .accuracy import accuracy
 from .utils import weight_reduce_loss
 
 
+if TYPE_CHECKING:
+    from torch import Tensor
+
+
 # This method is only for debugging
-def py_sigmoid_focal_loss(pred, target, weight=None, gamma=2.0, alpha=0.25, reduction="mean", avg_factor=None):
+def py_sigmoid_focal_loss(
+    pred: Tensor,
+    target: Tensor,
+    weight: None | Tensor = None,
+    gamma: float = 2.0,
+    alpha: float = 0.25,
+    reduction: str = "mean",
+    avg_factor: int | None = None,
+):
     """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
 
     Args:
@@ -52,7 +75,15 @@ def py_sigmoid_focal_loss(pred, target, weight=None, gamma=2.0, alpha=0.25, redu
     return loss
 
 
-def py_focal_loss_with_prob(pred, target, weight=None, gamma=2.0, alpha=0.25, reduction="mean", avg_factor=None):
+def py_focal_loss_with_prob(
+    pred: Tensor,
+    target: Tensor,
+    weight: None | Tensor = None,
+    gamma: float = 2.0,
+    alpha: float = 0.25,
+    reduction: str = "mean",
+    avg_factor: int | None = None,
+):
     """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
     Different from `py_sigmoid_focal_loss`, this function accepts probability
     as input.
@@ -99,7 +130,15 @@ def py_focal_loss_with_prob(pred, target, weight=None, gamma=2.0, alpha=0.25, re
     return loss
 
 
-def sigmoid_focal_loss(pred, target, weight=None, gamma=2.0, alpha=0.25, reduction="mean", avg_factor=None):
+def sigmoid_focal_loss(
+    pred: Tensor,
+    target: Tensor,
+    weight: None | Tensor = None,
+    gamma: float = 2.0,
+    alpha: float = 0.25,
+    reduction: str = "mean",
+    avg_factor: int | None = None,
+):
     r"""A wrapper of cuda version `Focal Loss
     <https://arxiv.org/abs/1708.02002>`_.
 

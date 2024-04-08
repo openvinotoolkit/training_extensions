@@ -1,3 +1,10 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 # Copyright (c) OpenMMLab. All rights reserved.
 """This module defines the :class:`NiceRepr` mixin class, which defines a
 ``__repr__`` and ``__str__`` method that only depend on a custom ``__nice__``

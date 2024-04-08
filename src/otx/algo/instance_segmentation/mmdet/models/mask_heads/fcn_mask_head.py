@@ -1,3 +1,10 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Tuple
 
@@ -5,7 +12,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-# TODO(Eugene): replace this
+# TODO(Eugene): replace mmcv with generic PyTorch modules
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.cnn import ConvModule, build_conv_layer, build_upsample_layer
 from mmengine.config import ConfigDict
 from mmengine.model import BaseModule, ModuleList

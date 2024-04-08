@@ -1,5 +1,13 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
+# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# mypy: ignore-errors
+# ruff: noqa
+
+
 # Copyright (c) OpenMMLab. All rights reserved.
-from abc import ABCMeta, abstractmethod, abstractproperty, abstractstaticmethod
+from abc import ABCMeta, abstractmethod, property, staticmethod
 from typing import List, Optional, Sequence, Tuple, Type, TypeVar, Union
 
 import numpy as np
@@ -366,19 +374,23 @@ class BaseBoxes(metaclass=ABCMeta):
         th_box_list = [boxes.tensor for boxes in box_list]
         return cls(torch.stack(th_box_list, dim=dim), clone=False)
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def centers(self) -> Tensor:
         """Return a tensor representing the centers of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def areas(self) -> Tensor:
         """Return a tensor representing the areas of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def widths(self) -> Tensor:
         """Return a tensor representing the widths of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def heights(self) -> Tensor:
         """Return a tensor representing the heights of boxes."""
 
@@ -494,7 +506,8 @@ class BaseBoxes(metaclass=ABCMeta):
             shape of (m, ).
         """
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def overlaps(
         boxes1: "BaseBoxes",
         boxes2: "BaseBoxes",
@@ -521,7 +534,8 @@ class BaseBoxes(metaclass=ABCMeta):
             Tensor: shape (m, n) if ``is_aligned`` is False else shape (m,)
         """
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def from_instance_masks(masks: MaskType) -> "BaseBoxes":
         """Create boxes from instance masks.
 
