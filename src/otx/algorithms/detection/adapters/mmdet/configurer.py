@@ -76,7 +76,7 @@ class DetectionConfigurer(BaseConfigurer):
                     "IoU NMS Threshold will be updated from "
                     f"{cfg.model.test_cfg.rcnn.nms.iou_threshold} --> {nms_iou_threshold}"
                 )
-                cfg.model.test_cfg.nms.iou_threshold = nms_iou_threshold
+                cfg.model.test_cfg.rcnn.nms.iou_threshold = nms_iou_threshold
             else:
                 logger.warning("Detector do not have nms postprocessing, user specified nms threshold will be omitted")
             if "tile_cfg" in cfg:

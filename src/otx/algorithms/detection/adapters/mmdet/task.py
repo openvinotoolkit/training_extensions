@@ -699,6 +699,8 @@ class MMDetectionTask(OTXDetectionTask):
         """Return NMS threshold, which is defined in object detector by default."""
         if "test_cfg" in self._recipe_cfg.model and "nms" in self._recipe_cfg.model.test_cfg:
             return self._recipe_cfg.model.test_cfg.nms.iou_threshold
+        if "test_cfg" in self._recipe_cfg.model and "rcnn" in self._recipe_cfg.model.test_cfg:
+            return self._recipe_cfg.model.test_cfg.rcnn.nms.iou_threshold
         return 0.0
 
     def save_model(self, output_model: ModelEntity):
