@@ -100,12 +100,12 @@ class OTXTileTransform(Tile):
         inter = polygon.intersection(roi_box)
         if isinstance(inter, (sg.GeometryCollection, sg.MultiPolygon)):
             shapes = [(geom, geom.area) for geom in list(inter.geoms) if geom.is_valid]
-            shapes.sort(key=lambda x: x[1], reverse=True)
-            if shapes:
-                inter = shapes[0][0]
-                if not isinstance(inter, sg.Polygon) and not inter.is_valid:
-                    return None
-            else:
+            if not shapes:
+                return None
+
+            inter = max(x, key=operator.itemgetter(1))
+
+            if not isinstance(inter, sg.Polygon) and not inter.is_valid:
                 return None
 
         prop_area = inter.area / polygon.area
