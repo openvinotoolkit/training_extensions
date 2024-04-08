@@ -186,8 +186,8 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                 imgs_info=inputs.imgs_info,
                 scores=[],
                 masks=masks,
-                saliency_maps=explain_results,
-                feature_vectors=[],
+                saliency_map=explain_results,
+                feature_vector=[],
             )
 
         return SegBatchPredEntity(
@@ -260,8 +260,8 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
                 imgs_info=inputs.imgs_info,
                 scores=[],
                 masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return SegBatchPredEntity(

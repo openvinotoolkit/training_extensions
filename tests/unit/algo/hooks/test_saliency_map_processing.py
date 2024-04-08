@@ -107,8 +107,8 @@ def _get_pred_result_multiclass(pred_labels) -> MulticlassClsBatchPredEntity:
         imgs_info=IMGS_INFO,
         scores=None,
         labels=pred_labels,
-        saliency_maps=SALIENCY_MAPS,
-        feature_vectors=None,
+        saliency_map=SALIENCY_MAPS,
+        feature_vector=None,
     )
 
 
@@ -119,8 +119,8 @@ def _get_pred_result_multilabel(pred_labels) -> MultilabelClsBatchPredEntity:
         imgs_info=IMGS_INFO,
         scores=None,
         labels=pred_labels,
-        saliency_maps=SALIENCY_MAPS,
-        feature_vectors=None,
+        saliency_map=SALIENCY_MAPS,
+        feature_vector=None,
     )
 
 
@@ -137,9 +137,9 @@ def test_process_saliency_maps_in_pred_entity_multiclass() -> None:
     )
 
     for i in range(len(predict_result)):
-        assert isinstance(predict_result[i].saliency_maps, list)
-        assert isinstance(predict_result[i].saliency_maps[0], dict)
-        processed_saliency_maps = predict_result[i].saliency_maps
+        assert isinstance(predict_result[i].saliency_map, list)
+        assert isinstance(predict_result[i].saliency_map[0], dict)
+        processed_saliency_maps = predict_result[i].saliency_map
         assert all(len(s_map_dict) == 1 for s_map_dict in processed_saliency_maps)
 
 
@@ -156,7 +156,7 @@ def test_process_saliency_maps_in_pred_entity_multilabel() -> None:
     )
 
     for i in range(len(predict_result)):
-        assert isinstance(predict_result[i].saliency_maps, list)
-        assert isinstance(predict_result[i].saliency_maps[0], dict)
-        processed_saliency_maps = predict_result[i].saliency_maps
+        assert isinstance(predict_result[i].saliency_map, list)
+        assert isinstance(predict_result[i].saliency_map[0], dict)
+        processed_saliency_maps = predict_result[i].saliency_map
         assert all(len(s_map_dict) == len(PRED_LABELS[i]) for (i, s_map_dict) in enumerate(processed_saliency_maps))

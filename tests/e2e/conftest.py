@@ -1,43 +1,36 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 from __future__ import annotations
 
 import importlib
 import inspect
+import os
 from pathlib import Path
 
 import pytest
-from mmengine.config import Config as MMConfig
 from otx.core.types.task import OTXTaskType
+
+from tests.test_helpers import find_folder
+
+
+@pytest.fixture(scope="session")
+def fxt_ci_data_root() -> Path:
+    data_root = Path(os.environ.get("CI_DATA_ROOT", "/home/validation/data/v2"))
+    if not Path.is_dir(data_root):
+        msg = f"cannot find {data_root}"
+        raise FileNotFoundError(msg)
+    return data_root
 
 
 @pytest.fixture(scope="module", autouse=True)
 def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
-    """Open subprocess for each CLI integration test case.
+    """Open subprocess for each CLI test case.
 
     This option can be used for easy memory management
     while running consecutive multiple tests (default: false).
     """
     return request.config.getoption("--open-subprocess", False)
-
-
-def find_recipe_folder(base_path: Path, folder_name: str) -> Path:
-    """
-    Find the folder with the given name within the specified base path.
-
-    Args:
-        base_path (Path): The base path to search within.
-        folder_name (str): The name of the folder to find.
-
-    Returns:
-        Path: The path to the folder.
-    """
-    for folder_path in base_path.rglob(folder_name):
-        if folder_path.is_dir():
-            return folder_path
-    msg = f"Folder {folder_name} not found in {base_path}."
-    raise FileNotFoundError(msg)
 
 
 def get_task_list(task: str) -> list[OTXTaskType]:
@@ -70,7 +63,7 @@ def pytest_configure(config):
     # Modify RECIPE_PATH based on the task
     recipe_path = Path(inspect.getfile(otx_module)).parent / "recipe"
     task_list = get_task_list(task.lower())
-    recipe_dir = [find_recipe_folder(recipe_path, task_type.value.lower()) for task_type in task_list]
+    recipe_dir = [find_folder(recipe_path, task_type.value.lower()) for task_type in task_list]
 
     # Update RECIPE_LIST
     target_recipe_list = []
@@ -90,36 +83,26 @@ def pytest_configure(config):
     pytest.TILE_RECIPE_LIST = tile_recipe_list
 
 
-@pytest.fixture(scope="session")
-def fxt_asset_dir() -> Path:
-    return Path(__file__).parent.parent / "assets"
-
-
-@pytest.fixture(scope="session")
-def fxt_rtmdet_tiny_config(fxt_asset_dir: Path) -> MMConfig:
-    config_path = fxt_asset_dir / "mmdet_configs" / "rtmdet_tiny_8xb32-300e_coco.py"
-
-    return MMConfig.fromfile(config_path)
-
-
 # [TODO]: This is a temporary approach.
 @pytest.fixture()
-def fxt_target_dataset_per_task() -> dict:
+def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
-        "multi_class_cls": "tests/assets/classification_dataset",
-        "multi_label_cls": "tests/assets/multilabel_classification",
-        "h_label_cls": "tests/assets/hlabel_classification",
-        "detection": "tests/assets/car_tree_bug",
-        "rotated_detection": "tests/assets/car_tree_bug",
-        "instance_segmentation": "tests/assets/car_tree_bug",
-        "semantic_segmentation": "tests/assets/common_semantic_segmentation_dataset/supervised",
-        "action_classification": "tests/assets/action_classification_dataset/",
-        "action_detection": "tests/assets/action_detection_dataset/",
-        "visual_prompting": "tests/assets/car_tree_bug",
-        "zero_shot_visual_prompting": "tests/assets/car_tree_bug_zero_shot",
-        "anomaly_classification": "tests/assets/anomaly_hazelnut",
-        "anomaly_detection": "tests/assets/anomaly_hazelnut",
-        "anomaly_segmentation": "tests/assets/anomaly_hazelnut",
+        "multi_class_cls": Path(fxt_ci_data_root / "multiclass_classification/multiclass_CUB_small/1"),
+        "multi_label_cls": Path(fxt_ci_data_root / "multilabel_classification/multilabel_CUB_small/1"),
+        "h_label_cls": Path(fxt_ci_data_root / "hlabel_classification/hlabel_CUB_small/1"),
+        "detection": Path(fxt_ci_data_root / "detection/pothole_small/1"),
+        "rotated_detection": Path(fxt_ci_data_root / "detection/pothole_small/1"),
+        "instance_segmentation": Path(fxt_ci_data_root / "instance_seg/wgisd_small/1"),
+        "semantic_segmentation": Path(fxt_ci_data_root / "semantic_seg/kvasir_small/1"),
+        "action_classification": Path(fxt_ci_data_root / "action/action_classification/ucf_kinetics_5percent_small"),
+        "action_detection": Path(fxt_ci_data_root / "action/action_detection/UCF101_ava_5percent"),
+        "visual_prompting": Path(fxt_ci_data_root / "visual_prompting/wgisd_small/1"),
+        "zero_shot_visual_prompting": Path(
+            fxt_ci_data_root / "zero_shot_visual_prompting/coco_car_person_medium_datumaro",
+        ),
+        "anomaly_classification": Path(fxt_ci_data_root / "anomaly/mvtec/bottle_small/1"),
+        "anomaly_detection": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
+        "anomaly_segmentation": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
     }
 
 
@@ -139,8 +122,11 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [],
-        "anomaly_classification": ["--limit_val_batches", "0"],
-        "anomaly_detection": ["--limit_val_batches", "0"],
-        "anomaly_segmentation": ["--limit_val_batches", "0"],
+        "zero_shot_visual_prompting": [
+            "--data.config.data_format",
+            "datumaro",
+        ],
+        "anomaly_classification": [],
+        "anomaly_detection": [],
+        "anomaly_segmentation": [],
     }

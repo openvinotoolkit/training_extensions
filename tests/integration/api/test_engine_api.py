@@ -105,7 +105,7 @@ def test_engine_from_config(
 
     # Predict Torch model with explain
     predictions = engine.predict(explain=True)
-    assert len(predictions[0].saliency_maps) > 0
+    assert len(predictions[0].saliency_map) > 0
 
     # Export IR model with explain
     exported_model_with_explain = engine.export(explain=True)
@@ -114,13 +114,13 @@ def test_engine_from_config(
     # Infer IR Model with explain: predict
     predictions = engine.predict(explain=True, checkpoint=exported_model_with_explain, accelerator="cpu")
     assert len(predictions) > 0
-    sal_maps_from_prediction = predictions[0].saliency_maps
+    sal_maps_from_prediction = predictions[0].saliency_map
     assert len(sal_maps_from_prediction) > 0
 
     # Infer IR Model with explain: explain
     explain_results = engine.explain(checkpoint=exported_model_with_explain, accelerator="cpu")
-    assert len(explain_results[0].saliency_maps) > 0
-    sal_maps_from_explain = explain_results[0].saliency_maps
+    assert len(explain_results[0].saliency_map) > 0
+    sal_maps_from_explain = explain_results[0].saliency_map
     assert (sal_maps_from_prediction[0][0] == sal_maps_from_explain[0][0]).all()
 
 

@@ -104,6 +104,7 @@ class DataModuleConfig:
     stack_images: bool = True
 
     include_polygons: bool = False
+    ignore_index: int = 255
     unannotated_items_ratio: float = 0.0
     ignore_index: int = 255
 
