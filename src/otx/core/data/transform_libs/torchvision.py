@@ -374,19 +374,25 @@ class MinIoURandomCrop(tvt_v2.RandomIoUCrop):
                     bboxes.format,
                     tv_tensors.BoundingBoxFormat.XYXY,
                 )
-                cx = 0.5 * (xyxy_bboxes[..., 0] + xyxy_bboxes[..., 2])
-                cy = 0.5 * (xyxy_bboxes[..., 1] + xyxy_bboxes[..., 3])
-                is_within_crop_area = (left < cx) & (cx < right) & (top < cy) & (cy < bottom)
-                if not is_within_crop_area.any():
-                    continue
+                # cx = 0.5 * (xyxy_bboxes[..., 0] + xyxy_bboxes[..., 2])
+                # cy = 0.5 * (xyxy_bboxes[..., 1] + xyxy_bboxes[..., 3])
+                # is_within_crop_area = (left < cx) & (cx < right) & (top < cy) & (cy < bottom)
+                # if not is_within_crop_area.any():
+                #     continue
 
-                # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1429-L1433
-                xyxy_bboxes = xyxy_bboxes[is_within_crop_area]
+                # # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1429-L1433
+                # xyxy_bboxes = xyxy_bboxes[is_within_crop_area]
                 ious = box_iou(
                     xyxy_bboxes,
                     torch.tensor([[left, top, right, bottom]], dtype=xyxy_bboxes.dtype, device=xyxy_bboxes.device),
                 )
                 if ious.min() < min_jaccard_overlap:  # max -> min
+                    continue
+
+                cx = 0.5 * (xyxy_bboxes[..., 0] + xyxy_bboxes[..., 2])
+                cy = 0.5 * (xyxy_bboxes[..., 1] + xyxy_bboxes[..., 3])
+                is_within_crop_area = (left < cx) & (cx < right) & (top < cy) & (cy < bottom)
+                if not is_within_crop_area.any():
                     continue
 
                 return {
