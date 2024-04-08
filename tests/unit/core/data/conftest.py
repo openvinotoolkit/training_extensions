@@ -87,7 +87,7 @@ def fxt_dm_item(request) -> DatasetItem:
         annotations=[
             Label(label=0),
             Bbox(x=0, y=0, w=1, h=1, label=0),
-            Mask(label=0, image=np.zeros(shape=(10, 10), dtype=np.uint8)),
+            Mask(label=0, image=np.eye(10, dtype=np.uint8)),
             Polygon(points=[399.0, 570.0, 397.0, 572.0, 397.0, 573.0, 394.0, 576.0], label=0),
         ],
     )
