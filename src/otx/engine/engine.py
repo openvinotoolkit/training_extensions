@@ -67,9 +67,11 @@ def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallabl
         return
 
     orig_metric_callable = model.metric_callable
-    model.metric_callable = new_metric_callable
-    yield model
-    model.metric_callable = orig_metric_callable
+    try:
+        model.metric_callable = new_metric_callable
+        yield model
+    finally:
+        model.metric_callable = orig_metric_callable
 
 
 class Engine:
@@ -286,6 +288,8 @@ class Engine:
             raise TypeError(msg)
 
         best_checkpoint_symlink = Path(self.work_dir) / "best_checkpoint.ckpt"
+        if best_checkpoint_symlink.is_symlink():
+            best_checkpoint_symlink.unlink()
         best_checkpoint_symlink.symlink_to(self.checkpoint)
 
         return self.trainer.callback_metrics
@@ -348,8 +352,15 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+            if self.device.accelerator != "cpu":
+                msg = "IR model supports inference only on CPU device. The device is changed automatic."
+                warn(msg, stacklevel=1)
+                self.device = DeviceType.cpu  # type: ignore[assignment]
+
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -432,22 +443,29 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
+        # NOTE: Re-initiate datamodule for OVModel as model API supports its own data pipeline.
+        if isinstance(model, OVModel):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             model.load_state_dict(loaded_checkpoint)
 
-        model.explain_mode = explain
-
         self._build_trainer(**kwargs)
 
-        predict_result = self.trainer.predict(
-            model=model,
-            dataloaders=datamodule,
-            return_predictions=return_predictions,
-        )
+        curr_explain_mode = model.explain_mode
+
+        try:
+            model.explain_mode = explain
+            predict_result = self.trainer.predict(
+                model=model,
+                dataloaders=datamodule,
+                return_predictions=return_predictions,
+            )
+        finally:
+            model.explain_mode = curr_explain_mode
 
         if explain:
             if explain_config is None:
@@ -455,7 +473,6 @@ class Engine:
 
             predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
 
-        model.explain_mode = False
         return predict_result
 
     def export(
@@ -804,6 +821,7 @@ class Engine:
     def work_dir(self, work_dir: PathLike) -> None:
         self._work_dir = work_dir
         self._cache.update(default_root_dir=work_dir)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def device(self) -> DeviceConfig:
@@ -814,6 +832,7 @@ class Engine:
     def device(self, device: DeviceType) -> None:
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
+        self._cache.is_trainer_args_identical = False
 
     @property
     def trainer(self) -> Trainer:
@@ -835,6 +854,8 @@ class Engine:
             self._cache.update(**kwargs)
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
+            self._cache.is_trainer_args_identical = True
+            self._trainer.task = self.task
             self.work_dir = self._trainer.default_root_dir
 
     @property

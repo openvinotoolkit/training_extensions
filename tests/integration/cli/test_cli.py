@@ -43,8 +43,6 @@ def test_otx_e2e(
     """
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -318,9 +316,9 @@ def test_otx_explain_e2e(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert (latest_dir / "saliency_maps").exists()
-    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
-    sal_map = cv2.imread(str(saliency_maps[0]))
+    assert (latest_dir / "saliency_map").exists()
+    saliency_map = sorted((latest_dir / "saliency_map").glob(pattern="*.png"))
+    sal_map = cv2.imread(str(saliency_map[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
@@ -356,7 +354,7 @@ def test_otx_explain_e2e(
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take corner values due to map sparsity of InstSeg
             actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
@@ -401,13 +399,11 @@ def test_otx_ov_test(
         "anomaly_classification",
         "anomaly_detection",
         "anomaly_segmentation",
+        "action_classification",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    if task in ["action_classification"]:
-        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
     pytest.xfail("See ticket no. 135955")
 
@@ -516,8 +512,6 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
 

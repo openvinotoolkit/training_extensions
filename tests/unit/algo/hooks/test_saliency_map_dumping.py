@@ -36,8 +36,8 @@ def test_sal_map_dump(
             imgs_info=IMGS_INFO,
             scores=None,
             labels=None,
-            saliency_maps=SALIENCY_MAPS,
-            feature_vectors=None,
+            saliency_map=SALIENCY_MAPS,
+            feature_vector=None,
         ),
     ]
 
@@ -48,7 +48,7 @@ def test_sal_map_dump(
         output_dir=tmp_path,
     )
 
-    saliency_maps_paths = sorted((tmp_path / "saliency_maps").glob(pattern="*.png"))
+    saliency_maps_paths = sorted((tmp_path / "saliency_map").glob(pattern="*.png"))
 
     assert len(saliency_maps_paths) == NUM_CLASSES * BATCH_SIZE
 

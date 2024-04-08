@@ -33,8 +33,6 @@ def test_otx_cli_auto_configuration(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-    if task.lower() in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     tmp_path_train = tmp_path / f"otx_auto_train_{task}"
     command_cfg = [
         "otx",

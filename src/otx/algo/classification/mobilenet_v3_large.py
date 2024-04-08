@@ -15,6 +15,7 @@ from otx.core.model.classification import (
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
+class MobileNetV3ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlabelClsModel):
     """MobileNetV3 Model for hierarchical label classification task."""
 
     def __init__(
@@ -58,7 +59,7 @@ class MobileNetV3ForHLabelCls(MMPretrainHlabelClsModel):
         return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "hlabel", add_prefix)
 
 
-class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
+class MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMulticlassClsModel):
     """MobileNetV3 Model for multi-label classification task."""
 
     def __init__(
@@ -93,7 +94,7 @@ class MobileNetV3ForMulticlassCls(MMPretrainMulticlassClsModel):
         return OTXv1Helper.load_cls_mobilenet_v3_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class MobileNetV3ForMultilabelCls(MMPretrainMultilabelClsModel):
+class MobileNetV3ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMultilabelClsModel):
     """MobileNetV3 Model for multi-class classification task."""
 
     def __init__(

@@ -19,33 +19,6 @@ import mlflow
 log = logging.getLogger(__name__)
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--user-name",
-        type=str,
-        required=True,
-        help="Sign-off the user name who launched the regression tests this time, " 'e.g., `--user-name "John Doe"`.',
-    )
-    parser.addoption(
-        "--dataset-root-dir",
-        type=Path,
-        required=True,
-        help="Dataset root directory path for the regression tests",
-    )
-    parser.addoption(
-        "--mlflow-tracking-uri",
-        type=str,
-        required=True,
-        help="URI for MLFlow Tracking server to store the regression test results.",
-    )
-    parser.addoption(
-        "--num-repeat",
-        type=int,
-        default=1,
-        help="The number of repetitions for each test case with different seed (default=1).",
-    )
-
-
 @pytest.fixture(scope="module", autouse=True)
 def fxt_user_name(request: pytest.FixtureRequest) -> str:
     """User name to sign off the regression test execution.
@@ -64,7 +37,7 @@ def fxt_dataset_root_dir(request: pytest.FixtureRequest) -> Path:
 
     This should be given by the PyTest CLI option.
     """
-    dataset_root_dir = request.config.getoption("--dataset-root-dir")
+    dataset_root_dir = request.config.getoption("--data-root")
     msg = f"dataset_root_dir: {dataset_root_dir}"
     log.info(msg)
     return dataset_root_dir
