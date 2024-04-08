@@ -6,12 +6,16 @@ from typing import TYPE_CHECKING
 
 from torch import nn
 
-
 if TYPE_CHECKING:
     from torch import Tensor
 
 
-def accuracy(pred: Tensor, target: Tensor, topk: int = 1, thresh: float | None = None):
+def accuracy(
+    pred: Tensor,
+    target: Tensor,
+    topk: int | tuple[int] = 1,
+    thresh: float | None = None,
+) -> list:
     """Calculate accuracy according to the prediction and target.
 
     Args:

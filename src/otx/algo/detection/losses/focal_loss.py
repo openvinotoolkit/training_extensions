@@ -14,7 +14,6 @@ from torchvision.ops import sigmoid_focal_loss as _sigmoid_focal_loss
 from .accuracy import accuracy
 from .utils import weight_reduce_loss
 
-
 if TYPE_CHECKING:
     from torch import Tensor
 
@@ -79,7 +78,8 @@ def py_focal_loss_with_prob(
     reduction: str = "mean",
     avg_factor: int | None = None,
 ):
-    """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
+    """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`.
+
     Different from `py_sigmoid_focal_loss`, this function accepts probability
     as input.
 
