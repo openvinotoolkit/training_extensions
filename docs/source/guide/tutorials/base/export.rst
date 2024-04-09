@@ -66,7 +66,20 @@ using the command below:
                --export_format EXPORTABLE_CODE
                --work-dir outputs/deploy
 
-After that, you can use the resulting ``openvino.zip`` archive in other applications.
+After that, you can use the resulting ``exportable_code.zip`` archive in other applications.
+
+4. It is also possible to pass already exported/optimized OpenVINO IR model
+to create archive with demo and pack in the IR model.
+
+.. code-block:: shell
+
+    (otx) ...$ otx export -c CONFIG
+               --checkpoint {OPENVINO_IR.XML}
+               --work-dir outputs/deploy
+
+.. note::
+
+    You can also obtain ``exportable_code.zip`` right away during model optimization passing ``export_demo_package=True`` parameter to CLI or API call.
 
 *************
 Demonstration
@@ -75,7 +88,7 @@ Demonstration
 Using the exported demo, we're able to run the model in the demonstration mode outside of this repository, using only the ported ``.zip`` archive with minimum required packages.
 The demo allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario. It is not required to install OTX or PyTorch.
 
-1. Unzip the ``openvino.zip``
+1. Unzip the ``exportable_code.zip``
 archive.
 
 .. code-block::

@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
-import otx
 from otx.core.exporter.exportable_code import demo
 from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
@@ -170,7 +169,6 @@ class OTXModelExporter:
             Path: path to the exported model.
         """
         work_demo_dir = Path(demo.__file__).parent
-        training_extensions_dir = Path(otx.__file__).parents[2]
         parameters: dict[str, Any] = {}
         output_zip_path = output_dir / "exportable_code.zip"
         Path.mkdir(output_dir, exist_ok=True)
@@ -217,7 +215,7 @@ class OTXModelExporter:
             arch.write(work_demo_dir / "demo.py", Path("python") / "demo.py")
             arch.write(work_demo_dir / "setup.py", Path("python") / "setup.py")
             arch.write(work_demo_dir / "README.md", Path("./") / "README.md")
-            arch.write(training_extensions_dir / "LICENSE", Path("./") / "LICENSE")
+            arch.write(work_demo_dir / "LICENSE", Path("./") / "LICENSE")
             # write demo_package
             demo_package = work_demo_dir / "demo_package"
             for root, _, files in os.walk(demo_package):

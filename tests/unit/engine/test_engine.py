@@ -241,6 +241,10 @@ class TestEngine:
         fxt_engine.optimize(max_data_subset_size=100)
         assert mock_ov_model.return_value.optimize.call_args[0][2]["subset_size"] == 100
 
+        # Optimize and export with exportable code
+        fxt_engine.optimize(export_demo_package=True)
+        mock_ov_model.return_value.export.assert_called_once()
+
     def test_explain(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
         mock_process_explain = mocker.patch("otx.algo.utils.xai_utils.process_saliency_maps_in_pred_entity")

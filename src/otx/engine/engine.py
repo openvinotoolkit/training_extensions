@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
@@ -561,6 +562,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
+        export_demo_package: bool = False,
     ) -> Path:
         """Applies NNCF.PTQ to the underlying models (now works only for OV models).
 
@@ -573,6 +575,8 @@ class Engine:
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
             used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
             default settings.
+            export_demo_package (bool): Whether to export demo package with optimized models.
+            It outputs zip archive with stand-alone demo package.
 
         Returns:
             Path: path to the optimized model.
@@ -616,11 +620,21 @@ class Engine:
         if max_data_subset_size is not None:
             ptq_config["subset_size"] = max_data_subset_size
 
-        return model.optimize(
-            Path(self.work_dir),
-            optimize_datamodule,
-            ptq_config,
-        )
+        if not export_demo_package:
+            return model.optimize(
+                Path(self.work_dir),
+                optimize_datamodule,
+                ptq_config,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
+            return model.export(
+                Path(self.work_dir),
+                base_name="optimized",
+                export_format=OTXExportFormatType.EXPORTABLE_CODE,
+                path_to_already_exported_model=tmp_model_path,
+            )
 
     def explain(
         self,
