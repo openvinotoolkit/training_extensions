@@ -84,6 +84,10 @@ V1_V2_NAME_MAP = {
     "Custom_Semantic_Segmentation_SegNext_B": "segnext_b",
     "Custom_Semantic_Segmentation_SegNext_s": "segnext_s",
     "Custom_Semantic_Segmentation_SegNext_t": "segnext_t",
+    "Visual_Prompting_SAM_Tiny_ViT": "sam_tiny_vit",
+    "Visual_Prompting_SAM_ViT_B": "sam_vit_b",
+    "Zero_Shot_SAM_Tiny_ViT": "sam_tiny_vit",
+    "Zero_Shot_SAM_ViT_B": "sam_vit_b",
     # Dataset names
     "anomaly/mvtec/bottle_small/1": "mvtec_bottle_small_1",
     "anomaly/mvtec/bottle_small/2": "mvtec_bottle_small_2",
@@ -140,6 +144,12 @@ V1_V2_NAME_MAP = {
     "semantic_seg/kvasir_medium": "kvasir_medium",
     "semantic_seg/kvasir_large": "kvasir_large",
     "semantic_seg/kvasir_": "all",
+    "visual_prompting/wgisd_small/1": "wgisd_small_1",
+    "visual_prompting/wgisd_small/2": "wgisd_small_2",
+    "visual_prompting/wgisd_small/3": "wgisd_small_3",
+    "visual_prompting/coco_car_person_medium": "coco_car_person_medium",
+    "visual_prompting/Vitens-Coliform-coco": "vitens_coliform",
+    "zero_shot_visual_prompting/coco_car_person_medium": "coco_car_person_medium",
 }
 
 
