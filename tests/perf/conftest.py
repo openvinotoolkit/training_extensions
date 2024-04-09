@@ -393,13 +393,13 @@ def fxt_benchmark_summary(
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
     results = summary.average(results, keys=["task", "model", "data_group", "data"])  # Average out seeds
-    results = results.set_index(["task", "model", "data_group", "data"])
+    results = results.set_index(["task", "data_group", "data"])
     for index, result in results.iterrows():
-        task, model, data_group, data = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
+        task, data_group, data = index
+        model = result["model"]
+        exp_name = f"[Benchmark] {task} | {data_group} | {data}"
         exp_tags = {
             "task": task,
-            "model": model,
             "data_group": data_group,
             "data": data,
         }
@@ -410,7 +410,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
             exp_id = exp.experiment_id
             if exp.lifecycle_stage != "active":
                 client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
+        run_name = f"[{model}] {tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
         run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
