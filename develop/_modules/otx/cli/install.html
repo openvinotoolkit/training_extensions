@@ -364,6 +364,9 @@
         <span class="n">status_code</span> <span class="o">=</span> <span class="n">create_command</span><span class="p">(</span><span class="s2">&quot;install&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">install_args</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">status_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installation Complete: </span><span class="si">{</span><span class="n">install_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot complete installation&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="c1"># https://github.com/Madoshakalaka/pipenv-setup/issues/101</span>
         <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SETUPTOOLS_USE_DISTUTILS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;stdlib&quot;</span>
@@ -374,6 +377,16 @@
             <span class="n">status_code</span> <span class="o">=</span> <span class="n">mim_installation</span><span class="p">(</span><span class="n">mmcv_install_args</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">status_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MMLab Installation Complete: </span><span class="si">{</span><span class="n">mmcv_install_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot complete installation&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1</span>
+        <span class="c1"># https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587</span>
+        <span class="n">status_code</span> <span class="o">=</span> <span class="n">create_command</span><span class="p">(</span><span class="s2">&quot;install&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s2">&quot;jsonargparse==4.27.7&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">status_code</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot install jsonargparse==4.27.7&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="c1"># Patch MMAction2 with src/otx/cli/patches/mmaction2.patch</span>
     <span class="n">patch_mmaction2</span><span class="p">()</span>

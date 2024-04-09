@@ -32,6 +32,7 @@ otx.core
    otx.core.exporter
    otx.core.metrics
    otx.core.model
+   otx.core.optimizer
    otx.core.schedulers
    otx.core.types
    otx.core.utils

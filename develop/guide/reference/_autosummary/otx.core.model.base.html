@@ -317,6 +317,7 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
 <li class="toctree-l4 current active"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="otx.core.optimizer.html">otx.core.optimizer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.schedulers.html">otx.core.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
@@ -582,6 +583,15 @@ comes in mixed precision (some operations, however, remain in FP32).</p>
 <dd class="field-odd"><p>Path</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.patch_optimizer_and_scheduler_for_hpo">
+<span class="sig-name descname"><span class="pre">patch_optimizer_and_scheduler_for_hpo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.patch_optimizer_and_scheduler_for_hpo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.patch_optimizer_and_scheduler_for_hpo" title="Link to this definition">#</a></dt>
+<dd><p>Patch optimizer and scheduler for hyperparameter optimization.</p>
+<p>This is inplace function changing inner states (<cite>optimizer_callable</cite> and <cite>scheduler_callable</cite>).
+Both will be changed to be picklable. In addition, <cite>optimizer_callable</cite> is changed
+to make its hyperparameters gettable.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -962,6 +972,15 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXModel.optimize()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.patch_optimizer_and_scheduler_for_hpo">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.patch_optimizer_and_scheduler_for_hpo()
       </span>
      </code>
     </a>

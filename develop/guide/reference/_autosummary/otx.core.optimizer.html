@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>otx.tools.converter &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>otx.core.optimizer &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.tools.converter';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/_autosummary/otx.core.optimizer';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="otx.tools.translate_mmrecipe" href="otx.tools.translate_mmrecipe.html" />
-    <link rel="prev" title="otx.tools" href="otx.tools.html" />
+    <link rel="next" title="otx.core.schedulers" href="otx.core.schedulers.html" />
+    <link rel="prev" title="otx.core.model.visual_prompting" href="otx.core.model.visual_prompting.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -311,13 +311,13 @@
 <li class="toctree-l4"><a class="reference internal" href="otx.cli.utils.html">otx.cli.utils</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.core.html">otx.core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="otx.core.config.html">otx.core.config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.data.html">otx.core.data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.exporter.html">otx.core.exporter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.metrics.html">otx.core.metrics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.model.html">otx.core.model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="otx.core.optimizer.html">otx.core.optimizer</a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.core.optimizer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.schedulers.html">otx.core.schedulers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.types.html">otx.core.types</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.core.utils.html">otx.core.utils</a></li>
@@ -327,8 +327,8 @@
 <li class="toctree-l3"><a class="reference internal" href="otx.engine.html">otx.engine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.hpo.html">otx.hpo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="otx.recipe.html">otx.recipe</a></li>
-<li class="toctree-l3 current active has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l4 current active"><a class="current reference internal" href="#">otx.tools.converter</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="otx.tools.html">otx.tools</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="otx.tools.converter.html">otx.tools.converter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="otx.tools.translate_mmrecipe.html">otx.tools.translate_mmrecipe</a></li>
 </ul>
 </li>
@@ -374,81 +374,131 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.tools.converter">
-<span id="otx-tools-converter"></span><h1>otx.tools.converter<a class="headerlink" href="#module-otx.tools.converter" title="Link to this heading">#</a></h1>
-<p>Converter for v1 config.</p>
+  <section id="module-otx.core.optimizer">
+<span id="otx-core-optimizer"></span><h1>otx.core.optimizer<a class="headerlink" href="#module-otx.core.optimizer" title="Link to this heading">#</a></h1>
+<p>Modules related to an optimizer.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#otx.tools.converter.ConfigConverter" title="otx.tools.converter.ConfigConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigConverter</span></code></a>()</p></td>
-<td><p>Convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.optimizer.OptimizerCallableSupportHPO" title="otx.core.optimizer.OptimizerCallableSupportHPO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OptimizerCallableSupportHPO</span></code></a>(optimizer_cls, ...)</p></td>
+<td><p>Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.tools.converter.</span></span><span class="sig-name descname"><span class="pre">ConfigConverter</span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="otx.core.optimizer.OptimizerCallableSupportHPO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.optimizer.</span></span><span class="sig-name descname"><span class="pre">OptimizerCallableSupportHPO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_hparams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('lr',)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/optimizer/callable.html#OptimizerCallableSupportHPO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.optimizer.OptimizerCallableSupportHPO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p>
-<p>This class is used to convert ModelTemplate for OTX v1 to OTX v2 recipe dictionary.</p>
-<p class="rubric">Example</p>
-<p>The following examples show how to use the Converter class.
-We expect a config file with ModelTemplate information in json form.</p>
-<p>Convert template.json to dictionary:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">converter</span> <span class="o">=</span> <span class="n">ConfigConverter</span><span class="p">()</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;template.json&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Instantiate an object from the configuration dictionary:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="p">,</span> <span class="n">train_kwargs</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">instantiate</span><span class="p">(</span>
-    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
-    <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;otx-workspace&quot;</span><span class="p">,</span>
-    <span class="n">data_root</span><span class="o">=</span><span class="s2">&quot;tests/assets/car_tree_bug&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-<p>Train the model:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">**</span><span class="n">train_kwargs</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter.convert">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter.convert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter.convert" title="Link to this definition">#</a></dt>
-<dd><p>Convert a configuration file to a default configuration dictionary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – The path to the configuration file.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The default configuration dictionary.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.tools.converter.ConfigConverter.instantiate">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instantiate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.12)"><span class="pre">PathLike</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.12)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.12)"><span class="pre">PathLike</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="otx.engine.html#otx.engine.Engine" title="otx.engine.engine.Engine"><span class="pre">Engine</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/tools/converter.html#ConfigConverter.instantiate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.tools.converter.ConfigConverter.instantiate" title="Link to this definition">#</a></dt>
-<dd><p>Instantiate an object from the configuration dictionary.</p>
+<p>Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – The configuration dictionary.</p></li>
-<li><p><strong>work_dir</strong> (<em>PathLike</em>) – Path to the working directory.</p></li>
-<li><p><strong>data_root</strong> (<em>PathLike</em>) – The root directory for data.</p></li>
+<li><p><strong>optimizer_cls</strong> – Optimizer class type or string class import path. See examples for details.</p></li>
+<li><p><strong>optimizer_kwargs</strong> – Keyword arguments used for the initialization of the given <cite>optimizer_cls</cite>.</p></li>
+<li><p><strong>search_hparams</strong> – Sequence of optimizer hyperparameter names which can be tuned by the OTX HPO algorithm.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing the engine and the train kwargs dictionary.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)">tuple</a></p>
+</dl>
+<p class="rubric">Examples</p>
+<p>This is an example to create <cite>MobileNetV3ForMulticlassCls</cite> with a <cite>SGD</cite> optimizer and
+custom configurations.</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from torch.optim import SGD
+from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls</p>
+<dl>
+<dt>model = MobileNetV3ForMulticlassCls(</dt><dd><p>num_classes=3,
+optimizer=OptimizerCallableSupportHPO(</p>
+<blockquote>
+<div><p>optimizer_cls=SGD,
+optimizer_kwargs={</p>
+<blockquote>
+<div><p>“lr”: 0.1,
+“momentum”: 0.9,
+“weight_decay”: 1e-4,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>),</p>
 </dd>
 </dl>
+<section id="id5">
+<h2>)<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
+<p>It can be created from the string class import path such as</p>
+<p><a href="#id6"><span class="problematic" id="id7">``</span></a><a href="#id8"><span class="problematic" id="id9">`</span></a>python
+from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls</p>
+<dl>
+<dt>model = MobileNetV3ForMulticlassCls(</dt><dd><p>num_classes=3,
+optimizer=OptimizerCallableSupportHPO(</p>
+<blockquote>
+<div><p>optimizer_cls=”torch.optim.SGD”,
+optimizer_kwargs={</p>
+<blockquote>
+<div><p>“lr”: 0.1,
+“momentum”: 0.9,
+“weight_decay”: 1e-4,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>),</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>)<a class="headerlink" href="#id10" title="Link to this heading">#</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.optimizer.OptimizerCallableSupportHPO.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">params_t</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optimizer</span></span></span><a class="reference internal" href="../../../_modules/otx/core/optimizer/callable.html#OptimizerCallableSupportHPO.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.optimizer.OptimizerCallableSupportHPO.__call__" title="Link to this definition">#</a></dt>
+<dd><p>Create <cite>torch.optim.Optimizer</cite> instance for the given parameters.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.optimizer.OptimizerCallableSupportHPO.from_callable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_callable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OptimizerCallable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.core.optimizer.OptimizerCallableSupportHPO" title="otx.core.optimizer.OptimizerCallableSupportHPO"><span class="pre">OptimizerCallableSupportHPO</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/optimizer/callable.html#OptimizerCallableSupportHPO.from_callable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.optimizer.OptimizerCallableSupportHPO.from_callable" title="Link to this definition">#</a></dt>
+<dd><p>Create this class instance from an existing optimizer callable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">
+<span class="sig-name descname"><span class="pre">to_lazy_instance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ClassType</span></span></span><a class="reference internal" href="../../../_modules/otx/core/optimizer/callable.html#OptimizerCallableSupportHPO.to_lazy_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance" title="Link to this definition">#</a></dt>
+<dd><p>Return lazy instance of this class.</p>
+<p>Because OTX is rely on jsonargparse library,
+the default value of class initialization
+argument should be the lazy instance.
+Please refer to <a class="reference external" href="https://jsonargparse.readthedocs.io/en/stable/#default-values">https://jsonargparse.readthedocs.io/en/stable/#default-values</a>
+for more details.</p>
+<p class="rubric">Examples</p>
+<p>This is an example to implement a new model with a <cite>SGD</cite> optimizer and
+custom configurations as a default.</p>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a>python
+class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):</p>
+<blockquote>
+<div><dl>
+<dt>def __init__(</dt><dd><p>self,
+num_classes: int,
+optimizer: OptimizerCallable = OptimizerCallableSupportHPO(</p>
+<blockquote>
+<div><p>optimizer_cls=SGD,
+optimizer_kwargs={</p>
+<blockquote>
+<div><p>“lr”: 0.1,
+“momentum”: 0.9,
+“weight_decay”: 1e-4,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>).to_lazy_instance(),
+scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+metric: MetricCallable = MultiClassClsMetricCallable,
+torch_compile: bool = False,</p>
+</dd>
+</dl>
+<p>) -&gt; None:
+…</p>
+</div></blockquote>
+<p><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a></p>
+</dd></dl>
+
+</section>
 </dd></dl>
 
 </section>
@@ -461,17 +511,17 @@ We expect a config file with ModelTemplate information in json form.</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="otx.tools.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="otx.core.model.visual_prompting.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">otx.tools</p>
+          <p class="prev-next-title">otx.core.model.visual_prompting</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="otx.tools.translate_mmrecipe.html" title="next page">
+  <a class='right-next' id="next-link" href="otx.core.schedulers.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">otx.tools.translate_mmrecipe</p>
+      <p class="prev-next-title">otx.core.schedulers</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -492,28 +542,37 @@ We expect a config file with ModelTemplate information in json form.</p>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter">
+  <a class="reference internal nav-link" href="#otx.core.optimizer.OptimizerCallableSupportHPO">
    <code class="docutils literal notranslate">
     <span class="pre">
-     ConfigConverter
+     OptimizerCallableSupportHPO
     </span>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter.convert">
+    <a class="reference internal nav-link" href="#otx.core.optimizer.OptimizerCallableSupportHPO.__call__">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ConfigConverter.convert()
+       OptimizerCallableSupportHPO.__call__()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.tools.converter.ConfigConverter.instantiate">
+    <a class="reference internal nav-link" href="#otx.core.optimizer.OptimizerCallableSupportHPO.from_callable">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ConfigConverter.instantiate()
+       OptimizerCallableSupportHPO.from_callable()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OptimizerCallableSupportHPO.to_lazy_instance()
       </span>
      </code>
     </a>
@@ -537,7 +596,7 @@ We expect a config file with ModelTemplate information in json form.</p>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/reference/_autosummary/otx.tools.converter.rst.txt">
+    <a href="../../../_sources/guide/reference/_autosummary/otx.core.optimizer.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>
