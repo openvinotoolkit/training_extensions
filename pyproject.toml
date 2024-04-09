@@ -274,6 +274,9 @@ exclude = [
     # Ruff complains it but don't know how to fix since it literally showed no useful logs.
     # https://github.com/openvinotoolkit/training_extensions/actions/runs/7176557723/job/19541622452?pr=2718#step:5:170
     "tests/regression/*.py",
+
+    # Mostly borrowed from jsonargparse codebase
+    "src/otx/core/utils/jsonargparse.py"
 ]
 
 # Same as Black.
