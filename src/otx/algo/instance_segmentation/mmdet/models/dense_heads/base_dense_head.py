@@ -24,7 +24,10 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
 )
 from otx.algo.instance_segmentation.mmdet.structures.bbox import cat_boxes, get_box_tensor, get_box_wh, scale_boxes
 from torch import Tensor
-from torchvision.ops import batched_nms
+
+# TODO(Eugene): replace mmcv.batched_nms with torchvision
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+from mmcv.ops import batched_nms
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict

@@ -1,12 +1,7 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple, Union
+from __future__ import annotations
 
 # TODO(Eugene): replace mmcv.ConvModule with torch.nn.Conv2d + torch.nn.BatchNorm2d + torch.nn.ReLU
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
@@ -20,8 +15,7 @@ from .bbox_head import BBoxHead
 
 @MODELS.register_module()
 class ConvFCBBoxHead(BBoxHead):
-    r"""More general bbox head, with shared conv and fc layers and two optional
-    separated branches.
+    r"""More general bbox head, with shared conv and fc layers and two optional separated branches.
 
     .. code-block:: none
 
@@ -40,9 +34,9 @@ class ConvFCBBoxHead(BBoxHead):
         num_reg_fcs: int = 0,
         conv_out_channels: int = 256,
         fc_out_channels: int = 1024,
-        conv_cfg: Optional[Union[dict, ConfigDict]] = None,
-        norm_cfg: Optional[Union[dict, ConfigDict]] = None,
-        init_cfg: Optional[Union[dict, ConfigDict]] = None,
+        conv_cfg: dict | ConfigDict | None = None,
+        norm_cfg: dict | ConfigDict | None = None,
+        init_cfg: dict | ConfigDict | None = None,
         *args,
         **kwargs,
     ) -> None:
@@ -101,16 +95,11 @@ class ConvFCBBoxHead(BBoxHead):
                 cls_channels = self.loss_cls.get_cls_channels(self.num_classes)
             else:
                 cls_channels = self.num_classes + 1
-            cls_predictor_cfg_ = self.cls_predictor_cfg.copy()
-            cls_predictor_cfg_.update(in_features=self.cls_last_dim, out_features=cls_channels)
-            self.fc_cls = MODELS.build(cls_predictor_cfg_)
+            self.fc_cls = nn.Linear(in_features=self.cls_last_dim, out_features=cls_channels)
         if self.with_reg:
             box_dim = self.bbox_coder.encode_size
             out_dim_reg = box_dim if self.reg_class_agnostic else box_dim * self.num_classes
-            reg_predictor_cfg_ = self.reg_predictor_cfg.copy()
-            if isinstance(reg_predictor_cfg_, (dict, ConfigDict)):
-                reg_predictor_cfg_.update(in_features=self.reg_last_dim, out_features=out_dim_reg)
-            self.fc_reg = MODELS.build(reg_predictor_cfg_)
+            self.fc_reg = nn.Linear(in_features=self.reg_last_dim, out_features=out_dim_reg)
 
         if init_cfg is None:
             # when init_cfg is None,
@@ -173,7 +162,7 @@ class ConvFCBBoxHead(BBoxHead):
             last_layer_dim = self.fc_out_channels
         return branch_convs, branch_fcs, last_layer_dim
 
-    def forward(self, x: Tuple[Tensor]) -> tuple:
+    def forward(self, x: tuple[Tensor]) -> tuple:
         """Forward features from the upstream network.
 
         Args:

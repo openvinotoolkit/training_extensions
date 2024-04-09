@@ -1,23 +1,22 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import warnings
 
 import numpy as np
 import torch
+from torch import Tensor
+
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
 from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
-from torch import Tensor
+from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes
 
 
-def random_boxes(num=1, scale=1, rng=None):
-    """Simple version of ``kwimage.Boxes.random``
+def random_boxes(num: int = 1, scale: int = 1, rng: int | None = None) -> Tensor:
+    """Simple version of ``kwimage.Boxes.random``.
 
     Returns:
         Tensor: shape (n, 4) in x1, y1, x2, y2 format.
@@ -49,8 +48,7 @@ def random_boxes(num=1, scale=1, rng=None):
     tlbr[:, 2] = br_x * scale
     tlbr[:, 3] = br_y * scale
 
-    boxes = torch.from_numpy(tlbr)
-    return boxes
+    return torch.from_numpy(tlbr)
 
 
 class SamplingResult(util_mixins.NiceRepr):
@@ -122,27 +120,29 @@ class SamplingResult(util_mixins.NiceRepr):
             self.pos_gt_bboxes = gt_bboxes[self.pos_assigned_gt_inds.long()]
 
     @property
-    def priors(self):
-        """torch.Tensor: concatenated positive and negative priors"""
+    def priors(self) -> Tensor | BaseBoxes:
+        """torch.Tensor: concatenated positive and negative priors."""
         return cat_boxes([self.pos_priors, self.neg_priors])
 
     @property
-    def bboxes(self):
-        """torch.Tensor: concatenated positive and negative boxes"""
-        warnings.warn("DeprecationWarning: bboxes is deprecated, " 'please use "priors" instead')
+    def bboxes(self) -> Tensor:
+        """torch.Tensor: concatenated positive and negative boxes."""
+        warnings.warn("DeprecationWarning: bboxes is deprecated, please use 'priors' instead")
         return self.priors
 
     @property
-    def pos_bboxes(self):
-        warnings.warn("DeprecationWarning: pos_bboxes is deprecated, " 'please use "pos_priors" instead')
+    def pos_bboxes(self) -> Tensor:
+        """Get positive bboxes."""
+        warnings.warn("DeprecationWarning: pos_bboxes is deprecated, please use 'pos_priors' instead")
         return self.pos_priors
 
     @property
-    def neg_bboxes(self):
-        warnings.warn("DeprecationWarning: neg_bboxes is deprecated, " 'please use "neg_priors" instead')
+    def neg_bboxes(self) -> Tensor:
+        """Get negative bboxes."""
+        warnings.warn("DeprecationWarning: neg_bboxes is deprecated, please use 'neg_priors' instead")
         return self.neg_priors
 
-    def to(self, device):
+    def to(self, device: torch.device | str) -> SamplingResult:
         """Change the device of the data inplace.
 
         Example:
@@ -166,7 +166,7 @@ class SamplingResult(util_mixins.NiceRepr):
         return "{\n" + body + "\n}"
 
     @property
-    def info(self):
+    def info(self) -> dict:
         """Returns a dictionary of info about the object."""
         return {
             "pos_inds": self.pos_inds,
@@ -182,8 +182,10 @@ class SamplingResult(util_mixins.NiceRepr):
         }
 
     @classmethod
-    def random(cls, rng=None, **kwargs):
-        """Args:
+    def random(cls, rng: int | None = None, **kwargs) -> SamplingResult:
+        """Creates a random sampling result for testing purposes.
+
+        Args:
             rng (None | int | numpy.random.RandomState): seed or state.
             kwargs (keyword arguments):
                 - num_preds: Number of predicted boxes.
@@ -235,5 +237,4 @@ class SamplingResult(util_mixins.NiceRepr):
             add_gt_as_proposals=add_gt_as_proposals,
             rng=rng,
         )
-        self = sampler.sample(assign_result=assign_result, pred_instances=pred_instances, gt_instances=gt_instances)
-        return self
+        return sampler.sample(assign_result=assign_result, pred_instances=pred_instances, gt_instances=gt_instances)

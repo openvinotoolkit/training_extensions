@@ -31,11 +31,10 @@ def stack_boxes(data_list: list[Tensor | BaseBoxes], dim: int = 0) -> Tensor | B
     """
     if data_list and isinstance(data_list[0], BaseBoxes):
         return data_list[0].stack(data_list, dim=dim)
-    else:
-        return torch.stack(data_list, dim=dim)
+    return torch.stack(data_list, dim=dim)
 
 
-def samplelist_boxtype2tensor(batch_data_samples: SampleList):
+def samplelist_boxtype2tensor(batch_data_samples: SampleList) -> None:
     """Convert the box type in SampleList to tensor."""
     for data_samples in batch_data_samples:
         if "gt_instances" in data_samples:
@@ -52,7 +51,7 @@ def samplelist_boxtype2tensor(batch_data_samples: SampleList):
                 data_samples.ignored_instances.bboxes = bboxes.tensor
 
 
-def images_to_levels(target: list[Tensor | BaseBoxes], num_levels: list[int]):
+def images_to_levels(target: list[Tensor | BaseBoxes], num_levels: list[int]) -> list[Tensor | BaseBoxes]:
     """Convert targets by image to targets by feature level.
 
     [target_img0, target_img1] -> [target_level0, target_level1, ...]
@@ -177,7 +176,7 @@ def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
 
 
 def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
-    """Unpack ``gt_instances``, ``gt_instances_ignore`` and ``img_metas`` based on ``batch_data_samples.``
+    """Unpack ``gt_instances``, ``gt_instances_ignore`` and ``img_metas`` based on ``batch_data_samples``.
 
     Args:
         batch_data_samples (List[:obj:`DetDataSample`]): The Data
@@ -270,7 +269,6 @@ def empty_instances(
             results.scores = torch.zeros(score_shape, device=device)
             results.labels = torch.zeros((0,), device=device, dtype=torch.long)
         else:
-            # TODO: Handle the case where rescale is false
             img_h, img_w = batch_img_metas[img_id]["ori_shape"][:2]
             # the type of `im_mask` will be torch.bool or torch.uint8,
             # where uint8 if for visualization and debugging.

@@ -1,17 +1,14 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Tuple
+
+from __future__ import annotations
 
 import torch
 from mmengine.registry import MODELS
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 from torch import Tensor
+
+from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 
 from .base_roi_extractor import BaseRoIExtractor
 
@@ -39,7 +36,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
         self,
         roi_layer: ConfigType,
         out_channels: int,
-        featmap_strides: List[int],
+        featmap_strides: list[int],
         finest_scale: int = 56,
         init_cfg: OptMultiConfig = None,
     ) -> None:
@@ -71,7 +68,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
         target_lvls = target_lvls.clamp(min=0, max=num_levels - 1).long()
         return target_lvls
 
-    def forward(self, feats: Tuple[Tensor], rois: Tensor, roi_scale_factor: Optional[float] = None):
+    def forward(self, feats: tuple[Tensor], rois: Tensor, roi_scale_factor: float | None = None):
         """Extractor ROI feats.
 
         Args:

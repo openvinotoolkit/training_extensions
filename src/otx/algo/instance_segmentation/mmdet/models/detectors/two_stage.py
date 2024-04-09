@@ -10,17 +10,13 @@ import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
+from otx.algo.instance_segmentation.mmdet.models.roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType, OptMultiConfig
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 from .base import BaseDetector
-
-NECKS = ["FPN"]
-RPN_HEADS = ["RPNHead"]
-ROI_HEADS = ["CustomRoIHead"]
 
 
 @MODELS.register_module()
@@ -46,8 +42,8 @@ class TwoStageDetector(BaseDetector):
         self.backbone = MODELS.build(backbone)
 
         if neck is not None:
-            if neck.type not in NECKS:
-                msg = f"neck type must be one of {NECKS}, but got {neck.type}"
+            if neck.type != FPN.__name__:
+                msg = f"neck type must be {FPN.__name__}, but got {neck.type}"
                 raise ValueError(msg)
             # pop out type for FPN
             neck.pop("type")
@@ -67,8 +63,8 @@ class TwoStageDetector(BaseDetector):
                     "rpn_head.num_classes = 1 in your config file.",
                 )
                 rpn_head_.update(num_classes=1)
-            if rpn_head_.type not in RPN_HEADS:
-                msg = f"rpn_head type must be one of {RPNHead}, but got {rpn_head_.type}"
+            if rpn_head_.type != RPNHead.__name__:
+                msg = f"rpn_head type must be {RPNHead.__name__}, but got {rpn_head_.type}"
                 raise ValueError(msg)
             # pop out type for RPNHead
             rpn_head_.pop("type")
@@ -79,8 +75,8 @@ class TwoStageDetector(BaseDetector):
             rcnn_train_cfg = train_cfg.rcnn if train_cfg is not None else None
             roi_head.update(train_cfg=rcnn_train_cfg)
             roi_head.update(test_cfg=test_cfg.rcnn)
-            if roi_head.type not in ROI_HEADS:
-                msg = f"roi_head type must be one of {ROI_HEADS}, but got {roi_head.type}"
+            if roi_head.type != CustomRoIHead.__name__:
+                msg = f"roi_head type must be {CustomRoIHead.__name__}, but got {roi_head.type}"
                 raise ValueError(msg)
             # pop out type for RoIHead
             roi_head.pop("type")

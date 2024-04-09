@@ -1,12 +1,7 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Tuple, Union
+from __future__ import annotations
 
 import torch
 import torch.nn.functional as F
@@ -14,48 +9,38 @@ from mmengine.config import ConfigDict
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
+from torch import Tensor, nn
+from torch.nn.modules.utils import _pair
+
 from otx.algo.detection.losses import accuracy
+from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
 from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
-    ConfigType,
     InstanceList,
     OptMultiConfig,
     empty_instances,
     multi_apply,
 )
 from otx.algo.instance_segmentation.mmdet.structures.bbox import get_box_tensor, scale_boxes
-from torch import Tensor, nn
-from torch.nn.modules.utils import _pair
 
 
-@MODELS.register_module()
 class BBoxHead(BaseModule):
-    """Simplest RoI head, with only two fc layers for classification and
-    regression respectively.
-    """
+    """Simplest RoI head, with only two fc layers for classification and regression respectively."""
 
     def __init__(
         self,
+        in_channels: int,
+        roi_feat_size: int,
+        num_classes: int,
+        bbox_coder: dict,
+        loss_cls: dict,
+        loss_bbox: dict,
         with_avg_pool: bool = False,
         with_cls: bool = True,
         with_reg: bool = True,
-        roi_feat_size: int = 7,
-        in_channels: int = 256,
-        num_classes: int = 80,
-        bbox_coder: ConfigType = dict(
-            type="DeltaXYWHBBoxCoder",
-            clip_border=True,
-            target_means=[0.0, 0.0, 0.0, 0.0],
-            target_stds=[0.1, 0.1, 0.2, 0.2],
-        ),
         predict_box_type: str = "hbox",
         reg_class_agnostic: bool = False,
         reg_decoded_bbox: bool = False,
-        reg_predictor_cfg: ConfigType = dict(type="Linear"),
-        cls_predictor_cfg: ConfigType = dict(type="Linear"),
-        loss_cls: ConfigType = dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
-        loss_bbox: ConfigType = dict(type="SmoothL1Loss", beta=1.0, loss_weight=1.0),
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
@@ -70,8 +55,6 @@ class BBoxHead(BaseModule):
         self.predict_box_type = predict_box_type
         self.reg_class_agnostic = reg_class_agnostic
         self.reg_decoded_bbox = reg_decoded_bbox
-        self.reg_predictor_cfg = reg_predictor_cfg
-        self.cls_predictor_cfg = cls_predictor_cfg
 
         self.bbox_coder = TASK_UTILS.build(bbox_coder)
         self.loss_cls = MODELS.build(loss_cls)
@@ -88,47 +71,47 @@ class BBoxHead(BaseModule):
                 cls_channels = self.loss_cls.get_cls_channels(self.num_classes)
             else:
                 cls_channels = num_classes + 1
-            cls_predictor_cfg_ = self.cls_predictor_cfg.copy()
-            cls_predictor_cfg_.update(in_features=in_channels, out_features=cls_channels)
-            self.fc_cls = MODELS.build(cls_predictor_cfg_)
+            self.fc_cls = nn.Linear(in_features=in_channels, out_features=cls_channels)
         if self.with_reg:
             box_dim = self.bbox_coder.encode_size
             out_dim_reg = box_dim if reg_class_agnostic else box_dim * num_classes
-            reg_predictor_cfg_ = self.reg_predictor_cfg.copy()
-            if isinstance(reg_predictor_cfg_, (dict, ConfigDict)):
-                reg_predictor_cfg_.update(in_features=in_channels, out_features=out_dim_reg)
-            self.fc_reg = MODELS.build(reg_predictor_cfg_)
+            self.fc_reg = nn.Linear(in_features=in_channels, out_features=out_dim_reg)
         self.debug_imgs = None
         if init_cfg is None:
             self.init_cfg = []
             if self.with_cls:
                 self.init_cfg += [
-                    dict(type="Normal", std=0.01, override=dict(name="fc_cls")),
+                    {
+                        "type": "Normal",
+                        "std": 0.01,
+                        "override": {"name": "fc_cls"},
+                    },
                 ]
             if self.with_reg:
                 self.init_cfg += [
-                    dict(type="Normal", std=0.001, override=dict(name="fc_reg")),
+                    {
+                        "type": "Normal",
+                        "std": 0.001,
+                        "override": {"name": "fc_reg"},
+                    },
                 ]
 
-    # TODO: Create a SeasawBBoxHead to simplified logic in BBoxHead
     @property
     def custom_cls_channels(self) -> bool:
         """Get custom_cls_channels from loss_cls."""
         return getattr(self.loss_cls, "custom_cls_channels", False)
 
-    # TODO: Create a SeasawBBoxHead to simplified logic in BBoxHead
     @property
     def custom_activation(self) -> bool:
         """Get custom_activation from loss_cls."""
         return getattr(self.loss_cls, "custom_activation", False)
 
-    # TODO: Create a SeasawBBoxHead to simplified logic in BBoxHead
     @property
     def custom_accuracy(self) -> bool:
         """Get custom_accuracy from loss_cls."""
         return getattr(self.loss_cls, "custom_accuracy", False)
 
-    def forward(self, x: Tuple[Tensor]) -> tuple:
+    def forward(self, x: tuple[Tensor]) -> tuple:
         """Forward features from the upstream network.
 
         Args:
@@ -165,8 +148,7 @@ class BBoxHead(BaseModule):
         pos_gt_labels: Tensor,
         cfg: ConfigDict,
     ) -> tuple:
-        """Calculate the ground truth for proposals in the single image
-        according to the sampling results.
+        """Calculate the ground truth for proposals in the single image according to the sampling results.
 
         Args:
             pos_priors (Tensor): Contains all the positive boxes,
@@ -230,12 +212,11 @@ class BBoxHead(BaseModule):
 
     def get_targets(
         self,
-        sampling_results: List[SamplingResult],
+        sampling_results: list[SamplingResult],
         rcnn_train_cfg: ConfigDict,
         concat: bool = True,
     ) -> tuple:
-        """Calculate the ground truth for all samples in a batch according to
-        the sampling_results.
+        """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
         Almost the same as the implementation in bbox_head, we passed
         additional parameters pos_inds_list and neg_inds_list to
@@ -296,10 +277,10 @@ class BBoxHead(BaseModule):
         cls_score: Tensor,
         bbox_pred: Tensor,
         rois: Tensor,
-        sampling_results: List[SamplingResult],
+        sampling_results: list[SamplingResult],
         rcnn_train_cfg: ConfigDict,
         concat: bool = True,
-        reduction_override: Optional[str] = None,
+        reduction_override: str | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the bbox head.
 
@@ -332,7 +313,7 @@ class BBoxHead(BaseModule):
         losses = self.loss(cls_score, bbox_pred, rois, *cls_reg_targets, reduction_override=reduction_override)
 
         # cls_reg_targets is only for cascade rcnn
-        return dict(loss_bbox=losses, bbox_targets=cls_reg_targets)
+        return {"loss_bbox": losses, "bbox_targets": cls_reg_targets}
 
     def loss(
         self,
@@ -343,7 +324,7 @@ class BBoxHead(BaseModule):
         label_weights: Tensor,
         bbox_targets: Tensor,
         bbox_weights: Tensor,
-        reduction_override: Optional[str] = None,
+        reduction_override: str | None = None,
     ) -> dict:
         """Calculate the loss based on the network predictions and targets.
 
@@ -375,7 +356,7 @@ class BBoxHead(BaseModule):
         Returns:
             dict: A dictionary of loss.
         """
-        losses = dict()
+        losses = {}
 
         if cls_score is not None:
             avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
@@ -430,15 +411,14 @@ class BBoxHead(BaseModule):
 
     def predict_by_feat(
         self,
-        rois: Tuple[Tensor],
-        cls_scores: Tuple[Tensor],
-        bbox_preds: Tuple[Tensor],
-        batch_img_metas: List[dict],
-        rcnn_test_cfg: Optional[ConfigDict] = None,
+        rois: tuple[Tensor],
+        cls_scores: tuple[Tensor],
+        bbox_preds: tuple[Tensor],
+        batch_img_metas: list[dict],
+        rcnn_test_cfg: ConfigDict | None = None,
         rescale: bool = False,
     ) -> InstanceList:
-        """Transform a batch of output features extracted from the head into
-        bbox results.
+        """Transform a batch of output features extracted from the head into bbox results.
 
         Args:
             rois (tuple[Tensor]): Tuple of boxes to be transformed.
@@ -489,10 +469,9 @@ class BBoxHead(BaseModule):
         bbox_pred: Tensor,
         img_meta: dict,
         rescale: bool = False,
-        rcnn_test_cfg: Optional[ConfigDict] = None,
+        rcnn_test_cfg: ConfigDict | None = None,
     ) -> InstanceData:
-        """Transform a single image's features extracted from the head into
-        bbox results.
+        """Transform a single image's features extracted from the head into bbox results.
 
         Args:
             roi (Tensor): Boxes to be transformed. Has shape (num_boxes, 5).
@@ -583,9 +562,9 @@ class BBoxHead(BaseModule):
 
     def refine_bboxes(
         self,
-        sampling_results: Union[List[SamplingResult], InstanceList],
+        sampling_results: list[SamplingResult] | InstanceList,
         bbox_results: dict,
-        batch_img_metas: List[dict],
+        batch_img_metas: list[dict],
     ) -> InstanceList:
         """Refine bboxes during training.
 
@@ -650,7 +629,6 @@ class BBoxHead(BaseModule):
         rois = bbox_results["rois"]
         bbox_preds = bbox_results["bbox_pred"]
         if self.custom_activation:
-            # TODO: Create a SeasawBBoxHead to simplified logic in BBoxHead
             cls_scores = self.loss_cls.get_activation(cls_scores)
         if cls_scores.numel() == 0:
             return None
@@ -658,11 +636,12 @@ class BBoxHead(BaseModule):
             # remove background class
             cls_scores = cls_scores[:, :-1]
         elif cls_scores.shape[-1] != self.num_classes:
-            raise ValueError(
+            msg = (
                 "The last dim of `cls_scores` should equal to "
                 "`num_classes` or `num_classes + 1`,"
                 f"but got {cls_scores.shape[-1]}.",
             )
+            raise ValueError(msg)
         labels = torch.where(labels == self.num_classes, cls_scores.argmax(1), labels)
 
         img_ids = rois[:, 0].long().unique(sorted=True)
@@ -714,5 +693,4 @@ class BBoxHead(BaseModule):
         assert bbox_pred.size()[1] == reg_dim
 
         max_shape = img_meta["img_shape"]
-        regressed_bboxes = self.bbox_coder.decode(priors, bbox_pred, max_shape=max_shape)
-        return regressed_bboxes
+        return self.bbox_coder.decode(priors, bbox_pred, max_shape=max_shape)

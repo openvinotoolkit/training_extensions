@@ -1,19 +1,19 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional, Tuple
 
 import torch
+
+# TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+from mmcv.ops import RoIAlign
 from mmengine.model import BaseModule
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 from torch import Tensor, nn
-from torchvision import ops
+
+from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 
 
 class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
@@ -32,7 +32,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         self,
         roi_layer: ConfigType,
         out_channels: int,
-        featmap_strides: List[int],
+        featmap_strides: list[int],
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
@@ -45,7 +45,7 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         """int: Number of input feature maps."""
         return len(self.featmap_strides)
 
-    def build_roi_layers(self, layer_cfg: ConfigType, featmap_strides: List[int]) -> nn.ModuleList:
+    def build_roi_layers(self, layer_cfg: ConfigType, featmap_strides: list[int]) -> nn.ModuleList:
         """Build RoI operator to extract feature from each level feature map.
 
         Args:
@@ -63,13 +63,10 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         """
         cfg = layer_cfg.copy()
         layer_type = cfg.pop("type")
-        if isinstance(layer_type, str):
-            assert hasattr(ops, layer_type)
-            layer_cls = getattr(ops, layer_type)
-        else:
-            layer_cls = layer_type
-        roi_layers = nn.ModuleList([layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
-        return roi_layers
+        if layer_type != RoIAlign.__name__:
+            msg = f"Unsupported RoI layer type {layer_type}"
+            raise ValueError(msg)
+        return nn.ModuleList([RoIAlign(spatial_scale=1 / s, **cfg) for s in featmap_strides])
 
     def roi_rescale(self, rois: Tensor, scale_factor: float) -> Tensor:
         """Scale RoI coordinates by scale factor.
@@ -91,11 +88,10 @@ class BaseRoIExtractor(BaseModule, metaclass=ABCMeta):
         x2 = cx + new_w * 0.5
         y1 = cy - new_h * 0.5
         y2 = cy + new_h * 0.5
-        new_rois = torch.stack((rois[:, 0], x1, y1, x2, y2), dim=-1)
-        return new_rois
+        return torch.stack((rois[:, 0], x1, y1, x2, y2), dim=-1)
 
     @abstractmethod
-    def forward(self, feats: Tuple[Tensor], rois: Tensor, roi_scale_factor: Optional[float] = None) -> Tensor:
+    def forward(self, feats: tuple[Tensor], rois: Tensor, roi_scale_factor: float | None = None) -> Tensor:
         """Extractor ROI feats.
 
         Args:
