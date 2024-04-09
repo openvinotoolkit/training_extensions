@@ -520,10 +520,7 @@ class Engine:
         if ckpt_path is None:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
-
-        self.model.eval()
         is_ir_ckpt = Path(ckpt_path).suffix in [".xml"]
-        path_to_already_exported_model = ckpt_path if is_ir_ckpt else None
 
         if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
             msg = (
@@ -541,6 +538,7 @@ class Engine:
             )
 
         if not is_ir_ckpt:
+            self.model.eval()
             loaded_checkpoint = torch.load(ckpt_path)
             self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
             self.model.load_state_dict(loaded_checkpoint)
@@ -551,7 +549,6 @@ class Engine:
             base_name=self._EXPORTED_MODEL_BASE_NAME,
             export_format=export_format,
             precision=export_precision,
-            path_to_already_exported_model=path_to_already_exported_model,
         )
 
         self.model.explain_mode = False
@@ -629,11 +626,9 @@ class Engine:
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
-            return model.export(
-                Path(self.work_dir),
-                base_name="optimized",
+            return self.export(
+                checkpoint=tmp_model_path,
                 export_format=OTXExportFormatType.EXPORTABLE_CODE,
-                path_to_already_exported_model=tmp_model_path,
             )
 
     def explain(

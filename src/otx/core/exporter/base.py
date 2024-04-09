@@ -13,8 +13,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
+from openvino.model_api.models import Model
+
 from otx.core.exporter.exportable_code import demo
-from otx.core.types import PathLike
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 
@@ -69,7 +70,6 @@ class OTXModelExporter:
         base_model_name: str = "exported_model",
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        path_to_already_exported_model: PathLike | None = None,
     ) -> Path:
         """Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.
 
@@ -79,9 +79,6 @@ class OTXModelExporter:
             base_model_name (str, optional): exported model name
             format (OTXExportFormatType): final format of the exported model
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            path_to_already_exported_model (PathLike, optional): Only valid for
-                export_format=OTXExportFormatType.EXPORTABLE_CODE.
-                Path to the already exported model to add it in exportable code
 
         Returns:
             Path: path to the exported model
@@ -96,7 +93,6 @@ class OTXModelExporter:
                 output_dir,
                 base_model_name,
                 precision,
-                path_to_already_exported_model,
             )
 
         msg = f"Unsupported export format: {export_format}"
@@ -153,7 +149,6 @@ class OTXModelExporter:
         output_dir: Path,
         base_model_name: str = "exported_model",
         precision: OTXPrecisionType = OTXPrecisionType.FP32,
-        path_to_already_exported_model: PathLike | None = None,
     ) -> Path:
         """Export to zip folder final OV IR model with runable demo.
 
@@ -162,8 +157,6 @@ class OTXModelExporter:
             output_dir (Path): path to the directory to store export artifacts
             base_model_name (str, optional): exported model name
             precision (OTXExportPrecisionType, optional): precision of the exported model's weights
-            path_to_already_exported_model (PathLike, optional): path to the already
-                exported model to add it in exportable code
 
         Returns:
             Path: path to the exported model.
@@ -172,26 +165,28 @@ class OTXModelExporter:
         parameters: dict[str, Any] = {}
         output_zip_path = output_dir / "exportable_code.zip"
         Path.mkdir(output_dir, exist_ok=True)
+        is_ir_model = isinstance(model, Model)
+
         with tempfile.TemporaryDirectory() as temp_dir, ZipFile(output_zip_path, "x") as arch:
             # model files
             path_to_model = (
                 self.to_openvino(model, Path(temp_dir), base_model_name, precision)
-                if not path_to_already_exported_model
-                else Path(path_to_already_exported_model)
+                if not is_ir_model
+                else Path(model.inference_adapter.model_path)
             )
 
             if not path_to_model.exists():
                 msg = f"File {path_to_model} does not exist. Check the model path."
                 raise RuntimeError(msg)
 
-            if not path_to_already_exported_model and self.metadata is not None:
+            if not is_ir_model and self.metadata is not None:
                 parameters["type_of_model"] = self.metadata.get(("model_info", "task_type"), "")
                 parameters["converter_type"] = self.metadata.get(("model_info", "model_type"), "")
                 parameters["model_parameters"] = {
                     "labels": self.metadata.get(("model_info", "labels"), ""),
                     "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
                 }
-            elif path_to_already_exported_model:
+            elif is_ir_model:
                 model_info = model.get_model().rt_info["model_info"]
                 parameters["type_of_model"] = model_info["task_type"].value if "task_type" in model_info else ""
                 parameters["converter_type"] = model_info["model_type"].value if "model_type" in model_info else ""
