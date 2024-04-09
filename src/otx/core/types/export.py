@@ -128,28 +128,28 @@ class TaskLevelExportParameters:
                 },
             )
 
-        if self.multilabel:
+        if self.multilabel is not None:
             metadata[("model_info", "multilabel")] = str(self.multilabel)
 
-        if self.hierarchical:
+        if self.hierarchical is not None:
             metadata[("model_info", "hierarchical")] = str(self.hierarchical)
 
-        if self.confidence_threshold:
+        if self.confidence_threshold is not None:
             metadata[("model_info", "confidence_threshold")] = str(self.confidence_threshold)
 
-        if self.iou_threshold:
+        if self.iou_threshold is not None:
             metadata[("model_info", "iou_threshold")] = str(self.iou_threshold)
 
-        if self.return_soft_prediction:
+        if self.return_soft_prediction is not None:
             metadata[("model_info", "return_soft_prediction")] = str(self.return_soft_prediction)
 
-        if self.soft_threshold:
+        if self.soft_threshold is not None:
             metadata[("model_info", "soft_threshold")] = str(self.soft_threshold)
 
-        if self.blur_strength:
+        if self.blur_strength is not None:
             metadata[("model_info", "blur_strength")] = str(self.blur_strength)
 
-        if self.tile_config:
+        if self.tile_config is not None:
             metadata.update(
                 {
                     ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
