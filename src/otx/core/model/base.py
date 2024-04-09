@@ -33,7 +33,8 @@ from otx.core.data.entity.base import (
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
-from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.optimizer.callable import OptimizerCallableSupportHPO
+from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import LabelInfo, NullLabelInfo
@@ -674,6 +675,19 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             return None
 
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
+
+    def patch_optimizer_and_scheduler_for_hpo(self) -> None:
+        """Patch optimizer and scheduler for hyperparameter optimization.
+
+        This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
+        Both will be changed to be picklable. In addition, `optimizer_callable` is changed
+        to make its hyperparameters gettable.
+        """
+        if not isinstance(self.optimizer_callable, OptimizerCallableSupportHPO):
+            self.optimizer_callable = OptimizerCallableSupportHPO.from_callable(self.optimizer_callable)
+
+        if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
+            self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
