@@ -79,7 +79,7 @@ class TestOTXZeroShotVisualPromptingLitModule:
 
     def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_lit_module) -> None:
         """Test on_test_start."""
-        otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_lit_module.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -96,7 +96,7 @@ class TestOTXZeroShotVisualPromptingLitModule:
 
     def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_lit_module) -> None:
         """Test on_predict_start."""
-        otx_zero_shot_visual_prompting_lit_module.model.load_latest_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_lit_module.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -111,22 +111,14 @@ class TestOTXZeroShotVisualPromptingLitModule:
         mocker_setup_data.assert_called_once()
         mocker_reset.assert_called_once()
 
-    def test_on_train_epoch_end(self, mocker, tmpdir, otx_zero_shot_visual_prompting_lit_module) -> None:
+    def test_on_train_epoch_end(self, mocker, otx_zero_shot_visual_prompting_lit_module) -> None:
         """Test on_train_epoch_end."""
         otx_zero_shot_visual_prompting_lit_module.model.save_outputs = True
-        otx_zero_shot_visual_prompting_lit_module.model.root_reference_info = tmpdir
-        otx_zero_shot_visual_prompting_lit_module.model.reference_feats = torch.tensor(1)
-        otx_zero_shot_visual_prompting_lit_module.model.used_indices = torch.tensor(1)
-        mocker_mkdir = mocker.patch("otx.core.model.module.visual_prompting.Path.mkdir")
-        mocker.patch("otx.core.model.module.visual_prompting.Path.open")
-        mocker_torch_save = mocker.patch("otx.core.model.module.visual_prompting.torch.save")
-        mocker_pickle_dump = mocker.patch("otx.core.model.module.visual_prompting.pickle.dump")
+        otx_zero_shot_visual_prompting_lit_module.model.save_reference_info = Mock()
+        otx_zero_shot_visual_prompting_lit_module.trainer = Mock()
+        mocker.patch.object(otx_zero_shot_visual_prompting_lit_module.trainer, "default_root_dir")
 
         otx_zero_shot_visual_prompting_lit_module.on_train_epoch_end()
-
-        mocker_mkdir.assert_called_once()
-        mocker_torch_save.assert_called_once()
-        mocker_pickle_dump.assert_called_once()
 
     def test_inference_step(
         self,

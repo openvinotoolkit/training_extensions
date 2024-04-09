@@ -151,6 +151,21 @@ def test_otx_export_infer(
         if task in ("h_label_cls") and not test_recipe.endswith("openvino_model.yaml"):
             command_cfg.extend(["--metric.num_multiclass_heads", "2"])
             command_cfg.extend(["--metric.num_multilabel_classes", "3"])
+
+        # Zero-shot visual prompting needs to specify `infer_reference_info_root`
+        if task in ["zero_shot_visual_prompting"]:
+            try:
+                idx_task = checkpoint_path.split("/").index(f"otx_train_{model_name}")
+            except ValueError:
+                idx_task = checkpoint_path.split("/").index(f"otx_test_{model_name}")
+
+            command_cfg.extend(
+                [
+                    "--model.init_args.infer_reference_info_root",
+                    str(Path(checkpoint_path).parents[-idx_task] / f"otx_train_{model_name}/outputs/.latest/train"),
+                ],
+            )
+
         run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
         return tmp_path_test
