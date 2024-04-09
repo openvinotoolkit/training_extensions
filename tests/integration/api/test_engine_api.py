@@ -173,7 +173,7 @@ def test_otx_hpo(
         pytest.xfail(reason=reason)
 
     model = EfficientNetB0ForMulticlassCls(num_classes=2)
-    hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2)
+    hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2, num_workers=1)
     work_dir = str(tmp_path)
     engine = Engine(
         data_root=fxt_target_dataset_per_task[task.lower()],

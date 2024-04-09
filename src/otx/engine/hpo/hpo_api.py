@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 
 AVAILABLE_HP_NAME_MAP = {
     "data.config.train_subset.batch_size": "datamodule.config.train_subset.batch_size",
-    "optimizer": "optimizer.optimizer_kwargs",
-    "scheduler": "scheduler.keywords",
+    "optimizer": "optimizer_callable.optimizer_kwargs",
+    # "scheduler": "scheduler.keywords",  NOTE need to revisit after SchedulerCallableSupportHPO is implemted
 }
 
 
