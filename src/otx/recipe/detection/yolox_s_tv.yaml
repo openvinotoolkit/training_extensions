@@ -75,10 +75,12 @@ overrides:
                 - 114
               max_cached_images: 10
           - class_path: otx.core.data.transform_libs.torchvision.YOLOXHSVRandomAug
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size: 640
-              antialias: True
+              scale:
+                - 640
+                - 640
+              keep_ratio: True
           - class_path: torchvision.transforms.v2.RandomHorizontalFlip
             init_args:
               p: 0.5
@@ -88,20 +90,24 @@ overrides:
       val_subset:
         batch_size: 8
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size: 640
-              antialias: True
+              scale:
+                - 640
+                - 640
+              keep_ratio: True
           - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
             init_args:
               pad_val: 114
       test_subset:
         batch_size: 8
         transforms:
-          - class_path: otx.core.data.transform_libs.torchvision.ResizetoLongestEdge
+          - class_path: otx.core.data.transform_libs.torchvision.Resize
             init_args:
-              size: 640
-              antialias: True
+              scale:
+                - 640
+                - 640
+              keep_ratio: True
           - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
             init_args:
               pad_val: 114

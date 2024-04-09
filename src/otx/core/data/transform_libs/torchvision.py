@@ -6,35 +6,39 @@
 from __future__ import annotations
 
 import copy
-import cv2
-from numpy import random
 from inspect import isclass
 from typing import TYPE_CHECKING, Any, Sequence
 
+import cv2
 import numpy as np
 import PIL.Image
 import torch
 import torchvision.transforms.v2 as tvt_v2
 from datumaro.components.media import Video
 from lightning.pytorch.cli import instantiate_class
+from numpy import random
 from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision._utils import sequence_to_str
-from torchvision.ops.boxes import box_iou
 from torchvision.transforms.v2 import functional as F  # noqa: N812
-from torchvision.transforms.v2._utils import get_bounding_boxes, query_size
-from torchvision.transforms.v2.functional._color import _rgb_to_hsv, _hsv_to_rgb
+from torchvision.transforms.v2.functional._color import (_hsv_to_rgb,
+                                                         _rgb_to_hsv)
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import Points, _resize_image_info, _crop_image_info
-from otx.core.data.transform_libs.utils import (cache_randomness, clip_bboxes, centers_bboxes,
-                                                rescale_bboxes, to_np_image,
-                                                translate_bboxes, is_inside_bboxes, flip_bboxes, overlap_bboxes)
+from otx.core.data.entity.base import (Points, _crop_image_info,
+                                       _resize_image_info)
+from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness,
+                                                centers_bboxes, clip_bboxes,
+                                                flip_bboxes, is_inside_bboxes,
+                                                overlap_bboxes, rescale_bboxes,
+                                                rescale_size, to_np_image,
+                                                translate_bboxes)
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
     from otx.core.config.data import SubsetConfig
+    from otx.core.data.entity.detection import DetDataEntity
 
 
 def custom_query_size(flat_inputs: list[Any]) -> tuple[int, int]:  # noqa: D103
@@ -388,10 +392,8 @@ class MinIoURandomCrop(tvt_v2.Transform):
 
                 # adjust the img no matter whether the gt is empty before crop
                 img = img[patch[1]:patch[3], patch[0]:patch[2]]
-                inputs.image = img
+                inputs.image = F.to_image(img)
                 inputs.img_info = _crop_image_info(inputs.img_info, patch[3] - patch[1], patch[2] - patch[0])
-                inputs = inputs.to_tv_image()
-
                 return inputs
 
     def __repr__(self) -> str:
@@ -399,6 +401,127 @@ class MinIoURandomCrop(tvt_v2.Transform):
         repr_str += f'(min_ious={self.min_ious}, '
         repr_str += f'min_crop_size={self.min_crop_size}, '
         repr_str += f'bbox_clip_border={self.bbox_clip_border})'
+        return repr_str
+
+
+class Resize(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.Resize with torchvision format.
+    
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L135-L246
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+
+    Args:
+        scale (int or tuple): Images scales for resizing with (height, width). Defaults to None
+        scale_factor (float or tuple[float]): Scale factors for resizing with (height, width).
+            Defaults to None.
+        keep_ratio (bool): Whether to keep the aspect ratio when resizing the
+            image. Defaults to False.
+        clip_object_border (bool): Whether to clip the objects
+            outside the border of the image. In some dataset like MOT17, the gt
+            bboxes are allowed to cross the border of images. Therefore, we
+            don't need to clip the gt bboxes in these cases. Defaults to True.
+        interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
+    """
+    cv2_interp_codes = {
+        'nearest': cv2.INTER_NEAREST,
+        'bilinear': cv2.INTER_LINEAR,
+        'bicubic': cv2.INTER_CUBIC,
+        'area': cv2.INTER_AREA,
+        'lanczos': cv2.INTER_LANCZOS4
+    }
+
+    def __init__(self,
+                 scale: int | tuple[int, int] = None,
+                 scale_factor: float | tuple[float, float] = None,
+                 keep_ratio: bool = False,
+                 clip_object_border: bool = True,
+                 interpolation: str = "bilinear") -> None:
+        super().__init__()
+
+        assert scale is not None or scale_factor is not None, (
+            '`scale` and'
+            '`scale_factor` can not both be `None`')
+        if scale is None:
+            self.scale = None
+        else:
+            if isinstance(scale, int):
+                self.scale = (scale, scale)
+            else:
+                self.scale = scale
+
+        self.interpolation = interpolation
+        self.keep_ratio = keep_ratio
+        self.clip_object_border = clip_object_border
+        if scale_factor is None:
+            self.scale_factor = None
+        elif isinstance(scale_factor, float):
+            self.scale_factor = (scale_factor, scale_factor)
+        elif isinstance(scale_factor, tuple):
+            assert (len(scale_factor)) == 2
+            self.scale_factor = scale_factor
+        else:
+            raise TypeError(
+                f'expect scale_factor is float or Tuple(float), but'
+                f'get {type(scale_factor)}')
+
+    def _resize_img(self, inputs: DetDataEntity) -> DetDataEntity:
+        """Resize images with inputs.img_info.img_shape."""
+        if hasattr(inputs, "image"):
+            img = to_np_image(inputs.image)
+            if self.keep_ratio:
+                h, w = img.shape[:2]
+                new_size, scale_factor = rescale_size((w, h), inputs.img_info.img_shape[::-1], return_scale=True)
+                img = cv2.resize(img, new_size, interpolation=self.cv2_interp_codes[self.interpolation])
+            else:
+                img = cv2.resize(img, inputs.img_info.img_shape[::-1], interpolation=self.cv2_interp_codes[self.interpolation])
+
+            inputs.image = F.to_image(img)
+            inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
+        return inputs
+
+    def _resize_bboxes(self, inputs: DetDataEntity) -> DetDataEntity:
+        """Resize bounding boxes with inputs.img_info.scale_factor."""
+        if hasattr(inputs, "bboxes"):
+            bboxes = inputs.bboxes
+            bboxes = rescale_bboxes(bboxes, inputs.img_info.scale_factor[::-1]) # HW -> WH
+            if self.clip_object_border:
+                bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
+            inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
+        return inputs
+
+    def forward(self, *inputs: Any) -> Any:
+        """Transform function to resize images and bounding boxes.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+        Returns:
+            dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
+            'scale', 'scale_factor', 'height', 'width', and 'keep_ratio' keys
+            are updated in result dict.
+        """
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        if self.scale:
+            inputs.img_info = _resize_image_info(inputs.img_info, self.scale)
+        else:
+            img_shape = to_np_image(inputs.image).shape[:2]
+            inputs.img_info = _resize_image_info(inputs.img_info, _scale_size(img_shape[::-1], self.scale_factor))
+
+        inputs = self._resize_img(inputs)
+        inputs = self._resize_bboxes(inputs)
+
+        return inputs
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(scale={self.scale}, '
+        repr_str += f'scale_factor={self.scale_factor}, '
+        repr_str += f'keep_ratio={self.keep_ratio}, '
+        repr_str += f'clip_object_border={self.clip_object_border}), '
+        repr_str += f'interpolation={self.interpolation})'
         return repr_str
 
 
@@ -565,12 +688,10 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes = mosaic_bboxes[inside_inds]
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
-        inputs.image = mosaic_img
+        inputs.image = F.to_image(mosaic_img)
         inputs.img_info = _resize_image_info(inputs.img_info, mosaic_img.shape[:2])
         inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
-
-        inputs = inputs.to_tv_image()
         return inputs
 
     def _mosaic_combine(self, loc: str, center_position_xy: Sequence[float], img_shape_wh: Sequence[int]) -> tuple[tuple[int], tuple[int]]:
@@ -836,12 +957,10 @@ class CachedMixUp(tvt_v2.Transform):
         mixup_gt_bboxes = mixup_gt_bboxes[inside_inds]
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
-        inputs.image = mixup_img.astype(np.uint8)
+        inputs.image = F.to_image(mixup_img.astype(np.uint8))
         inputs.img_info = _resize_image_info(inputs.img_info, mixup_img.shape[:2])
         inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
-
-        inputs = inputs.to_tv_image()
         return inputs
 
     def __repr__(self):
