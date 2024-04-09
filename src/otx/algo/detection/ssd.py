@@ -28,12 +28,12 @@ from otx.core.utils.config import convert_conf_to_mmconfig_dict
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmdet.models.task_modules.prior_generators.anchor_generator import AnchorGenerator
     from mmdet.structures import DetDataSample, OptSampleList, SampleList
     from mmdet.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
     from omegaconf import DictConfig
     from torch import Tensor, device
 
+    from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
 
@@ -408,7 +408,7 @@ class SSD(MMDetCompatibleModel):
                 anchor_generator.heights = new_anchors[1]
                 anchor_generator.gen_base_anchors()
 
-    def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: AnchorGenerator) -> tuple | None:
+    def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: SSDAnchorGeneratorClustered) -> tuple | None:
         """Get new anchors for SSD from OTXDataset."""
         from mmdet.datasets.transforms import Resize
 

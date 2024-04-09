@@ -9,6 +9,7 @@ import warnings
 
 import numpy as np
 import torch
+from mmdet.registry import TASK_UTILS
 from mmdet.structures.bbox import HorizontalBoxes
 from torch.nn.modules.utils import _pair
 
@@ -481,6 +482,7 @@ class AnchorGenerator:
         return repr_str
 
 
+@TASK_UTILS.register_module()
 class SSDAnchorGeneratorClustered(AnchorGenerator):
     """Custom Anchor Generator for SSD."""
 

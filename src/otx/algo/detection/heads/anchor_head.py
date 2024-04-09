@@ -9,8 +9,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.task_modules.prior_generators import AnchorGenerator, anchor_inside_flags
-from mmdet.models.task_modules.samplers import PseudoSampler
+from mmdet.models.task_modules.prior_generators import anchor_inside_flags
 from mmdet.models.utils import images_to_levels, multi_apply, unmap
 from mmdet.registry import MODELS, TASK_UTILS
 from mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
@@ -18,6 +17,8 @@ from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.base_head import BaseDenseHead
+from otx.algo.detection.heads.base_sampler import PseudoSampler
+from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
 
 if TYPE_CHECKING:
     from mmdet.utils import InstanceList, OptConfigType, OptInstanceList, OptMultiConfig
@@ -86,7 +87,7 @@ class AnchorHead(BaseDenseHead):
             if train_cfg.get("sampler", None) is not None:
                 self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
             else:
-                self.sampler = PseudoSampler(context=self)
+                self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
         self.fp16_enabled = False
 
