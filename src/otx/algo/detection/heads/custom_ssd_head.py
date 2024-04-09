@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmdet.models.losses import smooth_l1_loss
-from mmdet.models.task_modules.samplers import PseudoSampler
 from mmdet.models.utils import multi_apply
 from mmdet.registry import MODELS
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
+from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
@@ -120,7 +120,7 @@ class SSDHead(AnchorHead):
             assigner_args = self.train_cfg["assigner"]
             assigner_args.pop("type")
             self.assigner = MaxIoUAssigner(**assigner_args)
-            self.sampler = PseudoSampler(context=self)
+            self.sampler = PseudoSampler(context=self)  # type: ignore[no-untyped-call]
 
     def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], list[Tensor]]:
         """Forward features from the upstream network.
