@@ -359,7 +359,7 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-.. note:::
+.. note::
 
     You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
 

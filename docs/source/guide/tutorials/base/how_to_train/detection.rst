@@ -539,7 +539,7 @@ with OpenVINO™ PTQ.
 The optimization time highly relies on the hardware characteristics, for example on Intel(R) Core(TM) i9-11900 it took about 25 seconds.
 Please note, that PTQ will take some time without logging to optimize the model.
 
-.. note:::
+.. note::
 
     You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
 
