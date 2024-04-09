@@ -117,7 +117,7 @@ def fxt_seg_data_entity() -> tuple[tuple, SegDataEntity, SegBatchDataEntity]:
     img_size = (32, 32)
     fake_image = torch.zeros(size=(3, *img_size), dtype=torch.uint8).numpy()
     fake_image_info = ImageInfo(img_idx=0, img_shape=img_size, ori_shape=img_size)
-    fake_masks = Mask(torch.randint(low=0, high=255, size=img_size, dtype=torch.uint8))
+    fake_masks = Mask(torch.randint(low=0, high=2, size=img_size, dtype=torch.uint8))
     # define data entity
     single_data_entity = SegDataEntity(
         image=fake_image,

@@ -122,6 +122,9 @@ def otx_install(option: str | None = None, verbose: bool = False, do_not_install
         status_code = create_command("install").main(install_args)
         if status_code == 0:
             console.log(f"Installation Complete: {install_args}")
+        else:
+            msg = "Cannot complete installation"
+            raise RuntimeError(msg)
 
         # https://github.com/Madoshakalaka/pipenv-setup/issues/101
         os.environ["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
@@ -132,6 +135,16 @@ def otx_install(option: str | None = None, verbose: bool = False, do_not_install
             status_code = mim_installation(mmcv_install_args)
             if status_code == 0:
                 console.log(f"MMLab Installation Complete: {mmcv_install_args}")
+            else:
+                msg = "Cannot complete installation"
+                raise RuntimeError(msg)
+
+        # TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1
+        # https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587
+        status_code = create_command("install").main(["jsonargparse==4.27.7"])
+        if status_code != 0:
+            msg = "Cannot install jsonargparse==4.27.7"
+            raise RuntimeError(msg)
 
     # Patch MMAction2 with src/otx/cli/patches/mmaction2.patch
     patch_mmaction2()
