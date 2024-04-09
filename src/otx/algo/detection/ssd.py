@@ -21,6 +21,7 @@ from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallab
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.utils.build import build_mm_model, modify_num_classes
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     import torch
@@ -269,6 +270,8 @@ class SSD(MMDetCompatibleModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
+        mean, std = get_mean_std_from_data_processing(self.config)
+
         return MMdeployExporter(
             model_builder=self._create_model,
             model_cfg=deepcopy(self.config),
@@ -276,6 +279,8 @@ class SSD(MMDetCompatibleModel):
             test_pipeline=self._make_fake_test_pipeline(),
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
+            mean=mean,
+            std=std,
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,

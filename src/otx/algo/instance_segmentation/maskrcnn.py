@@ -16,6 +16,7 @@ from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -54,6 +55,8 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
+        mean, std = get_mean_std_from_data_processing(self.config)
+
         return MMdeployExporter(
             model_builder=self._create_model,
             model_cfg=deepcopy(self.config),
@@ -61,6 +64,8 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
             test_pipeline=self._make_fake_test_pipeline(),
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
+            mean=mean,
+            std=std,
             resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
             pad_value=0,
             swap_rgb=False,
@@ -102,6 +107,8 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
         if self.image_size is None:
             raise ValueError(self.image_size)
 
+        mean, std = get_mean_std_from_data_processing(self.config)
+
         return MMdeployExporter(
             model_builder=self._create_model,
             model_cfg=deepcopy(self.config),
@@ -109,6 +116,8 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
             test_pipeline=self._make_fake_test_pipeline(),
             task_level_export_parameters=self._export_parameters,
             input_size=self.image_size,
+            mean=mean,
+            std=std,
             resize_mode="standard",  # [TODO](@Eunwoo): need to revert it to fit_to_window after resolving
             pad_value=0,
             swap_rgb=False,
