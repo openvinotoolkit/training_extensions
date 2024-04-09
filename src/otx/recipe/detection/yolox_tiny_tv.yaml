@@ -44,7 +44,7 @@ overrides:
               random_pop: false
               pad_val: 114.0
               max_cached_images: 20
-              img_scale:
+              img_scale: # (H, W)
                 - 640
                 - 640
           - class_path: torchvision.transforms.v2.RandomAffine

@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 import copy
-import random
+import cv2
+from numpy import random
 from inspect import isclass
 from typing import TYPE_CHECKING, Any, Sequence
 
@@ -25,10 +26,10 @@ from torchvision.transforms.v2._utils import get_bounding_boxes, query_size
 from torchvision.transforms.v2.functional._color import _rgb_to_hsv, _hsv_to_rgb
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import Points, _resize_image_info
-from otx.core.data.transform_libs.utils import (cache_randomness, clip_bboxes,
-                                                rescale_bboxes,
-                                                translate_bboxes, is_inside_bboxes, flip_bboxes)
+from otx.core.data.entity.base import Points, _resize_image_info, _crop_image_info
+from otx.core.data.transform_libs.utils import (cache_randomness, clip_bboxes, centers_bboxes,
+                                                rescale_bboxes, to_np_image,
+                                                translate_bboxes, is_inside_bboxes, flip_bboxes, overlap_bboxes)
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
@@ -291,29 +292,10 @@ class PackVideo(tvt_v2.Transform):
         return inputs[0].wrap(image=inputs[0].video, video=[])
 
 
-class MinIoURandomCrop(tvt_v2.RandomIoUCrop):
-    """MinIoURandomCrop inherited from RandomIoUCrop to align with mmdet.transforms.MinIoURandomCrop.
+class MinIoURandomCrop(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.MinIoURandomCrop with torchvision format.
 
-    * Updated
-        - change `ious.max()` to `ious.min()` at L121 because both MinIoURandomCrop and v2.RandomIoUCrop seems similar,
-          but MinIoURandomCrop uses `overlaps.min()` to check if there is at least one box smaller than `min_iou` (https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1432)
-          and v2.RandomIoUCrop uses `ious.max()` to check if all boxes' IoUs are smaller than `min_jaccard_overlap` (https://github.com/pytorch/vision/blob/v0.16.1/torchvision/transforms/v2/_geometry.py#L1217).
-
-        - `trials` in argument from 40 to 50 at L57.
-
-    * Applied in other locations
-        - box translation :
-            mmdet : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1454
-            torchvision : https://github.com/pytorch/vision/blob/v0.16.1/torchvision/transforms/v2/functional/_geometry.py#L1386
-
-        - clip border :
-            mmdet : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1456-L1457
-            torchvision : https://github.com/pytorch/vision/blob/v0.16.1/torchvision/transforms/v2/functional/_geometry.py#L1389
-
-        - except invalid bounding boxes :
-            mmdet : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1453
-            torchvision : https://github.com/pytorch/vision/blob/v0.16.1/torchvision/transforms/v2/_geometry.py#L1232-L1234
-                + SanitizeBoundingBoxes
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1338-L1490
 
     Args:
         min_scale (float, optional): Minimum factors to scale the input size.
@@ -326,96 +308,102 @@ class MinIoURandomCrop(tvt_v2.RandomIoUCrop):
             Default, 50.
     """
 
-    def __init__(
-        self,
-        min_scale: float = 0.3,
-        max_scale: float = 1.0,
-        min_aspect_ratio: float = 0.5,
-        max_aspect_ratio: float = 2.0,
-        sampler_options: list[float] | None = None,
-        trials: int = 50,  # 40 -> 50
-    ):
-        super().__init__(
-            min_scale=min_scale,
-            max_scale=max_scale,
-            min_aspect_ratio=min_aspect_ratio,
-            max_aspect_ratio=max_aspect_ratio,
-            sampler_options=sampler_options,
-            trials=trials,
-        )
+    def __init__(self,
+                 min_ious: Sequence[float] = (0.1, 0.3, 0.5, 0.7, 0.9),
+                 min_crop_size: float = 0.3,
+                 bbox_clip_border: bool = True) -> None:
+        super().__init__()
+        self.min_ious = min_ious
+        self.sample_mode = (1, *min_ious, 0)
+        self.min_crop_size = min_crop_size
+        self.bbox_clip_border = bbox_clip_border
 
-    def _get_params(self, flat_inputs: list[Any]) -> dict[str, Any]:
-        orig_h, orig_w = query_size(flat_inputs)
-        bboxes = get_bounding_boxes(flat_inputs)
+    @cache_randomness
+    def _random_mode(self) -> int | float:
+        return random.choice(self.sample_mode)
 
+    def forward(self, *inputs: Any) -> Any:
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        img = to_np_image(inputs.image)
+        boxes = inputs.bboxes
+        h, w, c = img.shape
         while True:
-            # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1407-L1410
-            # sample an option
-            idx = int(torch.randint(low=0, high=len(self.options), size=(1,)))
-            min_jaccard_overlap = self.options[idx]
-            if min_jaccard_overlap >= 1.0:  # a value larger than 1 encodes the leave as-is option
-                return {}
+            mode = self._random_mode()
+            self.mode = mode
+            if mode == 1:
+                return inputs
 
-            for _ in range(self.trials):
-                # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1414-L1419
-                # check the aspect ratio limitations
-                r = self.min_scale + (self.max_scale - self.min_scale) * torch.rand(2)
-                new_w = int(orig_w * r[0])
-                new_h = int(orig_h * r[1])
-                aspect_ratio = new_w / new_h
-                if not (self.min_aspect_ratio <= aspect_ratio <= self.max_aspect_ratio):
+            min_iou = self.mode
+            for i in range(50):
+                new_w = random.uniform(self.min_crop_size * w, w)
+                new_h = random.uniform(self.min_crop_size * h, h)
+
+                # h / w in [0.5, 2]
+                if new_h / new_w < 0.5 or new_h / new_w > 2:
                     continue
 
-                # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1421-L1428
-                # check for 0 area crops
-                r = torch.rand(2)
-                left = int((orig_w - new_w) * r[0])
-                top = int((orig_h - new_h) * r[1])
-                right = left + new_w
-                bottom = top + new_h
-                if left == right or top == bottom:
+                left = random.uniform(w - new_w)
+                top = random.uniform(h - new_h)
+
+                patch = np.array(
+                    (int(left), int(top), int(left + new_w), int(top + new_h)))
+                # Line or point crop is not allowed
+                if patch[2] == patch[0] or patch[3] == patch[1]:
+                    continue
+                overlaps = overlap_bboxes(
+                    torch.as_tensor(patch.reshape(-1, 4).astype(np.float32)),
+                    boxes).numpy().reshape(-1)
+                if len(overlaps) > 0 and overlaps.min() < min_iou:
                     continue
 
-                # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1439-L1445
-                # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1452-L1453
-                # check for any valid boxes with centers within the crop area
-                xyxy_bboxes = F.convert_bounding_box_format(
-                    bboxes.as_subclass(torch.Tensor),
-                    bboxes.format,
-                    tv_tensors.BoundingBoxFormat.XYXY,
-                )
-                # cx = 0.5 * (xyxy_bboxes[..., 0] + xyxy_bboxes[..., 2])
-                # cy = 0.5 * (xyxy_bboxes[..., 1] + xyxy_bboxes[..., 3])
-                # is_within_crop_area = (left < cx) & (cx < right) & (top < cy) & (cy < bottom)
-                # if not is_within_crop_area.any():
-                #     continue
+                # center of boxes should inside the crop img
+                # only adjust boxes and instance masks when the gt is not empty
+                if len(overlaps) > 0:
+                    # adjust boxes
+                    def is_center_of_bboxes_in_patch(boxes, patch):
+                        centers = centers_bboxes(boxes).numpy()
+                        mask = ((centers[:, 0] > patch[0]) *
+                                (centers[:, 1] > patch[1]) *
+                                (centers[:, 0] < patch[2]) *
+                                (centers[:, 1] < patch[3]))
+                        return mask
 
-                # # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1429-L1433
-                # xyxy_bboxes = xyxy_bboxes[is_within_crop_area]
-                ious = box_iou(
-                    xyxy_bboxes,
-                    torch.tensor([[left, top, right, bottom]], dtype=xyxy_bboxes.dtype, device=xyxy_bboxes.device),
-                )
-                if ious.min() < min_jaccard_overlap:  # max -> min
-                    continue
+                    mask = is_center_of_bboxes_in_patch(boxes, patch)
+                    if not mask.any():
+                        continue
+                    if hasattr(inputs, "bboxes"):
+                        boxes = inputs.bboxes
+                        mask = is_center_of_bboxes_in_patch(boxes, patch)
+                        boxes = boxes[mask]
+                        boxes = translate_bboxes(boxes, [-patch[0], -patch[1]])
+                        if self.bbox_clip_border:
+                            boxes = clip_bboxes(boxes, [patch[3] - patch[1], patch[2] - patch[0]])
+                        inputs.bboxes = tv_tensors.BoundingBoxes(boxes, format="XYXY", canvas_size=(patch[3] - patch[1], patch[2] - patch[0]))
 
-                cx = 0.5 * (xyxy_bboxes[..., 0] + xyxy_bboxes[..., 2])
-                cy = 0.5 * (xyxy_bboxes[..., 1] + xyxy_bboxes[..., 3])
-                is_within_crop_area = (left < cx) & (cx < right) & (top < cy) & (cy < bottom)
-                if not is_within_crop_area.any():
-                    continue
+                        # labels
+                        if hasattr(inputs, "labels"):
+                            inputs.labels = inputs.labels[mask]
 
-                return {
-                    "top": top,
-                    "left": left,
-                    "height": new_h,
-                    "width": new_w,
-                    "is_within_crop_area": is_within_crop_area,
-                }
+                # adjust the img no matter whether the gt is empty before crop
+                img = img[patch[1]:patch[3], patch[0]:patch[2]]
+                inputs.image = img
+                inputs.img_info = _crop_image_info(inputs.img_info, patch[3] - patch[1], patch[2] - patch[0])
+                inputs = inputs.to_tv_image()
+
+                return inputs
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(min_ious={self.min_ious}, '
+        repr_str += f'min_crop_size={self.min_crop_size}, '
+        repr_str += f'bbox_clip_border={self.bbox_clip_border})'
+        return repr_str
 
 
 class CachedMosaic(tvt_v2.Transform):
-    """CachedMosaic converted from mmdet.datasets.transforms.CachedMosaic.
+    """Implementation of mmdet.datasets.transforms.CachedMosaic with torchvision format.
     
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3342-L3573
 
@@ -424,7 +412,7 @@ class CachedMosaic(tvt_v2.Transform):
 
     Args:
         img_scale (Sequence[int]): Image size before mosaic pipeline of single
-            image. The shape order should be (width, height).
+            image. The shape order should be (height, width).
             Defaults to (640, 640).
         center_ratio_range (Sequence[float]): Center ratio range of mosaic
             output. Defaults to (0.5, 1.5).
@@ -460,7 +448,7 @@ class CachedMosaic(tvt_v2.Transform):
         assert 0 <= prob <= 1.0, "The probability should be in range [0,1]. " \
                                  f"got {prob}."
 
-        self.img_scale = img_scale # HW
+        self.img_scale = img_scale # (H, W)
         self.center_ratio_range = center_ratio_range
         self.bbox_clip_border = bbox_clip_border
         self.pad_val = pad_val
@@ -513,16 +501,16 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes = []
         mosaic_bboxes_labels = []
 
-        if inputs.image.ndim == 3:
-            mosaic_img = torch.full(
-                (3, int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)), # CHW
+        if len((inp_img := to_np_image(inputs.image)).shape) == 3:
+            mosaic_img = np.full(
+                (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
                 self.pad_val,
-                dtype=inputs.image.dtype)
+                dtype=inp_img.dtype)
         else:
-            mosaic_img = torch.full(
-                (1, int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
+            mosaic_img = np.full(
+                (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                 self.pad_val,
-                dtype=inputs.image.dtype)
+                dtype=inp_img.dtype)
 
         # mosaic center x, y
         center_x = int(
@@ -538,21 +526,21 @@ class CachedMosaic(tvt_v2.Transform):
             else:
                 results_patch = copy.deepcopy(mix_results[i - 1])
 
-            img_i = results_patch.image
-            h_i, w_i = img_i.shape[-2:]
+            img_i = to_np_image(results_patch.image)
+            h_i, w_i = img_i.shape[:2]
             # keep_ratio resize
             scale_ratio_i = min(self.img_scale[0] / h_i,
                                 self.img_scale[1] / w_i)
-            img_i = F.resize(img_i, [int(h_i * scale_ratio_i), int(w_i * scale_ratio_i)])
+            img_i = cv2.resize(img_i, (int(w_i * scale_ratio_i), int(h_i * scale_ratio_i)), interpolation=cv2.INTER_LINEAR)
 
             # compute the combine parameters
             paste_coord, crop_coord = self._mosaic_combine(
-                loc, center_position, img_i.shape[-2:][::-1])
+                loc, center_position, img_i.shape[:2][::-1])
             x1_p, y1_p, x2_p, y2_p = paste_coord
             x1_c, y1_c, x2_c, y2_c = crop_coord
 
             # crop and paste image
-            mosaic_img[..., y1_p:y2_p, x1_p:x2_p] = img_i[..., y1_c:y2_c, x1_c:x2_c]
+            mosaic_img[y1_p:y2_p, x1_p:x2_p] = img_i[y1_c:y2_c, x1_c:x2_c]
 
             # adjust coordinate
             gt_bboxes_i = results_patch.bboxes
@@ -573,14 +561,16 @@ class CachedMosaic(tvt_v2.Transform):
             mosaic_bboxes = clip_bboxes(mosaic_bboxes, [2 * self.img_scale[0], 2 * self.img_scale[1]])
 
         # remove outside bboxes
-        inside_inds = is_inside_bboxes(mosaic_bboxes, [2 * self.img_scale[0], 2 * self.img_scale[1]])
+        inside_inds = is_inside_bboxes(mosaic_bboxes, [2 * self.img_scale[0], 2 * self.img_scale[1]]).numpy()
         mosaic_bboxes = mosaic_bboxes[inside_inds]
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
-        inputs.image = tv_tensors.Image(mosaic_img)
-        inputs.img_info = _resize_image_info(inputs.img_info, mosaic_img.shape[-2:])
-        inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[-2:])
+        inputs.image = mosaic_img
+        inputs.img_info = _resize_image_info(inputs.img_info, mosaic_img.shape[:2])
+        inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
+
+        inputs = inputs.to_tv_image()
         return inputs
 
     def _mosaic_combine(self, loc: str, center_position_xy: Sequence[float], img_shape_wh: Sequence[int]) -> tuple[tuple[int], tuple[int]]:
@@ -615,7 +605,7 @@ class CachedMosaic(tvt_v2.Transform):
             x1, y1, x2, y2 = center_position_xy[0], \
                              max(center_position_xy[1] - img_shape_wh[1], 0), \
                              min(center_position_xy[0] + img_shape_wh[0],
-                                 self.img_scale[0] * 2), \
+                                 self.img_scale[1] * 2), \
                              center_position_xy[1]
             crop_coord = 0, img_shape_wh[1] - (y2 - y1), min(
                 img_shape_wh[0], x2 - x1), img_shape_wh[1]
@@ -625,7 +615,7 @@ class CachedMosaic(tvt_v2.Transform):
             x1, y1, x2, y2 = max(center_position_xy[0] - img_shape_wh[0], 0), \
                              center_position_xy[1], \
                              center_position_xy[0], \
-                             min(self.img_scale[1] * 2, center_position_xy[1] +
+                             min(self.img_scale[0] * 2, center_position_xy[1] +
                                  img_shape_wh[1])
             crop_coord = img_shape_wh[0] - (x2 - x1), 0, img_shape_wh[0], min(
                 y2 - y1, img_shape_wh[1])
@@ -635,8 +625,8 @@ class CachedMosaic(tvt_v2.Transform):
             x1, y1, x2, y2 = center_position_xy[0], \
                              center_position_xy[1], \
                              min(center_position_xy[0] + img_shape_wh[0],
-                                 self.img_scale[0] * 2), \
-                             min(self.img_scale[1] * 2, center_position_xy[1] +
+                                 self.img_scale[1] * 2), \
+                             min(self.img_scale[0] * 2, center_position_xy[1] +
                                  img_shape_wh[1])
             crop_coord = 0, 0, min(img_shape_wh[0],
                                    x2 - x1), min(y2 - y1, img_shape_wh[1])
@@ -656,7 +646,7 @@ class CachedMosaic(tvt_v2.Transform):
 
 
 class CachedMixUp(tvt_v2.Transform):
-    """CachedMixup converted from mmdet.datasets.transforms.CachedMixup.
+    """Implementation of mmdet.datasets.transforms.CachedMixup with torchvision format.
     
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3577-L3854
 
@@ -665,7 +655,7 @@ class CachedMixUp(tvt_v2.Transform):
 
     Args:
         img_scale (Sequence[int]): Image output size after mixup pipeline.
-            The shape order should be (width, height). Defaults to (640, 640).
+            The shape order should be (height, width). Defaults to (640, 640).
         ratio_range (Sequence[float]): Scale ratio of mixup image.
             Defaults to (0.5, 1.5).
         flip_ratio (float): Horizontal flip ratio of mixup image.
@@ -690,7 +680,7 @@ class CachedMixUp(tvt_v2.Transform):
     """
 
     def __init__(self,
-                 img_scale: tuple[int, int] | list[int] = (640, 640),
+                 img_scale: tuple[int, int] | list[int] = (640, 640), # (H, W)
                  ratio_range: tuple[float, float] = (0.5, 1.5),
                  flip_ratio: float = 0.5,
                  pad_val: float = 114.0,
@@ -706,7 +696,7 @@ class CachedMixUp(tvt_v2.Transform):
                                        f'but got {max_cached_images}.'
         assert 0 <= prob <= 1.0, 'The probability should be in range [0,1]. ' \
                                  f'got {prob}.'
-        self.dynamic_scale = img_scale # HW
+        self.dynamic_scale = img_scale # (H, W)
         self.ratio_range = ratio_range
         self.flip_ratio = flip_ratio
         self.pad_val = pad_val
@@ -771,46 +761,49 @@ class CachedMixUp(tvt_v2.Transform):
             # empty bbox
             return inputs
 
-        retrieve_img = retrieve_results.image
+        retrieve_img = to_np_image(retrieve_results.image)
 
         jit_factor = random.uniform(*self.ratio_range)
         is_flip = random.uniform(0, 1) > self.flip_ratio
 
-        out_img = torch.ones(
-            (3, self.dynamic_scale[0], self.dynamic_scale[1]),
-            dtype=retrieve_img.dtype) * torch.tensor(self.pad_val).unsqueeze(-1).unsqueeze(-1)
+        if len(retrieve_img.shape) == 3:
+            out_img = np.ones(
+                (self.dynamic_scale[0], self.dynamic_scale[1], 3),
+                dtype=retrieve_img.dtype) * self.pad_val
+        else:
+            out_img = np.ones(
+                self.dynamic_scale,
+                dtype=retrieve_img.dtype) * self.pad_val
 
         # 1. keep_ratio resize
-        scale_ratio = min(self.dynamic_scale[0] / retrieve_img.shape[-2],
-                          self.dynamic_scale[1] / retrieve_img.shape[-1])
-        retrieve_img = F.resize(
-            retrieve_img, [int(retrieve_img.shape[-2] * scale_ratio),
-                           int(retrieve_img.shape[-1] * scale_ratio)])
+        scale_ratio = min(self.dynamic_scale[0] / retrieve_img.shape[0],
+                          self.dynamic_scale[1] / retrieve_img.shape[1])
+        retrieve_img = cv2.resize(retrieve_img, (int(retrieve_img.shape[1] * scale_ratio), int(retrieve_img.shape[0] * scale_ratio)), interpolation=cv2.INTER_LINEAR)
 
         # 2. paste
-        out_img[:, :retrieve_img.shape[-2], :retrieve_img.shape[-1]] = retrieve_img
+        out_img[:retrieve_img.shape[0], :retrieve_img.shape[1]] = retrieve_img
 
         # 3. scale jit
         scale_ratio *= jit_factor
-        out_img = F.resize(out_img, (int(out_img.shape[-2] * jit_factor), int(out_img.shape[-1] * jit_factor)))
+        out_img = cv2.resize(out_img, (int(out_img.shape[1] * jit_factor), int(out_img.shape[0] * jit_factor)), interpolation=cv2.INTER_LINEAR)
 
         # 4. flip
         if is_flip:
-            out_img = F.horizontal_flip_image(out_img)
+            out_img = out_img[:, ::-1, :]
 
         # 5. random crop
-        ori_img = inputs.image
-        origin_h, origin_w = out_img.shape[-2:]
-        target_h, target_w = ori_img.shape[-2:]
-        padded_img = torch.ones((3, max(origin_h, target_h), max(origin_w, target_w)), dtype=torch.uint8) * torch.tensor(self.pad_val).unsqueeze(-1).unsqueeze(-1)
-        padded_img[..., :origin_h, :origin_w] = out_img
+        ori_img = to_np_image(inputs.image)
+        origin_h, origin_w = out_img.shape[:2]
+        target_h, target_w = ori_img.shape[:2]
+        padded_img = np.ones((max(origin_h, target_h), max(origin_w, target_w), 3)) * self.pad_val
+        padded_img[:origin_h, :origin_w] = out_img
 
         x_offset, y_offset = 0, 0
-        if padded_img.shape[-2] > target_h:
-            y_offset = random.randint(0, padded_img.shape[-2] - target_h)
-        if padded_img.shape[-1] > target_w:
-            x_offset = random.randint(0, padded_img.shape[-1] - target_w)
-        padded_cropped_img = padded_img[..., y_offset:y_offset + target_h, x_offset:x_offset + target_w]
+        if padded_img.shape[0] > target_h:
+            y_offset = random.randint(0, padded_img.shape[0] - target_h)
+        if padded_img.shape[1] > target_w:
+            x_offset = random.randint(0, padded_img.shape[1] - target_w)
+        padded_cropped_img = padded_img[y_offset:y_offset + target_h, x_offset:x_offset + target_w]
 
         # 6. adjust bbox
         retrieve_gt_bboxes = retrieve_results.bboxes
@@ -830,25 +823,25 @@ class CachedMixUp(tvt_v2.Transform):
             cp_retrieve_gt_bboxes = clip_bboxes(cp_retrieve_gt_bboxes, [target_h, target_w])
 
         # 8. mix up
-        ori_img = ori_img.to(torch.float32)
-        mixup_img = 0.5 * ori_img + 0.5 * padded_cropped_img.to(torch.float32)
+        ori_img = ori_img.astype(np.float32)
+        mixup_img = 0.5 * ori_img + 0.5 * padded_cropped_img.astype(np.float32)
 
         retrieve_gt_bboxes_labels = retrieve_results.labels
 
-        mixup_gt_bboxes = torch.cat(
-            (inputs.bboxes, cp_retrieve_gt_bboxes), dim=0)
-        mixup_gt_bboxes_labels = torch.cat(
-            (inputs.labels, retrieve_gt_bboxes_labels), dim=0)
+        mixup_gt_bboxes = torch.cat((inputs.bboxes, cp_retrieve_gt_bboxes), dim=0)
+        mixup_gt_bboxes_labels = torch.cat((inputs.labels, retrieve_gt_bboxes_labels), dim=0)
 
         # remove outside bbox
         inside_inds = is_inside_bboxes(mixup_gt_bboxes, [target_h, target_w])
         mixup_gt_bboxes = mixup_gt_bboxes[inside_inds]
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
-        inputs.image = tv_tensors.Image(mixup_img.to(torch.uint8))
-        inputs.img_info = _resize_image_info(inputs.img_info, mixup_img.shape[-2:])
-        inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[-2:])
+        inputs.image = mixup_img.astype(np.uint8)
+        inputs.img_info = _resize_image_info(inputs.img_info, mixup_img.shape[:2])
+        inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
+
+        inputs = inputs.to_tv_image()
         return inputs
 
     def __repr__(self):
