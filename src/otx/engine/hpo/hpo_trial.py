@@ -51,6 +51,7 @@ def run_hpo_trial(
     hpo_workdir: Path,
     engine: Engine,
     callbacks: list[Callback] | Callback | None = None,
+    metric_name: str | None = None,
     **train_args,
 ) -> None:
     """Run HPO trial. After it's done, best weight and last weight are saved for later use.
@@ -61,6 +62,8 @@ def run_hpo_trial(
         hpo_workdir (Path): HPO work directory.
         engine (Engine): engine instance.
         callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
+        metric_name (str | None, optional):
+            metric name to determine trial performance. If it's None, get it from ModelCheckpoint callback.
         train_args: Arugments for 'engine.train'.
     """
     trial_id = hp_config["id"]
@@ -72,7 +75,7 @@ def run_hpo_trial(
         engine.checkpoint = checkpoint
         train_args["resume"] = True
 
-    callbacks = _register_hpo_callback(report_func, callbacks)
+    callbacks = _register_hpo_callback(report_func, callbacks, metric_name)
     _set_to_validate_every_epoch(callbacks, train_args)
 
     with TemporaryDirectory(prefix="OTX-HPO-") as temp_dir:
@@ -93,12 +96,16 @@ def _find_last_weight(weight_dir: Path) -> Path | None:
     return find_file_recursively(weight_dir, "last.ckpt")
 
 
-def _register_hpo_callback(report_func: Callable, callbacks: list[Callback] | Callback | None) -> list[Callback]:
+def _register_hpo_callback(
+    report_func: Callable,
+    callbacks: list[Callback] | Callback | None = None,
+    metric_name: str | None = None,
+) -> list[Callback]:
     if isinstance(callbacks, Callback):
         callbacks = [callbacks]
     elif callbacks is None:
         callbacks = []
-    callbacks.append(HPOCallback(report_func, _get_metric(callbacks)))
+    callbacks.append(HPOCallback(report_func, _get_metric(callbacks) if metric_name is None else metric_name))
     return callbacks
 
 

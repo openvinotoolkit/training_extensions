@@ -6,7 +6,8 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+import inspect
+from typing import TYPE_CHECKING, Callable
 
 from otx.utils.utils import find_file_recursively
 
@@ -78,3 +79,15 @@ def get_hpo_weight_dir(hpo_workdir: Path, trial_id: str) -> Path:
     if not hpo_weight_dir.exists():
         hpo_weight_dir.mkdir(parents=True)
     return hpo_weight_dir
+
+
+def get_callable_args_name(module: Callable) -> list[str]:
+    """Get arguments name list from callable.
+
+    Args:
+        module (Callable): callable to get arguments name from.
+
+    Returns:
+        list[str]: arguments name list.
+    """
+    return list(inspect.signature(module).parameters)
