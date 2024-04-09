@@ -101,6 +101,8 @@ class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
         """Load the previous OTX ckpt according to OTX2.0."""
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
+    def _reset_prediction_layer(self, num_classes: int) -> None:
+        return
 
 class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMultilabelClsModel):
     """EfficientNetB0 Model for multi-class classification task."""
