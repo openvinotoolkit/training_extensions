@@ -5,8 +5,8 @@
 
 from __future__ import annotations
 
-import json
 import inspect
+import json
 from typing import TYPE_CHECKING, Callable
 
 from otx.utils.utils import find_file_recursively

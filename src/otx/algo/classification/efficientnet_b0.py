@@ -104,6 +104,7 @@ class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrain
     def _reset_prediction_layer(self, num_classes: int) -> None:
         return
 
+
 class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMultilabelClsModel):
     """EfficientNetB0 Model for multi-class classification task."""
 

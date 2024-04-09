@@ -8,11 +8,11 @@ from pathlib import Path
 import pytest
 from openvino.model_api.tilers import Tiler
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
 from otx.engine import Engine
-from otx.core.config.hpo import HpoConfig
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, OVMODEL_PER_TASK
 
 
@@ -157,10 +157,10 @@ def test_engine_from_tile_recipe(
     assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
 
 
-
 METRIC_NAME = {
-    OTXTaskType.MULTI_CLASS_CLS : "val/accuracy",
+    OTXTaskType.MULTI_CLASS_CLS: "val/accuracy",
 }
+
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo(

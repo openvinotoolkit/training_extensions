@@ -22,7 +22,7 @@ from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
 
 from .hpo_trial import run_hpo_trial
-from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, get_callable_args_name
+from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import OptimizerCallable
@@ -93,7 +93,7 @@ def execute_hpo(
             hpo_workdir=hpo_workdir,
             engine=engine,
             max_epochs=max_epochs,
-            metric_name=hpo_config.metric_name,
+            metric_name=None if hpo_config is None else hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
         "gpu" if torch.cuda.is_available() else "cpu",
@@ -155,7 +155,11 @@ class HPOConfigurator:
         if hpo_config is not None:
             hb_arg_names = get_callable_args_name(HyperBand)
             self._hpo_config.update(
-                {key: val for key, val in dataclasses.asdict(hpo_config).items() if val is not None and key in hb_arg_names},
+                {
+                    key: val
+                    for key, val in dataclasses.asdict(hpo_config).items()
+                    if val is not None and key in hb_arg_names
+                },
             )
 
         if "search_space" not in self._hpo_config:

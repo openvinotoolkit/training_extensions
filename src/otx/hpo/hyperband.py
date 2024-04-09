@@ -549,7 +549,20 @@ class HyperBand(HpoBase):
         asynchronous_sha: bool = True,
         asynchronous_bracket: bool = False,
     ) -> None:
-        super().__init__(search_space, save_path, mode, num_trials, num_workers, num_full_iterations, full_dataset_size, expected_time_ratio, maximum_resource, resume, prior_hyper_parameters, acceptable_additional_time_ratio)
+        super().__init__(
+            search_space,
+            save_path,
+            mode,
+            num_trials,
+            num_workers,
+            num_full_iterations,
+            full_dataset_size,
+            expected_time_ratio,
+            maximum_resource,
+            resume,
+            prior_hyper_parameters,
+            acceptable_additional_time_ratio,
+        )
 
         if minimum_resource is not None:
             check_positive(minimum_resource, "minimum_resource")
