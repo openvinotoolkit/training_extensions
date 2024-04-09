@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from mmengine.config import Config
 
 
+# This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/dense_heads/ssd_head.py
 class SSDHead(AnchorHead):
     """Implementation of `SSD head <https://arxiv.org/abs/1512.02325>`_.
 

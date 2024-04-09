@@ -41,6 +41,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger()
 
 
+# This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
 class SingleStageDetector(nn.Module):
     """Single stage detector implementation from mmdet."""
 

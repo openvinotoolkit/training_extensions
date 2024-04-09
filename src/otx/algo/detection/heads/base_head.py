@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
 
+# This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
+# https://github.com/open-mmlab/mmdetection/blob/fe3f809a0a514189baf889aa358c498d51ee36cd/mmdet/models/dense_heads/base_dense_head.py
 class BaseDenseHead(nn.Module):
     """Base class for DenseHeads.
 
@@ -61,7 +63,12 @@ class BaseDenseHead(nn.Module):
     """
 
     def __init__(self, init_cfg: OptMultiConfig = None) -> None:
-        super().__init__(init_cfg=init_cfg)
+        super().__init__()
+
+        self._is_init = False
+
+        self.init_cfg = copy.deepcopy(init_cfg)
+
         # `_raw_positive_infos` will be used in `get_positive_infos`, which
         # can get positive information.
         self._raw_positive_infos: dict = {}

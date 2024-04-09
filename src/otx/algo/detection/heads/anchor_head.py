@@ -9,7 +9,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.dense_heads.base_dense_head import BaseDenseHead
 from mmdet.models.task_modules.prior_generators import AnchorGenerator, anchor_inside_flags
 from mmdet.models.task_modules.samplers import PseudoSampler
 from mmdet.models.utils import images_to_levels, multi_apply, unmap
@@ -18,10 +17,14 @@ from mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.base_head import BaseDenseHead
+
 if TYPE_CHECKING:
     from mmdet.utils import InstanceList, OptConfigType, OptInstanceList, OptMultiConfig
 
 
+# This class and its supporting functions below lightly adapted from the mmdet AnchorHead available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/dense_heads/anchor_head.py
 class AnchorHead(BaseDenseHead):
     """Anchor-based head (RPN, RetinaNet, SSD, etc.).
 

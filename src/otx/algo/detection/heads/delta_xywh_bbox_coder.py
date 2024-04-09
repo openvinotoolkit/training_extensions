@@ -10,6 +10,8 @@ from mmdet.structures.bbox import BaseBoxes, HorizontalBoxes, get_box_tensor
 from torch import Tensor
 
 
+# This class and its supporting functions below lightly adapted from the mmdet DeltaXYWHBBoxCoder available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/coders/delta_xywh_bbox_coder.py
 class DeltaXYWHBBoxCoder:
     """Delta XYWH BBox coder.
 

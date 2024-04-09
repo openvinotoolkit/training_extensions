@@ -17,79 +17,8 @@ if TYPE_CHECKING:
     from mmengine.structures import InstanceData
 
 
-def _perm_box(
-    bboxes: Tensor,
-    iou_calculator: Callable,
-    iou_thr: float = 0.97,
-    perm_range: float = 0.01,
-    counter: int = 0,
-    max_iter: int = 5,
-) -> Tensor:
-    """Compute the permuted bboxes.
-
-    Args:
-        bboxes (Tensor): Shape (n, 4) for , "xyxy" format.
-        iou_calculator (obj): Overlaps Calculator.
-        iou_thr (float): The permuted bboxes should have IoU > iou_thr.
-        perm_range (float): The scale of permutation.
-        counter (int): Counter of permutation iteration.
-        max_iter (int): The max iterations of permutation.
-
-    Returns:
-        Tensor: The permuted bboxes.
-    """
-    ori_bboxes = copy.deepcopy(bboxes)
-    is_valid = True
-    batch_size = bboxes.size(0)
-    perm_factor = bboxes.new_empty(batch_size, 4).uniform_(1 - perm_range, 1 + perm_range)
-    bboxes *= perm_factor
-    new_wh = bboxes[:, 2:] - bboxes[:, :2]
-    if (new_wh <= 0).any():
-        is_valid = False
-    iou = iou_calculator(ori_bboxes.unique(dim=0), bboxes)
-    if (iou < iou_thr).any():
-        is_valid = False
-    if not is_valid and counter < max_iter:
-        return _perm_box(
-            ori_bboxes,
-            iou_calculator,
-            perm_range=max(perm_range - counter * 0.001, 1e-3),
-            counter=counter + 1,
-        )
-    return bboxes
-
-
-def perm_repeat_bboxes(
-    bboxes: Tensor,
-    perm_repeat_cfg: dict,
-    iou_calculator: Callable | None = None,
-) -> Tensor:
-    """Permute the repeated bboxes.
-
-    Args:
-        bboxes (Tensor): Shape (n, 4) for , "xyxy" format.
-        iou_calculator (obj): Overlaps Calculator.
-        perm_repeat_cfg (Dict | None): Config of permutation.
-
-    Returns:
-        Tensor: Bboxes after permuted repeated bboxes.
-    """
-    if iou_calculator is None:
-        import torchvision
-
-        iou_calculator = torchvision.ops.box_iou
-    bboxes = copy.deepcopy(bboxes)
-    unique_bboxes = bboxes.unique(dim=0)
-    iou_thr = perm_repeat_cfg.get("iou_thr", 0.97)
-    perm_range = perm_repeat_cfg.get("perm_range", 0.01)
-    for box in unique_bboxes:
-        inds = (bboxes == box).sum(-1).float() == 4
-        if inds.float().sum().item() == 1:
-            continue
-        bboxes[inds] = _perm_box(bboxes[inds], iou_calculator, iou_thr=iou_thr, perm_range=perm_range, counter=0)
-    return bboxes
-
-
+# This class and its supporting functions below lightly adapted from the mmdet MaxIoUAssigner available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/max_iou_assigner.py
 class MaxIoUAssigner:
     """Assign a corresponding gt bbox or background to each bbox.
 
@@ -322,3 +251,76 @@ class MaxIoUAssigner:
             max_overlaps=max_overlaps,
             labels=assigned_labels,
         )
+
+
+def _perm_box(
+    bboxes: Tensor,
+    iou_calculator: Callable,
+    iou_thr: float = 0.97,
+    perm_range: float = 0.01,
+    counter: int = 0,
+    max_iter: int = 5,
+) -> Tensor:
+    """Compute the permuted bboxes.
+
+    Args:
+        bboxes (Tensor): Shape (n, 4) for , "xyxy" format.
+        iou_calculator (obj): Overlaps Calculator.
+        iou_thr (float): The permuted bboxes should have IoU > iou_thr.
+        perm_range (float): The scale of permutation.
+        counter (int): Counter of permutation iteration.
+        max_iter (int): The max iterations of permutation.
+
+    Returns:
+        Tensor: The permuted bboxes.
+    """
+    ori_bboxes = copy.deepcopy(bboxes)
+    is_valid = True
+    batch_size = bboxes.size(0)
+    perm_factor = bboxes.new_empty(batch_size, 4).uniform_(1 - perm_range, 1 + perm_range)
+    bboxes *= perm_factor
+    new_wh = bboxes[:, 2:] - bboxes[:, :2]
+    if (new_wh <= 0).any():
+        is_valid = False
+    iou = iou_calculator(ori_bboxes.unique(dim=0), bboxes)
+    if (iou < iou_thr).any():
+        is_valid = False
+    if not is_valid and counter < max_iter:
+        return _perm_box(
+            ori_bboxes,
+            iou_calculator,
+            perm_range=max(perm_range - counter * 0.001, 1e-3),
+            counter=counter + 1,
+        )
+    return bboxes
+
+
+def perm_repeat_bboxes(
+    bboxes: Tensor,
+    perm_repeat_cfg: dict,
+    iou_calculator: Callable | None = None,
+) -> Tensor:
+    """Permute the repeated bboxes.
+
+    Args:
+        bboxes (Tensor): Shape (n, 4) for , "xyxy" format.
+        iou_calculator (obj): Overlaps Calculator.
+        perm_repeat_cfg (Dict | None): Config of permutation.
+
+    Returns:
+        Tensor: Bboxes after permuted repeated bboxes.
+    """
+    if iou_calculator is None:
+        import torchvision
+
+        iou_calculator = torchvision.ops.box_iou
+    bboxes = copy.deepcopy(bboxes)
+    unique_bboxes = bboxes.unique(dim=0)
+    iou_thr = perm_repeat_cfg.get("iou_thr", 0.97)
+    perm_range = perm_repeat_cfg.get("perm_range", 0.01)
+    for box in unique_bboxes:
+        inds = (bboxes == box).sum(-1).float() == 4
+        if inds.float().sum().item() == 1:
+            continue
+        bboxes[inds] = _perm_box(bboxes[inds], iou_calculator, iou_thr=iou_thr, perm_range=perm_range, counter=0)
+    return bboxes

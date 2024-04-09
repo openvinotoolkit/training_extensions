@@ -8,14 +8,8 @@ import torch
 from mmdet.structures.bbox import BaseBoxes, bbox_overlaps, get_box_tensor
 
 
-def cast_tensor_type(x: torch.Tensor, scale: float = 1.0, dtype: str | None = None) -> torch.Tensor:
-    """Cast input tensor to wanted data type."""
-    if dtype == "fp16":
-        # scale is for preventing overflows
-        x = (x / scale).half()
-    return x
-
-
+# This class and its supporting functions below lightly adapted from the mmdet BboxOverlaps2D available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/assigners/iou2d_calculator.py
 class BboxOverlaps2D:
     """2D Overlaps (e.g. IoUs, GIoUs) Calculator."""
 
@@ -71,3 +65,11 @@ class BboxOverlaps2D:
     def __repr__(self):
         """str: a string describing the module."""
         return self.__class__.__name__ + f"(scale={self.scale}, dtype={self.dtype})"
+
+
+def cast_tensor_type(x: torch.Tensor, scale: float = 1.0, dtype: str | None = None) -> torch.Tensor:
+    """Cast input tensor to wanted data type."""
+    if dtype == "fp16":
+        # scale is for preventing overflows
+        x = (x / scale).half()
+    return x
