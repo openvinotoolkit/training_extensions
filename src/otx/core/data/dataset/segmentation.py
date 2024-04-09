@@ -158,21 +158,17 @@ class OTXSegmentationDataset(OTXDataset[SegDataEntity]):
         self.label_info = SegLabelInfo(
             label_names=self.label_info.label_names,
             label_groups=self.label_info.label_groups,
+            ignore_index=ignore_index,
         )
         self.ignore_index = ignore_index
 
     def _get_item_impl(self, index: int) -> SegDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
         img = item.media_as(Image)
-        num_classes = self.label_info.num_classes
         ignored_labels: list[int] = []
         img_data, img_shape = self._get_img_data_and_shape(img)
-
         mask = _extract_class_mask(item=item, img_shape=img_shape, ignore_index=self.ignore_index)
 
-        # assign possible ignored labels from dataset to max label class + 1.
-        # it is needed to compute mDice metric.
-        mask[mask == 255] = num_classes
         entity = SegDataEntity(
             image=img_data,
             img_info=ImageInfo(
