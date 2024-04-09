@@ -60,8 +60,13 @@ def execute_hpo(
             best hyper parameters and model weight trained with best hyper parameters. If it doesn't exist,
             return None.
     """
+    skip_msg = ""
     if engine.task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:  # type: ignore[has-type]
-        logger.warning("Zero shot visual prompting task doesn't support HPO.")
+        skip_msg = "Zero shot visual prompting task doesn't support HPO."
+    elif "anomaly.padim" in str(type(engine.model)).lower():
+        skip_msg = "Padim doesn't need HPO. HPO is skipped."
+    if skip_msg:
+        logger.warning(skip_msg)
         return None, None
 
     engine.model.patch_optimizer_and_scheduler_for_hpo()
