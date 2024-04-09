@@ -213,10 +213,13 @@ def load(root_dir: Path, need_normalize: bool = False, pattern="*.csv") -> pd.Da
     version_entry = "otx_version" if "otx_version" in history else "version"
     history[version_entry] = history[version_entry].astype(str)
     history["seed"] = history["seed"].fillna(0)
-    return average(
+    history = average(
         history,
-        [version_entry, "task", "model", "data", "seed"],
+        [version_entry, "task", "model", "data_group", "data", "seed"],
     )  # Average mulitple retrials w/ same seed
+    if "index" in history:
+        history.drop("index", axis=1)
+    return history
 
 
 def normalize(data: pd.DataFrame) -> pd.DataFrame:
@@ -253,27 +256,18 @@ def average(raw_data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     """Average raw data w.r.t. given keys."""
     if raw_data is None or len(raw_data) == 0:
         return pd.DataFrame()
-    # Flatten index
-    index_names = raw_data.index.names
-    column_names = raw_data.columns
-    raw_data = raw_data.reset_index()
     # Preproc
     for col in METADATA_ENTRIES:
-        raw_data[col] = raw_data[col].astype(str)  # Prevent strings like '2.0.0' being loaded as float
+        raw_data.loc[:, col] = raw_data[col].astype(str)  # Prevent strings like '2.0.0' being loaded as float
     # Average by keys
     grouped = raw_data.groupby(keys)
     aggregated = grouped.mean(numeric_only=True)
-    # Merge index columns
-    idx_columns = set(index_names) - set(keys)
-    for col in idx_columns:
-        aggregated[col] = "all"
     # Merge tag columns (non-numeric & non-index)
-    tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
+    tag_columns = set(raw_data.columns) - set(aggregated.columns) - set(keys)
     for col in tag_columns:
         # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
         aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-    # Recover index
-    return aggregated.reset_index().set_index(index_names)
+    return aggregated.reset_index()
 
 
 def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.DataFrame:
@@ -284,6 +278,7 @@ def summarize(raw_data: pd.DataFrame, metrics: list[str] | None = None) -> pd.Da
         # Add all numeric metrics
         metrics = raw_data.select_dtypes(include=["number"]).columns.to_list()
     # Aggregate base
+    raw_data = average(raw_data, ["otx_version", "task", "model", "data_group", "seed"])
     data = raw_data.pivot_table(
         index=["task", "model", "otx_version"],
         columns=["data_group"],

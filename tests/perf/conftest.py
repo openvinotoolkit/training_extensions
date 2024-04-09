@@ -386,12 +386,14 @@ def fxt_benchmark_summary(
 
     if fxt_mlflow_client:
         try:
-            _log_benchmark_results_to_mlflow(summary_results, fxt_mlflow_client, fxt_tags)
+            _log_benchmark_results_to_mlflow(raw_results, fxt_mlflow_client, fxt_tags)
         except Exception as e:
             print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
+    results = summary.average(results, keys=["task", "model", "data_group", "data"])  # Average out seeds
+    results = results.set_index(["task", "model", "data_group", "data"])
     for index, result in results.iterrows():
         task, model, data_group, data = index
         exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"

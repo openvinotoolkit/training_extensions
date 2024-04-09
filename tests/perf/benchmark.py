@@ -280,7 +280,8 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
-        return summary.average(result, keys=["task", "model", "data_group", "data"])
+        result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
+        return result.set_index(["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         print(" ".join(command))
@@ -371,7 +372,7 @@ class Benchmark:
         if len(results) == 0:
             return None
 
-        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
+        return pd.concat(results, ignore_index=True)
 
     def check(self, result: pd.DataFrame, criteria: list[Criterion]):
         """Check result w.r.t. reference data.
