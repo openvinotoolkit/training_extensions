@@ -2,8 +2,9 @@
 
 
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import copy
-from typing import Optional, Union
 
 import torch
 from mmengine.registry import TASK_UTILS
@@ -12,6 +13,7 @@ from torch import Tensor
 
 from .assign_result import AssignResult
 from .base_assigner import BaseAssigner
+from .iou2d_calculator import BboxOverlaps2D
 
 
 def _perm_box(bboxes, iou_calculator, iou_thr=0.97, perm_range=0.01, counter=0, max_iter=5):
@@ -118,15 +120,14 @@ class MaxIoUAssigner(BaseAssigner):
     def __init__(
         self,
         pos_iou_thr: float,
-        neg_iou_thr: Union[float, tuple],
+        neg_iou_thr: float | tuple,
         min_pos_iou: float = 0.0,
         gt_max_assign_all: bool = True,
         ignore_iof_thr: float = -1,
         ignore_wrt_candidates: bool = True,
         match_low_quality: bool = True,
         gpu_assign_thr: float = -1,
-        iou_calculator: dict = dict(type="BboxOverlaps2D"),
-        perm_repeat_gt_cfg=None,
+        perm_repeat_gt_cfg: dict | None = None,
     ):
         self.pos_iou_thr = pos_iou_thr
         self.neg_iou_thr = neg_iou_thr
@@ -136,14 +137,14 @@ class MaxIoUAssigner(BaseAssigner):
         self.ignore_wrt_candidates = ignore_wrt_candidates
         self.gpu_assign_thr = gpu_assign_thr
         self.match_low_quality = match_low_quality
-        self.iou_calculator = TASK_UTILS.build(iou_calculator)
+        self.iou_calculator = BboxOverlaps2D()
         self.perm_repeat_gt_cfg = perm_repeat_gt_cfg
 
     def assign(
         self,
         pred_instances: InstanceData,
         gt_instances: InstanceData,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        gt_instances_ignore: InstanceData | None = None,
         **kwargs,
     ) -> AssignResult:
         """Assign gt to bboxes.

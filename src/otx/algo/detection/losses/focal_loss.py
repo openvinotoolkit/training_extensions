@@ -7,9 +7,12 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F
+
+# TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+from mmcv.ops import sigmoid_focal_loss as _sigmoid_focal_loss
 from mmengine.registry import MODELS
 from torch import nn
-from torchvision.ops import sigmoid_focal_loss as _sigmoid_focal_loss
 
 from .accuracy import accuracy
 from .utils import weight_reduce_loss
@@ -27,7 +30,7 @@ def py_sigmoid_focal_loss(
     alpha: float = 0.25,
     reduction: str = "mean",
     avg_factor: int | None = None,
-):
+) -> torch.Tensor:
     """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
 
     Args:
@@ -65,8 +68,7 @@ def py_sigmoid_focal_loss(
                 assert weight.numel() == loss.numel()
                 weight = weight.view(loss.size(0), -1)
         assert weight.ndim == loss.ndim
-    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
-    return loss
+    return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
 def py_focal_loss_with_prob(
@@ -77,7 +79,7 @@ def py_focal_loss_with_prob(
     alpha: float = 0.25,
     reduction: str = "mean",
     avg_factor: int | None = None,
-):
+) -> torch.Tensor:
     """PyTorch version of `Focal Loss <https://arxiv.org/abs/1708.02002>`.
 
     Different from `py_sigmoid_focal_loss`, this function accepts probability
@@ -121,8 +123,7 @@ def py_focal_loss_with_prob(
                 assert weight.numel() == loss.numel()
                 weight = weight.view(loss.size(0), -1)
         assert weight.ndim == loss.ndim
-    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
-    return loss
+    return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
 def sigmoid_focal_loss(
@@ -133,9 +134,8 @@ def sigmoid_focal_loss(
     alpha: float = 0.25,
     reduction: str = "mean",
     avg_factor: int | None = None,
-):
-    r"""A wrapper of cuda version `Focal Loss
-    <https://arxiv.org/abs/1708.02002>`_.
+) -> torch.Tensor:
+    r"""A wrapper of cuda version `Focal Loss <https://arxiv.org/abs/1708.02002>`_.
 
     Args:
         pred (torch.Tensor): The prediction with shape (N, C), C is the number
@@ -168,14 +168,13 @@ def sigmoid_focal_loss(
                 assert weight.numel() == loss.numel()
                 weight = weight.view(loss.size(0), -1)
         assert weight.ndim == loss.ndim
-    loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
-    return loss
+    return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
 
 @MODELS.register_module()
 class FocalLoss(nn.Module):
     def __init__(self, use_sigmoid=True, gamma=2.0, alpha=0.25, reduction="mean", loss_weight=1.0, activated=False):
-        """`Focal Loss <https://arxiv.org/abs/1708.02002>`_
+        """`Focal Loss <https://arxiv.org/abs/1708.02002>`.
 
         Args:
             use_sigmoid (bool, optional): Whether to the prediction is
@@ -265,7 +264,7 @@ class FocalCustomLoss(nn.Module):
         loss_weight=1.0,
         activated=False,
     ):
-        """`Focal Loss for V3Det <https://arxiv.org/abs/1708.02002>`_
+        """`Focal Loss for V3Det <https://arxiv.org/abs/1708.02002>`.
 
         Args:
             use_sigmoid (bool, optional): Whether to the prediction is

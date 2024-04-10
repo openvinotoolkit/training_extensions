@@ -1,10 +1,5 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
@@ -13,10 +8,11 @@ import warnings
 import torch
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
+from torch import Tensor, nn
+
 from otx.algo.instance_segmentation.mmdet.models.prior_generators import AnchorGenerator, anchor_inside_flags
 from otx.algo.instance_segmentation.mmdet.models.samplers import PseudoSampler
 from otx.algo.instance_segmentation.mmdet.models.utils import (
-    ConfigType,
     InstanceList,
     OptConfigType,
     OptInstanceList,
@@ -26,7 +22,6 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     unmap,
 )
 from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
-from torch import Tensor, nn
 
 from .base_dense_head import BaseDenseHead
 
@@ -57,26 +52,16 @@ class AnchorHead(BaseDenseHead):
     def __init__(
         self,
         num_classes: int,
-        in_channels: int,
+        in_channels: tuple[int, ...],
+        anchor_generator: dict,
+        bbox_coder: dict,
+        loss_cls: dict,
+        loss_bbox: dict,
         feat_channels: int = 256,
-        anchor_generator: ConfigType = dict(
-            type="AnchorGenerator",
-            scales=[8, 16, 32],
-            ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64],
-        ),
-        bbox_coder: ConfigType = dict(
-            type="DeltaXYWHBBoxCoder",
-            clip_border=True,
-            target_means=(0.0, 0.0, 0.0, 0.0),
-            target_stds=(1.0, 1.0, 1.0, 1.0),
-        ),
         reg_decoded_bbox: bool = False,
-        loss_cls: ConfigType = dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
-        loss_bbox: ConfigType = dict(type="SmoothL1Loss", beta=1.0 / 9.0, loss_weight=1.0),
         train_cfg: OptConfigType = None,
         test_cfg: OptConfigType = None,
-        init_cfg: OptMultiConfig = dict(type="Normal", layer="Conv2d", std=0.01),
+        init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels

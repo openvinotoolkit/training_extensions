@@ -1,17 +1,15 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Sequence, Tuple, Union
+from __future__ import annotations
+
+from typing import Optional, Sequence, Union
 
 import numpy as np
 import torch
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes
 from torch import Tensor
+
+from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes
 
 
 def find_inside_bboxes(bboxes: Tensor, img_h: int, img_w: int) -> Tensor:
@@ -29,7 +27,7 @@ def find_inside_bboxes(bboxes: Tensor, img_h: int, img_w: int) -> Tensor:
     return inside_inds
 
 
-def bbox_flip(bboxes: Tensor, img_shape: Tuple[int], direction: str = "horizontal") -> Tensor:
+def bbox_flip(bboxes: Tensor, img_shape: tuple[int, int], direction: str = "horizontal") -> Tensor:
     """Flip bboxes horizontally or vertically.
 
     Args:
@@ -60,8 +58,8 @@ def bbox_flip(bboxes: Tensor, img_shape: Tuple[int], direction: str = "horizonta
 
 def bbox_mapping(
     bboxes: Tensor,
-    img_shape: Tuple[int],
-    scale_factor: Union[float, Tuple[float]],
+    img_shape: tuple[int, int],
+    scale_factor: float | tuple[int, int],
     flip: bool,
     flip_direction: str = "horizontal",
 ) -> Tensor:
@@ -74,8 +72,8 @@ def bbox_mapping(
 
 def bbox_mapping_back(
     bboxes: Tensor,
-    img_shape: Tuple[int],
-    scale_factor: Union[float, Tuple[float]],
+    img_shape: tuple[int, int],
+    scale_factor: float | tuple[float, float],
     flip: bool,
     flip_direction: str = "horizontal",
 ) -> Tensor:
@@ -85,7 +83,7 @@ def bbox_mapping_back(
     return new_bboxes.view(bboxes.shape)
 
 
-def bbox2roi(bbox_list: List[Union[Tensor, BaseBoxes]]) -> Tensor:
+def bbox2roi(bbox_list: list[Tensor | BaseBoxes]) -> Tensor:
     """Convert a list of bboxes to roi format.
 
     Args:
@@ -108,7 +106,7 @@ def bbox2roi(bbox_list: List[Union[Tensor, BaseBoxes]]) -> Tensor:
     return rois
 
 
-def roi2bbox(rois: Tensor) -> List[Tensor]:
+def roi2bbox(rois: Tensor) -> list[Tensor]:
     """Convert rois to bounding box format.
 
     Args:
@@ -132,7 +130,7 @@ def bbox2result(
     bboxes: Union[Tensor, np.ndarray],
     labels: Union[Tensor, np.ndarray],
     num_classes: int,
-) -> List[np.ndarray]:
+) -> list[np.ndarray]:
     """Convert detection results to a list of numpy arrays.
 
     Args:
@@ -326,7 +324,7 @@ def corner2bbox(corners: torch.Tensor) -> torch.Tensor:
 def bbox_project(
     bboxes: Union[torch.Tensor, np.ndarray],
     homography_matrix: Union[torch.Tensor, np.ndarray],
-    img_shape: Optional[Tuple[int, int]] = None,
+    img_shape: Optional[tuple[int, int]] = None,
 ) -> Union[torch.Tensor, np.ndarray]:
     """Geometric transformation for bbox.
 
@@ -358,7 +356,7 @@ def bbox_project(
     return bboxes
 
 
-def cat_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
+def cat_boxes(data_list: list[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
     """Concatenate boxes with type of tensor or box type.
 
     Args:
@@ -376,7 +374,7 @@ def cat_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[
         return torch.cat(data_list, dim=dim)
 
 
-def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
+def stack_boxes(data_list: list[Union[Tensor, BaseBoxes]], dim: int = 0) -> Union[Tensor, BaseBoxes]:
     """Stack boxes with type of tensor or box type.
 
     Args:
@@ -394,7 +392,7 @@ def stack_boxes(data_list: List[Union[Tensor, BaseBoxes]], dim: int = 0) -> Unio
         return torch.stack(data_list, dim=dim)
 
 
-def scale_boxes(boxes: Union[Tensor, BaseBoxes], scale_factor: Tuple[float, float]) -> Union[Tensor, BaseBoxes]:
+def scale_boxes(boxes: Union[Tensor, BaseBoxes], scale_factor: tuple[float, float]) -> Union[Tensor, BaseBoxes]:
     """Scale boxes with type of tensor or box type.
 
     Args:
@@ -416,7 +414,7 @@ def scale_boxes(boxes: Union[Tensor, BaseBoxes], scale_factor: Tuple[float, floa
         return boxes * scale_factor
 
 
-def get_box_wh(boxes: Union[Tensor, BaseBoxes]) -> Tuple[Tensor, Tensor]:
+def get_box_wh(boxes: Union[Tensor, BaseBoxes]) -> tuple[Tensor, Tensor]:
     """Get the width and height of boxes with type of tensor or box type.
 
     Args:

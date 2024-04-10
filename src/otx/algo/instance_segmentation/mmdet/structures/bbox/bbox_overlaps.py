@@ -1,15 +1,13 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import torch
 
 
-def fp16_clamp(x, min=None, max=None):
+def fp16_clamp(x: torch.Tensor, min: float | None = None, max: float | None = None):
+    """FP16 clamp."""
     if not x.is_cuda and x.dtype == torch.float16:
         # clamp for cpu float16, tensor fp16 has no clamp implementation
         return x.float().clamp(min, max).half()
@@ -17,7 +15,13 @@ def fp16_clamp(x, min=None, max=None):
     return x.clamp(min, max)
 
 
-def bbox_overlaps(bboxes1, bboxes2, mode="iou", is_aligned=False, eps=1e-6):
+def bbox_overlaps(
+    bboxes1: torch.Tensor,
+    bboxes2: torch.Tensor,
+    mode: str = "iou",
+    is_aligned: bool = False,
+    eps: float = 1e-6,
+) -> torch.Tensor:
     """Calculate overlap between two set of bboxes.
 
     FP16 Contributed by https://github.com/open-mmlab/mmdetection/pull/4889

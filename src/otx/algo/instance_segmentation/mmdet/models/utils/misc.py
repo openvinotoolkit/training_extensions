@@ -56,13 +56,13 @@ def images_to_levels(target: list[Tensor | BaseBoxes], num_levels: list[int]) ->
 
     [target_img0, target_img1] -> [target_level0, target_level1, ...]
     """
-    target = stack_boxes(target, 0)
+    target = stack_boxes(target, 0)  # type: ignore[assignment]
     level_targets = []
     start = 0
     for n in num_levels:
         end = start + n
         # level_targets.append(target[:, start:end].squeeze(0))
-        level_targets.append(target[:, start:end])
+        level_targets.append(target[:, start:end])  # type: ignore[call-overload]
         start = end
     return level_targets
 
@@ -260,10 +260,10 @@ def empty_instances(
             results = InstanceData()
 
         if task_type == "bbox":
-            _, box_type = get_box_type(box_type)
-            bboxes = torch.zeros(0, box_type.box_dim, device=device)
+            _, box_type_cls = get_box_type(box_type)
+            bboxes = torch.zeros(0, box_type_cls.box_dim, device=device)
             if use_box_type:
-                bboxes = box_type(bboxes, clone=False)
+                bboxes = box_type_cls(bboxes, clone=False)
             results.bboxes = bboxes
             score_shape = (0, num_classes + 1) if score_per_cls else (0,)
             results.scores = torch.zeros(score_shape, device=device)

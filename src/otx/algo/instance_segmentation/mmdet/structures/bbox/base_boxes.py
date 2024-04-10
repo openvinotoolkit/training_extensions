@@ -2,8 +2,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod, abstractproperty, abstractstaticmethod
-from typing import Sequence, TypeVar, Union
+from abc import ABCMeta, abstractmethod
+from typing import Sequence, TypeAlias, TypeVar
 
 import numpy as np
 import torch
@@ -11,19 +11,19 @@ from torch import BoolTensor, Tensor
 
 from otx.algo.instance_segmentation.mmdet.structures.mask.structures import BitmapMasks, PolygonMasks
 
-T = TypeVar("T")
-DeviceType = Union[str, torch.device]
-IndexType = Union[
-    slice,
-    int,
-    list,
-    torch.LongTensor,
-    torch.cuda.LongTensor,
-    torch.BoolTensor,
-    torch.cuda.BoolTensor,
-    np.ndarray,
-]
-MaskType = Union[BitmapMasks, PolygonMasks]
+T = TypeVar("T", bound="BaseBoxes")
+DeviceType: TypeAlias = str | torch.device
+IndexType: TypeAlias = (
+    slice
+    | int
+    | list
+    | torch.LongTensor
+    | torch.cuda.LongTensor
+    | torch.BoolTensor
+    | torch.cuda.BoolTensor
+    | np.ndarray
+)
+MaskType: TypeAlias = BitmapMasks | PolygonMasks
 
 
 class BaseBoxes(metaclass=ABCMeta):
@@ -92,7 +92,7 @@ class BaseBoxes(metaclass=ABCMeta):
         )
         self.tensor = data
 
-    def convert_to(self, dst_type: str | type) -> BaseBoxes:
+    def convert_to(self, dst_type: str | BaseBoxes) -> T:
         """Convert self to another box type.
 
         Args:
@@ -159,7 +159,7 @@ class BaseBoxes(metaclass=ABCMeta):
             boxes = boxes.reshape(1, -1)
         return type(self)(boxes, clone=False)
 
-    def __setitem__(self: T, index: IndexType, values: Tensor | T) -> T:
+    def __setitem__(self: T, index: IndexType, values: Tensor | T):
         """Rewrite setitem to protect the last dimension shape."""
         assert type(values) is type(self), "The value to be set must be the same box type as self"
         values = values.tensor
@@ -304,7 +304,7 @@ class BaseBoxes(metaclass=ABCMeta):
         boxes_list = self.tensor.chunk(chunks, dim=dim)
         return [type(self)(boxes, clone=False) for boxes in boxes_list]
 
-    def unbind(self: T, dim: int = 0) -> T:
+    def unbind(self: T, dim: int = 0) -> list[T]:
         """Reload ``unbind`` from self.tensor."""
         assert dim != -1 and dim != self.tensor.dim() - 1
         boxes_list = self.tensor.unbind(dim=dim)
@@ -368,19 +368,23 @@ class BaseBoxes(metaclass=ABCMeta):
         th_box_list = [boxes.tensor for boxes in box_list]
         return cls(torch.stack(th_box_list, dim=dim), clone=False)
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def centers(self) -> Tensor:
         """Return a tensor representing the centers of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def areas(self) -> Tensor:
         """Return a tensor representing the areas of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def widths(self) -> Tensor:
         """Return a tensor representing the widths of boxes."""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def heights(self) -> Tensor:
         """Return a tensor representing the heights of boxes."""
 
@@ -496,7 +500,8 @@ class BaseBoxes(metaclass=ABCMeta):
             shape of (m, ).
         """
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def overlaps(
         boxes1: BaseBoxes,
         boxes2: BaseBoxes,
@@ -522,7 +527,8 @@ class BaseBoxes(metaclass=ABCMeta):
             Tensor: shape (m, n) if ``is_aligned`` is False else shape (m,)
         """
 
-    @abstractstaticmethod
+    @staticmethod
+    @abstractmethod
     def from_instance_masks(masks: MaskType) -> BaseBoxes:
         """Create boxes from instance masks.
 

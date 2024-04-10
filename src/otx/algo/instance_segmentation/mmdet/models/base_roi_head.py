@@ -1,19 +1,16 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
-from typing import Tuple
 
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS
+from torch import Tensor
+
 from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, OptConfigType, OptMultiConfig
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
-from torch import Tensor
 
 
 class BaseRoIHead(BaseModule, metaclass=ABCMeta):
@@ -46,46 +43,43 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
 
     @property
     def with_bbox(self) -> bool:
-        """bool: whether the RoI head contains a `bbox_head`"""
+        """bool: whether the RoI head contains a `bbox_head`."""
         return hasattr(self, "bbox_head") and self.bbox_head is not None
 
     @property
     def with_mask(self) -> bool:
-        """bool: whether the RoI head contains a `mask_head`"""
+        """bool: whether the RoI head contains a `mask_head`."""
         return hasattr(self, "mask_head") and self.mask_head is not None
 
     @property
     def with_shared_head(self) -> bool:
-        """bool: whether the RoI head contains a `shared_head`"""
+        """bool: whether the RoI head contains a `shared_head`."""
         return hasattr(self, "shared_head") and self.shared_head is not None
 
     @abstractmethod
     def init_bbox_head(self, *args, **kwargs):
-        """Initialize ``bbox_head``"""
+        """Initialize ``bbox_head``."""
 
     @abstractmethod
     def init_mask_head(self, *args, **kwargs):
-        """Initialize ``mask_head``"""
+        """Initialize ``mask_head``."""
 
     @abstractmethod
     def init_assigner_sampler(self, *args, **kwargs):
         """Initialize assigner and sampler."""
 
     @abstractmethod
-    def loss(self, x: Tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList):
-        """Perform forward propagation and loss calculation of the roi head on
-        the features of the upstream network.
-        """
+    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList):
+        """Perform forward propagation and loss calculation of the roi head on the features of the upstream network."""
 
     def predict(
         self,
-        x: Tuple[Tensor],
+        x: tuple[Tensor],
         rpn_results_list: InstanceList,
         batch_data_samples: SampleList,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the roi head and predict detection
-        results on the features of the upstream network.
+        """Perform forward propagation of the roi head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Features from upstream network. Each

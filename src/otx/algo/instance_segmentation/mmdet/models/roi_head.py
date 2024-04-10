@@ -12,7 +12,7 @@ from otx.algo.detection.heads.class_incremental_mixin import (
 )
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
-from otx.algo.instance_segmentation.mmdet.models.roi_head import StandardRoIHead
+from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
 from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     ConfigType,
@@ -66,8 +66,8 @@ class StandardRoIHead(BaseRoIHead):
         bbox_roi_extractor.pop("type")
         bbox_head.pop("type")
 
-        self.bbox_roi_extractor = MODELS.build(bbox_roi_extractor)
-        self.bbox_head = MODELS.build(bbox_head)
+        self.bbox_roi_extractor = SingleRoIExtractor(**bbox_roi_extractor)
+        self.bbox_head = CustomConvFCBBoxHead(**bbox_head)
 
     def init_mask_head(self, mask_roi_extractor: ConfigType, mask_head: ConfigType) -> None:
         """Initialize mask head and mask roi extractor.
@@ -78,17 +78,25 @@ class StandardRoIHead(BaseRoIHead):
             mask_head (dict or ConfigDict): Config of mask in mask head.
         """
         if mask_roi_extractor is not None:
-            self.mask_roi_extractor = MODELS.build(mask_roi_extractor)
+            if mask_roi_extractor["type"] != SingleRoIExtractor.__name__:
+                msg = f"mask_roi_extractor should be SingleRoIExtractor, but got {mask_roi_extractor['type']}"
+                raise ValueError(msg)
+            mask_roi_extractor.pop("type")
+            self.mask_roi_extractor = SingleRoIExtractor(**mask_roi_extractor)
             self.share_roi_extractor = False
         else:
             self.share_roi_extractor = True
             self.mask_roi_extractor = self.bbox_roi_extractor
-        self.mask_head = MODELS.build(mask_head)
 
-    # TODO: Need to refactor later
+        if mask_head["type"] != FCNMaskHead.__name__:
+            msg = f"mask_head should be FCNMaskHead, but got {mask_head['type']}"
+            raise ValueError(msg)
+
+        mask_head.pop("type")
+        self.mask_head = FCNMaskHead(**mask_head)
+
     def forward(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList = None) -> tuple:
-        """Network forward process. Usually includes backbone, neck and head
-        forward without any post-processing.
+        """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
 
         Args:
             x (List[Tensor]): Multi-level features that may have different
@@ -118,8 +126,7 @@ class StandardRoIHead(BaseRoIHead):
         return results
 
     def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
-        """Perform forward propagation and loss calculation of the detection
-        roi on the features of the upstream network.
+        """Perform forward propagation and loss calculation of the detection roi on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): List of multi-level img features.
@@ -191,8 +198,7 @@ class StandardRoIHead(BaseRoIHead):
         return bbox_results
 
     def bbox_loss(self, x: tuple[Tensor], sampling_results: list[SamplingResult]) -> dict:
-        """Perform forward propagation and loss calculation of the bbox head on
-        the features of the upstream network.
+        """Perform forward propagation and loss calculation of the bbox head on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): List of multi-level img features.
@@ -227,8 +233,7 @@ class StandardRoIHead(BaseRoIHead):
         bbox_feats: Tensor,
         batch_gt_instances: InstanceList,
     ) -> dict:
-        """Perform forward propagation and loss calculation of the mask head on
-        the features of the upstream network.
+        """Perform forward propagation and loss calculation of the mask head on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Tuple of multi-level img features.
@@ -314,8 +319,7 @@ class StandardRoIHead(BaseRoIHead):
         rcnn_test_cfg: ConfigType,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the bbox head and predict detection
-        results on the features of the upstream network.
+        """Perform forward propagation of the bbox head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
@@ -388,8 +392,7 @@ class StandardRoIHead(BaseRoIHead):
         results_list: InstanceList,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the mask head and predict detection
-        results on the features of the upstream network.
+        """Perform forward propagation of the mask head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
@@ -431,7 +434,6 @@ class StandardRoIHead(BaseRoIHead):
         num_mask_rois_per_img = [len(res) for res in results_list]
         mask_preds = mask_preds.split(num_mask_rois_per_img, 0)
 
-        # TODO: Handle the case where rescale is false
         results_list = self.mask_head.predict_by_feat(
             mask_preds=mask_preds,
             results_list=results_list,

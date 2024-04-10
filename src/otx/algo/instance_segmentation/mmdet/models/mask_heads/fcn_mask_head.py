@@ -1,12 +1,7 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Tuple
+from __future__ import annotations
 
 import numpy as np
 import torch
@@ -19,6 +14,9 @@ from mmengine.config import ConfigDict
 from mmengine.model import BaseModule, ModuleList
 from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
+from torch import Tensor, nn
+from torch.nn.modules.utils import _pair
+
 from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     ConfigType,
@@ -28,11 +26,8 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     empty_instances,
 )
 from otx.algo.instance_segmentation.mmdet.structures.mask import mask_target
-from torch import Tensor, nn
-from torch.nn.modules.utils import _pair
 
 BYTES_PER_FLOAT = 4
-# TODO: This memory limit may be too much or too little. It would be better to
 #  determine it based on available resources.
 GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
@@ -55,7 +50,10 @@ class FCNMaskHead(BaseModule):
         loss_mask: ConfigType = dict(type="CrossEntropyLoss", use_mask=True, loss_weight=1.0),
         init_cfg: OptMultiConfig = None,
     ) -> None:
-        assert init_cfg is None, "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
+        if init_cfg is not None:
+            msg = "To prevent abnormal initialization behavior, init_cfg is not allowed to be set"
+            raise ValueError(msg)
+
         super().__init__(init_cfg=init_cfg)
         self.upsample_cfg = upsample_cfg.copy()
         if self.upsample_cfg["type"] not in [
@@ -65,11 +63,12 @@ class FCNMaskHead(BaseModule):
             "bilinear",
             "carafe",
         ]:
-            raise ValueError(
+            msg = (
                 f'Invalid upsample method {self.upsample_cfg["type"]}, '
                 'accepted methods are "deconv", "nearest", "bilinear", '
                 '"carafe"',
             )
+            raise ValueError(msg)
         self.num_convs = num_convs
         # WARN: roi_feat_size is reserved and not used
         self.roi_feat_size = _pair(roi_feat_size)
@@ -156,12 +155,11 @@ class FCNMaskHead(BaseModule):
 
     def get_targets(
         self,
-        sampling_results: List[SamplingResult],
+        sampling_results: list[SamplingResult],
         batch_gt_instances: InstanceList,
         rcnn_train_cfg: ConfigDict,
     ) -> Tensor:
-        """Calculate the ground truth for all samples in a batch according to
-        the sampling_results.
+        """Calculate the ground truth for all samples in a batch according to the sampling_results.
 
         Args:
             sampling_results (List[obj:SamplingResult]): Assign results of
@@ -183,7 +181,7 @@ class FCNMaskHead(BaseModule):
     def loss_and_target(
         self,
         mask_preds: Tensor,
-        sampling_results: List[SamplingResult],
+        sampling_results: list[SamplingResult],
         batch_gt_instances: InstanceList,
         rcnn_train_cfg: ConfigDict,
     ) -> dict:
@@ -224,15 +222,14 @@ class FCNMaskHead(BaseModule):
 
     def predict_by_feat(
         self,
-        mask_preds: Tuple[Tensor],
-        results_list: List[InstanceData],
-        batch_img_metas: List[dict],
+        mask_preds: tuple[Tensor],
+        results_list: list[InstanceData],
+        batch_img_metas: list[dict],
         rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
         activate_map: bool = False,
     ) -> InstanceList:
-        """Transform a batch of output features extracted from the head into
-        mask results.
+        """Transform a batch of output features extracted from the head into mask results.
 
         Args:
             mask_preds (tuple[Tensor]): Tuple of predicted foreground masks,

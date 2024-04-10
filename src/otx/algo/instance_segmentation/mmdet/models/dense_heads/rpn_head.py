@@ -1,10 +1,5 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
@@ -17,8 +12,14 @@ import torch.nn.functional as F
 # TODO(Eugene): replace mmcv.ConvModule with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.cnn import ConvModule
+
+# TODO(Eugene): replace mmcv.batched_nms with torchvision
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+from mmcv.ops import batched_nms
 from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
+from torch import Tensor, nn
+
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     cat_boxes,
     empty_box_as,
@@ -26,13 +27,12 @@ from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     get_box_wh,
     scale_boxes,
 )
-from torch import Tensor, nn
-from torchvision.ops import batched_nms
 
 from .anchor_head import AnchorHead
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
+
     from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, MultiConfig, OptInstanceList
 
 

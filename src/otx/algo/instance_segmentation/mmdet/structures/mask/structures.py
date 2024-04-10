@@ -1,14 +1,11 @@
 """The original source code is from mmdet.mask.structures. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import itertools
-from abc import ABCMeta, abstractmethod
-from typing import Sequence, Type, TypeVar
+from abc import ABCMeta
+from typing import TYPE_CHECKING, Sequence
 
 import cv2
 
@@ -21,201 +18,12 @@ import torch
 from shapely import geometry
 from torchvision.ops.roi_align import roi_align
 
-T = TypeVar("T")
+if TYPE_CHECKING:
+    from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes
 
 
 class BaseInstanceMasks(metaclass=ABCMeta):
     """Base class for instance masks."""
-
-    @abstractmethod
-    def rescale(self, scale, interpolation="nearest"):
-        """Rescale masks as large as possible while keeping the aspect ratio.
-        For details can refer to `mmcv.imrescale`.
-
-        Args:
-            scale (tuple[int]): The maximum size (h, w) of rescaled mask.
-            interpolation (str): Same as :func:`mmcv.imrescale`.
-
-        Returns:
-            BaseInstanceMasks: The rescaled masks.
-        """
-
-    @abstractmethod
-    def resize(self, out_shape, interpolation="nearest"):
-        """Resize masks to the given out_shape.
-
-        Args:
-            out_shape: Target (h, w) of resized mask.
-            interpolation (str): See :func:`mmcv.imresize`.
-
-        Returns:
-            BaseInstanceMasks: The resized masks.
-        """
-
-    @abstractmethod
-    def flip(self, flip_direction="horizontal"):
-        """Flip masks alone the given direction.
-
-        Args:
-            flip_direction (str): Either 'horizontal' or 'vertical'.
-
-        Returns:
-            BaseInstanceMasks: The flipped masks.
-        """
-
-    @abstractmethod
-    def pad(self, out_shape, pad_val):
-        """Pad masks to the given size of (h, w).
-
-        Args:
-            out_shape (tuple[int]): Target (h, w) of padded mask.
-            pad_val (int): The padded value.
-
-        Returns:
-            BaseInstanceMasks: The padded masks.
-        """
-
-    @abstractmethod
-    def crop(self, bbox):
-        """Crop each mask by the given bbox.
-
-        Args:
-            bbox (ndarray): Bbox in format [x1, y1, x2, y2], shape (4, ).
-
-        Return:
-            BaseInstanceMasks: The cropped masks.
-        """
-
-    @abstractmethod
-    def crop_and_resize(self, bboxes, out_shape, inds, device, interpolation="bilinear", binarize=True):
-        """Crop and resize masks by the given bboxes.
-
-        This function is mainly used in mask targets computation.
-        It firstly align mask to bboxes by assigned_inds, then crop mask by the
-        assigned bbox and resize to the size of (mask_h, mask_w)
-
-        Args:
-            bboxes (Tensor): Bboxes in format [x1, y1, x2, y2], shape (N, 4)
-            out_shape (tuple[int]): Target (h, w) of resized mask
-            inds (ndarray): Indexes to assign masks to each bbox,
-                shape (N,) and values should be between [0, num_masks - 1].
-            device (str): Device of bboxes
-            interpolation (str): See `mmcv.imresize`
-            binarize (bool): if True fractional values are rounded to 0 or 1
-                after the resize operation. if False and unsupported an error
-                will be raised. Defaults to True.
-
-        Return:
-            BaseInstanceMasks: the cropped and resized masks.
-        """
-
-    @abstractmethod
-    def expand(self, expanded_h, expanded_w, top, left):
-        """See :class:`Expand`."""
-
-    @property
-    @abstractmethod
-    def areas(self):
-        """ndarray: areas of each instance."""
-
-    @abstractmethod
-    def to_ndarray(self):
-        """Convert masks to the format of ndarray.
-
-        Return:
-            ndarray: Converted masks in the format of ndarray.
-        """
-
-    @abstractmethod
-    def to_tensor(self, dtype, device):
-        """Convert masks to the format of Tensor.
-
-        Args:
-            dtype (str): Dtype of converted mask.
-            device (torch.device): Device of converted masks.
-
-        Returns:
-            Tensor: Converted masks in the format of Tensor.
-        """
-
-    @abstractmethod
-    def translate(self, out_shape, offset, direction="horizontal", border_value=0, interpolation="bilinear"):
-        """Translate the masks.
-
-        Args:
-            out_shape (tuple[int]): Shape for output mask, format (h, w).
-            offset (int | float): The offset for translate.
-            direction (str): The translate direction, either "horizontal"
-                or "vertical".
-            border_value (int | float): Border value. Default 0.
-            interpolation (str): Same as :func:`mmcv.imtranslate`.
-
-        Returns:
-            Translated masks.
-        """
-
-    def shear(self, out_shape, magnitude, direction="horizontal", border_value=0, interpolation="bilinear"):
-        """Shear the masks.
-
-        Args:
-            out_shape (tuple[int]): Shape for output mask, format (h, w).
-            magnitude (int | float): The magnitude used for shear.
-            direction (str): The shear direction, either "horizontal"
-                or "vertical".
-            border_value (int | tuple[int]): Value used in case of a
-                constant border. Default 0.
-            interpolation (str): Same as in :func:`mmcv.imshear`.
-
-        Returns:
-            ndarray: Sheared masks.
-        """
-
-    @abstractmethod
-    def rotate(self, out_shape, angle, center=None, scale=1.0, border_value=0):
-        """Rotate the masks.
-
-        Args:
-            out_shape (tuple[int]): Shape for output mask, format (h, w).
-            angle (int | float): Rotation angle in degrees. Positive values
-                mean counter-clockwise rotation.
-            center (tuple[float], optional): Center point (w, h) of the
-                rotation in source image. If not specified, the center of
-                the image will be used.
-            scale (int | float): Isotropic scale factor.
-            border_value (int | float): Border value. Default 0 for masks.
-
-        Returns:
-            Rotated masks.
-        """
-
-    def get_bboxes(self, dst_type="hbb"):
-        """Get the certain type boxes from masks.
-
-        Please refer to ``mmdet.structures.bbox.box_type`` for more details of
-        the box type.
-
-        Args:
-            dst_type: Destination box type.
-
-        Returns:
-            :obj:`BaseBoxes`: Certain type boxes.
-        """
-        from ..bbox import get_box_type
-
-        _, box_type_cls = get_box_type(dst_type)
-        return box_type_cls.from_instance_masks(self)
-
-    @classmethod
-    @abstractmethod
-    def cat(cls: Type[T], masks: Sequence[T]) -> T:
-        """Concatenate a sequence of masks into one single mask instance.
-
-        Args:
-            masks (Sequence[T]): A sequence of mask instances.
-
-        Returns:
-            T: Concatenated mask instance.
-        """
 
 
 class BitmapMasks(BaseInstanceMasks):
@@ -247,7 +55,7 @@ class BitmapMasks(BaseInstanceMasks):
         >>> assert new.height, new.width == out_shape
     """
 
-    def __init__(self, masks, height, width):
+    def __init__(self, masks: np.array | list, height: int, width: int) -> None:
         self.height = height
         self.width = width
         if len(masks) == 0:
@@ -289,6 +97,24 @@ class BitmapMasks(BaseInstanceMasks):
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
+
+    def get_bboxes(self, dst_type: str = "hbb") -> BaseBoxes:
+        """Get the certain type boxes from masks.
+
+        Please refer to ``mmdet.structures.bbox.box_type`` for more details of
+        the box type.
+
+        Args:
+            dst_type: Destination box type.
+
+        Returns:
+            :obj:`BaseBoxes`: Certain type boxes.
+        """
+        from ..bbox import get_box_type
+
+        box_type_info: tuple[str, BaseBoxes] = get_box_type(dst_type)
+        _, box_type_cls = box_type_info
+        return box_type_cls.from_instance_masks(self)
 
     def rescale(self, scale, interpolation="nearest"):
         """See :func:`BaseInstanceMasks.rescale`."""
@@ -529,7 +355,7 @@ class BitmapMasks(BaseInstanceMasks):
         return self
 
     @classmethod
-    def cat(cls: Type[T], masks: Sequence[T]) -> T:
+    def cat(cls: type[BitmapMasks], masks: Sequence[BitmapMasks]) -> BitmapMasks:
         """Concatenate a sequence of masks into one single mask instance.
 
         Args:
@@ -547,7 +373,7 @@ class BitmapMasks(BaseInstanceMasks):
         return cls(mask_array, *mask_array.shape[1:])
 
 
-class PolygonMasks(BaseInstanceMasks):
+class PolygonMasks:
     """This class represents masks in the form of polygons.
 
     Polygons is a list of three levels. The first level of the list
@@ -635,6 +461,24 @@ class PolygonMasks(BaseInstanceMasks):
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
+
+    def get_bboxes(self, dst_type: str = "hbb") -> BaseBoxes:
+        """Get the certain type boxes from masks.
+
+        Please refer to ``mmdet.structures.bbox.box_type`` for more details of
+        the box type.
+
+        Args:
+            dst_type: Destination box type.
+
+        Returns:
+            :obj:`BaseBoxes`: Certain type boxes.
+        """
+        from ..bbox import get_box_type
+
+        box_type_info: tuple[str, BaseBoxes] = get_box_type(dst_type)
+        _, box_type_cls = box_type_info
+        return box_type_cls.from_instance_masks(self)
 
     def rescale(self, scale, interpolation=None):
         """See :func:`BaseInstanceMasks.rescale`"""
@@ -749,7 +593,6 @@ class PolygonMasks(BaseInstanceMasks):
         return PolygonMasks(self.masks, *out_shape)
 
     def expand(self, *args, **kwargs):
-        """TODO: Add expand for polygon"""
         raise NotImplementedError
 
     def crop_and_resize(self, bboxes, out_shape, inds, device="cpu", interpolation="bilinear", binarize=True):
@@ -1033,7 +876,7 @@ class PolygonMasks(BaseInstanceMasks):
         return self
 
     @classmethod
-    def cat(cls: Type[T], masks: Sequence[T]) -> T:
+    def cat(cls: type[PolygonMasks], masks: Sequence[PolygonMasks]) -> PolygonMasks:
         """Concatenate a sequence of masks into one single mask instance.
 
         Args:

@@ -1,12 +1,17 @@
-# Copyright (c) OpenMMLab. All rights reserved.
-import torch
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
+# Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
+import torch
 from mmengine.registry import TASK_UTILS
+
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox_overlaps, get_box_tensor
 
 
-def cast_tensor_type(x, scale=1., dtype=None):
-    if dtype == 'fp16':
+def cast_tensor_type(x: torch.Tensor, scale: float = 1.0, dtype: str | None = None) -> torch.Tensor:
+    """Cast tensor type to fp16."""
+    if dtype == "fp16":
         # scale is for preventing overflows
         x = (x / scale).half()
     return x
@@ -16,11 +21,17 @@ def cast_tensor_type(x, scale=1., dtype=None):
 class BboxOverlaps2D:
     """2D Overlaps (e.g. IoUs, GIoUs) Calculator."""
 
-    def __init__(self, scale=1., dtype=None):
+    def __init__(self, scale: float = 1.0, dtype: str | None = None) -> None:
         self.scale = scale
         self.dtype = dtype
 
-    def __call__(self, bboxes1, bboxes2, mode='iou', is_aligned=False):
+    def __call__(
+        self,
+        bboxes1: torch.Tensor,
+        bboxes2: torch.Tensor,
+        mode: str = "iou",
+        is_aligned: bool = False,
+    ) -> torch.Tensor:
         """Calculate IoU between 2D bboxes.
 
         Args:
@@ -49,7 +60,7 @@ class BboxOverlaps2D:
         if bboxes1.size(-1) == 5:
             bboxes1 = bboxes1[..., :4]
 
-        if self.dtype == 'fp16':
+        if self.dtype == "fp16":
             # change tensor type to save cpu and cuda memory and keep speed
             bboxes1 = cast_tensor_type(bboxes1, self.scale, self.dtype)
             bboxes2 = cast_tensor_type(bboxes2, self.scale, self.dtype)
@@ -62,7 +73,5 @@ class BboxOverlaps2D:
         return bbox_overlaps(bboxes1, bboxes2, mode, is_aligned)
 
     def __repr__(self):
-        """str: a string describing the module"""
-        repr_str = self.__class__.__name__ + f'(' \
-            f'scale={self.scale}, dtype={self.dtype})'
-        return repr_str
+        """str: a string describing the module."""
+        return self.__class__.__name__ + f"(scale={self.scale}, dtype={self.dtype})"

@@ -1,26 +1,24 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple, TypeVar, Union
+from __future__ import annotations
+
+from typing import TypeAlias, TypeVar
 
 import cv2
 import numpy as np
 import torch
-from otx.algo.instance_segmentation.mmdet.structures.mask.structures import BitmapMasks, PolygonMasks
 from torch import BoolTensor, Tensor
+
+from otx.algo.instance_segmentation.mmdet.structures.mask.structures import BitmapMasks, PolygonMasks
 
 from .base_boxes import BaseBoxes
 from .bbox_overlaps import bbox_overlaps
 from .box_type import register_box
 
 T = TypeVar("T")
-DeviceType = Union[str, torch.device]
-MaskType = Union[BitmapMasks, PolygonMasks]
+DeviceType: TypeAlias = str | torch.device
+MaskType: TypeAlias = BitmapMasks | PolygonMasks
 
 
 @register_box(name="hbox")
@@ -55,11 +53,11 @@ class HorizontalBoxes(BaseBoxes):
 
     def __init__(
         self,
-        data: Union[Tensor, np.ndarray],
-        dtype: torch.dtype = None,
-        device: DeviceType = None,
+        data: Tensor | np.ndarray,
+        dtype: torch.dtype | None = None,
+        device: DeviceType | None = None,
         clone: bool = True,
-        in_mode: Optional[str] = None,
+        in_mode: str | None = None,
     ) -> None:
         super().__init__(data=data, dtype=dtype, device=device, clone=clone)
         if isinstance(in_mode, str):
@@ -123,7 +121,7 @@ class HorizontalBoxes(BaseBoxes):
         boxes = self.tensor
         return boxes[..., 3] - boxes[..., 1]
 
-    def flip_(self, img_shape: Tuple[int, int], direction: str = "horizontal") -> None:
+    def flip_(self, img_shape: tuple[int, int], direction: str = "horizontal") -> None:
         """Flip boxes horizontally or vertically in-place.
 
         Args:
@@ -146,7 +144,7 @@ class HorizontalBoxes(BaseBoxes):
             flipped[..., 2] = img_shape[1] - boxes[..., 0]
             flipped[..., 3] = img_shape[0] - boxes[..., 1]
 
-    def translate_(self, distances: Tuple[float, float]) -> None:
+    def translate_(self, distances: tuple[float, float]) -> None:
         """Translate boxes in-place.
 
         Args:
@@ -157,7 +155,7 @@ class HorizontalBoxes(BaseBoxes):
         assert len(distances) == 2
         self.tensor = boxes + boxes.new_tensor(distances).repeat(2)
 
-    def clip_(self, img_shape: Tuple[int, int]) -> None:
+    def clip_(self, img_shape: tuple[int, int]) -> None:
         """Clip boxes according to the image shape in-place.
 
         Args:
@@ -167,7 +165,7 @@ class HorizontalBoxes(BaseBoxes):
         boxes[..., 0::2] = boxes[..., 0::2].clamp(0, img_shape[1])
         boxes[..., 1::2] = boxes[..., 1::2].clamp(0, img_shape[0])
 
-    def rotate_(self, center: Tuple[float, float], angle: float) -> None:
+    def rotate_(self, center: tuple[float, float], angle: float) -> None:
         """Rotate all boxes in-place.
 
         Args:
@@ -185,7 +183,7 @@ class HorizontalBoxes(BaseBoxes):
         corners = torch.transpose(corners_T, -1, -2)
         self.tensor = self.corner2hbox(corners)
 
-    def project_(self, homography_matrix: Union[Tensor, np.ndarray]) -> None:
+    def project_(self, homography_matrix: Tensor | np.ndarray) -> None:
         """Geometric transformat boxes in-place.
 
         Args:
@@ -206,8 +204,7 @@ class HorizontalBoxes(BaseBoxes):
 
     @staticmethod
     def hbox2corner(boxes: Tensor) -> Tensor:
-        """Convert box coordinates from (x1, y1, x2, y2) to corners ((x1, y1),
-        (x2, y1), (x1, y2), (x2, y2)).
+        """Convert box coordinates from (x1, y1, x2, y2) to corners ((x1, y1), (x2, y1), (x1, y2), (x2, y2)).
 
         Args:
             boxes (Tensor): Horizontal box tensor with shape of (..., 4).
@@ -221,8 +218,7 @@ class HorizontalBoxes(BaseBoxes):
 
     @staticmethod
     def corner2hbox(corners: Tensor) -> Tensor:
-        """Convert box coordinates from corners ((x1, y1), (x2, y1), (x1, y2),
-        (x2, y2)) to (x1, y1, x2, y2).
+        """Convert box coordinates from corners ((x1, y1), (x2, y1), (x1, y2), (x2, y2)) to (x1, y1, x2, y2).
 
         Args:
             corners (Tensor): Corner tensor with shape of (..., 4, 2).
@@ -236,7 +232,7 @@ class HorizontalBoxes(BaseBoxes):
         max_xy = corners.max(dim=-2)[0]
         return torch.cat([min_xy, max_xy], dim=-1)
 
-    def rescale_(self, scale_factor: Tuple[float, float]) -> None:
+    def rescale_(self, scale_factor: tuple[float, float]) -> None:
         """Rescale boxes w.r.t. rescale_factor in-place.
 
         Note:
@@ -254,7 +250,7 @@ class HorizontalBoxes(BaseBoxes):
         scale_factor = boxes.new_tensor(scale_factor).repeat(2)
         self.tensor = boxes * scale_factor
 
-    def resize_(self, scale_factor: Tuple[float, float]) -> None:
+    def resize_(self, scale_factor: tuple[float, float]) -> None:
         """Resize the box width and height w.r.t scale_factor in-place.
 
         Note:
@@ -277,7 +273,7 @@ class HorizontalBoxes(BaseBoxes):
         xy2 = ctrs + 0.5 * wh
         self.tensor = torch.cat([xy1, xy2], dim=-1)
 
-    def is_inside(self, img_shape: Tuple[int, int], all_inside: bool = False, allowed_border: int = 0) -> BoolTensor:
+    def is_inside(self, img_shape: tuple[int, int], all_inside: bool = False, allowed_border: int = 0) -> BoolTensor:
         """Find boxes inside the image.
 
         Args:
@@ -302,13 +298,12 @@ class HorizontalBoxes(BaseBoxes):
                 & (boxes[:, 2] < img_w + allowed_border)
                 & (boxes[:, 3] < img_h + allowed_border)
             )
-        else:
-            return (
-                (boxes[..., 0] < img_w + allowed_border)
-                & (boxes[..., 1] < img_h + allowed_border)
-                & (boxes[..., 2] > -allowed_border)
-                & (boxes[..., 3] > -allowed_border)
-            )
+        return (
+            (boxes[..., 0] < img_w + allowed_border)
+            & (boxes[..., 1] < img_h + allowed_border)
+            & (boxes[..., 2] > -allowed_border)
+            & (boxes[..., 3] > -allowed_border)
+        )
 
     def find_inside_points(self, points: Tensor, is_aligned: bool = False) -> BoolTensor:
         """Find inside box points. Boxes dimension must be 2.
@@ -342,8 +337,10 @@ class HorizontalBoxes(BaseBoxes):
             & (points[..., 1] <= y_max)
         )
 
-    def create_masks(self, img_shape: Tuple[int, int]) -> BitmapMasks:
-        """Args:
+    def create_masks(self, img_shape: tuple[int, int]) -> BitmapMasks:
+        """Create masks.
+
+        Args:
             img_shape (Tuple[int, int]): A tuple of image height and width.
 
         Returns:
@@ -367,8 +364,7 @@ class HorizontalBoxes(BaseBoxes):
         is_aligned: bool = False,
         eps: float = 1e-6,
     ) -> Tensor:
-        """Calculate overlap between two set of boxes with their types
-        converted to ``HorizontalBoxes``.
+        """Calculate overlap between two set of boxes with their types converted to ``HorizontalBoxes``.
 
         Args:
             boxes1 (:obj:`BaseBoxes`): BaseBoxes with shape of (m, box_dim)
@@ -390,7 +386,7 @@ class HorizontalBoxes(BaseBoxes):
         return bbox_overlaps(boxes1.tensor, boxes2.tensor, mode=mode, is_aligned=is_aligned, eps=eps)
 
     @staticmethod
-    def from_instance_masks(masks: MaskType) -> "HorizontalBoxes":
+    def from_instance_masks(masks: MaskType) -> HorizontalBoxes:
         """Create horizontal boxes from instance masks.
 
         Args:
@@ -425,5 +421,6 @@ class HorizontalBoxes(BaseBoxes):
                 boxes[idx, :2] = xy_min
                 boxes[idx, 2:] = xy_max
         else:
-            raise TypeError("`masks` must be `BitmapMasks`  or `PolygonMasks`, " f"but got {type(masks)}.")
+            msg = "`masks` must be `BitmapMasks`  or `PolygonMasks`, " f"but got {type(masks)}."
+            raise TypeError(msg)
         return HorizontalBoxes(boxes)

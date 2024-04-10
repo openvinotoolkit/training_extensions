@@ -1,12 +1,9 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Callable, Optional, Tuple, Type, Union
+from __future__ import annotations
+
+from typing import Callable, TypeVar, Union
 
 import numpy as np
 import torch
@@ -14,6 +11,7 @@ from torch import Tensor
 
 from .base_boxes import BaseBoxes
 
+T = TypeVar("T", bound="BaseBoxes")
 BoxType = Union[np.ndarray, Tensor, BaseBoxes]
 
 box_types: dict = {}
@@ -21,7 +19,7 @@ _box_type_to_name: dict = {}
 box_converters: dict = {}
 
 
-def _register_box(name: str, box_type: Type, force: bool = False) -> None:
+def _register_box(name: str, box_type: type, force: bool = False) -> None:
     """Register a box type.
 
     Args:
@@ -46,7 +44,7 @@ def _register_box(name: str, box_type: Type, force: bool = False) -> None:
     _box_type_to_name[box_type] = name
 
 
-def register_box(name: str, box_type: Type = None, force: bool = False) -> Union[Type, Callable]:
+def register_box(name: str, box_type: type | None = None, force: bool = False) -> type | Callable:
     """Register a box type.
 
     A record will be added to ``bbox_types``, whose key is the box type name
@@ -92,8 +90,8 @@ def register_box(name: str, box_type: Type = None, force: bool = False) -> Union
 
 
 def _register_box_converter(
-    src_type: Union[str, type],
-    dst_type: Union[str, type],
+    src_type: str | BaseBoxes,
+    dst_type: str | BaseBoxes,
     converter: Callable,
     force: bool = False,
 ) -> None:
@@ -118,9 +116,9 @@ def _register_box_converter(
 
 
 def register_box_converter(
-    src_type: Union[str, type],
-    dst_type: Union[str, type],
-    converter: Optional[Callable] = None,
+    src_type: str | BaseBoxes,
+    dst_type: str | BaseBoxes,
+    converter: Callable | None = None,
     force: bool = False,
 ) -> Callable:
     """Register a box converter.
@@ -165,7 +163,7 @@ def register_box_converter(
     return _register
 
 
-def get_box_type(box_type: Union[str, type]) -> Tuple[str, type]:
+def get_box_type(box_type: str | BaseBoxes) -> tuple[str, T]:
     """Get both box type name and class.
 
     Args:
@@ -178,7 +176,7 @@ def get_box_type(box_type: Union[str, type]) -> Tuple[str, type]:
         type_name = box_type.lower()
         assert type_name in box_types, f"Box type {type_name} hasn't been registered in box_types."
         type_cls = box_types[type_name]
-    elif issubclass(box_type, BaseBoxes):
+    elif isinstance(box_type, BaseBoxes):
         assert box_type in _box_type_to_name, f"Box type {box_type} hasn't been registered in box_types."
         type_name = _box_type_to_name[box_type]
         type_cls = box_type
@@ -190,8 +188,8 @@ def get_box_type(box_type: Union[str, type]) -> Tuple[str, type]:
 def convert_box_type(
     boxes: BoxType,
     *,
-    src_type: Union[str, type] = None,
-    dst_type: Union[str, type] = None,
+    src_type: str | BaseBoxes | None = None,
+    dst_type: str | BaseBoxes | None = None,
 ) -> BoxType:
     """Convert boxes from source type to destination type.
 
@@ -210,12 +208,13 @@ def convert_box_type(
         is consistent with the input's type.
     """
     assert dst_type is not None
-    dst_type_name, dst_type_cls = get_box_type(dst_type)
+    dst_type_info: tuple[str, T] = get_box_type(dst_type)
+    dst_type_name, dst_type_cls = dst_type_info
 
     is_box_cls = False
     is_numpy = False
     if isinstance(boxes, BaseBoxes):
-        src_type_name, _ = get_box_type(type(boxes))
+        src_type_name, _ = get_box_type(boxes)
         is_box_cls = True
     elif isinstance(boxes, (Tensor, np.ndarray)):
         assert src_type is not None
@@ -242,9 +241,8 @@ def convert_box_type(
         return converter(boxes)
 
 
-def autocast_box_type(dst_box_type="hbox") -> Callable:
-    """A decorator which automatically casts results['gt_bboxes'] to the
-    destination box type.
+def autocast_box_type(dst_box_type: str = "hbox") -> Callable:
+    """A decorator which automatically casts results['gt_bboxes'] to the destination box type.
 
     It commenly used in mmdet.datasets.transforms to make the transforms up-
     compatible with the np.ndarray type of results['gt_bboxes'].

@@ -1,16 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
+
 import warnings
 from typing import Optional, Sequence, Union
 
 import numpy as np
 import torch
+from mmengine.registry import TASK_UTILS
 from torch import Tensor
 
-from mmengine.registry import TASK_UTILS
-from .base_bbox_coder import BaseBBoxCoder
-
 from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, HorizontalBoxes, get_box_tensor
+
+from .base_bbox_coder import BaseBBoxCoder
 
 
 @TASK_UTILS.register_module()
@@ -35,13 +36,15 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
             Default 32.
     """
 
-    def __init__(self,
-                 target_means: Sequence[float] = (0., 0., 0., 0.),
-                 target_stds: Sequence[float] = (1., 1., 1., 1.),
-                 clip_border: bool = True,
-                 add_ctr_clamp: bool = False,
-                 ctr_clamp: int = 32,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        target_means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
+        target_stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
+        clip_border: bool = True,
+        add_ctr_clamp: bool = False,
+        ctr_clamp: int = 32,
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
         self.means = target_means
         self.stds = target_stds
@@ -49,10 +52,8 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
         self.add_ctr_clamp = add_ctr_clamp
         self.ctr_clamp = ctr_clamp
 
-    def encode(self, bboxes: Union[Tensor, BaseBoxes],
-               gt_bboxes: Union[Tensor, BaseBoxes]) -> Tensor:
-        """Get box regression transformation deltas that can be used to
-        transform the ``bboxes`` into the ``gt_bboxes``.
+    def encode(self, bboxes: Union[Tensor, BaseBoxes], gt_bboxes: Union[Tensor, BaseBoxes]) -> Tensor:
+        """Get box regression transformation deltas that can be used to transform the ``bboxes`` into the ``gt_bboxes``.
 
         Args:
             bboxes (torch.Tensor or :obj:`BaseBoxes`): Source boxes,
@@ -74,9 +75,8 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
         self,
         bboxes: Union[Tensor, BaseBoxes],
         pred_bboxes: Tensor,
-        max_shape: Optional[Union[Sequence[int], Tensor,
-                                  Sequence[Sequence[int]]]] = None,
-        wh_ratio_clip: Optional[float] = 16 / 1000
+        max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+        wh_ratio_clip: Optional[float] = 16 / 1000,
     ) -> Union[Tensor, BaseBoxes]:
         """Apply transformation `pred_bboxes` to `boxes`.
 
@@ -105,28 +105,42 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
 
         if pred_bboxes.ndim == 2 and not torch.onnx.is_in_onnx_export():
             # single image decode
-            decoded_bboxes = delta2bbox(bboxes, pred_bboxes, self.means,
-                                        self.stds, max_shape, wh_ratio_clip,
-                                        self.clip_border, self.add_ctr_clamp,
-                                        self.ctr_clamp)
+            decoded_bboxes = delta2bbox(
+                bboxes,
+                pred_bboxes,
+                self.means,
+                self.stds,
+                max_shape,
+                wh_ratio_clip,
+                self.clip_border,
+                self.add_ctr_clamp,
+                self.ctr_clamp,
+            )
         else:
             if pred_bboxes.ndim == 3 and not torch.onnx.is_in_onnx_export():
                 warnings.warn(
-                    'DeprecationWarning: onnx_delta2bbox is deprecated '
-                    'in the case of batch decoding and non-ONNX, '
-                    'please use “delta2bbox” instead. In order to improve '
-                    'the decoding speed, the batch function will no '
-                    'longer be supported. ')
-            decoded_bboxes = onnx_delta2bbox(bboxes, pred_bboxes, self.means,
-                                             self.stds, max_shape,
-                                             wh_ratio_clip, self.clip_border,
-                                             self.add_ctr_clamp,
-                                             self.ctr_clamp)
+                    "DeprecationWarning: onnx_delta2bbox is deprecated "
+                    "in the case of batch decoding and non-ONNX, "
+                    "please use “delta2bbox” instead. In order to improve "
+                    "the decoding speed, the batch function will no "
+                    "longer be supported. ",
+                )
+            decoded_bboxes = onnx_delta2bbox(
+                bboxes,
+                pred_bboxes,
+                self.means,
+                self.stds,
+                max_shape,
+                wh_ratio_clip,
+                self.clip_border,
+                self.add_ctr_clamp,
+                self.ctr_clamp,
+            )
 
         if self.use_box_type:
-            assert decoded_bboxes.size(-1) == 4, \
-                ('Cannot warp decoded boxes with box type when decoded boxes'
-                 'have shape of (N, num_classes * 4)')
+            assert (
+                decoded_bboxes.size(-1) == 4
+            ), "Cannot warp decoded boxes with box type when decoded boxeshave shape of (N, num_classes * 4)"
             decoded_bboxes = HorizontalBoxes(decoded_bboxes)
         return decoded_bboxes
 
@@ -134,8 +148,8 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
 def bbox2delta(
     proposals: Tensor,
     gt: Tensor,
-    means: Sequence[float] = (0., 0., 0., 0.),
-    stds: Sequence[float] = (1., 1., 1., 1.)
+    means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
+    stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
 ) -> Tensor:
     """Compute deltas of proposals w.r.t. gt.
 
@@ -176,21 +190,20 @@ def bbox2delta(
 
     means = deltas.new_tensor(means).unsqueeze(0)
     stds = deltas.new_tensor(stds).unsqueeze(0)
-    deltas = deltas.sub_(means).div_(stds)
-
-    return deltas
+    return deltas.sub_(means).div_(stds)
 
 
-def delta2bbox(rois: Tensor,
-               deltas: Tensor,
-               means: Sequence[float] = (0., 0., 0., 0.),
-               stds: Sequence[float] = (1., 1., 1., 1.),
-               max_shape: Optional[Union[Sequence[int], Tensor,
-                                         Sequence[Sequence[int]]]] = None,
-               wh_ratio_clip: float = 16 / 1000,
-               clip_border: bool = True,
-               add_ctr_clamp: bool = False,
-               ctr_clamp: int = 32) -> Tensor:
+def delta2bbox(
+    rois: Tensor,
+    deltas: Tensor,
+    means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
+    stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
+    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+    wh_ratio_clip: float = 16 / 1000,
+    clip_border: bool = True,
+    add_ctr_clamp: bool = False,
+    ctr_clamp: int = 32,
+) -> Tensor:
     """Apply deltas to shift/scale base boxes.
 
     Typically the rois are anchor or proposed bounding boxes and the deltas are
@@ -257,8 +270,8 @@ def delta2bbox(rois: Tensor,
 
     # Compute width/height of each roi
     rois_ = rois.repeat(1, num_classes).reshape(-1, 4)
-    pxy = ((rois_[:, :2] + rois_[:, 2:]) * 0.5)
-    pwh = (rois_[:, 2:] - rois_[:, :2])
+    pxy = (rois_[:, :2] + rois_[:, 2:]) * 0.5
+    pwh = rois_[:, 2:] - rois_[:, :2]
 
     dxy_wh = pwh * dxy
 
@@ -277,20 +290,20 @@ def delta2bbox(rois: Tensor,
     if clip_border and max_shape is not None:
         bboxes[..., 0::2].clamp_(min=0, max=max_shape[1])
         bboxes[..., 1::2].clamp_(min=0, max=max_shape[0])
-    bboxes = bboxes.reshape(num_bboxes, -1)
-    return bboxes
+    return bboxes.reshape(num_bboxes, -1)
 
 
-def onnx_delta2bbox(rois: Tensor,
-                    deltas: Tensor,
-                    means: Sequence[float] = (0., 0., 0., 0.),
-                    stds: Sequence[float] = (1., 1., 1., 1.),
-                    max_shape: Optional[Union[Sequence[int], Tensor,
-                                              Sequence[Sequence[int]]]] = None,
-                    wh_ratio_clip: float = 16 / 1000,
-                    clip_border: Optional[bool] = True,
-                    add_ctr_clamp: bool = False,
-                    ctr_clamp: int = 32) -> Tensor:
+def onnx_delta2bbox(
+    rois: Tensor,
+    deltas: Tensor,
+    means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
+    stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
+    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+    wh_ratio_clip: float = 16 / 1000,
+    clip_border: Optional[bool] = True,
+    add_ctr_clamp: bool = False,
+    ctr_clamp: int = 32,
+) -> Tensor:
     """Apply deltas to shift/scale base boxes.
 
     Typically the rois are anchor or proposed bounding boxes and the deltas are
@@ -345,9 +358,7 @@ def onnx_delta2bbox(rois: Tensor,
                 [0.0000, 0.3161, 4.1945, 0.6839],
                 [5.0000, 5.0000, 5.0000, 5.0000]])
     """
-    means = deltas.new_tensor(means).view(1,
-                                          -1).repeat(1,
-                                                     deltas.size(-1) // 4)
+    means = deltas.new_tensor(means).view(1, -1).repeat(1, deltas.size(-1) // 4)
     stds = deltas.new_tensor(stds).view(1, -1).repeat(1, deltas.size(-1) // 4)
     denorm_deltas = deltas * stds + means
     dx = denorm_deltas[..., 0::4]
@@ -394,6 +405,7 @@ def onnx_delta2bbox(rois: Tensor,
         # clip bboxes with dynamic `min` and `max` for onnx
         if torch.onnx.is_in_onnx_export():
             from mmdet.core.export import dynamic_clip_for_onnx
+
             x1, y1, x2, y2 = dynamic_clip_for_onnx(x1, y1, x2, y2, max_shape)
             bboxes = torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())
             return bboxes
@@ -405,25 +417,24 @@ def onnx_delta2bbox(rois: Tensor,
             assert max_shape.size(0) == bboxes.size(0)
 
         min_xy = x1.new_tensor(0)
-        max_xy = torch.cat(
-            [max_shape] * (deltas.size(-1) // 2),
-            dim=-1).flip(-1).unsqueeze(-2)
+        max_xy = torch.cat([max_shape] * (deltas.size(-1) // 2), dim=-1).flip(-1).unsqueeze(-2)
         bboxes = torch.where(bboxes < min_xy, min_xy, bboxes)
         bboxes = torch.where(bboxes > max_xy, max_xy, bboxes)
 
     return bboxes
 
 
-def delta2bbox_glip(rois: Tensor,
-                    deltas: Tensor,
-                    means: Sequence[float] = (0., 0., 0., 0.),
-                    stds: Sequence[float] = (1., 1., 1., 1.),
-                    max_shape: Optional[Union[Sequence[int], Tensor,
-                                              Sequence[Sequence[int]]]] = None,
-                    wh_ratio_clip: float = 16 / 1000,
-                    clip_border: bool = True,
-                    add_ctr_clamp: bool = False,
-                    ctr_clamp: int = 32) -> Tensor:
+def delta2bbox_glip(
+    rois: Tensor,
+    deltas: Tensor,
+    means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
+    stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
+    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+    wh_ratio_clip: float = 16 / 1000,
+    clip_border: bool = True,
+    add_ctr_clamp: bool = False,
+    ctr_clamp: int = 32,
+) -> Tensor:
     """Apply deltas to shift/scale base boxes.
 
     Typically the rois are anchor or proposed bounding boxes and the deltas are
@@ -472,8 +483,8 @@ def delta2bbox_glip(rois: Tensor,
 
     # Compute width/height of each roi
     rois_ = rois.repeat(1, num_classes).reshape(-1, 4)
-    pxy = ((rois_[:, :2] + rois_[:, 2:] - 1) * 0.5)  # note
-    pwh = (rois_[:, 2:] - rois_[:, :2])
+    pxy = (rois_[:, :2] + rois_[:, 2:] - 1) * 0.5  # note
+    pwh = rois_[:, 2:] - rois_[:, :2]
 
     dxy_wh = pwh * dxy
 
@@ -495,5 +506,4 @@ def delta2bbox_glip(rois: Tensor,
     if clip_border and max_shape is not None:
         bboxes[..., 0::2].clamp_(min=0, max=max_shape[1] - 1)  # Note
         bboxes[..., 1::2].clamp_(min=0, max=max_shape[0] - 1)  # Note
-    bboxes = bboxes.reshape(num_bboxes, -1)
-    return bboxes
+    return bboxes.reshape(num_bboxes, -1)
