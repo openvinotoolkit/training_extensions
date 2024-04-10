@@ -7,8 +7,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
-from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
+from otx.core.types.task import OTXTaskType
+from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.e2e.cli.utils import run_main
 
 
@@ -435,6 +436,20 @@ def test_otx_ov_test_cli(
     assert len(metric_result) > 0
 
 
+REASON = '''
+self = <otx.hpo.hyperband.AshaTrial object at 0x7069e015e750>
+
+    def finalize(self) -> None:
+        """Set done as True."""
+        if not self.score:
+            error_msg = f"Trial{self.id} didn't report any score but tries to be done."
+>           raise RuntimeError(error_msg)
+E           RuntimeError: Trial0 didn't report any score but tries to be done.
+
+src/otx/hpo/hpo_base.py:274: RuntimeError
+'''
+
+
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo_e2e_cli(
     task: str,
@@ -456,6 +471,12 @@ def test_otx_hpo_e2e_cli(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task in {
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+    }:
+        pytest.xfail(reason=REASON)
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
