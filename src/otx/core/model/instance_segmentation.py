@@ -17,10 +17,11 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
+from otx.algo.hooks.recording_forward_hook import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.tile import TileBatchInstSegDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity, TileBatchInstSegDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
@@ -89,10 +90,7 @@ class OTXInstanceSegModel(
             self.tile_config.max_num_instances,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
-            if self.explain_mode:
-                output = self.forward_explain(batch_tile_input)
-            else:
-                output = self.forward(batch_tile_input)
+            output = self.forward_explain(batch_tile_input) if self.explain_mode else self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
                 msg = "Loss output is not supported for tile merging"
                 raise TypeError(msg)
@@ -117,7 +115,7 @@ class OTXInstanceSegModel(
                     "feature_vector": [pred_entity.feature_vector for pred_entity in pred_entities],
                 },
             )
-        return InstanceSegBatchPredEntity(**batch_pred_entitity_params)
+        return InstanceSegBatchPredEntity(**batch_pred_entitity_params)  # type: ignore[arg-type]
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -250,12 +248,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def forward_explain(
         self,
-        inputs: InstanceSegBatchDataEntity,
+        inputs: InstanceSegBatchDataEntity | TileBatchInstSegDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
-        from otx.core.data.entity.tile import OTXTileBatchDataEntity
-
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 

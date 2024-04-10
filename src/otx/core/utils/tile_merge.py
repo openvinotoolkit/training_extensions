@@ -15,6 +15,7 @@ import torch
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
+from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
@@ -154,7 +155,12 @@ class DetectionTileMerge(TileMerge):
             for img_id, image_info in zip(img_ids, self.img_infos)
         ]
 
-    def _merge_entities(self, img_info: ImageInfo, entities: list[DetPredEntity], explain_mode: bool) -> DetPredEntity:
+    def _merge_entities(
+        self,
+        img_info: ImageInfo,
+        entities: list[DetPredEntity],
+        explain_mode: bool = False,
+    ) -> DetPredEntity:
         """Merge tile predictions to one single prediction.
 
         Args:
@@ -209,8 +215,9 @@ class DetectionTileMerge(TileMerge):
         saliency_maps: list[np.array],
         shape: tuple[int, int],
         tiles_coords: list[tuple[int, int, int, int]],
-    ):
+    ) -> np.ndarray:
         """Merging saliency maps from each tile for PyTorch implementation.
+
         OV implementation is on ModelAPI side. Unlike ModelAPI implementation,
         it doesn't have the first tile with resized untiled image.
 
@@ -240,9 +247,6 @@ class DetectionTileMerge(TileMerge):
 
         for i, saliency_map in enumerate(saliency_maps):
             for class_idx in range(num_classes):
-                if len(saliency_map.shape) == 4:
-                    saliency_map = saliency_map.squeeze(0)
-
                 cls_map = saliency_map[class_idx]
 
                 x_1, y_1, map_w, map_h = tiles_coords[i]
@@ -353,7 +357,7 @@ class InstanceSegTileMerge(TileMerge):
         self,
         img_info: ImageInfo,
         entities: list[InstanceSegPredEntity],
-        explain_mode: bool,
+        explain_mode: bool = False,
     ) -> InstanceSegPredEntity:
         """Merge tile predictions to one single prediction.
 
@@ -413,9 +417,19 @@ class InstanceSegTileMerge(TileMerge):
         return InstanceSegPredEntity(**entity_params)
 
     def get_saliency_maps_from_masks(
-        self, labels: torch.Tensor, scores: torch.Tensor, masks: list[torch.Tensor], num_classes: int
+        self,
+        labels: torch.Tensor,
+        scores: torch.Tensor,
+        masks: None | torch.Tensor,
+        num_classes: int,
     ) -> np.ndarray:
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+        """Average and normalize predicted masks in  per-class.
+
+        Returns:
+            np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
+        """
+        if masks is None:
+            return np.ndarray([])
 
         pred = {"labels": labels, "scores": scores, "masks": masks}
         return MaskRCNNRecordingForwardHook.average_and_normalize(pred, num_classes)
