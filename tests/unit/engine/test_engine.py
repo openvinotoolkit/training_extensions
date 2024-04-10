@@ -186,7 +186,6 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.OPENVINO,
             precision=OTXPrecisionType.FP32,
-            path_to_already_exported_model=None,
         )
 
         fxt_engine.export(export_precision=OTXPrecisionType.FP16)
@@ -195,7 +194,6 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.OPENVINO,
             precision=OTXPrecisionType.FP16,
-            path_to_already_exported_model=None,
         )
 
         fxt_engine.export(export_format=OTXExportFormatType.ONNX)
@@ -204,7 +202,6 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.ONNX,
             precision=OTXPrecisionType.FP32,
-            path_to_already_exported_model=None,
         )
 
         # check exportable code with IR OpenVINO model
@@ -221,7 +218,6 @@ class TestEngine:
             base_name="exported_model",
             export_format=OTXExportFormatType.EXPORTABLE_CODE,
             precision=OTXPrecisionType.FP32,
-            path_to_already_exported_model="path/to/checkpoint.xml",
         )
 
     def test_optimizing_model(self, fxt_engine, mocker) -> None:
@@ -242,8 +238,9 @@ class TestEngine:
         assert mock_ov_model.return_value.optimize.call_args[0][2]["subset_size"] == 100
 
         # Optimize and export with exportable code
+        mocker_export = mocker.patch.object(fxt_engine, "export")
         fxt_engine.optimize(export_demo_package=True)
-        mock_ov_model.return_value.export.assert_called_once()
+        mocker_export.assert_called_once()
 
     def test_explain(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
