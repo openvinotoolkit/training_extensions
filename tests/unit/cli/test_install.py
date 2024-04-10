@@ -1,6 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from jsonargparse import ArgumentParser
@@ -36,7 +37,12 @@ class TestInstall:
         mock_create_command.return_value.main.return_value = 0
         status_code = otx_install(option="dev")
         assert status_code == mock_create_command.return_value.main.return_value
-        argument_call_list = mock_create_command.return_value.main.call_args_list[-1][0][-1]
+
+        argument_call_list = []
+        for call_args in mock_create_command.return_value.main.call_args_list:
+            for arg in call_args.args:
+                argument_call_list += arg
+
         assert "pytorchcv" in argument_call_list
         assert "openvino" not in argument_call_list
         assert "anomalib" not in argument_call_list
@@ -49,8 +55,13 @@ class TestInstall:
 
         status_code = otx_install("full")
         assert status_code == mock_create_command.return_value.main.return_value
-        mock_create_command.assert_called_once_with("install")
-        argument_call_list = mock_create_command.return_value.main.call_args_list[-1][0][-1]
+        mock_create_command.assert_called_with("install")
+
+        argument_call_list = []
+        for call_args in mock_create_command.return_value.main.call_args_list:
+            for arg in call_args.args:
+                argument_call_list += arg
+
         assert "openvino" in argument_call_list
         assert "pytorchcv" in argument_call_list
         assert "anomalib" in argument_call_list
