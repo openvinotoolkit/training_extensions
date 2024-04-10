@@ -83,6 +83,8 @@ class OTXInstanceSegModel(
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = InstanceSegTileMerge(
             inputs.imgs_info,
+            self.tile_config.tile_size[0],
+            self.num_classes,
             self.tile_config.iou_threshold,
             self.tile_config.max_num_instances,
         )
@@ -111,8 +113,8 @@ class OTXInstanceSegModel(
         if self.explain_mode:
             batch_pred_entitity_params.update(
                 {
-                    "saliency_maps": [pred_entity.saliency_map for pred_entity in pred_entities],
-                    "feature_vectors": [pred_entity.feature_vector for pred_entity in pred_entities],
+                    "saliency_map": [pred_entity.saliency_map for pred_entity in pred_entities],
+                    "feature_vector": [pred_entity.feature_vector for pred_entity in pred_entities],
                 },
             )
         return InstanceSegBatchPredEntity(**batch_pred_entitity_params)
@@ -251,12 +253,12 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
-        from otx.core.data.entity.tile import OTXTileBatchDataEntity
         from otx.algo.hooks.recording_forward_hook import get_feature_vector
+        from otx.core.data.entity.tile import OTXTileBatchDataEntity
 
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
-    
+
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 

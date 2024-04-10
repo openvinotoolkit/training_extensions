@@ -75,6 +75,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         merger = DetectionTileMerge(
             inputs.imgs_info,
             self.tile_config.tile_size[0],
+            self.num_classes,
             self.tile_config.iou_threshold,
             self.tile_config.max_num_instances,
         )
@@ -90,7 +91,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        batch_pred_entitity_params = {
+        det_batch_pred_entitity_params = {
             "batch_size": inputs.batch_size,
             "images": [pred_entity.image for pred_entity in pred_entities],
             "imgs_info": [pred_entity.img_info for pred_entity in pred_entities],
@@ -99,13 +100,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             "labels": [pred_entity.labels for pred_entity in pred_entities],
         }
         if self.explain_mode:
-            batch_pred_entitity_params.update(
+            det_batch_pred_entitity_params.update(
                 {
-                    "saliency_maps": [pred_entity.saliency_map for pred_entity in pred_entities],
-                    "feature_vectors": [pred_entity.feature_vector for pred_entity in pred_entities],
+                    "saliency_map": [pred_entity.saliency_map for pred_entity in pred_entities],
+                    "feature_vector": [pred_entity.feature_vector for pred_entity in pred_entities],
                 },
             )
-        return DetBatchPredEntity(**batch_pred_entitity_params)
+        return DetBatchPredEntity(**det_batch_pred_entitity_params)
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
