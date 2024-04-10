@@ -36,10 +36,7 @@ overrides:
     config:
       tile_config:
         enable_tiler: true
-        enable_adaptive_tiling: false
-        tile_size:
-          - 400
-          - 400
+        enable_adaptive_tiling: true
       train_subset:
         batch_size: 8
         transforms:
