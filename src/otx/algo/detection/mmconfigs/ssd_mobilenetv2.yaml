@@ -44,7 +44,7 @@ data_preprocessor:
   pad_size_divisor: 32
   non_blocking: true
 bbox_head:
-  type: CustomSSDHead
+  type: SSDHead
   num_classes: 80
   in_channels:
     - 96

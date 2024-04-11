@@ -32,6 +32,7 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
@@ -595,6 +596,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     @property
     def _exporter(self) -> OTXModelExporter:
+        """Defines exporter of the model. Should be overridden in subclasses."""
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."
@@ -880,6 +882,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def _exporter(self) -> OTXNativeModelExporter:
+        """Exporter of the OVModel for exportable code."""
+        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
 
     @property
     def model_adapter_parameters(self) -> dict:
