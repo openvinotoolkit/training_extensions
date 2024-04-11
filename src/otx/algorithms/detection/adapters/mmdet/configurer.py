@@ -42,7 +42,7 @@ class DetectionConfigurer(BaseConfigurer):
         super().configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
         self.configure_regularization(cfg)
         self.configure_max_num_detections(cfg, kwargs.get("max_num_detections", 0))
-        self.configure_nms_iou_threshold(cfg, kwargs.get("nms_iou_threshold", 0.0))
+        self.configure_nms_iou_threshold(cfg, kwargs.get("nms_iou_threshold", 0.5))
 
     def configure_max_num_detections(self, cfg, max_num_detections):
         """Patch config for maximum number of detections."""
