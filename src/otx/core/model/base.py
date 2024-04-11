@@ -3,6 +3,8 @@
 #
 """Class definition for base model entity used in OTX."""
 
+# mypy: disable-error-code="arg-type"
+
 from __future__ import annotations
 
 import contextlib
