@@ -52,6 +52,7 @@ class TestOTXModelExporter:
         precision = OTXPrecisionType.FP32
 
         with patch("builtins.open", new_callable=MagicMock) and patch("zipfile.ZipFile"):
+            exporter.to_openvino = MagicMock()
             result = exporter.to_exportable_code(mock_model, output_dir, base_model_name, precision)
 
         assert result == output_dir / "exportable_code.zip"
