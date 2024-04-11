@@ -188,6 +188,7 @@ class OTXVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
+        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:
@@ -298,6 +299,7 @@ class OTXZeroShotVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
+        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:

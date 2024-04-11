@@ -33,8 +33,6 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from collections import OrderedDict
-
     from anomalib.metrics import AnomalibMetricCollection
     from anomalib.metrics.threshold import BaseThreshold
     from lightning.pytorch import Trainer
@@ -313,24 +311,6 @@ class OTXAnomaly:
             params = getattr(self.model, self.trainable_model).parameters()
             return optimizer(params=params)
         return super().configure_optimizers()  # type: ignore[misc]
-
-    def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with meta information.
-
-        Returns:
-            A dictionary containing datamodule state.
-
-        """
-        state_dict = super().state_dict()  # type: ignore[misc]
-        # This is defined in OTXModel
-        state_dict["label_info"] = self.label_info  # type: ignore[attr-defined]
-        return state_dict
-
-    def load_state_dict(self, ckpt: OrderedDict[str, Any], *args, **kwargs) -> None:
-        """Pass the checkpoint to the anomaly model."""
-        ckpt = ckpt.get("state_dict", ckpt)
-        ckpt.pop("label_info", None)  # [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model
-        return super().load_state_dict(ckpt, *args, **kwargs)  # type: ignore[misc]
 
     def forward(
         self,
