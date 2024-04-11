@@ -5,11 +5,24 @@ import cv2
 import numpy as np
 import pytest
 from numpy.random import PCG64, Generator
-from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import (
-    ColorPalette,
-    dump_frames,
-    get_actmap,
-)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global ColorPalette, get_actmap, dump_frames  # noqa: PLW0603
+    from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import (
+        ColorPalette as _ColorPalette,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import (
+        dump_frames as _dump_frames,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package.visualizers.vis_utils import (
+        get_actmap as _get_actmap,
+    )
+
+    ColorPalette = _ColorPalette
+    get_actmap = _get_actmap
+    dump_frames = _dump_frames
 
 
 def test_activation_map_shape():

@@ -11,13 +11,32 @@ from openvino.model_api.models.utils import (
     InstanceSegmentationResult,
     SegmentedObject,
 )
-from otx.core.exporter.exportable_code.demo.demo_package import (
-    BaseVisualizer,
-    ClassificationVisualizer,
-    InstanceSegmentationVisualizer,
-    ObjectDetectionVisualizer,
-    SemanticSegmentationVisualizer,
-)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def fxt_import_module():
+    global BaseVisualizer, ClassificationVisualizer, InstanceSegmentationVisualizer, ObjectDetectionVisualizer, SemanticSegmentationVisualizer  # noqa: PLW0603
+    from otx.core.exporter.exportable_code.demo.demo_package import (
+        BaseVisualizer as _BaseVisualizer,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package import (
+        ClassificationVisualizer as _ClassificationVisualizer,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package import (
+        InstanceSegmentationVisualizer as _InstanceSegmentationVisualizer,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package import (
+        ObjectDetectionVisualizer as _ObjectDetectionVisualizer,
+    )
+    from otx.core.exporter.exportable_code.demo.demo_package import (
+        SemanticSegmentationVisualizer as _SemanticSegmentationVisualizer,
+    )
+
+    BaseVisualizer = _BaseVisualizer
+    ClassificationVisualizer = _ClassificationVisualizer
+    InstanceSegmentationVisualizer = _InstanceSegmentationVisualizer
+    ObjectDetectionVisualizer = _ObjectDetectionVisualizer
+    SemanticSegmentationVisualizer = _SemanticSegmentationVisualizer
 
 
 class TestBaseVisualizer:
