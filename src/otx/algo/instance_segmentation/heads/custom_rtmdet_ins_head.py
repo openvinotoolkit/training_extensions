@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F  # noqa: N812
+from mmcv.ops import RoIAlign, batched_nms
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.dense_heads.rtmdet_ins_head import _parse_dynamic_params
 from mmdeploy.core import FUNCTION_REWRITER
@@ -18,8 +19,6 @@ from mmdet.models.dense_heads.rtmdet_ins_head import RTMDetInsSepBNHead
 from mmdet.registry import MODELS
 from mmdet.structures.bbox import get_box_tensor, get_box_wh, scale_boxes
 from mmengine.config import ConfigDict
-
-from mmcv.ops import RoIAlign, batched_nms
 
 if TYPE_CHECKING:
     from mmengine.structures import InstanceData

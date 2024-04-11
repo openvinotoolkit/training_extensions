@@ -10,13 +10,12 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 import torch
+from mmcv.ops import batched_nms
 from mmdet.models.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
 from mmdet.structures.bbox import cat_boxes, get_box_tensor, get_box_wh, scale_boxes
 from mmengine.model import constant_init
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
-
-from mmcv.ops import batched_nms
 
 if TYPE_CHECKING:
     from mmdet.structures import SampleList
