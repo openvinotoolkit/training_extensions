@@ -138,16 +138,18 @@ class DetectionTileMerge(TileMerge):
                     img_ids.append(tile_id)
                 tile_img_info.padding = tile_attr["roi"]
 
-                entity_params = {
-                    "image": torch.empty(tile_img_info.ori_shape),
-                    "img_info": tile_img_info,
-                    "bboxes": tile_bboxes,
-                    "labels": tile_labels,
-                    "score": tile_scores,
-                }
+                det_pred_entity = DetPredEntity(
+                    image=torch.empty(tile_img_info.ori_shape),
+                    img_info=tile_img_info,
+                    bboxes=tile_bboxes,
+                    labels=tile_labels,
+                    score=tile_scores,
+                )
+
                 if explain_mode:
-                    entity_params.update({"feature_vector": tile_f_vect, "saliency_map": tile_s_map})
-                entities_to_merge[tile_id].append(DetPredEntity(**entity_params))
+                    det_pred_entity.feature_vector = tile_f_vect
+                    det_pred_entity.saliency_map = tile_s_map
+                entities_to_merge[tile_id].append(det_pred_entity)
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
@@ -194,20 +196,21 @@ class DetectionTileMerge(TileMerge):
 
         bboxes, labels, scores, _ = self.nms_postprocess(bboxes, scores, labels)
 
-        entity_params = {
-            "image": torch.empty(img_size),
-            "img_info": img_info,
-            "bboxes": tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
-            "labels": labels,
-            "score": scores,
-        }
+        det_pred_entity = DetPredEntity(
+            image=torch.empty(img_size),
+            img_info=img_info,
+            score=scores,
+            bboxes=tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
+            labels=labels,
+        )
 
         if explain_mode:
             merged_vector = np.mean(feature_vectors, axis=0)
             merged_saliency_map = self._merge_saliency_maps(saliency_maps, img_size, tiles_coords)
-            entity_params.update({"feature_vector": merged_vector, "saliency_map": merged_saliency_map})
+            det_pred_entity.feature_vector = merged_vector
+            det_pred_entity.saliency_map = merged_saliency_map
 
-        return DetPredEntity(**entity_params)
+        return det_pred_entity
 
     def _merge_saliency_maps(
         self,
@@ -334,18 +337,20 @@ class InstanceSegTileMerge(TileMerge):
                     img_ids.append(tile_id)
                 tile_img_info.padding = tile_attr["roi"]
 
-                entity_params = {
-                    "image": torch.empty(tile_img_info.ori_shape),
-                    "img_info": tile_img_info,
-                    "bboxes": _bboxes,
-                    "labels": _labels,
-                    "score": _scores,
-                    "masks": _masks.to_sparse(),
-                    "polygons": [],
-                }
+                inst_seg_pred_entity = InstanceSegPredEntity(
+                    image=torch.empty(tile_img_info.ori_shape),
+                    img_info=tile_img_info,
+                    bboxes=_bboxes,
+                    labels=_labels,
+                    score=_scores,
+                    masks=_masks.to_sparse(),
+                    polygons=[],
+                )
+
                 if explain_mode:
-                    entity_params.update({"feature_vector": tile_f_vect, "saliency_map": []})
-                entities_to_merge[tile_id].append(InstanceSegPredEntity(**entity_params))
+                    inst_seg_pred_entity.feature_vector = tile_f_vect
+                    inst_seg_pred_entity.saliency_map = []
+                entities_to_merge[tile_id].append(inst_seg_pred_entity)
 
         return [
             self._merge_entities(image_info, entities_to_merge[img_id], explain_mode)
@@ -398,22 +403,23 @@ class InstanceSegTileMerge(TileMerge):
 
         bboxes, labels, scores, masks = self.nms_postprocess(bboxes, scores, labels, masks)
 
-        entity_params = {
-            "image": torch.empty(img_size),
-            "img_info": img_info,
-            "score": scores,
-            "bboxes": tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
-            "labels": labels,
-            "masks": tv_tensors.Mask(masks, dtype=bool),
-            "polygons": [],
-        }
+        inst_seg_pred_entity = InstanceSegPredEntity(
+            image=torch.empty(img_size),
+            img_info=img_info,
+            score=scores,
+            bboxes=tv_tensors.BoundingBoxes(bboxes, canvas_size=img_size, format="XYXY"),
+            labels=labels,
+            masks=tv_tensors.Mask(masks, dtype=bool),
+            polygons=[],
+        )
 
         if explain_mode:
             merged_vector = np.mean(feature_vectors, axis=0)
             merged_saliency_map = self.get_saliency_maps_from_masks(labels, scores, masks, self.num_classes)
-            entity_params.update({"feature_vector": merged_vector, "saliency_map": merged_saliency_map})
+            inst_seg_pred_entity.feature_vector = merged_vector
+            inst_seg_pred_entity.saliency_map = merged_saliency_map
 
-        return InstanceSegPredEntity(**entity_params)
+        return inst_seg_pred_entity
 
     def get_saliency_maps_from_masks(
         self,
