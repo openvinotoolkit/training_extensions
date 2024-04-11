@@ -233,7 +233,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
 
@@ -429,7 +429,7 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
 
@@ -638,7 +638,7 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
 
