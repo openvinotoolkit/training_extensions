@@ -64,27 +64,26 @@ class DetectionConfigurer(BaseConfigurer):
 
     def configure_nms_iou_threshold(self, cfg, nms_iou_threshold):
         """Configure nms iou threshold to user specified value if the object detector uses nms."""
-        if nms_iou_threshold > 0:
-            if "test_cfg" in cfg.model and "nms" in cfg.model.test_cfg:
-                logger.info(
-                    "IoU NMS Threshold will be updated from "
-                    f"{cfg.model.test_cfg.nms.iou_threshold} --> {nms_iou_threshold}"
-                )
-                cfg.model.test_cfg.nms.iou_threshold = nms_iou_threshold
-            elif "test_cfg" in cfg.model and "rcnn" in cfg.model.test_cfg and "nms" in cfg.model.test_cfg.rcnn:
-                logger.info(
-                    "IoU NMS Threshold will be updated from "
-                    f"{cfg.model.test_cfg.rcnn.nms.iou_threshold} --> {nms_iou_threshold}"
-                )
-                cfg.model.test_cfg.rcnn.nms.iou_threshold = nms_iou_threshold
-            else:
-                logger.warning("Detector do not have nms postprocessing, user specified nms threshold will be omitted")
-            if "tile_cfg" in cfg:
-                cfg.tile_cfg.iou_threshold = nms_iou_threshold
-                logger.info(
-                    "IoU NMS Threshold for tiling will be updated from "
-                    f"{cfg.tile_cfg.iou_threshold} --> {nms_iou_threshold}"
-                )
+        if "test_cfg" in cfg.model and "nms" in cfg.model.test_cfg:
+            logger.info(
+                "IoU NMS Threshold will be updated from "
+                f"{cfg.model.test_cfg.nms.iou_threshold} --> {nms_iou_threshold}"
+            )
+            cfg.model.test_cfg.nms.iou_threshold = nms_iou_threshold
+        elif "test_cfg" in cfg.model and "rcnn" in cfg.model.test_cfg and "nms" in cfg.model.test_cfg.rcnn:
+            logger.info(
+                "IoU NMS Threshold will be updated from "
+                f"{cfg.model.test_cfg.rcnn.nms.iou_threshold} --> {nms_iou_threshold}"
+            )
+            cfg.model.test_cfg.rcnn.nms.iou_threshold = nms_iou_threshold
+        else:
+            logger.warning("Detector do not have nms postprocessing, user specified nms threshold will be omitted")
+        if "tile_cfg" in cfg:
+            cfg.tile_cfg.iou_threshold = nms_iou_threshold
+            logger.info(
+                "IoU NMS Threshold for tiling will be updated from "
+                f"{cfg.tile_cfg.iou_threshold} --> {nms_iou_threshold}"
+            )
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""

@@ -239,10 +239,10 @@ class BaseConfig(ConfigurableParameters):
             description="IoU Threshold for NMS Postprocessing."
             "Intersection over Union (IoU) threshold is set to remove overlapping predictions."
             "If the IoU between two predictions is greater than or equal to the IoU threshold, "
-            "they are considered overlapping and will be discarded."
-            "If you want to chage the value of IoU Threshold of model, "
-            "then you need to re-train model with new IoU threshold.",
+            "they are considered overlapping and will be discarded.",
             affects_outcome_of=ModelLifecycle.INFERENCE,
+            warning="If you want to chage the value of IoU Threshold of model, "
+            "then you need to re-train model with new IoU threshold.",
         )
 
         max_num_detections = configurable_integer(
