@@ -8,11 +8,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmcv.cnn import build_activation_layer
 from mmengine.model import constant_init, normal_init
 from mmpretrain.models.heads import MultiLabelClsHead
 from mmpretrain.registry import MODELS
 from torch import nn
+
+from mmcv.cnn import build_activation_layer
 
 from .custom_multilabel_linear_cls_head import AnglularLinear
 

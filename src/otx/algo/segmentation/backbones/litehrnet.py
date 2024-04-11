@@ -12,13 +12,13 @@ from __future__ import annotations
 
 import torch
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
 from mmseg.registry import MODELS
 from torch import nn
 from torch.nn import functional
 
+from mmcv.cnn import ConvModule, build_conv_layer, build_norm_layer
 from otx.algo.utils.segmentation import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
