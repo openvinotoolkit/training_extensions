@@ -32,8 +32,10 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
-from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.optimizer.callable import OptimizerCallableSupportHPO
+from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.label import LabelInfo, NullLabelInfo
@@ -594,6 +596,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     @property
     def _exporter(self) -> OTXModelExporter:
+        """Defines exporter of the model. Should be overridden in subclasses."""
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."
@@ -674,6 +677,19 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             return None
 
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
+
+    def patch_optimizer_and_scheduler_for_hpo(self) -> None:
+        """Patch optimizer and scheduler for hyperparameter optimization.
+
+        This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
+        Both will be changed to be picklable. In addition, `optimizer_callable` is changed
+        to make its hyperparameters gettable.
+        """
+        if not isinstance(self.optimizer_callable, OptimizerCallableSupportHPO):
+            self.optimizer_callable = OptimizerCallableSupportHPO.from_callable(self.optimizer_callable)
+
+        if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
+            self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -866,6 +882,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def _exporter(self) -> OTXNativeModelExporter:
+        """Exporter of the OVModel for exportable code."""
+        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
 
     @property
     def model_adapter_parameters(self) -> dict:
