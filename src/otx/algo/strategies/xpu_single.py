@@ -53,13 +53,17 @@ class SingleXPUStrategy(SingleDeviceStrategy):
     def setup_optimizers(self, trainer: pl.Trainer) -> None:
         """Sets up optimizers."""
         super().setup_optimizers(trainer)
-        if len(self.optimizers) != 1:  # type: ignore[has-type]
+        if len(self.optimizers) > 1:  # type: ignore[has-type]
             msg = "XPU strategy doesn't support multiple optimizers"
             raise RuntimeError(msg)
         if trainer.task != "SEMANTIC_SEGMENTATION":
-            model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
-            self.optimizers = [optimizer]
-            self.model = model
+            if len(self.optimizers) == 1:  # type: ignore[has-type]
+                model, optimizer = torch.xpu.optimize(trainer.model, optimizer=self.optimizers[0])  # type: ignore[has-type]
+                self.optimizers = [optimizer]
+                self.model = model
+            else:  # for inference
+                trainer.model.eval()
+                self.model = torch.xpu.optimize(trainer.model)
 
 
 StrategyRegistry.register(
