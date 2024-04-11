@@ -1,4 +1,4 @@
-"""OTX Visual Prompting perfomance tests."""
+"""OTX Action perfomance tests."""
 
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -11,45 +11,42 @@ from typing import Callable
 from .benchmark import Benchmark
 
 
-class TestPerfVisualPrompting:
-    """Benchmark visual prompting."""
+class TestPerfActionClassification:
+    """Benchmark action classification."""
 
-    MODEL_TEMPLATES = [
-        template
-        for template in Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
-        if "Zero_Shot" not in template.name
-    ]
+    MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="ACTION_CLASSIFICATION").templates
     MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
     BENCHMARK_CONFIGS = {
         "small": {
             "tags": {
-                "task": "visual_prompting",
+                "task": "action_classification",
             },
             "datasets": [
-                "visual_prompting/wgisd_small/1",
-                "visual_prompting/wgisd_small/2",
-                "visual_prompting/wgisd_small/3",
+                "action/action_classification/ucf_cvat_5percent",
             ],
             "num_repeat": 5,
+            "num_epoch": 10,
         },
         "medium": {
             "tags": {
-                "task": "visual_prompting",
+                "task": "action_classification",
             },
             "datasets": [
-                "visual_prompting/coco_car_person_medium",
+                "action/action_classification/ucf_cvat_30percent",
             ],
             "num_repeat": 5,
+            "num_epoch": 10,
         },
         "large": {
             "tags": {
-                "task": "visual_prompting",
+                "task": "action_classification",
             },
             "datasets": [
-                "visual_prompting/Vitens-Coliform-coco",
+                "action/action_classification/ucf_cvat",
             ],
             "num_repeat": 5,
+            "num_epoch": 3,
         },
     }
 
@@ -62,17 +59,17 @@ class TestPerfVisualPrompting:
             result,
             criteria=[
                 {
-                    "name": "Dice Average(train)",
+                    "name": "Accuracy(train)",
                     "op": ">",
                     "margin": 0.1,
                 },
                 {
-                    "name": "Dice Average(export)",
+                    "name": "Accuracy(export)",
                     "op": ">",
                     "margin": 0.1,
                 },
                 {
-                    "name": "Dice Average(optimize)",
+                    "name": "Accuracy(optimize)",
                     "op": ">",
                     "margin": 0.1,
                 },
@@ -110,23 +107,39 @@ class TestPerfVisualPrompting:
         )
 
 
-class TestPerfZeroShotVisualPrompting:
-    """Benchmark zero-shot visual prompting."""
+class TestPerfActionDetection:
+    """Benchmark action detection."""
 
-    MODEL_TEMPLATES = [
-        template
-        for template in Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
-        if "Zero_Shot" in template.name
-    ]
+    MODEL_TEMPLATES = Registry(f"src/otx/algorithms").filter(task_type="ACTION_DETECTION").templates
     MODEL_IDS = [template.model_template_id for template in MODEL_TEMPLATES]
 
     BENCHMARK_CONFIGS = {
-        "medium": {
+        "small": {
             "tags": {
-                "task": "zero_shot_visual_prompting",
+                "task": "action_detection",
             },
             "datasets": [
-                "zero_shot_visual_prompting/coco_car_person_medium",
+                "action/action_detection/UCF101_cvat_5percent",
+            ],
+            "num_repeat": 5,
+            "num_epoch": 3,
+        },
+        "medium": {
+            "tags": {
+                "task": "action_detection",
+            },
+            "datasets": [
+                "action/action_detection/UCF101_cvat_30percent",
+            ],
+            "num_repeat": 5,
+            "num_epoch": 3,
+        },
+        "large": {
+            "tags": {
+                "task": "action_detection",
+            },
+            "datasets": [
+                "action/action_detection/UCF101_cvat",
             ],
             "num_repeat": 5,
             "num_epoch": 1,
@@ -142,7 +155,7 @@ class TestPerfZeroShotVisualPrompting:
             result,
             criteria=[
                 {
-                    "name": "Dice Average(train)",
+                    "name": "f-measure(train)",
                     "op": ">",
                     "margin": 0.1,
                 },
@@ -152,12 +165,12 @@ class TestPerfZeroShotVisualPrompting:
                     "margin": 0.1,
                 },
                 {
-                    "name": "Dice Average(export)",
+                    "name": "f-measure(export)",
                     "op": ">",
                     "margin": 0.1,
                 },
                 {
-                    "name": "Dice Average(optimize)",
+                    "name": "f-measure(optimize)",
                     "op": ">",
                     "margin": 0.1,
                 },
