@@ -19,7 +19,7 @@ otx.algo.detection.heads
    
       SSDAnchorGeneratorClustered
       CustomATSSHead
-      CustomSSDHead
+      SSDHead
    
    
 

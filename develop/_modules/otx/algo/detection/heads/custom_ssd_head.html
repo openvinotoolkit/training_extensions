@@ -235,7 +235,7 @@
             <article class="bd-article" role="main">
               
   <h1>Source code for otx.algo.detection.heads.custom_ssd_head</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (C) 2023 Intel Corporation</span>
+<span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
 <span class="sd">&quot;&quot;&quot;Custom SSD head for OTX template.&quot;&quot;&quot;</span>
 
@@ -243,26 +243,100 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
-<span class="kn">from</span> <span class="nn">mmdet.models.dense_heads.ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.losses</span> <span class="kn">import</span> <span class="n">smooth_l1_loss</span>
+<span class="kn">from</span> <span class="nn">mmdet.models.utils</span> <span class="kn">import</span> <span class="n">multi_apply</span>
 <span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">otx.algo.detection.heads.anchor_head</span> <span class="kn">import</span> <span class="n">AnchorHead</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.heads.base_sampler</span> <span class="kn">import</span> <span class="n">PseudoSampler</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.heads.custom_anchor_generator</span> <span class="kn">import</span> <span class="n">SSDAnchorGeneratorClustered</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.heads.delta_xywh_bbox_coder</span> <span class="kn">import</span> <span class="n">DeltaXYWHBBoxCoder</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.heads.max_iou_assigner</span> <span class="kn">import</span> <span class="n">MaxIoUAssigner</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mmdet.utils</span> <span class="kn">import</span> <span class="n">ConfigType</span><span class="p">,</span> <span class="n">InstanceList</span><span class="p">,</span> <span class="n">MultiConfig</span><span class="p">,</span> <span class="n">OptInstanceList</span>
     <span class="kn">from</span> <span class="nn">mmengine.config</span> <span class="kn">import</span> <span class="n">Config</span>
 
 
-<div class="viewcode-block" id="CustomSSDHead">
-<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.CustomSSDHead">[docs]</a>
-<span class="nd">@MODELS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
-<span class="k">class</span> <span class="nc">CustomSSDHead</span><span class="p">(</span><span class="n">SSDHead</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;CustomSSDHead class for OTX.</span>
+<span class="c1"># This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:</span>
+<span class="c1"># https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/dense_heads/ssd_head.py</span>
+<div class="viewcode-block" id="SSDHead">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead">[docs]</a>
+<span class="k">class</span> <span class="nc">SSDHead</span><span class="p">(</span><span class="n">AnchorHead</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of `SSD head &lt;https://arxiv.org/abs/1512.02325&gt;`_.</span>
 
-<span class="sd">    This is workaround for bug in mmdet3.2.0</span>
+<span class="sd">    Args:</span>
+<span class="sd">        num_classes (int): Number of categories excluding the background</span>
+<span class="sd">            category.</span>
+<span class="sd">        in_channels (Sequence[int]): Number of channels in the input feature</span>
+<span class="sd">            map.</span>
+<span class="sd">        stacked_convs (int): Number of conv layers in cls and reg tower.</span>
+<span class="sd">            Defaults to 0.</span>
+<span class="sd">        feat_channels (int): Number of hidden channels when stacked_convs</span>
+<span class="sd">            &gt; 0. Defaults to 256.</span>
+<span class="sd">        use_depthwise (bool): Whether to use DepthwiseSeparableConv.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        conv_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
+<span class="sd">            and config conv layer. Defaults to None.</span>
+<span class="sd">        norm_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
+<span class="sd">            and config norm layer. Defaults to None.</span>
+<span class="sd">        act_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
+<span class="sd">            and config activation layer. Defaults to None.</span>
+<span class="sd">        anchor_generator (:obj:`ConfigDict` or dict): Config dict for anchor</span>
+<span class="sd">            generator.</span>
+<span class="sd">        bbox_coder (:obj:`ConfigDict` or dict): Config of bounding box coder.</span>
+<span class="sd">        reg_decoded_bbox (bool): If true, the regression loss would be</span>
+<span class="sd">            applied directly on decoded bounding boxes, converting both</span>
+<span class="sd">            the predicted boxes and regression targets to absolute</span>
+<span class="sd">            coordinates format. Defaults to False. It should be `True` when</span>
+<span class="sd">            using `IoULoss`, `GIoULoss`, or `DIoULoss` in the bbox head.</span>
+<span class="sd">        train_cfg (:obj:`ConfigDict` or dict, Optional): Training config of</span>
+<span class="sd">            anchor head.</span>
+<span class="sd">        test_cfg (:obj:`ConfigDict` or dict, Optional): Testing config of</span>
+<span class="sd">            anchor head.</span>
+<span class="sd">        init_cfg (:obj:`ConfigDict` or dict or list[:obj:`ConfigDict` or \</span>
+<span class="sd">            dict], Optional): Initialization config dict.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">loss_cls</span><span class="p">:</span> <span class="n">Config</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize CustomSSDHead.&quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
+        <span class="n">bbox_coder</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">MultiConfig</span><span class="p">,</span>
+        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+        <span class="n">stacked_convs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">feat_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="n">use_depthwise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">conv_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">norm_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reg_decoded_bbox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">loss_cls</span><span class="p">:</span> <span class="n">Config</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AnchorHead</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stacked_convs</span> <span class="o">=</span> <span class="n">stacked_convs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feat_channels</span> <span class="o">=</span> <span class="n">feat_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_depthwise</span> <span class="o">=</span> <span class="n">use_depthwise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv_cfg</span> <span class="o">=</span> <span class="n">conv_cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span> <span class="o">=</span> <span class="n">norm_cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span> <span class="o">=</span> <span class="n">act_cfg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span> <span class="o">=</span> <span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># add background class</span>
+        <span class="n">anchor_generator</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span> <span class="o">=</span> <span class="n">SSDAnchorGeneratorClustered</span><span class="p">(</span><span class="o">**</span><span class="n">anchor_generator</span><span class="p">)</span>
+
+        <span class="c1"># Usually the numbers of anchors for each level are the same</span>
+        <span class="c1"># except SSD detectors. So it is an int in the most dense</span>
+        <span class="c1"># heads but a list of int in SSDHead</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_base_priors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span><span class="o">.</span><span class="n">num_base_priors</span>
+
         <span class="k">if</span> <span class="n">loss_cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;CrossEntropyLoss&quot;</span><span class="p">,</span>
@@ -271,6 +345,198 @@
                 <span class="s2">&quot;loss_weight&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span> <span class="o">=</span> <span class="n">MODELS</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">loss_cls</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_layers</span><span class="p">()</span>
+
+        <span class="n">bbox_coder</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbox_coder</span> <span class="o">=</span> <span class="n">DeltaXYWHBBoxCoder</span><span class="p">(</span><span class="o">**</span><span class="n">bbox_coder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_decoded_bbox</span> <span class="o">=</span> <span class="n">reg_decoded_bbox</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_sigmoid_cls</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cls_focal_loss</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span> <span class="o">=</span> <span class="n">train_cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_cfg</span> <span class="o">=</span> <span class="n">test_cfg</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">:</span>
+            <span class="n">assigner_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">[</span><span class="s2">&quot;assigner&quot;</span><span class="p">]</span>
+            <span class="n">assigner_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assigner</span> <span class="o">=</span> <span class="n">MaxIoUAssigner</span><span class="p">(</span><span class="o">**</span><span class="n">assigner_args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">PseudoSampler</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
+
+<div class="viewcode-block" id="SSDHead.forward">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward features from the upstream network.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (tuple[Tensor]): Features from the upstream network, each is</span>
+<span class="sd">                a 4D-tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[list[Tensor], list[Tensor]]: A tuple of cls_scores list and</span>
+<span class="sd">            bbox_preds list.</span>
+
+<span class="sd">            - cls_scores (list[Tensor]): Classification scores for all scale \</span>
+<span class="sd">            levels, each is a 4D-tensor, the channels number is \</span>
+<span class="sd">            num_anchors * num_classes.</span>
+<span class="sd">            - bbox_preds (list[Tensor]): Box energies / deltas for all scale \</span>
+<span class="sd">            levels, each is a 4D-tensor, the channels number is \</span>
+<span class="sd">            num_anchors * 4.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bbox_preds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">feat</span><span class="p">,</span> <span class="n">reg_conv</span><span class="p">,</span> <span class="n">cls_conv</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span><span class="p">):</span>
+            <span class="n">cls_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cls_conv</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span>
+            <span class="n">bbox_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reg_conv</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cls_scores</span><span class="p">,</span> <span class="n">bbox_preds</span></div>
+
+
+<div class="viewcode-block" id="SSDHead.loss_by_feat_single">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead.loss_by_feat_single">[docs]</a>
+    <span class="k">def</span> <span class="nf">loss_by_feat_single</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cls_score</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">bbox_pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">label_weights</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">bbox_targets</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">bbox_weights</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">avg_factor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute loss of a single image.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls_score (Tensor): Box scores for eachimage</span>
+<span class="sd">                Has shape (num_total_anchors, num_classes).</span>
+<span class="sd">            bbox_pred (Tensor): Box energies / deltas for each image</span>
+<span class="sd">                level with shape (num_total_anchors, 4).</span>
+<span class="sd">            anchors (Tensor): Box reference for each scale level with shape</span>
+<span class="sd">                (num_total_anchors, 4).</span>
+<span class="sd">            labels (Tensor): Labels of each anchors with shape</span>
+<span class="sd">                (num_total_anchors,).</span>
+<span class="sd">            label_weights (Tensor): Label weights of each anchor with shape</span>
+<span class="sd">                (num_total_anchors,)</span>
+<span class="sd">            bbox_targets (Tensor): BBox regression targets of each anchor with</span>
+<span class="sd">                shape (num_total_anchors, 4).</span>
+<span class="sd">            bbox_weights (Tensor): BBox regression loss weights of each anchor</span>
+<span class="sd">                with shape (num_total_anchors, 4).</span>
+<span class="sd">            avg_factor (int): Average factor that is used to average</span>
+<span class="sd">                the loss. When using sampling method, avg_factor is usually</span>
+<span class="sd">                the sum of positive and negative priors. When using</span>
+<span class="sd">                `PseudoSampler`, `avg_factor` is usually equal to the number</span>
+<span class="sd">                of positive priors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[Tensor, Tensor]: A tuple of cls loss and bbox loss of one</span>
+<span class="sd">            feature map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loss_cls_all</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">cls_score</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">label_weights</span>
+        <span class="c1"># FG cat_id: [0, num_classes -1], BG cat_id: num_classes</span>
+        <span class="n">pos_inds</span> <span class="o">=</span> <span class="p">((</span><span class="n">labels</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">labels</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">))</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">neg_inds</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">num_pos_samples</span> <span class="o">=</span> <span class="n">pos_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">num_neg_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">[</span><span class="s2">&quot;neg_pos_ratio&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_pos_samples</span>
+        <span class="k">if</span> <span class="n">num_neg_samples</span> <span class="o">&gt;</span> <span class="n">neg_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">num_neg_samples</span> <span class="o">=</span> <span class="n">neg_inds</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">topk_loss_cls_neg</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">neg_inds</span><span class="p">]</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">num_neg_samples</span><span class="p">)</span>
+        <span class="n">loss_cls_pos</span> <span class="o">=</span> <span class="n">loss_cls_all</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss_cls_neg</span> <span class="o">=</span> <span class="n">topk_loss_cls_neg</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_cls_pos</span> <span class="o">+</span> <span class="n">loss_cls_neg</span><span class="p">)</span> <span class="o">/</span> <span class="n">avg_factor</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_decoded_bbox</span><span class="p">:</span>
+            <span class="c1"># When the regression loss (e.g. `IouLoss`, `GIouLoss`)</span>
+            <span class="c1"># is applied directly on the decoded bounding boxes, it</span>
+            <span class="c1"># decodes the already encoded coordinates to absolute format.</span>
+            <span class="n">bbox_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_coder</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox_pred</span><span class="p">)</span>
+
+        <span class="n">loss_bbox</span> <span class="o">=</span> <span class="n">smooth_l1_loss</span><span class="p">(</span>
+            <span class="n">bbox_pred</span><span class="p">,</span>
+            <span class="n">bbox_targets</span><span class="p">,</span>
+            <span class="n">bbox_weights</span><span class="p">,</span>
+            <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_cfg</span><span class="p">[</span><span class="s2">&quot;smoothl1_beta&quot;</span><span class="p">],</span>
+            <span class="n">avg_factor</span><span class="o">=</span><span class="n">avg_factor</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss_cls</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">loss_bbox</span></div>
+
+
+<div class="viewcode-block" id="SSDHead.loss_by_feat">
+<a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDHead.loss_by_feat">[docs]</a>
+    <span class="k">def</span> <span class="nf">loss_by_feat</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cls_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">bbox_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">batch_gt_instances</span><span class="p">:</span> <span class="n">InstanceList</span><span class="p">,</span>
+        <span class="n">batch_img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">batch_gt_instances_ignore</span><span class="p">:</span> <span class="n">OptInstanceList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute losses of the head.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cls_scores (list[Tensor]): Box scores for each scale level</span>
+<span class="sd">                Has shape (N, num_anchors * num_classes, H, W)</span>
+<span class="sd">            bbox_preds (list[Tensor]): Box energies / deltas for each scale</span>
+<span class="sd">                level with shape (N, num_anchors * 4, H, W)</span>
+<span class="sd">            batch_gt_instances (list[:obj:`InstanceData`]): Batch of</span>
+<span class="sd">                gt_instance.  It usually includes ``bboxes`` and ``labels``</span>
+<span class="sd">                attributes.</span>
+<span class="sd">            batch_img_metas (list[dict]): Meta information of each image, e.g.,</span>
+<span class="sd">                image size, scaling factor, etc.</span>
+<span class="sd">            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):</span>
+<span class="sd">                Batch of gt_instances_ignore. It includes ``bboxes`` attribute</span>
+<span class="sd">                data that is ignored during training and testing.</span>
+<span class="sd">                Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict[str, list[Tensor]]: A dictionary of loss components. the dict</span>
+<span class="sd">            has components below:</span>
+
+<span class="sd">            - loss_cls (list[Tensor]): A list containing each feature map \</span>
+<span class="sd">            classification loss.</span>
+<span class="sd">            - loss_bbox (list[Tensor]): A list containing each feature map \</span>
+<span class="sd">            regression loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">featmap_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">featmap</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="k">for</span> <span class="n">featmap</span> <span class="ow">in</span> <span class="n">cls_scores</span><span class="p">]</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="n">cls_scores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span>
+
+        <span class="n">anchor_list</span><span class="p">,</span> <span class="n">valid_flag_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anchors</span><span class="p">(</span><span class="n">featmap_sizes</span><span class="p">,</span> <span class="n">batch_img_metas</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">cls_reg_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_targets</span><span class="p">(</span>
+            <span class="n">anchor_list</span><span class="p">,</span>
+            <span class="n">valid_flag_list</span><span class="p">,</span>
+            <span class="n">batch_gt_instances</span><span class="p">,</span>
+            <span class="n">batch_img_metas</span><span class="p">,</span>
+            <span class="n">batch_gt_instances_ignore</span><span class="o">=</span><span class="n">batch_gt_instances_ignore</span><span class="p">,</span>
+            <span class="n">unmap_outputs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">labels_list</span><span class="p">,</span> <span class="n">label_weights_list</span><span class="p">,</span> <span class="n">bbox_targets_list</span><span class="p">,</span> <span class="n">bbox_weights_list</span><span class="p">,</span> <span class="n">avg_factor</span><span class="p">)</span> <span class="o">=</span> <span class="n">cls_reg_targets</span>
+
+        <span class="n">num_images</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_img_metas</span><span class="p">)</span>
+        <span class="n">all_cls_scores</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">cls_scores</span><span class="p">],</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">all_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">labels_list</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">all_label_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">label_weights_list</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">all_bbox_preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">b</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bbox_preds</span><span class="p">],</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">all_bbox_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">bbox_targets_list</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">all_bbox_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">bbox_weights_list</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+        <span class="c1"># concat all level anchors to a single tensor</span>
+        <span class="n">all_anchors</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">anchor</span><span class="p">)</span> <span class="k">for</span> <span class="n">anchor</span> <span class="ow">in</span> <span class="n">anchor_list</span><span class="p">]</span>
+
+        <span class="n">losses_cls</span><span class="p">,</span> <span class="n">losses_bbox</span> <span class="o">=</span> <span class="n">multi_apply</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_by_feat_single</span><span class="p">,</span>
+            <span class="n">all_cls_scores</span><span class="p">,</span>
+            <span class="n">all_bbox_preds</span><span class="p">,</span>
+            <span class="n">all_anchors</span><span class="p">,</span>
+            <span class="n">all_labels</span><span class="p">,</span>
+            <span class="n">all_label_weights</span><span class="p">,</span>
+            <span class="n">all_bbox_targets</span><span class="p">,</span>
+            <span class="n">all_bbox_weights</span><span class="p">,</span>
+            <span class="n">avg_factor</span><span class="o">=</span><span class="n">avg_factor</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss_cls&quot;</span><span class="p">:</span> <span class="n">losses_cls</span><span class="p">,</span> <span class="s2">&quot;loss_bbox&quot;</span><span class="p">:</span> <span class="n">losses_bbox</span><span class="p">}</span></div>
+
 
     <span class="k">def</span> <span class="nf">_init_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize layers of the head.</span>

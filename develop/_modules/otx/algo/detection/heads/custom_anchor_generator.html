@@ -242,15 +242,486 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmdet.models.task_modules.builder</span> <span class="kn">import</span> <span class="n">PRIOR_GENERATORS</span>
-<span class="kn">from</span> <span class="nn">mmdet.models.task_modules.prior_generators</span> <span class="kn">import</span> <span class="n">AnchorGenerator</span>
+<span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">TASK_UTILS</span>
+<span class="kn">from</span> <span class="nn">mmdet.structures.bbox</span> <span class="kn">import</span> <span class="n">HorizontalBoxes</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
+
+
+<span class="c1"># This class and its supporting functions below lightly adapted from the mmdet AnchorGenerator available at:</span>
+<span class="c1"># https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/task_modules/prior_generators/anchor_generator.py</span>
+<span class="k">class</span> <span class="nc">AnchorGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Standard anchor generator for 2D anchor-based detectors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        strides (list[int] | list[tuple[int, int]]): Strides of anchors</span>
+<span class="sd">            in multiple feature levels in order (w, h).</span>
+<span class="sd">        ratios (list[float]): The list of ratios between the height and width</span>
+<span class="sd">            of anchors in a single level.</span>
+<span class="sd">        scales (list[int], Optional): Anchor scales for anchors</span>
+<span class="sd">            in a single level. It cannot be set at the same time</span>
+<span class="sd">            if `octave_base_scale` and `scales_per_octave` are set.</span>
+<span class="sd">        base_sizes (list[int], Optional): The basic sizes</span>
+<span class="sd">            of anchors in multiple levels.</span>
+<span class="sd">            If None is given, strides will be used as base_sizes.</span>
+<span class="sd">            (If strides are non square, the shortest stride is taken.)</span>
+<span class="sd">        scale_major (bool): Whether to multiply scales first when generating</span>
+<span class="sd">            base anchors. If true, the anchors in the same row will have the</span>
+<span class="sd">            same scales. By default it is True in V2.0</span>
+<span class="sd">        octave_base_scale (int, Optional): The base scale of octave.</span>
+<span class="sd">        scales_per_octave (int, Optional): Number of scales for each octave.</span>
+<span class="sd">            `octave_base_scale` and `scales_per_octave` are usually used in</span>
+<span class="sd">            retinanet and the `scales` should be None when they are set.</span>
+<span class="sd">        centers (list[tuple[float]], Optional): The centers of the anchor</span>
+<span class="sd">            relative to the feature grid center in multiple feature levels.</span>
+<span class="sd">            By default it is set to be None and not used. If a list of tuple of</span>
+<span class="sd">            float is given, they will be used to shift the centers of anchors.</span>
+<span class="sd">        center_offset (float): The offset of center in proportion to anchors&#39;</span>
+<span class="sd">            width and height. By default it is 0 in V2.0.</span>
+<span class="sd">        use_box_type (bool): Whether to warp anchors with the box type data</span>
+<span class="sd">            structure. Defaults to False.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from mmdet.models.task_modules.</span>
+<span class="sd">        ... prior_generators import AnchorGenerator</span>
+<span class="sd">        &gt;&gt;&gt; self = AnchorGenerator([16], [1.], [1.], [9])</span>
+<span class="sd">        &gt;&gt;&gt; all_anchors = self.grid_priors([(2, 2)], device=&#39;cpu&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; print(all_anchors)</span>
+<span class="sd">        [tensor([[-4.5000, -4.5000,  4.5000,  4.5000],</span>
+<span class="sd">                [11.5000, -4.5000, 20.5000,  4.5000],</span>
+<span class="sd">                [-4.5000, 11.5000,  4.5000, 20.5000],</span>
+<span class="sd">                [11.5000, 11.5000, 20.5000, 20.5000]])]</span>
+<span class="sd">        &gt;&gt;&gt; self = AnchorGenerator([16, 32], [1.], [1.], [9, 18])</span>
+<span class="sd">        &gt;&gt;&gt; all_anchors = self.grid_priors([(2, 2), (1, 1)], device=&#39;cpu&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; print(all_anchors)</span>
+<span class="sd">        [tensor([[-4.5000, -4.5000,  4.5000,  4.5000],</span>
+<span class="sd">                [11.5000, -4.5000, 20.5000,  4.5000],</span>
+<span class="sd">                [-4.5000, 11.5000,  4.5000, 20.5000],</span>
+<span class="sd">                [11.5000, 11.5000, 20.5000, 20.5000]]), \</span>
+<span class="sd">        tensor([[-9., -9., 9., 9.]])]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">strides</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">ratios</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">scales</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">base_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scale_major</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">octave_base_scale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">scales_per_octave</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">centers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">center_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">use_box_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># check center and center_offset</span>
+        <span class="k">if</span> <span class="n">center_offset</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">centers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;center cannot be set when center_offset != 0, </span><span class="si">{</span><span class="n">centers</span><span class="si">}</span><span class="s2"> is given.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">center_offset</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;center_offset should be in range [0, 1], </span><span class="si">{</span><span class="n">center_offset</span><span class="si">}</span><span class="s2"> is given.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">centers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">strides</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;The number of strides should be the same as centers, got </span><span class="si">{</span><span class="n">strides</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">centers</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># calculate base sizes of anchors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strides</span> <span class="o">=</span> <span class="p">[</span><span class="n">_pair</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="k">for</span> <span class="n">stride</span> <span class="ow">in</span> <span class="n">strides</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="k">for</span> <span class="n">stride</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">]</span> <span class="k">if</span> <span class="n">base_sizes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_sizes</span>
+
+        <span class="k">if</span> <span class="n">scales</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scales</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">octave_base_scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">scales_per_octave</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">octave_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">scales_per_octave</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">scales_per_octave</span><span class="p">)])</span>
+            <span class="n">scales</span> <span class="o">=</span> <span class="n">octave_scales</span> <span class="o">*</span> <span class="n">octave_base_scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scales</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Either scales or octave_base_scale with scales_per_octave should be set&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">octave_base_scale</span> <span class="o">=</span> <span class="n">octave_base_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scales_per_octave</span> <span class="o">=</span> <span class="n">scales_per_octave</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ratios</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_major</span> <span class="o">=</span> <span class="n">scale_major</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centers</span> <span class="o">=</span> <span class="n">centers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">=</span> <span class="n">center_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_box_type</span> <span class="o">=</span> <span class="n">use_box_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_base_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;list[int]: total number of base anchors in a feature grid.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_base_priors</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_base_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of priors (anchors) at a point on the feature grid.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">base_anchors</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">base_anchors</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_levels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;int: number of feature levels that the generator will be applied.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">gen_base_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate base anchors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list(torch.Tensor): Base anchors of a feature grid in multiple feature levels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">multi_level_base_anchors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">base_size</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_sizes</span><span class="p">):</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">centers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centers</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">multi_level_base_anchors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gen_single_level_base_anchors</span><span class="p">(</span><span class="n">base_size</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scales</span><span class="p">,</span> <span class="n">ratios</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ratios</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">center</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">multi_level_base_anchors</span>
+
+    <span class="k">def</span> <span class="nf">gen_single_level_base_anchors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">scales</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">ratios</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">center</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate base anchors of a single level.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_size (int | float): Basic size of an anchor.</span>
+<span class="sd">            scales (torch.Tensor): Scales of the anchor.</span>
+<span class="sd">            ratios (torch.Tensor): The ratio between the height</span>
+<span class="sd">                and width of anchors in a single level.</span>
+<span class="sd">            center (tuple[float, float], optional): The center of the base anchor</span>
+<span class="sd">                related to a single feature grid. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Anchors in a single-level feature maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">base_size</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">base_size</span>
+        <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">*</span> <span class="n">w</span>
+            <span class="n">y_center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">*</span> <span class="n">h</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_center</span><span class="p">,</span> <span class="n">y_center</span> <span class="o">=</span> <span class="n">center</span>
+
+        <span class="n">h_ratios</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span>
+        <span class="n">w_ratios</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">h_ratios</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_major</span><span class="p">:</span>
+            <span class="n">ws</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">w_ratios</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">scales</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">hs</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">h_ratios</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">scales</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ws</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">scales</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">w_ratios</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">hs</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">scales</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">h_ratios</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># use float anchor and the anchor&#39;s center is aligned with the</span>
+        <span class="c1"># pixel center</span>
+        <span class="n">base_anchors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">x_center</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">ws</span><span class="p">,</span>
+            <span class="n">y_center</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">hs</span><span class="p">,</span>
+            <span class="n">x_center</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">ws</span><span class="p">,</span>
+            <span class="n">y_center</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">hs</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">base_anchors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_meshgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">row_major</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate mesh grid of x and y.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Grids of x dimension.</span>
+<span class="sd">            y (torch.Tensor): Grids of y dimension.</span>
+<span class="sd">            row_major (bool): Whether to return y grids first.</span>
+<span class="sd">                Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor]: The mesh grids of x and y.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use shape instead of len to keep tracing while exporting to onnx</span>
+        <span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">yy</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row_major</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span>
+        <span class="k">return</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span>
+
+    <span class="k">def</span> <span class="nf">grid_priors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">featmap_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grid anchors in multiple feature levels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            featmap_sizes (list[tuple]): list of feature map sizes in</span>
+<span class="sd">                multiple feature levels.</span>
+<span class="sd">            dtype (:obj:`torch.dtype`): Dtype of priors.</span>
+<span class="sd">                Defaults to torch.float32.</span>
+<span class="sd">            device (str | torch.device): The device where the anchors</span>
+<span class="sd">                will be put on.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list[torch.Tensor]: Anchors in multiple feature levels. \</span>
+<span class="sd">                The sizes of each tensor should be [N, 4], where \</span>
+<span class="sd">                N = width * height * num_base_anchors, width and height \</span>
+<span class="sd">                are the sizes of the corresponding feature level, \</span>
+<span class="sd">                num_base_anchors is the number of anchors for that level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">multi_level_anchors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_level_grid_priors</span><span class="p">(</span><span class="n">featmap_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">level_idx</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">multi_level_anchors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">multi_level_anchors</span>
+
+    <span class="k">def</span> <span class="nf">single_level_grid_priors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">featmap_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">level_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grid anchors of a single level.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This function is usually called by method ``self.grid_priors``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            featmap_size (tuple[int, int]): Size of the feature maps.</span>
+<span class="sd">            level_idx (int): The index of corresponding feature map level.</span>
+<span class="sd">            dtype (obj:`torch.dtype`): Date type of points.Defaults to</span>
+<span class="sd">                ``torch.float32``.</span>
+<span class="sd">            device (str | torch.device): The device the tensor will be put on.</span>
+<span class="sd">                Defaults to &#39;cuda&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Anchors in the overall feature maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span><span class="p">[</span><span class="n">level_idx</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span> <span class="o">=</span> <span class="n">featmap_size</span>
+        <span class="n">stride_w</span><span class="p">,</span> <span class="n">stride_h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="n">level_idx</span><span class="p">]</span>
+        <span class="c1"># First create Range with the default dtype, than convert to</span>
+        <span class="c1"># target `dtype` for onnx exporting.</span>
+        <span class="n">shift_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">feat_w</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_w</span>
+        <span class="n">shift_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">feat_h</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_h</span>
+
+        <span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meshgrid</span><span class="p">(</span><span class="n">shift_x</span><span class="p">,</span> <span class="n">shift_y</span><span class="p">)</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span><span class="p">,</span> <span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># first feat_w elements correspond to the first row of shifts</span>
+        <span class="c1"># add A anchors (1, A, 4) to K shifts (K, 1, 4) to get</span>
+        <span class="c1"># shifted anchors (K, A, 4), reshape to (K*A, 4)</span>
+
+        <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">base_anchors</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">shifts</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">all_anchors</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1"># first A rows correspond to A anchors of (0, 0) in feature map,</span>
+        <span class="c1"># then (0, 1), (0, 2), ...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_box_type</span><span class="p">:</span>
+            <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">HorizontalBoxes</span><span class="p">(</span><span class="n">all_anchors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_anchors</span>
+
+    <span class="k">def</span> <span class="nf">sparse_priors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prior_idxs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">featmap_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">level_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate sparse anchors according to the ``prior_idxs``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prior_idxs (Tensor): The index of corresponding anchors</span>
+<span class="sd">                in the feature map.</span>
+<span class="sd">            featmap_size (tuple[int, int]): feature map size arrange as (h, w).</span>
+<span class="sd">            level_idx (int): The level index of corresponding feature</span>
+<span class="sd">                map.</span>
+<span class="sd">            dtype (obj:`torch.dtype`): Date type of points.Defaults to</span>
+<span class="sd">                ``torch.float32``.</span>
+<span class="sd">            device (str | torch.device): The device where the points is</span>
+<span class="sd">                located.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: Anchor with shape (N, 4), N should be equal to</span>
+<span class="sd">                the length of ``prior_idxs``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">featmap_size</span>
+        <span class="n">num_base_anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_base_anchors</span><span class="p">[</span><span class="n">level_idx</span><span class="p">]</span>
+        <span class="n">base_anchor_id</span> <span class="o">=</span> <span class="n">prior_idxs</span> <span class="o">%</span> <span class="n">num_base_anchors</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">prior_idxs</span> <span class="o">//</span> <span class="n">num_base_anchors</span><span class="p">)</span> <span class="o">%</span> <span class="n">width</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="n">level_idx</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">prior_idxs</span> <span class="o">//</span> <span class="n">width</span> <span class="o">//</span> <span class="n">num_base_anchors</span><span class="p">)</span> <span class="o">%</span> <span class="n">height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="n">level_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span><span class="p">[</span><span class="n">level_idx</span><span class="p">][</span><span class="n">base_anchor_id</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">grid_anchors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">featmap_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grid anchors in multiple feature levels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            featmap_sizes (list[tuple]): list of feature map sizes in</span>
+<span class="sd">                multiple feature levels.</span>
+<span class="sd">            device (str | torch.device): Device where the anchors will be</span>
+<span class="sd">                put on.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list[torch.Tensor]: Anchors in multiple feature levels. \</span>
+<span class="sd">                The sizes of each tensor should be [N, 4], where \</span>
+<span class="sd">                N = width * height * num_base_anchors, width and height \</span>
+<span class="sd">                are the sizes of the corresponding feature level, \</span>
+<span class="sd">                num_base_anchors is the number of anchors for that level.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;``grid_anchors`` would be deprecated soon. Please use ``grid_priors`` &quot;</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">multi_level_anchors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_level_grid_anchors</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+                <span class="n">featmap_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">multi_level_anchors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">multi_level_anchors</span>
+
+    <span class="k">def</span> <span class="nf">single_level_grid_anchors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">base_anchors</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">featmap_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate grid anchors of a single level.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This function is usually called by method ``self.grid_anchors``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_anchors (torch.Tensor): The base anchors of a feature grid.</span>
+<span class="sd">            featmap_size (tuple[int]): Size of the feature maps.</span>
+<span class="sd">            stride (tuple[int, int]): Stride of the feature map in order</span>
+<span class="sd">                (w, h). Defaults to (16, 16).</span>
+<span class="sd">            device (str | torch.device): Device the tensor will be put on.</span>
+<span class="sd">                Defaults to &#39;cuda&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Anchors in the overall feature maps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;``single_level_grid_anchors`` would be deprecated soon. Please use ``single_level_grid_priors`` &quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># keep featmap_size as Tensor instead of int, so that we</span>
+        <span class="c1"># can convert to ONNX correctly</span>
+        <span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span> <span class="o">=</span> <span class="n">featmap_size</span>
+        <span class="n">shift_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">feat_w</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">shift_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">feat_h</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meshgrid</span><span class="p">(</span><span class="n">shift_x</span><span class="p">,</span> <span class="n">shift_y</span><span class="p">)</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span><span class="p">,</span> <span class="n">shift_xx</span><span class="p">,</span> <span class="n">shift_yy</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">base_anchors</span><span class="p">)</span>
+        <span class="c1"># first feat_w elements correspond to the first row of shifts</span>
+        <span class="c1"># add A anchors (1, A, 4) to K shifts (K, 1, 4) to get</span>
+        <span class="c1"># shifted anchors (K, A, 4), reshape to (K*A, 4)</span>
+
+        <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">base_anchors</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">shifts</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="c1"># first A rows correspond to A anchors of (0, 0) in feature map,</span>
+        <span class="c1"># then (0, 1), (0, 2), ...</span>
+        <span class="k">return</span> <span class="n">all_anchors</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">valid_flags</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">featmap_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">pad_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate valid flags of anchors in multiple feature levels.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            featmap_sizes (list(tuple[int, int])): list of feature map sizes in</span>
+<span class="sd">                multiple feature levels.</span>
+<span class="sd">            pad_shape (tuple): The padded shape of the image.</span>
+<span class="sd">            device (str | torch.device): Device where the anchors will be</span>
+<span class="sd">                put on.</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            list(torch.Tensor): Valid flags of anchors in multiple levels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">multi_level_flags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="p">):</span>
+            <span class="n">anchor_stride</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span> <span class="o">=</span> <span class="n">featmap_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">pad_shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">valid_feat_h</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">anchor_stride</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="n">feat_h</span><span class="p">)</span>
+            <span class="n">valid_feat_w</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="n">anchor_stride</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="n">feat_w</span><span class="p">)</span>
+            <span class="n">flags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_level_valid_flags</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">valid_feat_h</span><span class="p">,</span> <span class="n">valid_feat_w</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_base_anchors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">multi_level_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">multi_level_flags</span>
+
+    <span class="k">def</span> <span class="nf">single_level_valid_flags</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">featmap_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">valid_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">num_base_anchors</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the valid flags of anchor in a single feature map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            featmap_size (tuple[int]): The size of feature maps, arrange</span>
+<span class="sd">                as (h, w).</span>
+<span class="sd">            valid_size (tuple[int]): The valid size of the feature maps.</span>
+<span class="sd">            num_base_anchors (int): The number of base anchors.</span>
+<span class="sd">            device (str | torch.device): Device where the flags will be put on.</span>
+<span class="sd">                Defaults to &#39;cuda&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The valid flags of each anchor in a single level \</span>
+<span class="sd">                feature map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">feat_h</span><span class="p">,</span> <span class="n">feat_w</span> <span class="o">=</span> <span class="n">featmap_size</span>
+        <span class="n">valid_h</span><span class="p">,</span> <span class="n">valid_w</span> <span class="o">=</span> <span class="n">valid_size</span>
+        <span class="n">valid_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">feat_w</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">valid_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">feat_h</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">valid_x</span><span class="p">[:</span><span class="n">valid_w</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">valid_y</span><span class="p">[:</span><span class="n">valid_h</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">valid_xx</span><span class="p">,</span> <span class="n">valid_yy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meshgrid</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">)</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">valid_xx</span> <span class="o">&amp;</span> <span class="n">valid_yy</span>
+        <span class="k">return</span> <span class="n">valid</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">num_base_anchors</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: a string that describes the module.&quot;&quot;&quot;</span>
+        <span class="n">indent_str</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span>
+        <span class="n">repr_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;(</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">strides=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strides</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">ratios=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ratios</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">scales=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scales</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">base_sizes=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">base_sizes</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">scale_major=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_major</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">octave_base_scale=&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">octave_base_scale</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">scales_per_octave=&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scales_per_octave</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">num_levels=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_levels</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">centers=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">centers</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">repr_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent_str</span><span class="si">}</span><span class="s2">center_offset=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="n">repr_str</span>
 
 
 <div class="viewcode-block" id="SSDAnchorGeneratorClustered">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDAnchorGeneratorClustered">[docs]</a>
-<span class="nd">@PRIOR_GENERATORS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
+<span class="nd">@TASK_UTILS</span><span class="o">.</span><span class="n">register_module</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">SSDAnchorGeneratorClustered</span><span class="p">(</span><span class="n">AnchorGenerator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom Anchor Generator for SSD.&quot;&quot;&quot;</span>
 
@@ -263,14 +734,14 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SSDAnchorGeneratorClustered.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            strides (Tuple[int]): Anchor&#39;s strides.</span>
-<span class="sd">            widths (List[List[int]]): Anchor&#39;s widths.</span>
-<span class="sd">            heights (List[List[int]]): Anchor&#39;s height.</span>
+<span class="sd">            strides (tuple[int]): Anchor&#39;s strides.</span>
+<span class="sd">            widths (list[list[int]]): Anchor&#39;s widths.</span>
+<span class="sd">            heights (list[list[int]]): Anchor&#39;s height.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strides</span> <span class="o">=</span> <span class="p">[</span><span class="n">_pair</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="k">for</span> <span class="n">stride</span> <span class="ow">in</span> <span class="n">strides</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">widths</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="n">heights</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">centers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">stride</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">stride</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">stride</span> <span class="ow">in</span> <span class="n">strides</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">stride</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">stride</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">stride</span> <span class="ow">in</span> <span class="n">strides</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
@@ -278,7 +749,7 @@
 
 <div class="viewcode-block" id="SSDAnchorGeneratorClustered.gen_base_anchors">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDAnchorGeneratorClustered.gen_base_anchors">[docs]</a>
-    <span class="k">def</span> <span class="nf">gen_base_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">gen_base_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore[override]</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate base anchor for SSD.&quot;&quot;&quot;</span>
         <span class="n">multi_level_base_anchors</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span><span class="p">,</span> <span class="n">centers</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">centers</span><span class="p">):</span>
@@ -293,7 +764,7 @@
 
 <div class="viewcode-block" id="SSDAnchorGeneratorClustered.gen_single_level_base_anchors">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDAnchorGeneratorClustered.gen_single_level_base_anchors">[docs]</a>
-    <span class="k">def</span> <span class="nf">gen_single_level_base_anchors</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">gen_single_level_base_anchors</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">widths</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">heights</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
