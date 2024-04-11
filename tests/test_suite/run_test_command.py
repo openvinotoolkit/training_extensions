@@ -21,6 +21,7 @@ from otx.api.entities.model_template import ModelCategory, ModelStatus
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
+from otx.algorithms.common.utils.utils import is_xpu_available
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 try:
@@ -660,8 +661,9 @@ def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
             )
         ]
 
+    compression_type = "ptq_xpu" if is_xpu_available() else "ptq"
     for xml_path, path_to_ref_data in zip(xml_paths, paths_to_ref_data):
-        _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
+        _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name)
 
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
