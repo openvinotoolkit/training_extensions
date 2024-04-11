@@ -147,34 +147,6 @@ class Benchmark:
         data = data.rename(columns={"repeat": "seed"})
         return data.set_index(["task", "model", "data_group", "data"])
 
-    @staticmethod
-    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
-        """Average result w.r.t. given keys
-        Args:
-            result (pd.DataFrame): Result data frame
-            keys (list[str]): Keys to summarize whole data
-        Retruns:
-            pd.DataFrame: Averaged result table
-        """
-        # Flatten index
-        index_names = data.index.names
-        column_names = data.columns
-        data = data.reset_index()
-        # Average by keys
-        grouped = data.groupby(keys)
-        aggregated = grouped.mean(numeric_only=True)
-        # Merge index columns
-        idx_columns = set(index_names) - set(keys)
-        for col in idx_columns:
-            aggregated[col] = "all"
-        # Merge tag columns (non-numeric & non-index)
-        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
-        for col in tag_columns:
-            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        # Recover index
-        return aggregated.reset_index().set_index(index_names)
-
     def _build_config(
         self,
         model_id: str,
@@ -189,7 +161,7 @@ class Benchmark:
 
         cfg = {}
         cfg["tags"] = all_tags  # metadata
-        cfg["output_path"] = os.path.abspath(self.output_root)
+        cfg["output_path"] = os.path.abspath(f"{self.output_root}/{model_id}")
         cfg["constants"] = {
             "dataroot": os.path.abspath(self.data_root),
         }

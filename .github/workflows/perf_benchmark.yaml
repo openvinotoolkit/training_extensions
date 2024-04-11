@@ -143,7 +143,7 @@ jobs:
           --num-repeat ${{ inputs.num-repeat }}
           --num-epoch ${{ inputs.num-epoch }}
           --eval-upto ${{ inputs.eval-upto }}
-          --summary-csv .tox/perf-benchmark-summary.csv
+          --summary-file .tox/perf-benchmark-summary.xlsx
           --mlflow-tracking-uri ${{ vars.MLFLOW_TRACKING_SERVER_URI }}
           --user-name ${{ github.triggering_actor }}
           --otx-ref ${{ inputs.otx-ref }}
@@ -151,7 +151,7 @@ jobs:
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: perf-benchmark-${{ matrix.task-short }}
-          path: .tox/perf-*.csv
+          path: .tox/perf-benchmark-*.*
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
 
