@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import torch
-from mmdet.structures.bbox import bbox_overlaps, get_box_tensor
+
+from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BboxOverlaps2D available at:
@@ -43,8 +44,6 @@ class BboxOverlaps2D:
         Returns:
             Tensor: shape (m, n) if ``is_aligned `` is False else shape (m,)
         """
-        bboxes1 = get_box_tensor(bboxes1)
-        bboxes2 = get_box_tensor(bboxes2)
         if bboxes2.size(-1) == 5:
             bboxes2 = bboxes2[..., :4]
         if bboxes1.size(-1) == 5:

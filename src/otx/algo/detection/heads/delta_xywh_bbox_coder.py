@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import numpy as np
 import torch
-from mmdet.structures.bbox import HorizontalBoxes, get_box_tensor
 from torch import Tensor
 
 
@@ -44,6 +43,7 @@ class DeltaXYWHBBoxCoder:
         ctr_clamp: int = 32,
     ) -> None:
         self.encode_size = encode_size
+        # TODO(Jaeguk): use_box_type should be deprecated.
         self.use_box_type = use_box_type
         self.means = target_means
         self.stds = target_stds
@@ -63,8 +63,6 @@ class DeltaXYWHBBoxCoder:
         Returns:
             torch.Tensor: Box transformation deltas
         """
-        bboxes = get_box_tensor(bboxes)
-        gt_bboxes = get_box_tensor(gt_bboxes)
         return bbox2delta(bboxes, gt_bboxes, self.means, self.stds)
 
     def decode(
@@ -94,8 +92,7 @@ class DeltaXYWHBBoxCoder:
         Returns:
             torch.Tensor: Decoded boxes.
         """
-        bboxes = get_box_tensor(bboxes)
-        decoded_bboxes = delta2bbox(
+        return delta2bbox(
             bboxes,
             pred_bboxes,
             self.means,
@@ -106,10 +103,6 @@ class DeltaXYWHBBoxCoder:
             self.add_ctr_clamp,
             self.ctr_clamp,
         )
-
-        if self.use_box_type:
-            decoded_bboxes = HorizontalBoxes(decoded_bboxes)
-        return decoded_bboxes
 
 
 def bbox2delta(

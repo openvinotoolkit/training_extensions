@@ -7,7 +7,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.losses import smooth_l1_loss
 from mmdet.models.utils import multi_apply
 from mmdet.registry import MODELS
 from torch import Tensor, nn
@@ -17,6 +16,7 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
+from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
 
 if TYPE_CHECKING:
     from mmdet.utils import ConfigType, InstanceList, MultiConfig, OptInstanceList

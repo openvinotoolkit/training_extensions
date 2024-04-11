@@ -4,10 +4,9 @@
 from abc import ABCMeta, abstractmethod
 
 import torch
-from mmdet.models.task_modules.samplers.sampling_result import SamplingResult
 from mmengine.structures import InstanceData
 
-from otx.algo.detection.structures.structures import AssignResult
+from otx.algo.detection.utils.structures import AssignResult, SamplingResult
 
 
 class BaseSampler(metaclass=ABCMeta):
@@ -72,26 +71,6 @@ class BaseSampler(metaclass=ABCMeta):
 
         Returns:
             :obj:`SamplingResult`: Sampling result.
-
-        Example:
-            >>> from mmengine.structures import InstanceData
-            >>> from mmdet.models.task_modules.samplers import RandomSampler,
-            >>> from mmdet.models.task_modules.assigners import AssignResult
-            >>> from mmdet.models.task_modules.samplers.
-            ... sampling_result import ensure_rng, random_boxes
-            >>> rng = ensure_rng(None)
-            >>> assign_result = AssignResult.random(rng=rng)
-            >>> pred_instances = InstanceData()
-            >>> pred_instances.priors = random_boxes(assign_result.num_preds,
-            ...                                      rng=rng)
-            >>> gt_instances = InstanceData()
-            >>> gt_instances.bboxes = random_boxes(assign_result.num_gts,
-            ...                                    rng=rng)
-            >>> gt_instances.labels = torch.randint(
-            ...     0, 5, (assign_result.num_gts,), dtype=torch.long)
-            >>> self = RandomSampler(num=32, pos_fraction=0.5, neg_pos_ub=-1,
-            >>>                      add_gt_as_proposals=False)
-            >>> self = self.sample(assign_result, pred_instances, gt_instances)
         """
         gt_bboxes = gt_instances.bboxes
         priors = pred_instances.priors

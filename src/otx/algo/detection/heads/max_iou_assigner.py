@@ -11,7 +11,7 @@ import torch
 from torch import Tensor
 
 from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
-from otx.algo.detection.structures.structures import AssignResult
+from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
     from mmengine.structures import InstanceData

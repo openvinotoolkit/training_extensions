@@ -23,24 +23,6 @@ class AssignResult:
             assigned truth box.
         labels (Tensor): If specified, for each predicted box
             indicates the category label of the assigned truth box.
-
-    Example:
-        >>> # An assign result between 4 predicted boxes and 9 true boxes
-        >>> # where only two boxes were assigned.
-        >>> num_gts = 9
-        >>> max_overlaps = torch.LongTensor([0, .5, .9, 0])
-        >>> gt_inds = torch.LongTensor([-1, 1, 2, 0])
-        >>> labels = torch.LongTensor([0, 3, 4, 0])
-        >>> self = AssignResult(num_gts, gt_inds, max_overlaps, labels)
-        >>> print(str(self))  # xdoctest: +IGNORE_WANT
-        <AssignResult(num_gts=9, gt_inds.shape=(4,), max_overlaps.shape=(4,),
-                      labels.shape=(4,))>
-        >>> # Force addition of gt labels (when adding gt as proposals)
-        >>> new_labels = torch.LongTensor([3, 4, 5])
-        >>> self.add_gt_(new_labels)
-        >>> print(str(self))  # xdoctest: +IGNORE_WANT
-        <AssignResult(num_gts=9, gt_inds.shape=(7,), max_overlaps.shape=(7,),
-                      labels.shape=(7,))>
     """
 
     def __init__(self, num_gts: int, gt_inds: Tensor, max_overlaps: Tensor, labels: Tensor) -> None:
@@ -105,25 +87,6 @@ class SamplingResult:
         avg_factor_with_neg (bool):  If True, ``avg_factor`` equal to
             the number of total priors; Otherwise, it is the number of
             positive priors. Defaults to True.
-
-    Example:
-        >>> # xdoctest: +IGNORE_WANT
-        >>> from mmdet.models.task_modules.samplers.sampling_result import *  # NOQA
-        >>> self = SamplingResult.random(rng=10)
-        >>> print(f'self = {self}')
-        self = <SamplingResult({
-            'neg_inds': tensor([1,  2,  3,  5,  6,  7,  8,
-                                9, 10, 11, 12, 13]),
-            'neg_priors': torch.Size([12, 4]),
-            'num_gts': 1,
-            'num_neg': 12,
-            'num_pos': 1,
-            'avg_factor': 13,
-            'pos_assigned_gt_inds': tensor([0]),
-            'pos_inds': tensor([0]),
-            'pos_is_gt': tensor([1], dtype=torch.uint8),
-            'pos_priors': torch.Size([1, 4])
-        })>
     """
 
     def __init__(
