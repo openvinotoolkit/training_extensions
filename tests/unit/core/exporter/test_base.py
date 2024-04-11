@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from onnx import ModelProto
 from onnxconverter_common import float16
+
 from otx.core.exporter.base import OTXExportFormatType, OTXModelExporter, OTXPrecisionType, ZipFile
 
 
@@ -62,7 +63,11 @@ class TestOTXModelExporter:
             exporter._postprocess_openvino_model(mock_model)
         # test output names match exporter parameters
         exporter.output_names = ["output1", "output2"]
-        mock_model.outputs = [MagicMock(), MagicMock()]
+        mock_model.outputs = []
+        for output_name in exporter.output_names:
+            output = MagicMock()
+            output.get_names.return_value = output_name
+            mock_model.outputs.append(output)
         processed_model = exporter._postprocess_openvino_model(mock_model)
         # Verify the processed model is returned and the names are set correctly
         assert processed_model is mock_model
