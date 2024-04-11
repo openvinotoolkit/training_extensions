@@ -295,7 +295,7 @@ class OTXTVModel(OTXMulticlassClsModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
         )
 
     def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
