@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import mmcv
 import numpy as np
 import pytest
 import torch
@@ -21,6 +20,8 @@ from otx.core.data.transform_libs.mmaction import (
     RawFrameDecode,
 )
 from otx.core.types.transformer_libs import TransformLibType
+
+import mmcv
 
 
 class MockVideo:

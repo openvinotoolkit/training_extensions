@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 from onnx import ModelProto
 from onnxconverter_common import float16
-
 from otx.core.exporter.base import OTXExportFormatType, OTXModelExporter, OTXPrecisionType, ZipFile
 
 

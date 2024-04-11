@@ -5,8 +5,9 @@
 
 import pytest
 import torch
-from mmcv.ops import nms
 from otx.algo.detection.utils.mmcv_patched_ops import monkey_patched_nms
+
+from mmcv.ops import nms
 
 
 class TestMonkeyPatchedNMS:
