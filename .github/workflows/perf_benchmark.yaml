@@ -160,8 +160,6 @@ jobs:
       - name: Download benchmark results
         uses: actions/download-artifact@v4
         with:
-          run-id: 8230286333
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: tests/perf/history/latest
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
