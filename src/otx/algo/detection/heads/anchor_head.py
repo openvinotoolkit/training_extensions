@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmdet.models.task_modules.prior_generators import anchor_inside_flags
-from mmdet.models.utils import images_to_levels, multi_apply, unmap
+from mmdet.models.utils import images_to_levels, unmap
 from mmdet.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
@@ -18,6 +18,7 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
+from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
     from mmdet.utils import InstanceList, OptConfigType, OptInstanceList, OptMultiConfig
@@ -141,7 +142,7 @@ class AnchorHead(BaseDenseHead):
         bbox_pred = self.conv_reg(x)
         return cls_score, bbox_pred
 
-    def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor], list[Tensor]]:
+    def forward(self, x: tuple[Tensor]) -> tuple:
         """Forward features from the upstream network.
 
         Args:
