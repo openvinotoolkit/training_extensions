@@ -1,5 +1,8 @@
 load_from: https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth
+type: "MaskRCNN"
 backbone:
+  type: "ResNet"
+  style: "pytorch"
   depth: 50
   frozen_stages: 1
   init_cfg:
@@ -15,9 +18,8 @@ backbone:
     - 1
     - 2
     - 3
-  style: "pytorch"
-  type: "ResNet"
 data_preprocessor:
+  type: "DetDataPreprocessor"
   bgr_to_rgb: false
   mean:
     - 123.675
@@ -29,9 +31,9 @@ data_preprocessor:
     - 58.395
     - 57.12
     - 57.375
-  type: "DetDataPreprocessor"
   non_blocking: true
 neck:
+  type: "FPN"
   in_channels:
     - 256
     - 512
@@ -39,10 +41,12 @@ neck:
     - 2048
   num_outs: 5
   out_channels: 256
-  type: "FPN"
 roi_head:
+  type: "CustomRoIHead"
   bbox_head:
+    type: "CustomConvFCBBoxHead"
     bbox_coder:
+      type: "DeltaXYWHBBoxCoder"
       target_means:
         - 0.0
         - 0.0
@@ -53,7 +57,6 @@ roi_head:
         - 0.1
         - 0.2
         - 0.2
-      type: "DeltaXYWHBBoxCoder"
     fc_out_channels: 1024
     in_channels: 256
     loss_bbox:
@@ -66,8 +69,8 @@ roi_head:
     num_classes: 5
     reg_class_agnostic: false
     roi_feat_size: 7
-    type: "CustomConvFCBBoxHead"
   bbox_roi_extractor:
+    type: "SingleRoIExtractor"
     featmap_strides:
       - 4
       - 8
@@ -78,8 +81,8 @@ roi_head:
       output_size: 7
       sampling_ratio: 0
       type: "RoIAlign"
-    type: "SingleRoIExtractor"
   mask_head:
+    type: "FCNMaskHead"
     conv_out_channels: 256
     in_channels: 256
     loss_mask:
@@ -88,8 +91,8 @@ roi_head:
       use_mask: true
     num_classes: 5
     num_convs: 4
-    type: "FCNMaskHead"
   mask_roi_extractor:
+    type: "SingleRoIExtractor"
     featmap_strides:
       - 4
       - 8
@@ -100,10 +103,10 @@ roi_head:
       output_size: 14
       sampling_ratio: 0
       type: "RoIAlign"
-    type: "SingleRoIExtractor"
-  type: "CustomRoIHead"
 rpn_head:
+  type: "RPNHead"
   anchor_generator:
+    type: "AnchorGenerator"
     ratios:
       - 0.5
       - 1.0
@@ -116,8 +119,8 @@ rpn_head:
       - 16
       - 32
       - 64
-    type: "AnchorGenerator"
   bbox_coder:
+    type: "DeltaXYWHBBoxCoder"
     target_means:
       - 0.0
       - 0.0
@@ -128,7 +131,6 @@ rpn_head:
       - 1.0
       - 1.0
       - 1.0
-    type: "DeltaXYWHBBoxCoder"
   feat_channels: 256
   in_channels: 256
   loss_bbox:
@@ -138,7 +140,6 @@ rpn_head:
     loss_weight: 1.0
     type: "CrossEntropyLoss"
     use_sigmoid: true
-  type: "RPNHead"
 test_cfg:
   rcnn:
     mask_thr_binary: 0.5
@@ -157,38 +158,38 @@ test_cfg:
 train_cfg:
   rcnn:
     assigner:
+      type: "MaxIoUAssigner"
       ignore_iof_thr: -1
       match_low_quality: true
       min_pos_iou: 0.5
       neg_iou_thr: 0.5
       pos_iou_thr: 0.5
-      type: "MaxIoUAssigner"
     debug: false
     mask_size: 28
     pos_weight: -1
     sampler:
+      type: "RandomSampler"
       add_gt_as_proposals: true
       neg_pos_ub: -1
       num: 512
       pos_fraction: 0.25
-      type: "RandomSampler"
   rpn:
     allowed_border: -1
     assigner:
+      type: "MaxIoUAssigner"
       ignore_iof_thr: -1
       match_low_quality: true
       min_pos_iou: 0.3
       neg_iou_thr: 0.3
       pos_iou_thr: 0.7
-      type: "MaxIoUAssigner"
     debug: false
     pos_weight: -1
     sampler:
+      type: "RandomSampler"
       add_gt_as_proposals: false
       neg_pos_ub: -1
       num: 256
       pos_fraction: 0.5
-      type: "RandomSampler"
   rpn_proposal:
     max_per_img: 1000
     min_bbox_size: 0
@@ -196,4 +197,3 @@ train_cfg:
       iou_threshold: 0.7
       type: "nms"
     nms_pre: 2000
-type: "MaskRCNN"
