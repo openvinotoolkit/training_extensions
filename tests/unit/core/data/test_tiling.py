@@ -151,27 +151,23 @@ class TestOTXTiling:
             scores.append(
                 torch.rand(len(img_bboxes), dtype=torch.float64),
             )
-            if self.explain:
+            if self.explain_mode:
                 saliency_maps.append(np.zeros((3, 7, 7)))
                 feature_vectors.append(np.zeros((1, 32)))
 
-        det_batch_pred_entity_params = {
-            "batch_size": x.batch_size,
-            "images": x.images,
-            "imgs_info": x.imgs_info,
-            "scores": scores,
-            "bboxes": bboxes,
-            "labels": labels,
-        }
-        if self.explain:
-            det_batch_pred_entity_params.update(
-                {
-                    "saliency_map": saliency_maps,
-                    "feature_vector": feature_vectors,
-                },
-            )
+        pred_entity = DetBatchPredEntity(
+            batch_size=x.batch_size,
+            images=x.images,
+            imgs_info=x.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = saliency_maps
+            pred_entity.feature_vector = feature_vectors
 
-        return DetBatchPredEntity(**det_batch_pred_entity_params)
+        return pred_entity
 
     def inst_seg_dummy_forward(self, x: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
         """Dummy instance segmantation forward function for testing.
@@ -216,28 +212,24 @@ class TestOTXTiling:
                     dtype=torch.bool,
                 ),
             )
-            if self.explain:
+            if self.explain_mode:
                 feature_vectors.append(np.zeros((1, 32)))
 
-        inst_seg_batch_pred_entity_params = {
-            "batch_size": x.batch_size,
-            "images": x.images,
-            "imgs_info": x.imgs_info,
-            "scores": scores,
-            "bboxes": bboxes,
-            "masks": masks,
-            "labels": labels,
-            "polygons": x.polygons,
-        }
-        if self.explain:
-            inst_seg_batch_pred_entity_params.update(
-                {
-                    "saliency_map": [],
-                    "feature_vector": feature_vectors,
-                },
-            )
+        pred_entity = InstanceSegBatchPredEntity(
+            batch_size=x.batch_size,
+            images=x.images,
+            imgs_info=x.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+            masks=masks,
+            polygons=x.polygons,
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = []
+            pred_entity.feature_vector = feature_vectors
 
-        return InstanceSegBatchPredEntity(**inst_seg_batch_pred_entity_params)
+        return pred_entity
 
     def test_tile_transform(self):
         dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
@@ -348,7 +340,7 @@ class TestOTXTiling:
             config=fxt_det_data_config,
         )
 
-        self.explain = False
+        self.explain_mode = False
         model.forward = self.det_dummy_forward
 
         tile_datamodule.prepare_data()
@@ -365,7 +357,7 @@ class TestOTXTiling:
             config=fxt_det_data_config,
         )
 
-        self.explain = model.explain_mode = True
+        self.explain_mode = model.explain_mode = True
         model.forward_explain = self.det_dummy_forward
 
         tile_datamodule.prepare_data()
@@ -373,7 +365,7 @@ class TestOTXTiling:
             prediction = model.forward_tiles(batch)
             assert hasattr(prediction, "saliency_map")
             assert prediction.saliency_map[0].ndim == 3
-        self.explain = False
+        self.explain_mode = False
 
     def test_instseg_tile_merge(self, fxt_instseg_data_config):
         model = OTXInstanceSegModel(num_classes=3)
@@ -384,7 +376,7 @@ class TestOTXTiling:
             config=fxt_instseg_data_config,
         )
 
-        self.explain = False
+        self.explain_mode = False
         model.forward = self.inst_seg_dummy_forward
 
         tile_datamodule.prepare_data()
@@ -401,7 +393,7 @@ class TestOTXTiling:
             config=fxt_instseg_data_config,
         )
 
-        self.explain = model.explain_mode = True
+        self.explain_mode = model.explain_mode = True
         model.forward_explain = self.inst_seg_dummy_forward
 
         tile_datamodule.prepare_data()
@@ -409,4 +401,4 @@ class TestOTXTiling:
             prediction = model.forward_tiles(batch)
             assert hasattr(prediction, "saliency_map")
             assert prediction.saliency_map[0].ndim == 3
-        self.explain = False
+        self.explain_mode = False

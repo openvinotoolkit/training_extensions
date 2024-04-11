@@ -15,7 +15,6 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
-from otx.algo.hooks.recording_forward_hook import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -89,22 +88,19 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        det_batch_pred_entitity_params = {
-            "batch_size": inputs.batch_size,
-            "images": [pred_entity.image for pred_entity in pred_entities],
-            "imgs_info": [pred_entity.img_info for pred_entity in pred_entities],
-            "scores": [pred_entity.score for pred_entity in pred_entities],
-            "bboxes": [pred_entity.bboxes for pred_entity in pred_entities],
-            "labels": [pred_entity.labels for pred_entity in pred_entities],
-        }
+        pred_entity = DetBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            scores=[pred_entity.score for pred_entity in pred_entities],
+            bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
+            labels=[pred_entity.labels for pred_entity in pred_entities],
+        )
         if self.explain_mode:
-            det_batch_pred_entitity_params.update(
-                {
-                    "saliency_map": [pred_entity.saliency_map for pred_entity in pred_entities],
-                    "feature_vector": [pred_entity.feature_vector for pred_entity in pred_entities],
-                },
-            )
-        return DetBatchPredEntity(**det_batch_pred_entitity_params)  # type: ignore[arg-type]
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     @property
     def _export_parameters(self) -> dict[str, Any]:
@@ -201,6 +197,8 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: DetBatchDataEntity | TileBatchDetDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
+        from otx.algo.hooks.recording_forward_hook import get_feature_vector
+
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 

@@ -98,24 +98,21 @@ class OTXInstanceSegModel(
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        batch_pred_entitity_params = {
-            "batch_size": inputs.batch_size,
-            "images": [pred_entity.image for pred_entity in pred_entities],
-            "imgs_info": [pred_entity.img_info for pred_entity in pred_entities],
-            "scores": [pred_entity.score for pred_entity in pred_entities],
-            "bboxes": [pred_entity.bboxes for pred_entity in pred_entities],
-            "labels": [pred_entity.labels for pred_entity in pred_entities],
-            "masks": [pred_entity.masks for pred_entity in pred_entities],
-            "polygons": [pred_entity.polygons for pred_entity in pred_entities],
-        }
+        pred_entity = InstanceSegBatchPredEntity(
+            batch_size=inputs.batch_size,
+            images=[pred_entity.image for pred_entity in pred_entities],
+            imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
+            scores=[pred_entity.score for pred_entity in pred_entities],
+            bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
+            labels=[pred_entity.labels for pred_entity in pred_entities],
+            masks=[pred_entity.masks for pred_entity in pred_entities],
+            polygons=[pred_entity.polygons for pred_entity in pred_entities],
+        )
         if self.explain_mode:
-            batch_pred_entitity_params.update(
-                {
-                    "saliency_map": [pred_entity.saliency_map for pred_entity in pred_entities],
-                    "feature_vector": [pred_entity.feature_vector for pred_entity in pred_entities],
-                },
-            )
-        return InstanceSegBatchPredEntity(**batch_pred_entitity_params)  # type: ignore[arg-type]
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     @property
     def _export_parameters(self) -> dict[str, Any]:

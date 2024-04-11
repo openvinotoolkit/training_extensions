@@ -15,7 +15,6 @@ import torch
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
@@ -428,6 +427,8 @@ class InstanceSegTileMerge(TileMerge):
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
+        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+
         if masks is None:
             return np.ndarray([])
 
