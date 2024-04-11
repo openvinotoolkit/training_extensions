@@ -77,7 +77,7 @@ class OTXDetectionTask(OTXTask, ABC):
 
         self.confidence_threshold = 0.0
         self.max_num_detections = 0
-        self.nms_iou_threshold = 0.0
+        self.nms_iou_threshold = 0.5
         if hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
@@ -360,7 +360,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold,
             self._hyperparams.tiling_parameters,
             self.use_ellipse_shapes,
-            self.nms_iou_threshold if self.nms_iou_threshold != 0.0 else self._get_model_nms_threshold(),
+            self.nms_iou_threshold,
         )
 
         if export_type == ExportType.ONNX:
@@ -557,10 +557,6 @@ class OTXDetectionTask(OTXTask, ABC):
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
             )
-
-    def _get_model_nms_threshold(self) -> float:
-        """Return NMS threshold, which is defined in object detector by default."""
-        raise NotImplementedError
 
     @staticmethod
     def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:
