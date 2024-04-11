@@ -10,53 +10,17 @@ import torch
 from mmengine.structures import InstanceData
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, get_box_type
-
 if TYPE_CHECKING:
     from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
     from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
-def stack_boxes(data_list: list[Tensor | BaseBoxes], dim: int = 0) -> Tensor | BaseBoxes:
-    """Stack boxes with type of tensor or box type.
-
-    Args:
-        data_list (List[Union[Tensor, :obj:`BaseBoxes`]]): A list of tensors
-            or box types need to be stacked.
-            dim (int): The dimension over which the box are stacked.
-                Defaults to 0.
-
-    Returns:
-        Union[Tensor, :obj`BaseBoxes`]: Stacked results.
-    """
-    if data_list and isinstance(data_list[0], BaseBoxes):
-        return data_list[0].stack(data_list, dim=dim)
-    return torch.stack(data_list, dim=dim)
-
-
-def samplelist_boxtype2tensor(batch_data_samples: SampleList) -> None:
-    """Convert the box type in SampleList to tensor."""
-    for data_samples in batch_data_samples:
-        if "gt_instances" in data_samples:
-            bboxes = data_samples.gt_instances.get("bboxes", None)
-            if isinstance(bboxes, BaseBoxes):
-                data_samples.gt_instances.bboxes = bboxes.tensor
-        if "pred_instances" in data_samples:
-            bboxes = data_samples.pred_instances.get("bboxes", None)
-            if isinstance(bboxes, BaseBoxes):
-                data_samples.pred_instances.bboxes = bboxes.tensor
-        if "ignored_instances" in data_samples:
-            bboxes = data_samples.ignored_instances.get("bboxes", None)
-            if isinstance(bboxes, BaseBoxes):
-                data_samples.ignored_instances.bboxes = bboxes.tensor
-
-
-def images_to_levels(target: list[Tensor | BaseBoxes], num_levels: list[int]) -> list[Tensor | BaseBoxes]:
+def images_to_levels(target: list[Tensor], num_levels: list[int]) -> list[Tensor]:
     """Convert targets by image to targets by feature level.
 
     [target_img0, target_img1] -> [target_level0, target_level1, ...]
     """
-    target = stack_boxes(target, 0)  # type: ignore[assignment]
+    target = torch.stack(target, dim=0)
     level_targets = []
     start = 0
     for n in num_levels:
@@ -216,8 +180,6 @@ def empty_instances(
     task_type: str,
     instance_results: OptInstanceList = None,
     mask_thr_binary: int | float = 0,
-    box_type: str | type = "hbox",
-    use_box_type: bool = False,
     num_classes: int = 80,
     score_per_cls: bool = False,
 ) -> list[InstanceData]:
@@ -260,10 +222,7 @@ def empty_instances(
             results = InstanceData()
 
         if task_type == "bbox":
-            _, box_type_cls = get_box_type(box_type)
-            bboxes = torch.zeros(0, box_type_cls.box_dim, device=device)
-            if use_box_type:
-                bboxes = box_type_cls(bboxes, clone=False)
+            bboxes = torch.zeros(0, 4, device=device)
             results.bboxes = bboxes
             score_shape = (0, num_classes + 1) if score_per_cls else (0,)
             results.scores = torch.zeros(score_shape, device=device)

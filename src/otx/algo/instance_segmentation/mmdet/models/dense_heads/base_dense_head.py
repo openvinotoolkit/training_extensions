@@ -22,7 +22,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     select_single_mlvl,
     unpack_gt_instances,
 )
-from otx.algo.instance_segmentation.mmdet.structures.bbox import cat_boxes, get_box_tensor, get_box_wh, scale_boxes
+from otx.algo.instance_segmentation.mmdet.structures.bbox import get_box_wh, scale_boxes
 from torch import Tensor
 
 # TODO(Eugene): replace mmcv.batched_nms with torchvision
@@ -407,7 +407,7 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
-        priors = cat_boxes(mlvl_valid_priors)
+        priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors, bbox_pred, max_shape=img_shape)
 
         results = InstanceData()
@@ -476,7 +476,7 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
                 results = results[valid_mask]
 
         if with_nms and results.bboxes.numel() > 0:
-            bboxes = get_box_tensor(results.bboxes)
+            bboxes = results.bboxes
             det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms

@@ -10,7 +10,7 @@ from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
-from otx.algo.instance_segmentation.mmdet.models.prior_generators import AnchorGenerator, anchor_inside_flags
+from otx.algo.instance_segmentation.mmdet.models.prior_generators import AnchorGenerator
 from otx.algo.instance_segmentation.mmdet.models.samplers import PseudoSampler
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
@@ -21,9 +21,41 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     multi_apply,
     unmap,
 )
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
 
 from .base_dense_head import BaseDenseHead
+
+
+def anchor_inside_flags(
+    flat_anchors: Tensor,
+    valid_flags: Tensor,
+    img_shape: tuple[int, int],
+    allowed_border: int = 0,
+) -> Tensor:
+    """Check whether the anchors are inside the border.
+
+    Args:
+        flat_anchors (torch.Tensor): Flatten anchors, shape (n, 4).
+        valid_flags (torch.Tensor): An existing valid flags of anchors.
+        img_shape (tuple(int)): Shape of current image.
+        allowed_border (int): The border to allow the valid anchor.
+            Defaults to 0.
+
+    Returns:
+        torch.Tensor: Flags indicating whether the anchors are inside a \
+            valid range.
+    """
+    img_h, img_w = img_shape
+    if allowed_border >= 0:
+        inside_flags = (
+            valid_flags
+            & (flat_anchors[:, 0] >= -allowed_border)
+            & (flat_anchors[:, 1] >= -allowed_border)
+            & (flat_anchors[:, 2] < img_w + allowed_border)
+            & (flat_anchors[:, 3] < img_h + allowed_border)
+        )
+    else:
+        inside_flags = valid_flags
+    return inside_flags
 
 
 @MODELS.register_module()
@@ -200,7 +232,7 @@ class AnchorHead(BaseDenseHead):
 
     def _get_targets_single(
         self,
-        flat_anchors: Tensor | BaseBoxes,
+        flat_anchors: Tensor,
         valid_flags: Tensor,
         gt_instances: InstanceData,
         img_meta: dict,
@@ -278,7 +310,6 @@ class AnchorHead(BaseDenseHead):
                 pos_bbox_targets = self.bbox_coder.encode(sampling_result.pos_priors, sampling_result.pos_gt_bboxes)
             else:
                 pos_bbox_targets = sampling_result.pos_gt_bboxes
-                pos_bbox_targets = get_box_tensor(pos_bbox_targets)
             bbox_targets[pos_inds, :] = pos_bbox_targets
             bbox_weights[pos_inds, :] = 1.0
 
@@ -371,7 +402,7 @@ class AnchorHead(BaseDenseHead):
             if len(anchor_list[i]) != len(valid_flag_list[i]):
                 msg = "anchor_list and valid_flag_list should have the same length"
                 raise ValueError(msg)
-            concat_anchor_list.append(cat_boxes(anchor_list[i]))
+            concat_anchor_list.append(torch.cat(anchor_list[i], 0))
             concat_valid_flag_list.append(torch.cat(valid_flag_list[i]))
 
         # compute targets for each image
@@ -464,7 +495,6 @@ class AnchorHead(BaseDenseHead):
             # decodes the already encoded coordinates to absolute format.
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-            bbox_pred = get_box_tensor(bbox_pred)
         loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
         return loss_cls, loss_bbox
 
@@ -516,7 +546,7 @@ class AnchorHead(BaseDenseHead):
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
         # concat all level anchors and flags to a single tensor
-        concat_anchor_list = [cat_boxes(anchor_list[i]) for i in range(len(anchor_list))]
+        concat_anchor_list = [torch.cat(anchor_list[i]) for i in range(len(anchor_list))]
 
         all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
 

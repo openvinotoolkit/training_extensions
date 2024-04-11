@@ -21,9 +21,7 @@ from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
-    cat_boxes,
     empty_box_as,
-    get_box_tensor,
     get_box_wh,
     scale_boxes,
 )
@@ -218,7 +216,7 @@ class RPNHead(AnchorHead):
             level_ids.append(scores.new_full((scores.size(0),), level_idx, dtype=torch.long))
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
-        priors = cat_boxes(mlvl_valid_priors)
+        priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors, bbox_pred, max_shape=img_shape)
 
         results = InstanceData()
@@ -283,7 +281,7 @@ class RPNHead(AnchorHead):
                 results = results[valid_mask]
 
         if results.bboxes.numel() > 0:
-            bboxes = get_box_tensor(results.bboxes)
+            bboxes = results.bboxes
             det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.level_ids, cfg.nms)
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms

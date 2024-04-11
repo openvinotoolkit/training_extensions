@@ -199,5 +199,4 @@ def bbox_overlaps(
     enclose_wh = fp16_clamp(enclosed_rb - enclosed_lt, min=0)
     enclose_area = enclose_wh[..., 0] * enclose_wh[..., 1]
     enclose_area = torch.max(enclose_area, eps)
-    gious = ious - (enclose_area - union) / enclose_area
-    return gious
+    return ious - (enclose_area - union) / enclose_area

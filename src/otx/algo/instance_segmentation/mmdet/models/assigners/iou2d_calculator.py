@@ -6,7 +6,7 @@ from __future__ import annotations
 import torch
 from mmengine.registry import TASK_UTILS
 
-from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox_overlaps, get_box_tensor
+from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox_overlaps
 
 
 def cast_tensor_type(x: torch.Tensor, scale: float = 1.0, dtype: str | None = None) -> torch.Tensor:
@@ -51,8 +51,6 @@ class BboxOverlaps2D:
         Returns:
             Tensor: shape (m, n) if ``is_aligned `` is False else shape (m,)
         """
-        bboxes1 = get_box_tensor(bboxes1)
-        bboxes2 = get_box_tensor(bboxes2)
         assert bboxes1.size(-1) in [0, 4, 5]
         assert bboxes2.size(-1) in [0, 4, 5]
         if bboxes2.size(-1) == 5:

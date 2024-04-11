@@ -16,7 +16,6 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
     OptConfigType,
     OptMultiConfig,
-    samplelist_boxtype2tensor,
 )
 from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, OptSampleList, SampleList
 from torch import Tensor
@@ -146,5 +145,4 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """
         for data_sample, pred_instances in zip(data_samples, results_list):
             data_sample.pred_instances = pred_instances
-        samplelist_boxtype2tensor(data_samples)
         return data_samples

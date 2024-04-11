@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-import warnings
 from typing import Optional, Sequence, Union
 
 import numpy as np
@@ -9,13 +8,9 @@ import torch
 from mmengine.registry import TASK_UTILS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, HorizontalBoxes, get_box_tensor
-
-from .base_bbox_coder import BaseBBoxCoder
-
 
 @TASK_UTILS.register_module()
-class DeltaXYWHBBoxCoder(BaseBBoxCoder):
+class DeltaXYWHBBoxCoder:
     """Delta XYWH BBox coder.
 
     Following the practice in `R-CNN <https://arxiv.org/abs/1311.2524>`_,
@@ -36,6 +31,8 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
             Default 32.
     """
 
+    encode_size = 4
+
     def __init__(
         self,
         target_means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
@@ -43,16 +40,16 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
         clip_border: bool = True,
         add_ctr_clamp: bool = False,
         ctr_clamp: int = 32,
-        **kwargs,
+        use_box_type: bool = False,
     ) -> None:
-        super().__init__(**kwargs)
         self.means = target_means
         self.stds = target_stds
         self.clip_border = clip_border
         self.add_ctr_clamp = add_ctr_clamp
         self.ctr_clamp = ctr_clamp
+        self.use_box_type = use_box_type
 
-    def encode(self, bboxes: Union[Tensor, BaseBoxes], gt_bboxes: Union[Tensor, BaseBoxes]) -> Tensor:
+    def encode(self, bboxes: Tensor, gt_bboxes: Tensor) -> Tensor:
         """Get box regression transformation deltas that can be used to transform the ``bboxes`` into the ``gt_bboxes``.
 
         Args:
@@ -64,20 +61,17 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
         Returns:
             torch.Tensor: Box transformation deltas
         """
-        bboxes = get_box_tensor(bboxes)
-        gt_bboxes = get_box_tensor(gt_bboxes)
         assert bboxes.size(0) == gt_bboxes.size(0)
         assert bboxes.size(-1) == gt_bboxes.size(-1) == 4
-        encoded_bboxes = bbox2delta(bboxes, gt_bboxes, self.means, self.stds)
-        return encoded_bboxes
+        return bbox2delta(bboxes, gt_bboxes, self.means, self.stds)
 
     def decode(
         self,
-        bboxes: Union[Tensor, BaseBoxes],
+        bboxes: Tensor,
         pred_bboxes: Tensor,
-        max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
-        wh_ratio_clip: Optional[float] = 16 / 1000,
-    ) -> Union[Tensor, BaseBoxes]:
+        max_shape: Union[Sequence[int], Tensor, Sequence[Sequence[int]]] = None,
+        wh_ratio_clip: float = 16 / 1000,
+    ) -> Tensor:
         """Apply transformation `pred_bboxes` to `boxes`.
 
         Args:
@@ -98,7 +92,6 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
         Returns:
             Union[torch.Tensor, :obj:`BaseBoxes`]: Decoded boxes.
         """
-        bboxes = get_box_tensor(bboxes)
         assert pred_bboxes.size(0) == bboxes.size(0)
         if pred_bboxes.ndim == 3:
             assert pred_bboxes.size(1) == bboxes.size(1)
@@ -117,14 +110,6 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
                 self.ctr_clamp,
             )
         else:
-            if pred_bboxes.ndim == 3 and not torch.onnx.is_in_onnx_export():
-                warnings.warn(
-                    "DeprecationWarning: onnx_delta2bbox is deprecated "
-                    "in the case of batch decoding and non-ONNX, "
-                    "please use “delta2bbox” instead. In order to improve "
-                    "the decoding speed, the batch function will no "
-                    "longer be supported. ",
-                )
             decoded_bboxes = onnx_delta2bbox(
                 bboxes,
                 pred_bboxes,
@@ -136,12 +121,6 @@ class DeltaXYWHBBoxCoder(BaseBBoxCoder):
                 self.add_ctr_clamp,
                 self.ctr_clamp,
             )
-
-        if self.use_box_type:
-            assert (
-                decoded_bboxes.size(-1) == 4
-            ), "Cannot warp decoded boxes with box type when decoded boxeshave shape of (N, num_classes * 4)"
-            decoded_bboxes = HorizontalBoxes(decoded_bboxes)
         return decoded_bboxes
 
 
@@ -422,88 +401,3 @@ def onnx_delta2bbox(
         bboxes = torch.where(bboxes > max_xy, max_xy, bboxes)
 
     return bboxes
-
-
-def delta2bbox_glip(
-    rois: Tensor,
-    deltas: Tensor,
-    means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
-    stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
-    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
-    wh_ratio_clip: float = 16 / 1000,
-    clip_border: bool = True,
-    add_ctr_clamp: bool = False,
-    ctr_clamp: int = 32,
-) -> Tensor:
-    """Apply deltas to shift/scale base boxes.
-
-    Typically the rois are anchor or proposed bounding boxes and the deltas are
-    network outputs used to shift/scale those boxes.
-    This is the inverse function of :func:`bbox2delta`.
-
-    Args:
-        rois (Tensor): Boxes to be transformed. Has shape (N, 4).
-        deltas (Tensor): Encoded offsets relative to each roi.
-            Has shape (N, num_classes * 4) or (N, 4). Note
-            N = num_base_anchors * W * H, when rois is a grid of
-            anchors. Offset encoding follows [1]_.
-        means (Sequence[float]): Denormalizing means for delta coordinates.
-            Default (0., 0., 0., 0.).
-        stds (Sequence[float]): Denormalizing standard deviation for delta
-            coordinates. Default (1., 1., 1., 1.).
-        max_shape (tuple[int, int]): Maximum bounds for boxes, specifies
-           (H, W). Default None.
-        wh_ratio_clip (float): Maximum aspect ratio for boxes. Default
-            16 / 1000.
-        clip_border (bool, optional): Whether clip the objects outside the
-            border of the image. Default True.
-        add_ctr_clamp (bool): Whether to add center clamp. When set to True,
-            the center of the prediction bounding box will be clamped to
-            avoid being too far away from the center of the anchor.
-            Only used by YOLOF. Default False.
-        ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
-            Default 32.
-
-    Returns:
-        Tensor: Boxes with shape (N, num_classes * 4) or (N, 4), where 4
-           represent tl_x, tl_y, br_x, br_y.
-    """
-    num_bboxes, num_classes = deltas.size(0), deltas.size(1) // 4
-    if num_bboxes == 0:
-        return deltas
-
-    deltas = deltas.reshape(-1, 4)
-
-    means = deltas.new_tensor(means).view(1, -1)
-    stds = deltas.new_tensor(stds).view(1, -1)
-    denorm_deltas = deltas * stds + means
-
-    dxy = denorm_deltas[:, :2]
-    dwh = denorm_deltas[:, 2:]
-
-    # Compute width/height of each roi
-    rois_ = rois.repeat(1, num_classes).reshape(-1, 4)
-    pxy = (rois_[:, :2] + rois_[:, 2:] - 1) * 0.5  # note
-    pwh = rois_[:, 2:] - rois_[:, :2]
-
-    dxy_wh = pwh * dxy
-
-    max_ratio = np.abs(np.log(wh_ratio_clip))
-    if add_ctr_clamp:
-        dxy_wh = torch.clamp(dxy_wh, max=ctr_clamp, min=-ctr_clamp)
-        dwh = torch.clamp(dwh, max=max_ratio)
-    else:
-        dwh = dwh.clamp(min=-max_ratio, max=max_ratio)
-
-    gxy = pxy + dxy_wh
-    gwh = pwh * dwh.exp()
-
-    x1y1 = gxy - (gwh - 1) * 0.5  # Note
-    x2y2 = gxy + (gwh - 1) * 0.5  # Note
-
-    bboxes = torch.cat([x1y1, x2y2], dim=-1)
-
-    if clip_border and max_shape is not None:
-        bboxes[..., 0::2].clamp_(min=0, max=max_shape[1] - 1)  # Note
-        bboxes[..., 1::2].clamp_(min=0, max=max_shape[0] - 1)  # Note
-    return bboxes.reshape(num_bboxes, -1)

@@ -16,7 +16,14 @@ from .base_assigner import BaseAssigner
 from .iou2d_calculator import BboxOverlaps2D
 
 
-def _perm_box(bboxes, iou_calculator, iou_thr=0.97, perm_range=0.01, counter=0, max_iter=5):
+def _perm_box(
+    bboxes: torch.Tensor,
+    iou_calculator: BboxOverlaps2D,
+    iou_thr: float = 0.97,
+    perm_range: float = 0.01,
+    counter: int = 0,
+    max_iter: int = 5,
+):
     """Compute the permuted bboxes.
 
     Args:
@@ -51,7 +58,11 @@ def _perm_box(bboxes, iou_calculator, iou_thr=0.97, perm_range=0.01, counter=0, 
     return bboxes
 
 
-def perm_repeat_bboxes(bboxes, iou_calculator=None, perm_repeat_cfg=None):
+def perm_repeat_bboxes(
+    bboxes: torch.Tensor,
+    iou_calculator: BboxOverlaps2D | None = None,
+    perm_repeat_cfg: dict | None = None,
+) -> Tensor:
     """Permute the repeated bboxes.
 
     Args:
@@ -62,15 +73,21 @@ def perm_repeat_bboxes(bboxes, iou_calculator=None, perm_repeat_cfg=None):
     Returns:
         Tensor: Bboxes after permuted repeated bboxes.
     """
-    assert isinstance(bboxes, torch.Tensor)
+    if not isinstance(bboxes, torch.Tensor):
+        msg = f"bboxes should be a Tensor, but got {type(bboxes)}"
+        raise TypeError(msg)
     if iou_calculator is None:
         import torchvision
 
         iou_calculator = torchvision.ops.box_iou
+
+    if perm_repeat_cfg is None:
+        perm_repeat_cfg = {"iou_thr": 0.97, "perm_range": 0.01}
+
     bboxes = copy.deepcopy(bboxes)
     unique_bboxes = bboxes.unique(dim=0)
-    iou_thr = perm_repeat_cfg.get("iou_thr", 0.97)
-    perm_range = perm_repeat_cfg.get("perm_range", 0.01)
+    iou_thr = perm_repeat_cfg["iou_thr"]
+    perm_range = perm_repeat_cfg["perm_range"]
     for box in unique_bboxes:
         inds = (bboxes == box).sum(-1).float() == 4
         if inds.float().sum().item() == 1:

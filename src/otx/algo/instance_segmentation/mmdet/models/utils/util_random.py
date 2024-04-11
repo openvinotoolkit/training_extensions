@@ -1,16 +1,11 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
-
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-"""Helpers for random number generators."""
+from __future__ import annotations
+
 import numpy as np
 
 
-def ensure_rng(rng=None):
+def ensure_rng(rng: int | np.random.RandomState | None = None) -> np.random.RandomState:
     """Coerces input into a random number generator.
 
     If the input is None, then a global random state is returned.
@@ -31,10 +26,8 @@ def ensure_rng(rng=None):
     References:
         .. [1] https://gitlab.kitware.com/computer-vision/kwarray/blob/master/kwarray/util_random.py#L270  # noqa: E501
     """
-    if rng is None:
+    if rng is None or isinstance(rng, int):
         rng = np.random.mtrand._rand
     elif isinstance(rng, int):
         rng = np.random.RandomState(rng)
-    else:
-        rng = rng
     return rng

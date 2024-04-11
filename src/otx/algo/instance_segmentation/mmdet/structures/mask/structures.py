@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import itertools
 from abc import ABCMeta
-from typing import TYPE_CHECKING, Sequence
+from typing import Sequence
 
 import cv2
 
@@ -15,11 +15,11 @@ import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
 import torch
-from shapely import geometry
-from torchvision.ops.roi_align import roi_align
 
-if TYPE_CHECKING:
-    from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes
+# TODO(Eugene): remove mmcv
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+from mmcv.ops.roi_align import roi_align
+from shapely import geometry
 
 
 class BaseInstanceMasks(metaclass=ABCMeta):
@@ -97,24 +97,6 @@ class BitmapMasks(BaseInstanceMasks):
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
-
-    def get_bboxes(self, dst_type: str = "hbb") -> BaseBoxes:
-        """Get the certain type boxes from masks.
-
-        Please refer to ``mmdet.structures.bbox.box_type`` for more details of
-        the box type.
-
-        Args:
-            dst_type: Destination box type.
-
-        Returns:
-            :obj:`BaseBoxes`: Certain type boxes.
-        """
-        from ..bbox import get_box_type
-
-        box_type_info: tuple[str, BaseBoxes] = get_box_type(dst_type)
-        _, box_type_cls = box_type_info
-        return box_type_cls.from_instance_masks(self)
 
     def rescale(self, scale, interpolation="nearest"):
         """See :func:`BaseInstanceMasks.rescale`."""
@@ -461,24 +443,6 @@ class PolygonMasks:
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
-
-    def get_bboxes(self, dst_type: str = "hbb") -> BaseBoxes:
-        """Get the certain type boxes from masks.
-
-        Please refer to ``mmdet.structures.bbox.box_type`` for more details of
-        the box type.
-
-        Args:
-            dst_type: Destination box type.
-
-        Returns:
-            :obj:`BaseBoxes`: Certain type boxes.
-        """
-        from ..bbox import get_box_type
-
-        box_type_info: tuple[str, BaseBoxes] = get_box_type(dst_type)
-        _, box_type_cls = box_type_info
-        return box_type_cls.from_instance_masks(self)
 
     def rescale(self, scale, interpolation=None):
         """See :func:`BaseInstanceMasks.rescale`"""

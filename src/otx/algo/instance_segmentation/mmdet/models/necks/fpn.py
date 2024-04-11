@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule
@@ -76,7 +76,6 @@ class FPN(BaseModule):
         num_outs: int,
         start_level: int = 0,
         end_level: int = -1,
-        add_extra_convs: Union[bool, str] = False,
         relu_before_extra_convs: bool = False,
         no_norm_on_lateral: bool = False,
         conv_cfg: OptConfigType = None,
@@ -106,13 +105,6 @@ class FPN(BaseModule):
             assert num_outs == end_level - start_level + 1
         self.start_level = start_level
         self.end_level = end_level
-        self.add_extra_convs = add_extra_convs
-        assert isinstance(add_extra_convs, (str, bool))
-        if isinstance(add_extra_convs, str):
-            # Extra_convs_source choices: 'on_input', 'on_lateral', 'on_output'
-            assert add_extra_convs in ("on_input", "on_lateral", "on_output")
-        elif add_extra_convs:  # True
-            self.add_extra_convs = "on_input"
 
         self.lateral_convs = nn.ModuleList()
         self.fpn_convs = nn.ModuleList()
@@ -140,27 +132,6 @@ class FPN(BaseModule):
 
             self.lateral_convs.append(l_conv)
             self.fpn_convs.append(fpn_conv)
-
-        # add extra conv layers (e.g., RetinaNet)
-        extra_levels = num_outs - self.backbone_end_level + self.start_level
-        if self.add_extra_convs and extra_levels >= 1:
-            for i in range(extra_levels):
-                if i == 0 and self.add_extra_convs == "on_input":
-                    in_channels = self.in_channels[self.backbone_end_level - 1]
-                else:
-                    in_channels = out_channels
-                extra_fpn_conv = ConvModule(
-                    in_channels,
-                    out_channels,
-                    3,
-                    stride=2,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=act_cfg,
-                    inplace=False,
-                )
-                self.fpn_convs.append(extra_fpn_conv)
 
     def forward(self, inputs: tuple[Tensor]) -> tuple:
         """Forward function.
@@ -196,23 +167,6 @@ class FPN(BaseModule):
         if self.num_outs > len(outs):
             # use max pool to get more levels on top of outputs
             # (e.g., Faster R-CNN, Mask R-CNN)
-            if not self.add_extra_convs:
-                for i in range(self.num_outs - used_backbone_levels):
-                    outs.append(F.max_pool2d(outs[-1], 1, stride=2))
-            # add conv layers on top of original feature maps (RetinaNet)
-            else:
-                if self.add_extra_convs == "on_input":
-                    extra_source = inputs[self.backbone_end_level - 1]
-                elif self.add_extra_convs == "on_lateral":
-                    extra_source = laterals[-1]
-                elif self.add_extra_convs == "on_output":
-                    extra_source = outs[-1]
-                else:
-                    raise NotImplementedError
-                outs.append(self.fpn_convs[used_backbone_levels](extra_source))
-                for i in range(used_backbone_levels + 1, self.num_outs):
-                    if self.relu_before_extra_convs:
-                        outs.append(self.fpn_convs[i](F.relu(outs[-1])))
-                    else:
-                        outs.append(self.fpn_convs[i](outs[-1]))
+            for i in range(self.num_outs - used_backbone_levels):
+                outs.append(F.max_pool2d(outs[-1], 1, stride=2))
         return tuple(outs)

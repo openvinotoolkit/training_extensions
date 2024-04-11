@@ -1,19 +1,15 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from __future__ import annotations
 
 import torch
 from mmengine.registry import TASK_UTILS
 from numpy import ndarray
+from torch import Tensor
+
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.samplers.base_sampler import BaseSampler
-from torch import Tensor
 
 
 @TASK_UTILS.register_module()
@@ -40,7 +36,7 @@ class RandomSampler(BaseSampler):
         )
         self.rng = ensure_rng(kwargs.get("rng", None))
 
-    def random_choice(self, gallery: Union[Tensor, ndarray, list], num: int) -> Union[Tensor, ndarray]:
+    def random_choice(self, gallery: Tensor | ndarray | list, num: int) -> Tensor | ndarray:
         """Random select some elements from the gallery.
 
         If `gallery` is a Tensor, the returned indices will be a Tensor;
@@ -54,25 +50,20 @@ class RandomSampler(BaseSampler):
         Returns:
             Tensor or ndarray: sampled indices.
         """
-        assert len(gallery) >= num
+        if len(gallery) < num:
+            msg = f"Cannot sample {num} elements from a set of size {len(gallery)}"
+            raise ValueError(msg)
 
         is_tensor = isinstance(gallery, torch.Tensor)
-        if not is_tensor:
-            if torch.cuda.is_available():
-                device = torch.cuda.current_device()
-            else:
-                device = "cpu"
-            gallery = torch.tensor(gallery, dtype=torch.long, device=device)
-        # This is a temporary fix. We can revert the following code
-        # when PyTorch fixes the abnormal return of torch.randperm.
-        # See: https://github.com/open-mmlab/mmdetection/pull/5014
-        perm = torch.randperm(gallery.numel())[:num].to(device=gallery.device)
-        rand_inds = gallery[perm]
+        device = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+        _gallery: Tensor = torch.tensor(gallery, dtype=torch.long, device=device) if not is_tensor else gallery
+        perm = torch.randperm(_gallery.numel())[:num].to(device=_gallery.device)
+        rand_inds = _gallery[perm]
         if not is_tensor:
             rand_inds = rand_inds.cpu().numpy()
         return rand_inds
 
-    def _sample_pos(self, assign_result: AssignResult, num_expected: int, **kwargs) -> Union[Tensor, ndarray]:
+    def _sample_pos(self, assign_result: AssignResult, num_expected: int, **kwargs: dict) -> Tensor | ndarray:
         """Randomly sample some positive samples.
 
         Args:
@@ -87,10 +78,9 @@ class RandomSampler(BaseSampler):
             pos_inds = pos_inds.squeeze(1)
         if pos_inds.numel() <= num_expected:
             return pos_inds
-        else:
-            return self.random_choice(pos_inds, num_expected)
+        return self.random_choice(pos_inds, num_expected)
 
-    def _sample_neg(self, assign_result: AssignResult, num_expected: int, **kwargs) -> Union[Tensor, ndarray]:
+    def _sample_neg(self, assign_result: AssignResult, num_expected: int, **kwargs: dict) -> Tensor | ndarray:
         """Randomly sample some negative samples.
 
         Args:
@@ -105,5 +95,4 @@ class RandomSampler(BaseSampler):
             neg_inds = neg_inds.squeeze(1)
         if len(neg_inds) <= num_expected:
             return neg_inds
-        else:
-            return self.random_choice(neg_inds, num_expected)
+        return self.random_choice(neg_inds, num_expected)

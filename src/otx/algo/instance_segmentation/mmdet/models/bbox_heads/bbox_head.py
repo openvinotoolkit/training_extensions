@@ -21,7 +21,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     empty_instances,
     multi_apply,
 )
-from otx.algo.instance_segmentation.mmdet.structures.bbox import get_box_tensor, scale_boxes
+from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 
 
 class BBoxHead(BaseModule):
@@ -111,35 +111,6 @@ class BBoxHead(BaseModule):
         """Get custom_accuracy from loss_cls."""
         return getattr(self.loss_cls, "custom_accuracy", False)
 
-    def forward(self, x: tuple[Tensor]) -> tuple:
-        """Forward features from the upstream network.
-
-        Args:
-            x (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
-
-        Returns:
-            tuple: A tuple of classification scores and bbox prediction.
-
-                - cls_score (Tensor): Classification scores for all
-                  scale levels, each is a 4D-tensor, the channels number
-                  is num_base_priors * num_classes.
-                - bbox_pred (Tensor): Box energies / deltas for all
-                  scale levels, each is a 4D-tensor, the channels number
-                  is num_base_priors * 4.
-        """
-        if self.with_avg_pool:
-            if x.numel() > 0:
-                x = self.avg_pool(x)
-                x = x.view(x.size(0), -1)
-            else:
-                # avg_pool does not support empty tensor,
-                # so use torch.mean instead it
-                x = torch.mean(x, dim=(-1, -2))
-        cls_score = self.fc_cls(x) if self.with_cls else None
-        bbox_pred = self.fc_reg(x) if self.with_reg else None
-        return cls_score, bbox_pred
-
     def _get_targets_single(
         self,
         pos_priors: Tensor,
@@ -202,7 +173,7 @@ class BBoxHead(BaseModule):
                 # is applied directly on the decoded bounding boxes, both
                 # the predicted boxes and regression targets should be with
                 # absolute coordinate format.
-                pos_bbox_targets = get_box_tensor(pos_gt_bboxes)
+                pos_bbox_targets = pos_gt_bboxes
             bbox_targets[:num_pos, :] = pos_bbox_targets
             bbox_weights[:num_pos, :] = 1
         if num_neg > 0:
@@ -389,7 +360,6 @@ class BBoxHead(BaseModule):
                     # the decoded bounding boxes, it decodes the
                     # already encoded coordinates to absolute format.
                     bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
-                    bbox_pred = get_box_tensor(bbox_pred)
                 if self.reg_class_agnostic:
                     pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1)[pos_inds.type(torch.bool)]
                 else:
@@ -504,8 +474,6 @@ class BBoxHead(BaseModule):
                 roi.device,
                 task_type="bbox",
                 instance_results=[results],
-                box_type=self.predict_box_type,
-                use_box_type=False,
                 num_classes=self.num_classes,
                 score_per_cls=rcnn_test_cfg is None,
             )[0]
@@ -537,7 +505,6 @@ class BBoxHead(BaseModule):
             bboxes = scale_boxes(bboxes, scale_factor)
 
         # Get the inside tensor when `bboxes` is a box type
-        bboxes = get_box_tensor(bboxes)
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 

@@ -9,7 +9,7 @@ from mmengine.model import BaseModule
 from mmengine.registry import MODELS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, OptConfigType, OptMultiConfig
+from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
@@ -18,13 +18,13 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
 
     def __init__(
         self,
+        train_cfg: ConfigType,
+        test_cfg: ConfigType,
         bbox_roi_extractor: OptMultiConfig = None,
         bbox_head: OptMultiConfig = None,
         mask_roi_extractor: OptMultiConfig = None,
         mask_head: OptMultiConfig = None,
         shared_head: OptConfigType = None,
-        train_cfg: OptConfigType = None,
-        test_cfg: OptConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)

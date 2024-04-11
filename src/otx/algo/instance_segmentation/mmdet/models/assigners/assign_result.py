@@ -1,14 +1,12 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import torch
-from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
 from torch import Tensor
+
+from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
 
 
 class AssignResult(util_mixins.NiceRepr):
@@ -50,25 +48,16 @@ class AssignResult(util_mixins.NiceRepr):
         self.max_overlaps = max_overlaps
         self.labels = labels
         # Interface for possible user-defined properties
-        self._extra_properties = {}
+        self._extra_properties: dict[str, str | float | int | Tensor] = {}
 
     @property
     def num_preds(self):
-        """int: the number of predictions in this assignment"""
+        """int: the number of predictions in this assignment."""
         return len(self.gt_inds)
-
-    def set_extra_property(self, key, value):
-        """Set user-defined new property."""
-        assert key not in self.info
-        self._extra_properties[key] = value
-
-    def get_extra_property(self, key):
-        """Get user-defined property."""
-        return self._extra_properties.get(key, None)
 
     @property
     def info(self):
-        """dict: a dictionary of info about the object"""
+        """dict: a dictionary of info about the object."""
         basic_info = {
             "num_gts": self.num_gts,
             "num_preds": self.num_preds,
@@ -80,7 +69,7 @@ class AssignResult(util_mixins.NiceRepr):
         return basic_info
 
     def __nice__(self):
-        """str: a "nice" summary string describing this assign result"""
+        """str: a "nice" summary string describing this assign result."""
         parts = []
         parts.append(f"num_gts={self.num_gts!r}")
         if self.gt_inds is None:
@@ -183,8 +172,7 @@ class AssignResult(util_mixins.NiceRepr):
                 )
                 labels[~is_assigned] = 0
 
-        self = cls(num_gts, gt_inds, max_overlaps, labels)
-        return self
+        return cls(num_gts, gt_inds, max_overlaps, labels)
 
     def add_gt_(self, gt_labels):
         """Add ground truth as assigned results.

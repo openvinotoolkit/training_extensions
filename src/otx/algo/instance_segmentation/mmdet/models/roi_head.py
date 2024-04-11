@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import torch
 from mmengine.registry import MODELS, TASK_UTILS
@@ -160,7 +160,7 @@ class StandardRoIHead(BaseRoIHead):
             )
             sampling_results.append(sampling_result)
 
-        losses = dict()
+        losses = {}
         # bbox head loss
         if self.with_bbox:
             bbox_results = self.bbox_loss(x, sampling_results)
@@ -188,14 +188,12 @@ class StandardRoIHead(BaseRoIHead):
                 - `bbox_pred` (Tensor): Box energies / deltas.
                 - `bbox_feats` (Tensor): Extract bbox RoI features.
         """
-        # TODO: a more flexible way to decide which feature maps to use
         bbox_feats = self.bbox_roi_extractor(x[: self.bbox_roi_extractor.num_inputs], rois)
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
-        bbox_results = dict(cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
-        return bbox_results
+        return dict(cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
 
     def bbox_loss(self, x: tuple[Tensor], sampling_results: list[SamplingResult]) -> dict:
         """Perform forward propagation and loss calculation of the bbox head on the features of the upstream network.
@@ -278,9 +276,9 @@ class StandardRoIHead(BaseRoIHead):
     def _mask_forward(
         self,
         x: tuple[Tensor],
-        rois: Tensor = None,
-        pos_inds: Optional[Tensor] = None,
-        bbox_feats: Optional[Tensor] = None,
+        rois: Tensor | None = None,
+        pos_inds: Tensor | None = None,
+        bbox_feats: Tensor | None = None,
     ) -> dict:
         """Mask head forward function used in both training and testing.
 
@@ -308,8 +306,7 @@ class StandardRoIHead(BaseRoIHead):
             mask_feats = bbox_feats[pos_inds]
 
         mask_preds = self.mask_head(mask_feats)
-        mask_results = dict(mask_preds=mask_preds, mask_feats=mask_feats)
-        return mask_results
+        return dict(mask_preds=mask_preds, mask_feats=mask_feats)
 
     def predict_bbox(
         self,
@@ -350,7 +347,6 @@ class StandardRoIHead(BaseRoIHead):
                 batch_img_metas,
                 rois.device,
                 task_type="bbox",
-                box_type=self.bbox_head.predict_box_type,
                 num_classes=self.bbox_head.num_classes,
                 score_per_cls=rcnn_test_cfg is None,
             )
@@ -366,7 +362,6 @@ class StandardRoIHead(BaseRoIHead):
 
         # some detector with_reg is False, bbox_preds will be None
         if bbox_preds is not None:
-            # TODO move this to a sabl_roi_head
             # the bbox prediction of some detectors like SABL is not Tensor
             if isinstance(bbox_preds, torch.Tensor):
                 bbox_preds = bbox_preds.split(num_proposals_per_img, 0)
@@ -375,7 +370,7 @@ class StandardRoIHead(BaseRoIHead):
         else:
             bbox_preds = (None,) * len(proposals)
 
-        result_list = self.bbox_head.predict_by_feat(
+        return self.bbox_head.predict_by_feat(
             rois=rois,
             cls_scores=cls_scores,
             bbox_preds=bbox_preds,
@@ -383,7 +378,6 @@ class StandardRoIHead(BaseRoIHead):
             rcnn_test_cfg=rcnn_test_cfg,
             rescale=rescale,
         )
-        return result_list
 
     def predict_mask(
         self,
@@ -419,14 +413,13 @@ class StandardRoIHead(BaseRoIHead):
         bboxes = [res.bboxes for res in results_list]
         mask_rois = bbox2roi(bboxes)
         if mask_rois.shape[0] == 0:
-            results_list = empty_instances(
+            return empty_instances(
                 batch_img_metas,
                 mask_rois.device,
                 task_type="mask",
                 instance_results=results_list,
                 mask_thr_binary=self.test_cfg.mask_thr_binary,
             )
-            return results_list
 
         mask_results = self._mask_forward(x, mask_rois)
         mask_preds = mask_results["mask_preds"]
@@ -434,14 +427,13 @@ class StandardRoIHead(BaseRoIHead):
         num_mask_rois_per_img = [len(res) for res in results_list]
         mask_preds = mask_preds.split(num_mask_rois_per_img, 0)
 
-        results_list = self.mask_head.predict_by_feat(
+        return self.mask_head.predict_by_feat(
             mask_preds=mask_preds,
             results_list=results_list,
             batch_img_metas=batch_img_metas,
             rcnn_test_cfg=self.test_cfg,
             rescale=rescale,
         )
-        return results_list
 
 
 @MODELS.register_module()

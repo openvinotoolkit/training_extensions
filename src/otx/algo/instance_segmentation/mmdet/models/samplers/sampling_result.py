@@ -12,7 +12,6 @@ from torch import Tensor
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
 from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes
 
 
 def random_boxes(num: int = 1, scale: int = 1, rng: int | None = None) -> Tensor:
@@ -36,7 +35,7 @@ def random_boxes(num: int = 1, scale: int = 1, rng: int | None = None) -> Tensor
     """
     rng = ensure_rng(rng)
 
-    tlbr = rng.rand(num, 4).astype(np.float32)
+    tlbr = rng.rand(num, 4).astype(np.float32)  # type: ignore [union-attr]
 
     tl_x = np.minimum(tlbr[:, 0], tlbr[:, 2])
     tl_y = np.minimum(tlbr[:, 1], tlbr[:, 3])
@@ -109,20 +108,19 @@ class SamplingResult(util_mixins.NiceRepr):
         self.num_gts = gt_bboxes.shape[0]
         self.pos_assigned_gt_inds = assign_result.gt_inds[pos_inds] - 1
         self.pos_gt_labels = assign_result.labels[pos_inds]
-        box_dim = gt_bboxes.box_dim if isinstance(gt_bboxes, BaseBoxes) else 4
         if gt_bboxes.numel() == 0:
             # hack for index error case
             assert self.pos_assigned_gt_inds.numel() == 0
-            self.pos_gt_bboxes = gt_bboxes.view(-1, box_dim)
+            self.pos_gt_bboxes = gt_bboxes.view(-1, 4)
         else:
             if len(gt_bboxes.shape) < 2:
-                gt_bboxes = gt_bboxes.view(-1, box_dim)
+                gt_bboxes = gt_bboxes.view(-1, 4)
             self.pos_gt_bboxes = gt_bboxes[self.pos_assigned_gt_inds.long()]
 
     @property
-    def priors(self) -> Tensor | BaseBoxes:
+    def priors(self) -> Tensor:
         """torch.Tensor: concatenated positive and negative priors."""
-        return cat_boxes([self.pos_priors, self.neg_priors])
+        return torch.cat([self.pos_priors, self.neg_priors], dim=0)
 
     @property
     def bboxes(self) -> Tensor:
@@ -153,7 +151,7 @@ class SamplingResult(util_mixins.NiceRepr):
         """
         _dict = self.__dict__
         for key, value in _dict.items():
-            if isinstance(value, (torch.Tensor, BaseBoxes)):
+            if isinstance(value, torch.Tensor):
                 _dict[key] = value.to(device)
         return self
 

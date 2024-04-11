@@ -1,18 +1,14 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
-
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 
 import torch
 from mmengine.structures import InstanceData
+
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
 from otx.algo.instance_segmentation.mmdet.models.samplers.sampling_result import SamplingResult
-from otx.algo.instance_segmentation.mmdet.structures.bbox import BaseBoxes, cat_boxes
 
 
 class BaseSampler(metaclass=ABCMeta):
@@ -106,15 +102,9 @@ class BaseSampler(metaclass=ABCMeta):
 
         gt_flags = priors.new_zeros((priors.shape[0],), dtype=torch.uint8)
         if self.add_gt_as_proposals and len(gt_bboxes) > 0:
-            # When `gt_bboxes` and `priors` are all box type, convert
-            # `gt_bboxes` type to `priors` type.
-            if isinstance(gt_bboxes, BaseBoxes) and isinstance(priors, BaseBoxes):
-                gt_bboxes_ = gt_bboxes.convert_to(type(priors))
-            else:
-                gt_bboxes_ = gt_bboxes
-            priors = cat_boxes([gt_bboxes_, priors], dim=0)
+            priors = torch.cat([gt_bboxes, priors], dim=0)
             assign_result.add_gt_(gt_labels)
-            gt_ones = priors.new_ones(gt_bboxes_.shape[0], dtype=torch.uint8)
+            gt_ones = priors.new_ones(gt_bboxes.shape[0], dtype=torch.uint8)
             gt_flags = torch.cat([gt_ones, gt_flags])
 
         num_expected_pos = int(self.num * self.pos_fraction)
@@ -132,7 +122,7 @@ class BaseSampler(metaclass=ABCMeta):
         neg_inds = self.neg_sampler._sample_neg(assign_result, num_expected_neg, bboxes=priors, **kwargs)
         neg_inds = neg_inds.unique()
 
-        sampling_result = SamplingResult(
+        return SamplingResult(
             pos_inds=pos_inds,
             neg_inds=neg_inds,
             priors=priors,
@@ -140,4 +130,3 @@ class BaseSampler(metaclass=ABCMeta):
             assign_result=assign_result,
             gt_flags=gt_flags,
         )
-        return sampling_result
