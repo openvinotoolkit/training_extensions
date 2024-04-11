@@ -4,6 +4,6 @@
 
 from .custom_anchor_generator import SSDAnchorGeneratorClustered
 from .custom_atss_head import CustomATSSHead
-from .custom_ssd_head import CustomSSDHead
+from .custom_ssd_head import SSDHead
 
-__all__ = ["SSDAnchorGeneratorClustered", "CustomATSSHead", "CustomSSDHead"]
+__all__ = ["SSDAnchorGeneratorClustered", "CustomATSSHead", "SSDHead"]

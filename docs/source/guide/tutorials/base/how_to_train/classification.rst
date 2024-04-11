@@ -85,10 +85,10 @@ please keep the exact same name for the train/val/test folder, to identify the d
       ├── tulips
     val
       ├── daisy
-      ├── ... 
+      ├── ...
     test
       ├── daisy
-      ├── ... 
+      ├── ...
 
 *********
 Training
@@ -108,26 +108,26 @@ The list of supported recipes for classification is available with the command l
     .. code-block:: shell
 
       (otx) ...$ otx find --task MULTI_CLASS_CLS
-      ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
-      ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃                                  
-      ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
-      │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │                                  
-      │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │                                  
-      │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │                                  
-      │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │                                  
-      │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │                                  
-      │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │                                  
-      │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │                                  
-      │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │                                  
-      │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │                                  
-      │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │                                  
-      │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │                                  
-      │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │                                  
+      ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+      ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃
+      ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+      │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │
+      │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │
+      │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │
+      │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │
+      │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │
+      │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │
+      │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │
+      │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │
+      │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │
+      │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │
+      │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │
+      │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │
       └─────────────────┴──────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
 
   .. tab-item:: API
@@ -136,7 +136,7 @@ The list of supported recipes for classification is available with the command l
 
       from otx.engine.utils.api import list_models
 
-      model_lists = list_models(task="MULTI_CLASS_CLS", pattern="*efficient") 
+      model_lists = list_models(task="MULTI_CLASS_CLS", pattern="*efficient")
       print(model_lists)
       '''
       [
@@ -486,7 +486,7 @@ with OpenVINO™ PTQ.
 
         .. code-block:: shell
 
-            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+            (otx) ...$ otx optimize  --work_dir otx-workspace \
                                      --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
             ...
@@ -505,6 +505,10 @@ with OpenVINO™ PTQ.
 The optimization time highly relies on the hardware characteristics, for example on Intel(R) Core(TM) i9-10980XE it took about 9 seconds.
 Please note, that PTQ will take some time without logging to optimize the model.
 
+.. note::
+
+    You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
+
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
@@ -514,7 +518,7 @@ it to the ``otx test`` function.
 
         .. code-block:: shell
 
-            (otx) ...$ otx test --work_dir otx-workspace \ 
+            (otx) ...$ otx test --work_dir otx-workspace \
                                 --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
                                 --engine.device cpu
 
