@@ -123,9 +123,13 @@ class OTXDetectionTask(OTXTask, ABC):
             if self.max_num_detections == 0:
                 self.max_num_detections = trained_max_num_detections
         if "nms_iou_threshold" in loaded_postprocessing:
-            ckpt_nms_iou_threshold = loaded_postprocessing["nms_iou_threshold"]["value"]
-            if self.nms_iou_threshold == 0:
-                self.nms_iou_threshold = ckpt_nms_iou_threshold
+            logger.warning(
+                f"For NMS iou threshold, OTX will use value from model ckpt:"
+                f" {loaded_postprocessing['nms_iou_threshold']['value']:.3f}. "
+                "If you want to change NMS iou threshold from model ckpt, "
+                "then you need to re-train with new NMS iou threshold."
+            )
+            self.nms_iou_threshold = loaded_postprocessing["nms_iou_threshold"]["value"]
 
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.

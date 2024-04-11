@@ -212,7 +212,7 @@ class TestMMDetectionTask:
         self.det_task._load_postprocessing(mock_model_data)
         assert self.det_task._hyperparams.postprocessing.use_ellipse_shapes == False
         assert self.det_task.confidence_threshold == 0.45
-        assert self.det_task.nms_iou_threshold == 0.45
+        assert self.det_task.nms_iou_threshold == 0.4
 
     @e2e_pytest_unit
     def test_train(self, mocker) -> None:
@@ -481,8 +481,8 @@ class TestMMDetectionTask:
     def test_get_model_nms_threshold(self):
         self.det_task._init_task()
         self.iseg_task._init_task()
-        assert self.det_task._get_model_nms_threshold() == 0.6
-        assert self.iseg_task._get_model_nms_threshold() == 0.7
+        assert self.det_task._get_model_nms_threshold() == 0.5
+        assert self.iseg_task._get_model_nms_threshold() == 0.5
 
     @e2e_pytest_unit
     def test_geti_scenario(self, mocker):
