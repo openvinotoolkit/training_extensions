@@ -241,8 +241,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
-
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 

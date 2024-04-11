@@ -11,7 +11,7 @@ import torch
 from torch import nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+from otx.algo.explain.explain_algo import ReciproCAM
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -139,7 +139,7 @@ class TVModelWithLossComputation(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.loss = loss
 
-        self.explainer = ReciproCAMHook(
+        self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=num_classes,
             optimize_gap=True,

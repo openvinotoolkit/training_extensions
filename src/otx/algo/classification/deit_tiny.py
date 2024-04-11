@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 
 class ForwardExplainMixInForDeit(ExplainableMixInMMPretrainModel):
     """Deit model which can attach a XAI (Explainable AI) branch."""
+
     @torch.no_grad()
     def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""

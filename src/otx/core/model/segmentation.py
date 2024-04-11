@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import json
 from typing import TYPE_CHECKING, Any
 
@@ -175,20 +174,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             if not isinstance(output, SegDataSample):
                 raise TypeError(output)
             masks.append(output.pred_sem_seg.data)
-
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
-
-            return SegBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=[],
-                masks=masks,
-                saliency_map=explain_results,
-                feature_vector=[],
-            )
 
         return SegBatchPredEntity(
             batch_size=len(outputs),

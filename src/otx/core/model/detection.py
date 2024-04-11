@@ -15,6 +15,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
+from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -190,8 +191,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
-
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 

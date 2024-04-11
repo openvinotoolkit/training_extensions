@@ -17,7 +17,6 @@ from otx.core.data.entity.instance_segmentation import (
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity, SegDataEntity
 from otx.core.data.mem_cache import MemCacheHandlerSingleton
 from otx.core.types.task import OTXTaskType
-
 from torch import LongTensor
 from torchvision import tv_tensors
 from torchvision.tv_tensors import Image, Mask
@@ -241,7 +240,7 @@ def fxt_seg_data_entity() -> tuple[tuple, SegDataEntity, SegBatchDataEntity]:
 
 
 @pytest.fixture(autouse=True)
-def fxt_clean_up_mem_cache() -> None:
+def fxt_clean_up_mem_cache():
     """Clean up the mem-cache instance at the end of the test.
 
     It is required for everyone who tests model training pipeline.
