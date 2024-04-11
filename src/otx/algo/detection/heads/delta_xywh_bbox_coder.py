@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 import torch
-from mmdet.structures.bbox import BaseBoxes, HorizontalBoxes, get_box_tensor
+from mmdet.structures.bbox import HorizontalBoxes, get_box_tensor
 from torch import Tensor
 
 
@@ -51,13 +51,13 @@ class DeltaXYWHBBoxCoder:
         self.add_ctr_clamp = add_ctr_clamp
         self.ctr_clamp = ctr_clamp
 
-    def encode(self, bboxes: Tensor | BaseBoxes, gt_bboxes: Tensor | BaseBoxes) -> Tensor:
+    def encode(self, bboxes: Tensor, gt_bboxes: Tensor) -> Tensor:
         """Get box regression transformation deltas that can be used to transform the bboxes into the gt_bboxes.
 
         Args:
-            bboxes (torch.Tensor or :obj:`BaseBoxes`): Source boxes,
+            bboxes (torch.Tensor): Source boxes,
                 e.g., object proposals.
-            gt_bboxes (torch.Tensor or :obj:`BaseBoxes`): Target of the
+            gt_bboxes (torch.Tensor): Target of the
                 transformation, e.g., ground-truth boxes.
 
         Returns:
@@ -69,15 +69,15 @@ class DeltaXYWHBBoxCoder:
 
     def decode(
         self,
-        bboxes: Tensor | BaseBoxes,
+        bboxes: Tensor,
         pred_bboxes: Tensor,
         max_shape: tuple[int, ...] | Tensor | tuple[tuple[int, ...], ...] | None = None,
         wh_ratio_clip: float = 16 / 1000,
-    ) -> Tensor | BaseBoxes:
+    ) -> Tensor:
         """Apply transformation `pred_bboxes` to `boxes`.
 
         Args:
-            bboxes (torch.Tensor or :obj:`BaseBoxes`): Basic boxes. Shape
+            bboxes (torch.Tensor): Basic boxes. Shape
                 (B, N, 4) or (N, 4)
             pred_bboxes (Tensor): Encoded offsets with respect to each roi.
                Has shape (B, N, num_classes * 4) or (B, N, 4) or
@@ -92,7 +92,7 @@ class DeltaXYWHBBoxCoder:
                 width and height.
 
         Returns:
-            Union[torch.Tensor, :obj:`BaseBoxes`]: Decoded boxes.
+            torch.Tensor: Decoded boxes.
         """
         bboxes = get_box_tensor(bboxes)
         decoded_bboxes = delta2bbox(

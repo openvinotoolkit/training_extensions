@@ -4,10 +4,10 @@
 from abc import ABCMeta, abstractmethod
 
 import torch
-from mmdet.models.task_modules.assigners import AssignResult
 from mmdet.models.task_modules.samplers.sampling_result import SamplingResult
-from mmdet.structures.bbox import BaseBoxes, cat_boxes
 from mmengine.structures import InstanceData
+
+from otx.algo.detection.structures.structures import AssignResult
 
 
 class BaseSampler(metaclass=ABCMeta):
@@ -101,13 +101,8 @@ class BaseSampler(metaclass=ABCMeta):
 
         gt_flags = priors.new_zeros((priors.shape[0],), dtype=torch.uint8)
         if self.add_gt_as_proposals and len(gt_bboxes) > 0:
-            # When `gt_bboxes` and `priors` are all box type, convert
-            # `gt_bboxes` type to `priors` type.
-            if isinstance(gt_bboxes, BaseBoxes) and isinstance(priors, BaseBoxes):
-                gt_bboxes_ = gt_bboxes.convert_to(type(priors))
-            else:
-                gt_bboxes_ = gt_bboxes
-            priors = cat_boxes([gt_bboxes_, priors], dim=0)
+            gt_bboxes_ = gt_bboxes
+            priors = torch.cat([gt_bboxes_, priors], dim=0)
             assign_result.add_gt_(gt_labels)
             gt_ones = priors.new_ones(gt_bboxes_.shape[0], dtype=torch.uint8)
             gt_flags = torch.cat([gt_ones, gt_flags])

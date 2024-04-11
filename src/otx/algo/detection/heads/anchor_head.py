@@ -12,7 +12,6 @@ import torch
 from mmdet.models.task_modules.prior_generators import anchor_inside_flags
 from mmdet.models.utils import images_to_levels, multi_apply, unmap
 from mmdet.registry import MODELS, TASK_UTILS
-from mmdet.structures.bbox import BaseBoxes, cat_boxes, get_box_tensor
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
@@ -199,7 +198,7 @@ class AnchorHead(BaseDenseHead):
 
     def _get_targets_single(
         self,
-        flat_anchors: Tensor | BaseBoxes,
+        flat_anchors: Tensor,
         valid_flags: Tensor,
         gt_instances: InstanceData,
         img_meta: dict,
@@ -209,7 +208,7 @@ class AnchorHead(BaseDenseHead):
         """Compute regression and classification targets for anchors in a single image.
 
         Args:
-            flat_anchors (Tensor or :obj:`BaseBoxes`): Multi-level anchors
+            flat_anchors (Tensor): Multi-level anchors
                 of the image, which are concatenated into a single tensor
                 or box type of shape (num_anchors, 4)
             valid_flags (Tensor): Multi level valid flags of the image,
@@ -277,7 +276,6 @@ class AnchorHead(BaseDenseHead):
                 pos_bbox_targets = self.bbox_coder.encode(sampling_result.pos_priors, sampling_result.pos_gt_bboxes)
             else:
                 pos_bbox_targets = sampling_result.pos_gt_bboxes
-                pos_bbox_targets = get_box_tensor(pos_bbox_targets)
             bbox_targets[pos_inds, :] = pos_bbox_targets
             bbox_weights[pos_inds, :] = 1.0
 
@@ -364,7 +362,7 @@ class AnchorHead(BaseDenseHead):
         concat_anchor_list = []
         concat_valid_flag_list = []
         for i in range(num_imgs):
-            concat_anchor_list.append(cat_boxes(anchor_list[i]))
+            concat_anchor_list.append(torch.cat(anchor_list[i]))
             concat_valid_flag_list.append(torch.cat(valid_flag_list[i]))
 
         # compute targets for each image
@@ -455,7 +453,6 @@ class AnchorHead(BaseDenseHead):
             # decodes the already encoded coordinates to absolute format.
             anchors = anchors.reshape(-1, anchors.size(-1))
             bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
-            bbox_pred = get_box_tensor(bbox_pred)
         loss_bbox = self.loss_bbox(bbox_pred, bbox_targets, bbox_weights, avg_factor=avg_factor)
         return loss_cls, loss_bbox
 
@@ -504,7 +501,7 @@ class AnchorHead(BaseDenseHead):
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
         # concat all level anchors and flags to a single tensor
-        concat_anchor_list = [cat_boxes(anchor) for anchor in anchor_list]
+        concat_anchor_list = [torch.cat(anchor) for anchor in anchor_list]
         all_anchor_list = images_to_levels(concat_anchor_list, num_level_anchors)
 
         losses_cls, losses_bbox = multi_apply(
