@@ -194,7 +194,7 @@ METADATA_ENTRIES = [
 ]
 
 
-def load(root_dir: Path, need_normalize: bool = False, pattern="*.csv") -> pd.DataFrame:
+def load(root_dir: Path, need_normalize: bool = False, pattern="*raw*.csv") -> pd.DataFrame:
     """Load all csv files and csv in zip files."""
 
     history = []
@@ -380,7 +380,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input_root")
     parser.add_argument("output_root")
-    parser.add_argument("--pattern", default="*.csv")
+    parser.add_argument("--pattern", default="*raw*.csv")
     parser.add_argument("--normalize", action="store_true")
     args = parser.parse_args()
     input_root = Path(args.input_root)

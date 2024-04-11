@@ -72,14 +72,19 @@ class Benchmark:
         def __call__(self, result_entry: pd.Series, target_entry: pd.Series) -> None:
             """Check result against given target."""
             if self.name not in result_entry or result_entry[self.name] is None or np.isnan(result_entry[self.name]):
+                print(f"[Check] {self.name} not in result")
                 return
             if self.name not in target_entry or target_entry[self.name] is None or np.isnan(target_entry[self.name]):
+                print(f"[Check] {self.name} not in target")
                 return
             if self.compare == "==":
+                print(f"[Check] abs({result_entry[self.name]=} - {target_entry[self.name]=}) < {target_entry[self.name]=} * {self.margin=}")
                 assert abs(result_entry[self.name] - target_entry[self.name]) < target_entry[self.name] * self.margin
             elif self.compare == "<":
+                print(f"[Check] {result_entry[self.name]=} < {target_entry[self.name]=} * (1.0 + {self.margin=})")
                 assert result_entry[self.name] < target_entry[self.name] * (1.0 + self.margin)
             elif self.compare == ">":
+                print(f"[Check] {result_entry[self.name]=} > {target_entry[self.name]=} * (1.0 - {self.margin=})")
                 assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
 
     def __init__(
@@ -382,19 +387,24 @@ class Benchmark:
             criteria (list[Criterion]): Criteria to check results
         """
         if result is None:
+            print("[Check] No results loaded. Skipping result checking.")
             return
 
         if self.reference_results is None:
-            print("No benchmark references loaded. Skipping result checking.")
+            print("[Check] No benchmark references loaded. Skipping result checking.")
             return
 
         for key, result_entry in result.iterrows():
             if key not in self.reference_results.index:
-                print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+                print(f"[Check] No benchmark reference for {key} loaded. Skipping result checking.")
                 continue
             target_entry = self.reference_results.loc[key]
             if isinstance(target_entry, pd.DataFrame):
-                target_entry = target_entry.iloc[0]  # 1-row pd.DataFrame to pd.Series
+                # Match num_repeat of result and target
+                result_seed_average = result_entry["seed"]
+                result_num_repeat = 2 * result_seed_average + 1  # (0+1+2+3+4)/5 = 2.0 -> 2*2.0+1 = 5
+                target_entry = target_entry.query(f"seed < {result_num_repeat}")
+                target_entry = target_entry.mean(numeric_only=True)  # N-row pd.DataFrame to pd.Series
 
             for criterion in criteria:
                 criterion(result_entry, target_entry)

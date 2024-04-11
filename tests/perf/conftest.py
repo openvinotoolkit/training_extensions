@@ -422,7 +422,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
 @pytest.fixture(scope="session")
 def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
-    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    ref = summary.load(Path(__file__).parent.resolve() / "history/v1.5.2", need_normalize=True)
     if ref is not None:
         ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref
