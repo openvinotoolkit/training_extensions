@@ -9,8 +9,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.task_modules.prior_generators import anchor_inside_flags
-from mmdet.models.utils import images_to_levels, unmap
 from mmdet.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
@@ -18,10 +16,10 @@ from torch import Tensor, nn
 from otx.algo.detection.heads.base_head import BaseDenseHead
 from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import AnchorGenerator
-from otx.algo.detection.utils.utils import multi_apply
+from otx.algo.detection.utils.utils import anchor_inside_flags, images_to_levels, multi_apply, unmap
 
 if TYPE_CHECKING:
-    from mmdet.utils import InstanceList, OptConfigType, OptInstanceList, OptMultiConfig
+    from mmengine import ConfigDict
 
 
 # This class and its supporting functions below lightly adapted from the mmdet AnchorHead available at:
@@ -56,11 +54,11 @@ class AnchorHead(BaseDenseHead):
         bbox_coder: dict,
         loss_cls: dict,
         loss_bbox: dict,
+        train_cfg: ConfigDict | dict,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        train_cfg: OptConfigType = None,
-        test_cfg: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        test_cfg: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict] | None = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
@@ -302,9 +300,9 @@ class AnchorHead(BaseDenseHead):
         self,
         anchor_list: list[list[Tensor]],
         valid_flag_list: list[list[Tensor]],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
         unmap_outputs: bool = True,
     ) -> tuple:
         """Compute regression and classification targets for anchors in multiple images.
@@ -461,9 +459,9 @@ class AnchorHead(BaseDenseHead):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head.
 

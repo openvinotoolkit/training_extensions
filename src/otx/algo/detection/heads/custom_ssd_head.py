@@ -60,13 +60,13 @@ class SSDHead(AnchorHead):
         bbox_coder: ConfigDict | dict,
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
         act_cfg: ConfigDict | dict,
+        train_cfg: ConfigDict | dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
         reg_decoded_bbox: bool = False,
-        train_cfg: ConfigDict | dict | None = None,
         test_cfg: ConfigDict | dict | None = None,
     ) -> None:
         super(AnchorHead, self).__init__(init_cfg=init_cfg)
