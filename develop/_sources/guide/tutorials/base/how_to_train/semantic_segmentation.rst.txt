@@ -58,17 +58,17 @@ The list of supported recipes for semantic segmentation is available with the co
 
           (otx) ...$ otx find --task SEMANTIC_SEGMENTATION
 
-          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               
-          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃               
-          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩               
-          │ SEMANTIC_SEGMENTATION │ openvino_model                │ src/otx/recipe/semantic_segmentation/openvino_model.yaml                           │               
-          │ SEMANTIC_SEGMENTATION │ segnext_t                     │ src/otx/recipe/semantic_segmentation/segnext_t.yaml                             │               
-          │ SEMANTIC_SEGMENTATION │ segnext_b                     │ src/otx/recipe/semantic_segmentation/segnext_b.yaml                        │               
-          │ SEMANTIC_SEGMENTATION │ dino_v2                       │ src/otx/recipe/semantic_segmentation/dino_v2.yaml                           │               
-          │ SEMANTIC_SEGMENTATION │ litehrnet_18                  │ src/otx/recipe/semantic_segmentation/litehrnet_18.yaml                 │               
-          │ SEMANTIC_SEGMENTATION │ segnext_s                     │ src/otx/recipe/semantic_segmentation/segnext_s.yaml                         │               
-          │ SEMANTIC_SEGMENTATION │ litehrnet_x                   │ src/otx/recipe/semantic_segmentation/litehrnet_x.yaml                         │               
-          │ SEMANTIC_SEGMENTATION │ litehrnet_s                   │ src/otx/recipe/semantic_segmentation/litehrnet_s.yaml                         │               
+          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃
+          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+          │ SEMANTIC_SEGMENTATION │ openvino_model                │ src/otx/recipe/semantic_segmentation/openvino_model.yaml                           │
+          │ SEMANTIC_SEGMENTATION │ segnext_t                     │ src/otx/recipe/semantic_segmentation/segnext_t.yaml                             │
+          │ SEMANTIC_SEGMENTATION │ segnext_b                     │ src/otx/recipe/semantic_segmentation/segnext_b.yaml                        │
+          │ SEMANTIC_SEGMENTATION │ dino_v2                       │ src/otx/recipe/semantic_segmentation/dino_v2.yaml                           │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_18                  │ src/otx/recipe/semantic_segmentation/litehrnet_18.yaml                 │
+          │ SEMANTIC_SEGMENTATION │ segnext_s                     │ src/otx/recipe/semantic_segmentation/segnext_s.yaml                         │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_x                   │ src/otx/recipe/semantic_segmentation/litehrnet_x.yaml                         │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_s                   │ src/otx/recipe/semantic_segmentation/litehrnet_s.yaml                         │
           └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
 
     .. tab-item:: API
@@ -92,7 +92,7 @@ The list of supported recipes for semantic segmentation is available with the co
           ]
           '''
 
-1.  On this step we will configure configuration 
+1.  On this step we will configure configuration
 with:
 
 - all necessary configs for litehrnet_18
@@ -342,7 +342,7 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
         .. code-block:: shell
 
-            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+            (otx) ...$ otx optimize  --work_dir otx-workspace \
                                      --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
             ...
@@ -359,6 +359,10 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
+.. note::
+
+    You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
+
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
@@ -368,7 +372,7 @@ it to the ``otx test`` function.
 
         .. code-block:: shell
 
-            (otx) ...$ otx test --work_dir otx-workspace \ 
+            (otx) ...$ otx test --work_dir otx-workspace \
                                 --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
                                 --engine.device cpu
 

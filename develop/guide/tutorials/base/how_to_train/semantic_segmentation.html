@@ -711,6 +711,10 @@ API</label><div class="sd-tab-content docutils">
 </div>
 </div>
 <p>Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can also pass <code class="docutils literal notranslate"><span class="pre">export_demo_package=True</span></code> parameter to obtain <code class="docutils literal notranslate"><span class="pre">exportable_code.zip</span></code> archive with packed optimized model and demo package. Please refer to <a class="reference internal" href="../export.html"><span class="doc">export tutorial</span></a>.</p>
+</div>
 <p>3. Finally, we can also evaluate the optimized model by passing
 it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">test</span></code> function.</p>
 <div class="sd-tab-set docutils">
