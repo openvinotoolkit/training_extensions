@@ -9,15 +9,18 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
 from .history import summary
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 log = logging.getLogger(__name__)
 

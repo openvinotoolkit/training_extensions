@@ -78,7 +78,9 @@ class Benchmark:
                 print(f"[Check] {self.name} not in target")
                 return
             if self.compare == "==":
-                print(f"[Check] abs({result_entry[self.name]=} - {target_entry[self.name]=}) < {target_entry[self.name]=} * {self.margin=}")
+                print(
+                    f"[Check] abs({result_entry[self.name]=} - {target_entry[self.name]=}) < {target_entry[self.name]=} * {self.margin=}",
+                )
                 assert abs(result_entry[self.name] - target_entry[self.name]) < target_entry[self.name] * self.margin
             elif self.compare == "<":
                 print(f"[Check] {result_entry[self.name]=} < {target_entry[self.name]=} * (1.0 + {self.margin=})")
