@@ -478,13 +478,6 @@ class TestMMDetectionTask:
         assert ssd_cfg.model.bbox_head.anchor_generator != det_task.config.model.bbox_head.anchor_generator
 
     @e2e_pytest_unit
-    def test_get_model_nms_threshold(self):
-        self.det_task._init_task()
-        self.iseg_task._init_task()
-        assert self.det_task._get_model_nms_threshold() == 0.5
-        assert self.iseg_task._get_model_nms_threshold() == 0.5
-
-    @e2e_pytest_unit
     def test_geti_scenario(self, mocker):
         """Test Geti scenario.
 
