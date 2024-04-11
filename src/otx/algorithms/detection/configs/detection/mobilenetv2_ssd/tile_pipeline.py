@@ -19,7 +19,7 @@
 img_size = (864, 864)
 
 tile_cfg = dict(
-    tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
+    tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.5, max_per_img=1500, filter_empty_gt=True
 )
 
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)

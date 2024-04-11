@@ -180,6 +180,7 @@ class MMDetectionTask(OTXDetectionTask):
             self._input_size,
             train_dataset=train_dataset,
             max_num_detections=self.max_num_detections,
+            nms_iou_threshold=self.nms_iou_threshold,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -494,9 +495,11 @@ class MMDetectionTask(OTXDetectionTask):
         assert len(self._precision) == 1
         export_options["precision"] = str(self._precision[0])
         export_options["type"] = str(export_format)
+        logger.info(f"Export nms_iou_threshold: {self.nms_iou_threshold}")
+        post_proc_cfg = export_options["deploy_cfg"]["codebase_config"]["post_processing"]
+        post_proc_cfg["iou_threshold"] = self.nms_iou_threshold
         if self.max_num_detections > 0:
             logger.info(f"Export max_num_detections: {self.max_num_detections}")
-            post_proc_cfg = export_options["deploy_cfg"]["codebase_config"]["post_processing"]
             post_proc_cfg["max_output_boxes_per_class"] = self.max_num_detections
             post_proc_cfg["keep_top_k"] = self.max_num_detections
             post_proc_cfg["pre_top_k"] = self.max_num_detections * 10

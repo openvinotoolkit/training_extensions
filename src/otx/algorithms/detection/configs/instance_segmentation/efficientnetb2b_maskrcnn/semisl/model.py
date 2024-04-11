@@ -111,7 +111,7 @@ model = dict(
             nms=dict(type="nms", iou_threshold=0.8),
             min_bbox_size=0,
         ),
-        rcnn=dict(score_thr=0.05, nms=dict(type="nms", iou_threshold=0.7), max_per_img=500, mask_thr_binary=0.5),
+        rcnn=dict(score_thr=0.05, nms=dict(type="nms", iou_threshold=0.5), max_per_img=500, mask_thr_binary=0.5),
     ),
 )
 load_from = "https://storage.openvinotoolkit.org/repositories/\

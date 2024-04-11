@@ -107,7 +107,6 @@ def generate_random_annotated_image(
     shape: Optional[str] = None,
     max_shapes: int = 10,
     intensity_range: List[Tuple[int, int]] = None,
-    random_seed: Optional[int] = None,
     use_mask_as_annotation: bool = False,
 ) -> Tuple[np.ndarray, List[Annotation]]:
     """
@@ -121,7 +120,6 @@ def generate_random_annotated_image(
     :param labels: Task Labels that should be applied to the respective shape
     :param min_size: Minimum size of the shape(s)
     :param max_size: Maximum size of the shape(s)
-    :param random_seed: Seed to initialize the random number generator
     :param use_mask_as_annotation: If True, masks will be added in annotation
     :return: uint8 array, list of shapes
     """
@@ -145,7 +143,6 @@ def generate_random_annotated_image(
             min_size=min_size,
             max_size=max_size,
             shape=shape,
-            random_seed=random_seed,
         )
         num_shapes = len(sc_labels)
         if num_shapes > 0:
