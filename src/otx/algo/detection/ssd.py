@@ -59,7 +59,6 @@ class SSD(MMDetCompatibleModel):
         )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
-        # self._register_load_state_dict_pre_hook(self._set_anchors_hook)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
