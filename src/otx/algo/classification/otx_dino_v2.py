@@ -155,7 +155,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
             swap_rgb=False,
             via_onnx=False,
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     @property

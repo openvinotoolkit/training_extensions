@@ -64,7 +64,7 @@ class MobileNetV3ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlabelC
             swap_rgb=False,
             via_onnx=True,  # TODO(someone): Check if this model can be exported directly with OV > 2024.0
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
@@ -109,7 +109,7 @@ class MobileNetV3ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMul
             swap_rgb=False,
             via_onnx=True,  # NOTE: This should be done via onnx
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
@@ -152,7 +152,7 @@ class MobileNetV3ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMul
             swap_rgb=False,
             via_onnx=True,  # NOTE: This should be done via onnx
             onnx_export_configuration=None,
-            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else ["logits"],
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
