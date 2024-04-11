@@ -154,7 +154,9 @@ class TestToolsOTXDetection:
         # update threshold for XPU
         threshold = 0.4 if is_xpu_available and template.name == "MobileNetV2-ATSS" else 0.2
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=threshold, half_precision=half_precision)
+        otx_eval_openvino_testing(
+            template, tmp_dir_path, otx_dir, args, threshold=threshold, half_precision=half_precision
+        )
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
