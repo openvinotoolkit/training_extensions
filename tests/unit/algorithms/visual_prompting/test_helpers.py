@@ -77,7 +77,6 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
             max_shapes=20,
             min_size=50,
             max_size=100,
-            random_seed=None,
             use_mask_as_annotation=use_mask,
         )
 

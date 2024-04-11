@@ -73,7 +73,6 @@ def generate_otx_dataset(number_of_images=5):
             max_shapes=20,
             min_size=50,
             max_size=100,
-            random_seed=None,
         )
         # Convert all shapes to polygons
         out_shapes = []
