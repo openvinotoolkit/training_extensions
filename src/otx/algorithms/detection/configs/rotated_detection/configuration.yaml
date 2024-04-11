@@ -296,7 +296,7 @@ postprocessing:
     warning: null
   nms_iou_threshold:
     affects_outcome_of: INFERENCE
-    default_value: 0.0
+    default_value: 0.5
     description: IoU Threshold for NMS Postprocessing.
       Defaults to 0, which means per-model default values.
     editable: true

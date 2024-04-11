@@ -26,7 +26,7 @@ model = dict(
     train_cfg=dict(assigner=dict(type="SimOTAAssigner", center_radius=2.5)),
     # In order to align the source code, the threshold of the val phase is
     # 0.01, and the threshold of the test phase is 0.001.
-    test_cfg=dict(score_thr=0.01, nms=dict(type="nms", iou_threshold=0.65), max_per_img=100),
+    test_cfg=dict(score_thr=0.01, nms=dict(type="nms", iou_threshold=0.5), max_per_img=100),
     size_multiplier=160,
     random_size_range=(3, 5),
 )
