@@ -77,11 +77,14 @@ class OTXDetectionTask(OTXTask, ABC):
 
         self.confidence_threshold = 0.0
         self.max_num_detections = 0
+        self.nms_iou_threshold = 0.5
         if hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
             if hasattr(self._hyperparams.postprocessing, "max_num_detections"):
                 self.max_num_detections = self._hyperparams.postprocessing.max_num_detections
+            if hasattr(self._hyperparams.postprocessing, "nms_iou_threshold"):
+                self.nms_iou_threshold = self._hyperparams.postprocessing.nms_iou_threshold
 
         if task_environment.model is not None:
             self._load_model()
@@ -119,6 +122,14 @@ class OTXDetectionTask(OTXTask, ABC):
             # Prefer new hparam value set by user (>0) intentionally than trained value
             if self.max_num_detections == 0:
                 self.max_num_detections = trained_max_num_detections
+        if "nms_iou_threshold" in loaded_postprocessing:
+            logger.warning(
+                f"For NMS iou threshold, OTX will use value from model ckpt:"
+                f" {loaded_postprocessing['nms_iou_threshold']['value']:.3f}. "
+                "If you want to change NMS iou threshold from model ckpt, "
+                "then you need to re-train with new NMS iou threshold."
+            )
+            self.nms_iou_threshold = loaded_postprocessing["nms_iou_threshold"]["value"]
 
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.
@@ -349,6 +360,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold,
             self._hyperparams.tiling_parameters,
             self.use_ellipse_shapes,
+            self.nms_iou_threshold,
         )
 
         if export_type == ExportType.ONNX:

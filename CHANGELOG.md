@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
+- Add support for the training and validation on the XPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
+- Add a new configurable parameter nms_iou_thresold to control iou threshold of NMS post processing (https://github.com/openvinotoolkit/training_extensions/pull/3287)
 - Add support for the training and validation on the Intel Max GPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
 
 ### Enhancements
