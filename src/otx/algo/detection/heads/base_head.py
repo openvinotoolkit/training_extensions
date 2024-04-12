@@ -17,6 +17,9 @@ from torch import Tensor, nn
 
 from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
 
+if TYPE_CHECKING:
+    from mmengine import ConfigDict
+
 
 # This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
 # https://github.com/open-mmlab/mmdetection/blob/fe3f809a0a514189baf889aa358c498d51ee36cd/mmdet/models/dense_heads/base_dense_head.py
