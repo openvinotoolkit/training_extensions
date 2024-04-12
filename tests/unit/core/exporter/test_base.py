@@ -24,7 +24,12 @@ def mock_model():
 def exporter(mocker):
     ZipFile.write = MagicMock()
     mocker.patch("otx.core.exporter.base.json")
-    return MockModelExporter(task_level_export_parameters=MagicMock(TaskLevelExportParameters), input_size=(224, 224), mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+    return MockModelExporter(
+        task_level_export_parameters=MagicMock(TaskLevelExportParameters),
+        input_size=(224, 224),
+        mean=(0.485, 0.456, 0.406),
+        std=(0.229, 0.224, 0.225),
+    )
 
 
 class TestOTXModelExporter:
@@ -49,6 +54,7 @@ class TestOTXModelExporter:
 
     def test_to_exportable_code(self, mock_model, exporter, tmp_path):
         from otx.core.exporter.base import ZipFile
+
         ZipFile.writestr = MagicMock()
 
         base_model_name = "test_model"
