@@ -3,7 +3,9 @@
 
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
+import cv2
 import numpy as np
 import pytest
 import yaml
@@ -13,34 +15,27 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.utils import run_main
 
 
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
+@pytest.fixture(scope="module")
+def tmp_path():
+    """Override tmp_path fixture for module scope."""
+    with TemporaryDirectory() as tmpdir:
+        yield Path(tmpdir)
+
+
+@pytest.fixture(
+    scope="module",
+    params=pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
-def test_otx_e2e(
-    recipe: str,
-    tmp_path: Path,
+def fxt_trained_model(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx train' with 2 epochs training
-    - 'otx test' with output checkpoint from 'otx train'
-    - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported to ONNX/IR model
-
-    Args:
-        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
-        tmp_path (Path): The temporary path for storing the training outputs.
-
-    Returns:
-        None
-    """
+    request: pytest.FixtureRequest,
+    tmp_path,
+):
+    recipe = request.param
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
 
@@ -64,6 +59,34 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
+    return recipe, task, model_name, tmp_path_train
+
+
+def test_otx_e2e(
+    fxt_trained_model,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+    tmp_path: Path,
+) -> None:
+    """
+    Test OTX CLI e2e commands.
+
+    - 'otx train' with 2 epochs training
+    - 'otx test' with output checkpoint from 'otx train'
+    - 'otx export' with output checkpoint from 'otx train'
+    - 'otx test' with the exported to ONNX/IR model
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    recipe, task, model_name, tmp_path_train = fxt_trained_model
+
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
@@ -79,9 +102,8 @@ def test_otx_e2e(
     assert "data" in train_output_config
     assert "engine" in train_output_config
     assert (latest_dir / "csv").exists()
-    assert (latest_dir / "checkpoints").exists()
-    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
-    assert len(ckpt_files) > 0
+    ckpt_file = latest_dir / "best_checkpoint.ckpt"
+    assert ckpt_file.exists()
 
     # 2) otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
@@ -98,7 +120,7 @@ def test_otx_e2e(
         fxt_accelerator,
         *fxt_cli_override_command_per_task[task],
         "--checkpoint",
-        str(ckpt_files[-1]),
+        str(ckpt_file),
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
@@ -154,7 +176,7 @@ def test_otx_e2e(
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
             "--checkpoint",
-            str(ckpt_files[-1]),
+            str(ckpt_file),
             "--export_format",
             f"{fmt}",
         ]
@@ -232,7 +254,7 @@ def test_otx_e2e(
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
-            str(ckpt_files[-1]),
+            str(ckpt_file),
             "--export_format",
             f"{fmt}",
             "--explain",
@@ -250,18 +272,13 @@ def test_otx_e2e(
         assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
 
 
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
-)
 def test_otx_explain_e2e(
-    recipe: str,
-    tmp_path: Path,
+    fxt_trained_model,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
+    tmp_path: Path,
 ) -> None:
     """
     Test OTX CLI explain e2e command.
@@ -273,13 +290,16 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+
+    recipe, task, model_name, tmp_path_train = fxt_trained_model
+
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = outputs_dir / ".latest"
+    ckpt_file = latest_dir / "train" / "best_checkpoint.ckpt"
+    assert ckpt_file.exists()
+
     if "tile" in recipe:
         pytest.skip("Explain is not supported for tiling yet.")
-
-    import cv2
-
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
 
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
@@ -306,6 +326,8 @@ def test_otx_explain_e2e(
         "True",
         "--dump",
         "True",
+        "--checkpoint",
+        str(ckpt_file),
         *fxt_cli_override_command_per_task[task],
     ]
 
