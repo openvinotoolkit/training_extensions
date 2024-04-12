@@ -321,8 +321,6 @@ def test_otx_explain_e2e(
         fxt_accelerator,
         "--seed",
         "0",
-        "--deterministic",
-        "True",
         "--dump",
         "True",
         "--checkpoint",
