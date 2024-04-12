@@ -11,6 +11,7 @@ from typing_extensions import TypeAlias
 
 from otx.core.types.label import HLabelInfo, LabelInfo, NullLabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
+from otx.core.types.export import TaskLevelExportParameters
 
 __all__ = [
     # label_info
@@ -20,6 +21,8 @@ __all__ = [
     "NullLabelInfo",
     # task_type
     "OTXTaskType",
+    # export
+    "TaskLevelExportParameters"
 ]
 
 PathLike: TypeAlias = Union[str, Path, os.PathLike]
