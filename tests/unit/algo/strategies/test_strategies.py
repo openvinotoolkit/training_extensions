@@ -37,6 +37,7 @@ class TestSingleXPUStrategy:
 
     def test_setup_optimizers(self, strategy, mocker):
         from otx.algo.strategies.xpu_single import SingleDeviceStrategy
+
         mocker.patch("otx.algo.strategies.xpu_single.torch")
         mocker.patch(
             "otx.algo.strategies.xpu_single.torch.xpu.optimize",
