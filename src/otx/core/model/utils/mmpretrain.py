@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from mmpretrain.models.classifiers.image import ImageClassifier
     from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
-    from torch import device, nn
+    from torch import Tensor, device, nn
 
 
 @MODELS.register_module(force=True)
@@ -141,49 +141,42 @@ class ExplainableMixInMMPretrainModel(Generic[T_OTXBatchPredEntity, T_OTXBatchDa
         )
         return explainer.func
 
+    def _register(self) -> None:
+        if getattr(self, "_registered", False):
+            return
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
+        self._registered = True
+
     def forward_explain(
         self,
         inputs: T_OTXBatchDataEntity,
     ) -> T_OTXBatchPredEntity:
         """Model forward function."""
-        forward_func: Callable[[T_OTXBatchDataEntity], T_OTXBatchPredEntity] | None = getattr(self, "forward", None)
-
-        if forward_func is None:
-            msg = (
-                "This instance has no forward function. "
-                "Did you attach this mixin into a class derived from OTXModel?"
-            )
-            raise RuntimeError(msg)
+        self._register()
+        orig_model_forward = self.model.forward
 
         try:
-            self._reset_model_forward()
+            self.model.forward = types.MethodType(self._forward_explain_image_classifier, self.model)
+
+            forward_func: Callable[[T_OTXBatchDataEntity], T_OTXBatchPredEntity] | None = getattr(self, "forward", None)
+
+            if forward_func is None:
+                msg = (
+                    "This instance has no forward function. "
+                    "Did you attach this mixin into a class derived from OTXModel?"
+                )
+                raise RuntimeError(msg)
+
             return forward_func(inputs)
         finally:
-            self._restore_model_forward()
+            self.model.forward = orig_model_forward
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        if not self.explain_mode:
-            return
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            self._register()
+            forward_explain = types.MethodType(self._forward_explain_image_classifier, self.model)
+            return forward_explain(inputs=image, mode="tensor")
 
-        self.model.feature_vector_fn = get_feature_vector
-        self.model.explain_fn = self.get_explain_fn()
-        forward_with_explain = self._forward_explain_image_classifier
-
-        self.original_model_forward = self.model.forward
-
-        func_type = types.MethodType
-        self.model.forward = func_type(forward_with_explain, self.model)
-
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        if not self.explain_mode:
-            return
-
-        if not self.original_model_forward:
-            msg = "Original model forward was not saved."
-            raise RuntimeError(msg)
-
-        func_type = types.MethodType
-        self.model.forward = func_type(self.original_model_forward, self.model)
-        self.original_model_forward = None
+        return self.model.forward(inputs=image, mode="tensor")
