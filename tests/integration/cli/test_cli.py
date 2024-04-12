@@ -3,7 +3,6 @@
 
 
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import cv2
 import pytest
@@ -14,15 +13,7 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.utils import run_main
 
 
-@pytest.fixture(scope="module")
-def tmp_path():
-    """Override tmp_path fixture for module scope."""
-    with TemporaryDirectory() as tmpdir:
-        yield Path(tmpdir)
-
-
 @pytest.fixture(
-    scope="module",
     params=pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
