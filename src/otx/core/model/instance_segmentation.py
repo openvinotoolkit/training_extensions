@@ -68,7 +68,7 @@ class OTXInstanceSegModel(
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.tile_config = TileConfig()
+        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -235,16 +235,32 @@ class OTXInstanceSegModel(
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI hook."""
 
-    def forward_explain(
+    def __init__(
         self,
-        inputs: InstanceSegBatchDataEntity,
-    ) -> InstanceSegBatchPredEntity:
-        """Model forward function."""
+        num_classes: int,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
         from otx.algo.hooks.recording_forward_hook import get_feature_vector
 
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
+    def forward_explain(
+        self,
+        inputs: InstanceSegBatchDataEntity,
+    ) -> InstanceSegBatchPredEntity:
+        """Model forward function."""
         # If customize_inputs is overridden
         outputs = (
             self._forward_explain_inst_seg(self.model, **self._customize_inputs(inputs))

@@ -144,6 +144,22 @@ class OTXAnomaly:
         self.image_metrics: AnomalibMetricCollection
         self.pixel_metrics: AnomalibMetricCollection
 
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)  # type: ignore[misc]
+
+        attrs = ["_task_type", "_input_size", "mean_values", "scale_values", "image_threshold", "pixel_threshold"]
+
+        checkpoint["anomaly"] = {key: getattr(self, key, None) for key in attrs}
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on loading checkpoint."""
+        super().on_load_checkpoint(checkpoint)  # type: ignore[misc]
+
+        if anomaly_attrs := checkpoint.get("anomaly", None):
+            for key, value in anomaly_attrs.items():
+                setattr(self, key, value)
+
     @property
     def input_size(self) -> tuple[int, int]:
         """Returns the input size of the model.
@@ -223,7 +239,7 @@ class OTXAnomaly:
     def setup(self, stage: str | None = None) -> None:
         """Setup the model."""
         super().setup(stage)  # type: ignore[misc]
-        if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
+        if stage == "fit" and hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
             if hasattr(self.trainer.datamodule.config, "test_subset"):
                 self._extract_mean_scale_from_transforms(self.trainer.datamodule.config.test_subset.transforms)
             elif hasattr(self.trainer.datamodule.config, "val_subset"):

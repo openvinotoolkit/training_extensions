@@ -106,7 +106,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     }
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def fxt_cli_override_command_per_task() -> dict:
     return {
         "multi_class_cls": [],

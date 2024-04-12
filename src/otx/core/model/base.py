@@ -26,6 +26,7 @@ from torch.optim.sgd import SGD
 from torchmetrics import Metric, MetricCollection
 
 from otx import __version__
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -111,6 +112,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         self.torch_compile = torch_compile
         self._explain_mode = False
+
+        self._tile_config: TileConfig | None = None
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -337,15 +340,23 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)
+
         checkpoint["label_info"] = self.label_info
         checkpoint["otx_version"] = __version__
 
+        if self._tile_config:
+            checkpoint["tile_config"] = self._tile_config
+
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on loading checkpoint."""
-        ckpt_label_info = checkpoint.pop("label_info", None)
+        super().on_load_checkpoint(checkpoint)
 
-        if ckpt_label_info:
+        if ckpt_label_info := checkpoint.get("label_info", None):
             self._label_info = ckpt_label_info
+
+        if ckpt_tile_config := checkpoint.get("tile_config", None):
+            self._tile_config = ckpt_tile_config
 
     def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dict incrementally."""
@@ -704,6 +715,20 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
             self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
+
+    @property
+    def tile_config(self) -> TileConfig:
+        """Get tiling configurations."""
+        if self._tile_config is None:
+            msg = "This task type does not support tiling."
+            raise RuntimeError(msg)
+
+        return self._tile_config
+
+    @tile_config.setter
+    def tile_config(self, tile_config: TileConfig) -> None:
+        """Set tiling configurations."""
+        self._tile_config = tile_config
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
