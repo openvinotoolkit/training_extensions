@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## \[unreleased\]
 
+### Enhancements
+
+- Add perf benchmark test cases for action and visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/3292>)
+
+### Bug fixes
+
+- Remove torch.xpu.optimize for semantic_segmentation task (<https://github.com/openvinotoolkit/training_extensions/pull/3172>)
+
 ## \[v1.6.0\]
 
 ### New features
