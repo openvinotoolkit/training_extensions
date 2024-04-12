@@ -141,7 +141,9 @@ def otx_install(option: str | None = None, verbose: bool = False, do_not_install
 
         # TODO(harimkang): Remove this reinstalling after resolving conflict with anomalib==1.0.1
         # https://github.com/openvinotoolkit/training_extensions/actions/runs/8531851027/job/23372146228?pr=3258#step:5:2587
-        status_code = create_command("install").main(["jsonargparse==4.27.7"])
+        status_code = create_command("install").main(
+            ["git+https://github.com/omni-us/jsonargparse.git@028131ce069f862504a5e372ad962ba69ce0eea7"],
+        )
         if status_code != 0:
             msg = "Cannot install jsonargparse==4.27.7"
             raise RuntimeError(msg)
