@@ -11,6 +11,7 @@ import pandas as pd
 import subprocess  # nosec B404
 import yaml
 from pathlib import Path
+from .history import summary
 
 
 class Benchmark:
@@ -107,6 +108,7 @@ class Benchmark:
         subprocess.run(cmd, check=True)
         # Load result
         result = self.load_result(cfg_dir)
+        result = summary.average(result, ["task", "model", "data_group", "data"])
         return result
 
     @staticmethod
@@ -145,7 +147,7 @@ class Benchmark:
         if "train_e2e_time" in data:
             data["train_e2e_time"] = pd.to_timedelta(data["train_e2e_time"]).dt.total_seconds()  # H:M:S str -> seconds
         data = data.rename(columns={"repeat": "seed"})
-        return data.set_index(["task", "model", "data_group", "data"])
+        return data
 
     def _build_config(
         self,
@@ -218,30 +220,44 @@ class Benchmark:
             criteria (list[dict]): Criteria to check results
         """
         if result is None:
+            print("[Check] No results loaded. Skipping result checking.")
             return
 
         if self.reference_results is None:
-            print("No benchmark references loaded. Skipping result checking.")
+            print("[Check] No benchmark references loaded. Skipping result checking.")
             return
+
+        result = result.set_index(["task", "model", "data_group", "data"])
 
         for key, result_entry in result.iterrows():
             if key not in self.reference_results.index:
-                print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+                print(f"[Check] No benchmark reference for {key} loaded. Skipping result checking.")
                 continue
             target_entry = self.reference_results.loc[key]
             if isinstance(target_entry, pd.DataFrame):
-                target_entry = target_entry.iloc[0]  # 1-row pd.DataFrame to pd.Series
+                # Match num_repeat & seeds of result and target
+                result_seed_average = result_entry["seed"]
+                result_num_repeat = 2 * result_seed_average + 1  # (0+1+2+3+4)/5 = 2.0 -> 2*2.0+1 = 5
+                target_entry = target_entry.query(f"seed < {result_num_repeat}")
+                target_entry = target_entry.mean(numeric_only=True)  # N-row pd.DataFrame to pd.Series
 
             def compare(name: str, op: str, margin: float):
                 if name not in result_entry or result_entry[name] is None or np.isnan(result_entry[name]):
+                    print(f"[Check] {name} not in result")
                     return
                 if name not in target_entry or target_entry[name] is None or np.isnan(target_entry[name]):
+                    print(f"[Check] {name} not in target")
                     return
                 if op == "==":
+                    print(
+                        f"[Check] abs({name}:{result_entry[name]} - {name}:{target_entry[name]}) < {name}:{target_entry[name]} * {margin}",
+                    )
                     assert abs(result_entry[name] - target_entry[name]) < target_entry[name] * margin
                 elif op == "<":
+                    print(f"[Check] {name}:{result_entry[name]} < {name}:{target_entry[name]} * (1.0 + {margin})")
                     assert result_entry[name] < target_entry[name] * (1.0 + margin)
                 elif op == ">":
+                    print(f"[Check] {name}:{result_entry[name]} > {name}:{target_entry[name]} * (1.0 - {margin})")
                     assert result_entry[name] > target_entry[name] * (1.0 - margin)
 
             for criterion in criteria:

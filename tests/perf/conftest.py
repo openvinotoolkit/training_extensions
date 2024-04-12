@@ -249,6 +249,7 @@ def fxt_benchmark(
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str], client: MlflowClient):
+    results = summary.normalize(results)  # Standardize names for comparison
     results = summary.average(results, keys=["task", "model", "data_group", "data"])  # Average out seeds
     results = results.set_index(["task", "data_group", "data"])
     for index, result in results.iterrows():
@@ -281,10 +282,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, tags: dict[str, str]
 
 @pytest.fixture(scope="session", autouse=True)
 def fxt_benchmark_summary(
-    request: pytest.FixtureRequest,
-    fxt_output_root: Path,
-    fxt_tags: dict[str, str],
-    fxt_mlflow_client: MlflowClient
+    request: pytest.FixtureRequest, fxt_output_root: Path, fxt_tags: dict[str, str], fxt_mlflow_client: MlflowClient
 ):
     """Summarize all results at the end of test session."""
     yield
@@ -305,7 +303,7 @@ def fxt_benchmark_summary(
     else:
         summary_file = Path(summary_file)
     summary_file.parent.mkdir(parents=True, exist_ok=True)
-    raw_results.to_csv(summary_file.parent / "perf-benchmark-raw.csv")
+    raw_results.to_csv(summary_file.parent / "perf-benchmark-raw.csv", index=False)
     if summary_file.suffix == ".xlsx":
         summary_results.to_excel(summary_file)
     else:
@@ -337,7 +335,7 @@ def fxt_benchmark_summary(
 @pytest.fixture(scope="session")
 def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
-    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    ref = summary.load(Path(__file__).parent.resolve() / "history/v1.5.2")
     if ref is not None:
         ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref
