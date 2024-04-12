@@ -3,3 +3,5 @@ TestToolsOTXSegmentation:
     number_of_fakequantizers: 586
   ptq:
     number_of_fakequantizers: 15
+  ptq_xpu:
+    number_of_fakequantizers: 15

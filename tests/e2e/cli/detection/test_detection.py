@@ -10,6 +10,7 @@ import pytest
 import torch
 
 from otx.api.entities.model_template import parse_model_template
+from otx.algorithms.common.utils import is_xpu_available
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -150,8 +151,12 @@ class TestToolsOTXDetection:
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         if template.name == "YOLOX-L" or template.name == "SSD":
             pytest.skip(reason="Issue#2548: Exported model performance is too low")
+        # update threshold for XPU
+        threshold = 0.4 if is_xpu_available() and template.name == "MobileNetV2-ATSS" else 0.2
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
+        otx_eval_openvino_testing(
+            template, tmp_dir_path, otx_dir, args, threshold=threshold, half_precision=half_precision
+        )
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

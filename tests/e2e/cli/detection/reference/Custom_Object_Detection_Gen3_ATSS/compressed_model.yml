@@ -3,8 +3,12 @@ TestToolsOTXDetection:
     number_of_fakequantizers: 157
   ptq:
     number_of_fakequantizers: 197
+  ptq_xpu:
+    number_of_fakequantizers: 197
 TestToolsTilingDetection:
   nncf:
     number_of_fakequantizers: 157
   ptq:
+    number_of_fakequantizers: 197
+  ptq_xpu:
     number_of_fakequantizers: 197

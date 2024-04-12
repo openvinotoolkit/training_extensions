@@ -3,3 +3,5 @@ TestToolsAnomalyDetection:
     number_of_fakequantizers: 55
   ptq:
     number_of_fakequantizers: 71
+  ptq_xpu:
+    number_of_fakequantizers: 103
