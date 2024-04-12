@@ -10,10 +10,10 @@ import numpy as np
 import torch
 from lightning.pytorch.accelerators import AcceleratorRegistry
 from lightning.pytorch.accelerators.accelerator import Accelerator
-from mmengine.structures import instance_data
-
 from mmcv.ops.nms import NMSop
 from mmcv.ops.roi_align import RoIAlign
+from mmengine.structures import instance_data
+
 from otx.algo.detection.utils import monkey_patched_nms, monkey_patched_roi_align
 from otx.utils.utils import is_xpu_available
 
