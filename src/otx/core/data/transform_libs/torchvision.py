@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import copy
 from inspect import isclass
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence, Iterable
 
 import cv2
 import numpy as np
@@ -27,7 +27,7 @@ from torchvision.transforms.v2.functional._color import (_hsv_to_rgb,
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (Points, _crop_image_info,
                                        _resize_image_info)
-from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness,
+from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness, flip_image,
                                                 centers_bboxes, clip_bboxes,
                                                 flip_bboxes, is_inside_bboxes,
                                                 overlap_bboxes, rescale_bboxes,
@@ -377,18 +377,17 @@ class MinIoURandomCrop(tvt_v2.Transform):
                     mask = is_center_of_bboxes_in_patch(boxes, patch)
                     if not mask.any():
                         continue
-                    if hasattr(inputs, "bboxes"):
-                        boxes = inputs.bboxes
-                        mask = is_center_of_bboxes_in_patch(boxes, patch)
-                        boxes = boxes[mask]
-                        boxes = translate_bboxes(boxes, [-patch[0], -patch[1]])
+                    if (bboxes := getattr(inputs, "bboxes", None)) is not None:
+                        mask = is_center_of_bboxes_in_patch(bboxes, patch)
+                        bboxes = bboxes[mask]
+                        bboxes = translate_bboxes(bboxes, [-patch[0], -patch[1]])
                         if self.bbox_clip_border:
-                            boxes = clip_bboxes(boxes, [patch[3] - patch[1], patch[2] - patch[0]])
-                        inputs.bboxes = tv_tensors.BoundingBoxes(boxes, format="XYXY", canvas_size=(patch[3] - patch[1], patch[2] - patch[0]))
+                            bboxes = clip_bboxes(bboxes, [patch[3] - patch[1], patch[2] - patch[0]])
+                        inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=(patch[3] - patch[1], patch[2] - patch[0]))
 
                         # labels
-                        if hasattr(inputs, "labels"):
-                            inputs.labels = inputs.labels[mask]
+                        if (labels := getattr(inputs, "labels", None)) is not None:
+                            inputs.labels = labels[mask]
 
                 # adjust the img no matter whether the gt is empty before crop
                 img = img[patch[1]:patch[3], patch[0]:patch[2]]
@@ -468,8 +467,8 @@ class Resize(tvt_v2.Transform):
 
     def _resize_img(self, inputs: DetDataEntity) -> DetDataEntity:
         """Resize images with inputs.img_info.img_shape."""
-        if hasattr(inputs, "image"):
-            img = to_np_image(inputs.image)
+        if (img := getattr(inputs, "image", None)) is not None:
+            img = to_np_image(img)
             if self.keep_ratio:
                 h, w = img.shape[:2]
                 new_size, scale_factor = rescale_size((w, h), inputs.img_info.img_shape[::-1], return_scale=True)
@@ -483,8 +482,7 @@ class Resize(tvt_v2.Transform):
 
     def _resize_bboxes(self, inputs: DetDataEntity) -> DetDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
-        if hasattr(inputs, "bboxes"):
-            bboxes = inputs.bboxes
+        if (bboxes := getattr(inputs, "bboxes", None)) is not None:
             bboxes = rescale_bboxes(bboxes, inputs.img_info.scale_factor[::-1]) # HW -> WH
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
@@ -522,6 +520,120 @@ class Resize(tvt_v2.Transform):
         repr_str += f'keep_ratio={self.keep_ratio}, '
         repr_str += f'clip_object_border={self.clip_object_border}), '
         repr_str += f'interpolation={self.interpolation})'
+        return repr_str
+
+
+class RandomFlip(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.RandomFlip with torchvision format.
+    
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L496-L596
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+
+     - ``prob`` is float, ``direction`` is string: the image will be
+         ``direction``ly flipped with probability of ``prob`` .
+         E.g., ``prob=0.5``, ``direction='horizontal'``,
+         then image will be horizontally flipped with probability of 0.5.
+     - ``prob`` is float, ``direction`` is list of string: the image will
+         be ``direction[i]``ly flipped with probability of
+         ``prob/len(direction)``.
+         E.g., ``prob=0.5``, ``direction=['horizontal', 'vertical']``,
+         then image will be horizontally flipped with probability of 0.25,
+         vertically with probability of 0.25.
+     - ``prob`` is list of float, ``direction`` is list of string:
+         given ``len(prob) == len(direction)``, the image will
+         be ``direction[i]``ly flipped with probability of ``prob[i]``.
+         E.g., ``prob=[0.3, 0.5]``, ``direction=['horizontal',
+         'vertical']``, then image will be horizontally flipped with
+         probability of 0.3, vertically with probability of 0.5.
+
+    Args:
+         prob (float | list[float], optional): The flipping probability.
+             Defaults to None.
+         direction(str | list[str]): The flipping direction. Options
+             If input is a list, the length must equal ``prob``. Each
+             element in ``prob`` indicates the flip probability of
+             corresponding direction. Defaults to 'horizontal'.
+    """
+
+    def __init__(self,
+                 prob: float | Iterable[float] | None = None,
+                 direction: str | Sequence[str | None] = 'horizontal') -> None:
+        super().__init__()
+
+        if isinstance(prob, list):
+            assert all([isinstance(p, float) for p in prob])
+            assert 0 <= sum(prob) <= 1
+        elif isinstance(prob, float):
+            assert 0 <= prob <= 1
+        else:
+            raise ValueError(f'probs must be float or list of float, but \
+                              got `{type(prob)}`.')
+        self.prob = prob
+
+        valid_directions = ['horizontal', 'vertical', 'diagonal']
+        if isinstance(direction, str):
+            assert direction in valid_directions
+        elif isinstance(direction, list):
+            assert all([isinstance(d, str) for d in direction])
+            assert set(direction).issubset(set(valid_directions))
+        else:
+            raise ValueError(f'direction must be either str or list of str, \
+                               but got `{type(direction)}`.')
+        self.direction = direction
+
+        if isinstance(prob, list):
+            assert len(prob) == len(self.direction)
+
+    @cache_randomness
+    def _choose_direction(self) -> str:
+        """Choose the flip direction according to `prob` and `direction`"""
+        if isinstance(self.direction,
+                      Sequence) and not isinstance(self.direction, str):
+            # None means non-flip
+            direction_list: list = list(self.direction) + [None]
+        elif isinstance(self.direction, str):
+            # None means non-flip
+            direction_list = [self.direction, None]
+
+        if isinstance(self.prob, list):
+            non_prob: float = 1 - sum(self.prob)
+            prob_list = self.prob + [non_prob]
+        elif isinstance(self.prob, float):
+            non_prob = 1. - self.prob
+            # exclude non-flip
+            single_ratio = self.prob / (len(direction_list) - 1)
+            prob_list = [single_ratio] * (len(direction_list) - 1) + [non_prob]
+
+        cur_dir = np.random.choice(direction_list, p=prob_list)
+
+        return cur_dir
+
+    def forward(self, *inputs: Any) -> Any:
+        """Flip images, bounding boxes, and semantic segmentation map."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        if (cur_dir := self._choose_direction()):
+            # flip image
+            img = to_np_image(inputs.image)
+            img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
+
+            inputs.image = F.to_image(img)
+            inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
+
+            # flip bboxes
+            if (bboxes := getattr(inputs, "bboxes", None)) is not None:
+                bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
+
+        return inputs
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(prob={self.prob}, '
+        repr_str += f'direction={self.direction})'
         return repr_str
 
 

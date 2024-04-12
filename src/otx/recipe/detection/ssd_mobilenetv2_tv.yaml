@@ -61,9 +61,9 @@ overrides:
                 - 864
                 - 864
               keep_ratio: false
-          - class_path: torchvision.transforms.v2.RandomHorizontalFlip
+          - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
-              p: 0.5
+              prob: 0.5
       val_subset:
         batch_size: 8
         transforms:
