@@ -84,10 +84,8 @@ class OTXInstanceSegModel(
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = InstanceSegTileMerge(
             inputs.imgs_info,
-            self.tile_config.tile_size[0],
             self.num_classes,
-            self.tile_config.iou_threshold,
-            self.tile_config.max_num_instances,
+            self.tile_config,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
             output = self.forward_explain(batch_tile_input) if self.explain_mode else self.forward(batch_tile_input)

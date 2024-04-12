@@ -363,7 +363,6 @@ class TestOTXTiling:
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             prediction = model.forward_tiles(batch)
-            assert hasattr(prediction, "saliency_map")
             assert prediction.saliency_map[0].ndim == 3
         self.explain_mode = False
 
@@ -399,6 +398,5 @@ class TestOTXTiling:
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             prediction = model.forward_tiles(batch)
-            assert hasattr(prediction, "saliency_map")
             assert prediction.saliency_map[0].ndim == 3
         self.explain_mode = False

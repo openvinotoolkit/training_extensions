@@ -15,6 +15,7 @@ import torch
 from torchvision import tv_tensors
 from torchvision.ops import batched_nms
 
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import ImageInfo, T_OTXBatchPredEntity, T_OTXDataEntity
 from otx.core.data.entity.detection import DetBatchPredEntity, DetPredEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchPredEntity, InstanceSegPredEntity
@@ -33,16 +34,14 @@ class TileMerge(Generic[T_OTXDataEntity, T_OTXBatchPredEntity]):
     def __init__(
         self,
         img_infos: list[ImageInfo],
-        tile_size: int,
         num_classes: int,
-        iou_threshold: float = 0.45,
-        max_num_instances: int = 500,
+        tile_config: TileConfig,
     ) -> None:
         self.img_infos = img_infos
-        self.tile_size = tile_size
         self.num_classes = num_classes
-        self.iou_threshold = iou_threshold
-        self.max_num_instances = max_num_instances
+        self.tile_size = tile_config.tile_size
+        self.iou_threshold = tile_config.iou_threshold
+        self.max_num_instances = tile_config.max_num_instances
 
     @abstractmethod
     def _merge_entities(
@@ -114,12 +113,12 @@ class DetectionTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = hasattr(batch_tile_preds[0], "saliency_map")
-        batch_size = len(batch_tile_preds)
+        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            saliency_maps = tile_preds.saliency_map if explain_mode else [] * batch_size
-            feature_vectors = tile_preds.feature_vector if explain_mode else [] * batch_size
+            batch_size = tile_preds.batch_size
+            saliency_maps = tile_preds.saliency_map if explain_mode else [[] for _ in range(batch_size)]
+            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(batch_size)]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_s_map, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
@@ -241,7 +240,7 @@ class DetectionTileMerge(TileMerge):
         map_h, map_w = saliency_maps[0].shape[1:]
 
         image_h, image_w = shape
-        ratio = map_h / min(image_h, self.tile_size), map_w / min(image_w, self.tile_size)
+        ratio = map_h / min(image_h, self.tile_size[0]), map_w / min(image_w, self.tile_size[1])
 
         image_map_h = int(image_h * ratio[0])
         image_map_w = int(image_w * ratio[1])
@@ -307,11 +306,10 @@ class InstanceSegTileMerge(TileMerge):
         """
         entities_to_merge = defaultdict(list)
         img_ids = []
-        explain_mode = hasattr(batch_tile_preds[0], "saliency_map")
-        batch_size = len(batch_tile_preds)
+        explain_mode = len(batch_tile_preds[0].feature_vector) > 0
 
         for tile_preds, tile_attrs in zip(batch_tile_preds, batch_tile_attrs):
-            feature_vectors = tile_preds.feature_vector if explain_mode else [] * batch_size
+            feature_vectors = tile_preds.feature_vector if explain_mode else [[] for _ in range(tile_preds.batch_size)]
             for tile_attr, tile_img_info, tile_bboxes, tile_labels, tile_scores, tile_masks, tile_f_vect in zip(
                 tile_attrs,
                 tile_preds.imgs_info,
