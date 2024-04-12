@@ -422,13 +422,13 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     @classmethod
     def average_and_normalize(
         cls,
-        pred: InstanceData,
+        pred: InstanceData | dict[str, torch.Tensor],
         num_classes: int,
     ) -> np.array:
         """Average and normalize masks in prediction per-class.
 
         Args:
-            preds (InstanceData): Predictions of Instance Segmentation model.
+            preds (InstanceData | dict): Predictions of Instance Segmentation model.
             num_classes (int): Num classes that model can predict.
 
         Returns:
