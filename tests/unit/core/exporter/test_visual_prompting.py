@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests of visual prompting exporter."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from otx.core.exporter.visual_prompting import OTXVisualPromptingModelExporter
 from otx.core.types.export import OTXExportFormatType
@@ -22,7 +24,11 @@ class MockModel(nn.Module):
 class TestOTXVisualPromptingModelExporter:
     @pytest.fixture()
     def otx_visual_prompting_model_exporter(self) -> OTXVisualPromptingModelExporter:
-        return OTXVisualPromptingModelExporter(input_size=(10, 10), via_onnx=True)
+        return OTXVisualPromptingModelExporter(
+            task_level_export_parameters=MagicMock(),
+            input_size=(10, 10),
+            via_onnx=True,
+        )
 
     def test_export_openvino(self, mocker, tmpdir, otx_visual_prompting_model_exporter) -> None:
         """Test export for OPENVINO."""
