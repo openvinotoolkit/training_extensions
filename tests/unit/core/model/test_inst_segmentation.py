@@ -67,7 +67,6 @@ class TestOTXInstanceSegModel:
 
     def test_export_parameters(self, otx_model):
         otx_model.image_size = (1, 64, 64, 3)
-        otx_model.explain_mode = False
         parameters = otx_model._export_parameters
         assert isinstance(parameters, TaskLevelExportParameters)
         assert parameters.task_type == "instance_segmentation"
