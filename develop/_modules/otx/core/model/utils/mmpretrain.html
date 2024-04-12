@@ -249,7 +249,7 @@
 <span class="kn">from</span> <span class="nn">mmpretrain.models.utils</span> <span class="kn">import</span> <span class="n">ClsDataPreprocessor</span> <span class="k">as</span> <span class="n">_ClsDataPreprocessor</span>
 <span class="kn">from</span> <span class="nn">mmpretrain.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
+<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">ReciproCAM</span><span class="p">,</span> <span class="n">get_feature_vector</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">build_mm_model</span><span class="p">,</span> <span class="n">get_classification_layers</span>
 
@@ -384,9 +384,7 @@
 <span class="sd">        Note:</span>
 <span class="sd">            Can be redefined at the model&#39;s level.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.hooks.recording_forward_hook</span> <span class="kn">import</span> <span class="n">ReciproCAMHook</span>
-
-        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAMHook</span><span class="p">(</span>
+        <span class="n">explainer</span> <span class="o">=</span> <span class="n">ReciproCAM</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">head_forward_fn</span><span class="p">,</span>
             <span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">optimize_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">has_gap</span><span class="p">,</span>
