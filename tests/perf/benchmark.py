@@ -8,7 +8,7 @@ import os
 import glob
 import numpy as np
 import pandas as pd
-import subprocess
+import subprocess  # nosec B404
 import yaml
 from pathlib import Path
 
