@@ -16,7 +16,7 @@ from otx.algo.callbacks.adaptive_train_scheduling import AdaptiveTrainScheduling
 from otx.hpo import TrialStatus
 from otx.utils.utils import find_file_recursively, remove_matched_files, set_using_dot_delimited_key
 
-from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir
+from .utils import find_trial_file, get_best_hpo_weight, get_hpo_weight_dir, get_metric
 
 if TYPE_CHECKING:
     from lightning import LightningModule, Trainer
@@ -105,16 +105,8 @@ def _register_hpo_callback(
         callbacks = [callbacks]
     elif callbacks is None:
         callbacks = []
-    callbacks.append(HPOCallback(report_func, _get_metric(callbacks) if metric_name is None else metric_name))
+    callbacks.append(HPOCallback(report_func, get_metric(callbacks) if metric_name is None else metric_name))
     return callbacks
-
-
-def _get_metric(callbacks: list[Callback]) -> str:
-    for callback in callbacks:
-        if isinstance(callback, ModelCheckpoint):
-            return callback.monitor
-    error_msg = "Failed to find a metric. There is no ModelCheckpoint in callback list."
-    raise RuntimeError(error_msg)
 
 
 def _set_to_validate_every_epoch(callbacks: list[Callback], train_args: dict[str, Any]) -> None:

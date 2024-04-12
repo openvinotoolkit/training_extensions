@@ -9,10 +9,14 @@ import inspect
 import json
 from typing import TYPE_CHECKING, Callable
 
+from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+
 from otx.utils.utils import find_file_recursively
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from lightning import Callback
 
 
 def find_trial_file(hpo_workdir: Path, trial_id: str) -> Path | None:
@@ -91,3 +95,25 @@ def get_callable_args_name(module: Callable) -> list[str]:
         list[str]: arguments name list.
     """
     return list(inspect.signature(module).parameters)
+
+
+def get_metric(callbacks: list[Callback] | Callback) -> str:
+    """Find a metric name from ModelCheckpoint callback.
+
+    Args:
+        callbacks (list[Callback] | Callback): Callback list.
+
+    Raises:
+        RuntimeError: If ModelCheckpoint doesn't exist, the error is raised.
+
+    Returns:
+        str: metric name.
+    """
+    if not isinstance(callbacks, list):
+        callbacks = [callbacks]
+
+    for callback in callbacks:
+        if isinstance(callback, ModelCheckpoint):
+            return callback.monitor
+    msg = "Failed to find a metric. There is no ModelCheckpoint in callback list."
+    raise RuntimeError(msg)

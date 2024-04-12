@@ -22,9 +22,10 @@ from otx.hpo import HyperBand, run_hpo_loop
 from otx.utils.utils import get_decimal_point, get_using_dot_delimited_key, remove_matched_files
 
 from .hpo_trial import run_hpo_trial
-from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir
+from .utils import find_trial_file, get_best_hpo_weight, get_callable_args_name, get_hpo_weight_dir, get_metric
 
 if TYPE_CHECKING:
+    from lightning import Callback
     from lightning.pytorch.cli import OptimizerCallable
 
     from otx.engine.engine import Engine
@@ -42,8 +43,9 @@ AVAILABLE_HP_NAME_MAP = {
 def execute_hpo(
     engine: Engine,
     max_epochs: int,
-    hpo_config: HpoConfig | None = None,
+    hpo_config: HpoConfig,
     progress_update_callback: Callable[[int | float], None] | None = None,
+    callbacks: list[Callback] | Callback | None = None,
     **train_args,
 ) -> tuple[dict[str, Any] | None, Path | None]:
     """Execute HPO.
@@ -51,9 +53,10 @@ def execute_hpo(
     Args:
         engine (Engine): engine instnace.
         max_epochs (int): max epochs to train.
-        hpo_config (HpoConfig | None, optional): Configuration for HPO.
+        hpo_config (HpoConfig): Configuration for HPO.
         progress_update_callback (Callable[[int | float], None] | None, optional):
             callback to update progress. If it's given, it's called with progress every second. Defaults to None.
+        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
 
     Returns:
         tuple[dict[str, Any] | None, Path | None]:
@@ -72,10 +75,11 @@ def execute_hpo(
     hpo_workdir = Path(engine.work_dir) / "hpo"
     hpo_workdir.mkdir(exist_ok=True)
     hpo_configurator = HPOConfigurator(
-        engine,
-        max_epochs,
-        hpo_workdir,
-        hpo_config,
+        engine=engine,
+        max_epochs=max_epochs,
+        hpo_config=hpo_config,
+        hpo_workdir=hpo_workdir,
+        callbacks=callbacks,
     )
     if (hpo_algo := hpo_configurator.get_hpo_algo()) is None:
         logger.warning("HPO is skipped.")
@@ -91,7 +95,8 @@ def execute_hpo(
             hpo_workdir=hpo_workdir,
             engine=engine,
             max_epochs=max_epochs,
-            metric_name=None if hpo_config is None else hpo_config.metric_name,
+            callbacks=callbacks,
+            metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
         "gpu" if torch.cuda.is_available() else "cpu",
@@ -118,21 +123,24 @@ class HPOConfigurator:
 
     Args:
         engine (Engine): engine instance.
-        max_epoch (int): max epochs to train.
+        max_epochs (int): max epochs to train.
+        hpo_config (HpoConfig): Configuration for HPO.
         hpo_workdir (Path | None, optional): HPO work directory. Defaults to None.
-        hpo_config (HpoConfig | None, optional): Configuration for HPO.
+        callbacks (list[Callback] | Callback | None, optional): callbacks used during training. Defaults to None.
     """
 
     def __init__(
         self,
         engine: Engine,
-        max_epoch: int,
+        max_epochs: int,
+        hpo_config: HpoConfig,
         hpo_workdir: Path | None = None,
-        hpo_config: HpoConfig | None = None,
+        callbacks: list[Callback] | Callback | None = None,
     ) -> None:
         self._engine = engine
-        self._max_epoch = max_epoch
+        self._max_epochs = max_epochs
         self._hpo_workdir = hpo_workdir if hpo_workdir is not None else Path(engine.work_dir) / "hpo"
+        self._callbacks = callbacks
         self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
 
     @property
@@ -141,26 +149,40 @@ class HPOConfigurator:
         return self._hpo_config
 
     @hpo_config.setter
-    def hpo_config(self, hpo_config: HpoConfig | None) -> None:
+    def hpo_config(self, hpo_config: HpoConfig) -> None:
         train_dataset_size = len(
             self._engine.datamodule.subsets[self._engine.datamodule.config.train_subset.subset_name],
         )
 
+        if hpo_config.metric_name is None:
+            if self._callbacks is None:
+                msg = (
+                    "HPOConfigurator can't find the metric because callback doesn't exist. "
+                    "Please set hpo_config.metric_name."
+                )
+                raise RuntimeError(msg)
+            hpo_config.metric_name = get_metric(self._callbacks)
+
+        if "loss" in hpo_config.metric_name and hpo_config.mode == "max":
+            logger.warning(
+                f"Because metric for HPO is {hpo_config.metric_name}, hpo_config.mode is changed from max to min.",
+            )
+            hpo_config.mode = "min"
+
         self._hpo_config: dict[str, Any] = {  # default setting
             "save_path": str(self._hpo_workdir),
-            "num_full_iterations": self._max_epoch,
+            "num_full_iterations": self._max_epochs,
             "full_dataset_size": train_dataset_size,
         }
 
-        if hpo_config is not None:
-            hb_arg_names = get_callable_args_name(HyperBand)
-            self._hpo_config.update(
-                {
-                    key: val
-                    for key, val in dataclasses.asdict(hpo_config).items()
-                    if val is not None and key in hb_arg_names
-                },
-            )
+        hb_arg_names = get_callable_args_name(HyperBand)
+        self._hpo_config.update(
+            {
+                key: val
+                for key, val in dataclasses.asdict(hpo_config).items()
+                if val is not None and key in hb_arg_names
+            },
+        )
 
         if "search_space" not in self._hpo_config:
             self._hpo_config["search_space"] = self._get_default_search_space()
