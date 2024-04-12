@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Test of CustomSSDHead."""
 
-from mmdet.models.losses.cross_entropy_loss import CrossEntropyLoss
 from otx.algo.detection.heads.custom_ssd_head import SSDHead
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
 
 
 class TestSSDHead:
@@ -24,6 +24,20 @@ class TestSSDHead:
                 "type": "DeltaXYWHBBoxCoder",
                 "target_means": [0.0, 0.0, 0.0, 0.0],
                 "target_stds": [0.1, 0.1, 0.1, 0.1],
+            },
+            train_cfg={
+                "assigner": {
+                    "type": "MaxIoUAssigner",
+                    "pos_iou_thr": 0.4,
+                    "neg_iou_thr": 0.4,
+                },
+                "smoothl1_beta": 1.0,
+                "allowed_border": -1,
+                "pos_weight": -1,
+                "neg_pos_ratio": 3,
+                "debug": False,
+                "use_giou": False,
+                "use_focal": False,
             },
         )
 

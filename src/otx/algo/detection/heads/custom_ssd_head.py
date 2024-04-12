@@ -7,9 +7,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-from mmdet.models.losses import smooth_l1_loss
-from mmdet.models.utils import multi_apply
-from mmdet.registry import MODELS
 from torch import Tensor, nn
 
 from otx.algo.detection.heads.anchor_head import AnchorHead
@@ -17,10 +14,12 @@ from otx.algo.detection.heads.base_sampler import PseudoSampler
 from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
 from otx.algo.detection.heads.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
 from otx.algo.detection.heads.max_iou_assigner import MaxIoUAssigner
+from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
+from otx.algo.detection.losses.weighted_loss import smooth_l1_loss
+from otx.algo.detection.utils.utils import multi_apply
 
 if TYPE_CHECKING:
-    from mmdet.utils import ConfigType, InstanceList, MultiConfig, OptInstanceList
-    from mmengine.config import Config
+    from mmengine.config import ConfigDict, InstanceData
 
 
 # This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:
@@ -39,12 +38,6 @@ class SSDHead(AnchorHead):
             > 0. Defaults to 256.
         use_depthwise (bool): Whether to use DepthwiseSeparableConv.
             Defaults to False.
-        conv_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct
-            and config conv layer. Defaults to None.
-        norm_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct
-            and config norm layer. Defaults to None.
-        act_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct
-            and config activation layer. Defaults to None.
         anchor_generator (:obj:`ConfigDict` or dict): Config dict for anchor
             generator.
         bbox_coder (:obj:`ConfigDict` or dict): Config of bounding box coder.
@@ -63,21 +56,18 @@ class SSDHead(AnchorHead):
 
     def __init__(
         self,
-        anchor_generator: ConfigType,
-        bbox_coder: ConfigType,
-        init_cfg: MultiConfig,
-        act_cfg: ConfigType,
+        anchor_generator: ConfigDict | dict,
+        bbox_coder: ConfigDict | dict,
+        init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
+        act_cfg: ConfigDict | dict,
+        train_cfg: ConfigDict | dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] = (512, 1024, 512, 256, 256, 256),
         stacked_convs: int = 0,
         feat_channels: int = 256,
         use_depthwise: bool = False,
-        conv_cfg: ConfigType | None = None,
-        norm_cfg: ConfigType | None = None,
         reg_decoded_bbox: bool = False,
-        train_cfg: ConfigType | None = None,
-        test_cfg: ConfigType | None = None,
-        loss_cls: Config | dict | None = None,
+        test_cfg: ConfigDict | dict | None = None,
     ) -> None:
         super(AnchorHead, self).__init__(init_cfg=init_cfg)
         self.num_classes = num_classes
@@ -85,9 +75,7 @@ class SSDHead(AnchorHead):
         self.stacked_convs = stacked_convs
         self.feat_channels = feat_channels
         self.use_depthwise = use_depthwise
-        self.conv_cfg = conv_cfg
-        self.norm_cfg = norm_cfg
-        self.act_cfg = act_cfg
+        self.act_cfg = act_cfg  # TODO(Jaeguk): act_cfg will be deprecated after implementing export.
 
         self.cls_out_channels = num_classes + 1  # add background class
         anchor_generator.pop("type")
@@ -98,14 +86,7 @@ class SSDHead(AnchorHead):
         # heads but a list of int in SSDHead
         self.num_base_priors = self.prior_generator.num_base_priors
 
-        if loss_cls is None:
-            loss_cls = {
-                "type": "CrossEntropyLoss",
-                "use_sigmoid": False,
-                "reduction": "none",
-                "loss_weight": 1.0,
-            }
-        self.loss_cls = MODELS.build(loss_cls)
+        self.loss_cls = CrossEntropyLoss(use_sigmoid=False, reduction="none", loss_weight=1.0)
 
         self._init_layers()
 
@@ -218,9 +199,9 @@ class SSDHead(AnchorHead):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict[str, list[Tensor]]:
         """Compute losses of the head.
 
@@ -298,11 +279,9 @@ class SSDHead(AnchorHead):
         self.cls_convs = nn.ModuleList()
         self.reg_convs = nn.ModuleList()
 
-        activation_config = self.act_cfg.copy()
-        activation_config.setdefault("inplace", True)
         for in_channel, num_base_priors in zip(self.in_channels, self.num_base_priors):
             if self.use_depthwise:
-                activation_layer = MODELS.build(activation_config)
+                activation_layer = nn.ReLU(inplace=True)
 
                 self.reg_convs.append(
                     nn.Sequential(
