@@ -31,8 +31,8 @@ from otx.core.utils.utils import get_mean_std_from_data_processing
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmdet.structures import DetDataSample, OptSampleList, SampleList
-    from mmdet.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
+    from mmengine import ConfigDict
+    from mmengine.structures import InstanceData
     from omegaconf import DictConfig
     from torch import Tensor, device
 
@@ -51,12 +51,12 @@ class SingleStageDetector(nn.Module):
 
     def __init__(
         self,
-        backbone: ConfigType,
-        bbox_head: OptConfigType = None,
-        train_cfg: OptConfigType = None,
-        test_cfg: OptConfigType = None,
-        data_preprocessor: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
+        backbone: ConfigDict | dict,
+        bbox_head: ConfigDict | dict,
+        train_cfg: ConfigDict | dict | None = None,
+        test_cfg: ConfigDict | dict | None = None,
+        data_preprocessor: ConfigDict | dict | None = None,
+        init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] = None,
     ) -> None:
         super().__init__()
         self._is_init = False
@@ -156,9 +156,9 @@ class SingleStageDetector(nn.Module):
     def forward(
         self,
         inputs: torch.Tensor,
-        data_samples: OptSampleList = None,
+        data_samples: list[InstanceData],
         mode: str = "tensor",
-    ) -> dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor:
+    ) -> dict[str, torch.Tensor] | list[InstanceData] | tuple[torch.Tensor] | torch.Tensor:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -166,7 +166,7 @@ class SingleStageDetector(nn.Module):
         - "tensor": Forward the whole network and return tensor or tuple of
         tensor without any post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
-        processed to a list of :obj:`DetDataSample`.
+        processed to a list of :obj:`InstanceData`.
         - "loss": Forward and return a dict of losses according to the given
         inputs and data samples.
 
@@ -176,7 +176,7 @@ class SingleStageDetector(nn.Module):
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+            data_samples (list[:obj:`InstanceData`], optional): A batch of
                 data samples that contain annotations and predictions.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'tensor'.
@@ -185,7 +185,7 @@ class SingleStageDetector(nn.Module):
             The return type depends on ``mode``.
 
             - If ``mode="tensor"``, return a tensor or a tuple of tensor.
-            - If ``mode="predict"``, return a list of :obj:`DetDataSample`.
+            - If ``mode="predict"``, return a list of :obj:`InstanceData`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == "loss":
@@ -201,14 +201,14 @@ class SingleStageDetector(nn.Module):
     def loss(
         self,
         batch_inputs: Tensor,
-        batch_data_samples: SampleList,
+        batch_data_samples: list[InstanceData],
     ) -> dict | list:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
             batch_inputs (Tensor): Input images of shape (N, C, H, W).
                 These should usually be mean centered and std scaled.
-            batch_data_samples (list[:obj:`DetDataSample`]): The batch
+            batch_data_samples (list[:obj:`InstanceData`]): The batch
                 data samples. It usually includes information such
                 as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.
 
@@ -218,20 +218,25 @@ class SingleStageDetector(nn.Module):
         x = self.extract_feat(batch_inputs)
         return self.bbox_head.loss(x, batch_data_samples)
 
-    def predict(self, batch_inputs: Tensor, batch_data_samples: SampleList, rescale: bool = True) -> SampleList:
+    def predict(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: list[InstanceData],
+        rescale: bool = True,
+    ) -> list[InstanceData]:
         """Predict results from a batch of inputs and data samples with post-processing.
 
         Args:
             batch_inputs (Tensor): Inputs with shape (N, C, H, W).
-            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+            batch_data_samples (List[:obj:`InstanceData`]): The Data
                 Samples. It usually includes information such as
                 `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
             rescale (bool): Whether to rescale the results.
                 Defaults to True.
 
         Returns:
-            list[:obj:`DetDataSample`]: Detection results of the
-            input images. Each DetDataSample usually contain
+            list[:obj:`InstanceData`]: Detection results of the
+            input images. Each InstanceData usually contain
             'pred_instances'. And the ``pred_instances`` usually
             contains following keys.
 
@@ -249,13 +254,13 @@ class SingleStageDetector(nn.Module):
     def _forward(
         self,
         batch_inputs: Tensor,
-        batch_data_samples: OptSampleList = None,
+        batch_data_samples: list[InstanceData] | None = None,
     ) -> tuple[list[Tensor], list[Tensor]]:
         """Network forward process.
 
         Args:
             batch_inputs (Tensor): Inputs with shape (N, C, H, W).
-            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
+            batch_data_samples (list[:obj:`InstanceData`]): Each item contains
                 the meta information of each image and corresponding
                 annotations.
 
@@ -280,18 +285,22 @@ class SingleStageDetector(nn.Module):
             x = self.neck(x)
         return x
 
-    def add_pred_to_datasample(self, data_samples: SampleList, results_list: InstanceList) -> SampleList:
-        """Add predictions to `DetDataSample`.
+    def add_pred_to_datasample(
+        self,
+        data_samples: list[InstanceData],
+        results_list: list[InstanceData],
+    ) -> list[InstanceData]:
+        """Add predictions to `InstanceData`.
 
         Args:
-            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+            data_samples (list[:obj:`InstanceData`], optional): A batch of
                 data samples that contain annotations and predictions.
             results_list (list[:obj:`InstanceData`]): Detection results of
                 each image.
 
         Returns:
-            list[:obj:`DetDataSample`]: Detection results of the
-            input images. Each DetDataSample usually contain
+            list[:obj:`InstanceData`]: Detection results of the
+            input images. Each InstanceData usually contain
             'pred_instances'. And the ``pred_instances`` usually
             contains following keys.
 
