@@ -117,7 +117,7 @@ def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
         "zero_shot_visual_prompting": Path(
             fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
         ),
-        "anomaly_classification": Path(fxt_ci_data_root / "v2/anomaly/mvtec/bottle_small/1"),
+        "anomaly_classification": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         "anomaly_detection": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
         "anomaly_segmentation": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
     }
