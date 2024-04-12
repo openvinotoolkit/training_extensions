@@ -14,6 +14,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
+from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
@@ -172,15 +173,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
-    """OTX detection model which can attach a XAI hook."""
+    """OTX detection model which can attach a XAI (Explainable AI) branch."""
 
     def forward_explain(
         self,
         inputs: DetBatchDataEntity | TileBatchDetDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
-
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
@@ -247,11 +246,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         from otx.algo.detection.heads.custom_ssd_head import SSDHead
-        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+        from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
-        explainer = DetClassProbabilityMapHook(
+        explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )
