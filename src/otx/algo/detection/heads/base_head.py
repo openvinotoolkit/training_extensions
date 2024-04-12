@@ -16,7 +16,11 @@ from mmengine.model import constant_init
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+<<<<<<< HEAD
 from mmcv.ops import batched_nms
+=======
+from otx.algo.detection.ops.nms import batched_nms
+>>>>>>> develop
 
 if TYPE_CHECKING:
     from mmdet.structures import SampleList

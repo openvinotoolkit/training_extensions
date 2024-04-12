@@ -8,10 +8,10 @@ import copy
 from typing import TYPE_CHECKING, Callable
 
 import torch
-from mmdet.models.task_modules.assigners.assign_result import AssignResult
 from torch import Tensor
 
 from otx.algo.detection.heads.iou2d_calculator import BboxOverlaps2D
+from otx.algo.detection.utils.structures import AssignResult
 
 if TYPE_CHECKING:
     from mmengine.structures import InstanceData

@@ -15,6 +15,7 @@ import openvino
 import torch
 
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
 
 
@@ -23,18 +24,27 @@ class OTXNativeModelExporter(OTXModelExporter):
 
     def __init__(
         self,
+        task_level_export_parameters: TaskLevelExportParameters,
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
-        metadata: dict[tuple[str, str], str] | None = None,
         via_onnx: bool = False,
         onnx_export_configuration: dict[str, Any] | None = None,
         output_names: list[str] | None = None,
     ) -> None:
-        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata, output_names)
+        super().__init__(
+            task_level_export_parameters=task_level_export_parameters,
+            input_size=input_size,
+            mean=mean,
+            std=std,
+            resize_mode=resize_mode,
+            pad_value=pad_value,
+            swap_rgb=swap_rgb,
+            output_names=output_names,
+        )
         self.via_onnx = via_onnx
         self.onnx_export_configuration = onnx_export_configuration if onnx_export_configuration is not None else {}
         if output_names is not None:
