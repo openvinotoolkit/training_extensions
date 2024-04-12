@@ -255,12 +255,15 @@
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.custom_ssd_head</span> <span class="kn">import</span> <span class="n">SSDHead</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.mmconfig</span> <span class="kn">import</span> <span class="n">read_mmconfig</span>
 <span class="kn">from</span> <span class="nn">otx.algo.utils.support_otx_v1</span> <span class="kn">import</span> <span class="n">OTXv1Helper</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.exporter.mmdeploy</span> <span class="kn">import</span> <span class="n">MMdeployExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.mean_ap</span> <span class="kn">import</span> <span class="n">MeanAPCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.detection</span> <span class="kn">import</span> <span class="n">MMDetCompatibleModel</span>
 <span class="kn">from</span> <span class="nn">otx.core.schedulers</span> <span class="kn">import</span> <span class="n">LRSchedulerListCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.build</span> <span class="kn">import</span> <span class="n">modify_num_classes</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">convert_conf_to_mmconfig_dict</span>
+<span class="kn">from</span> <span class="nn">otx.core.utils.utils</span> <span class="kn">import</span> <span class="n">get_mean_std_from_data_processing</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">torch</span>
@@ -814,16 +817,27 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_export_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parameters for an exporter.&quot;&quot;&quot;</span>
-        <span class="n">export_params</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_export_parameters</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;deploy_cfg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;otx.algo.detection.mmdeploy.ssd_mobilenetv2&quot;</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;input_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;resize_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;pad_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">export_params</span><span class="p">[</span><span class="s2">&quot;swap_rgb&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates OTXModelExporter object that can export the model.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">export_params</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">get_mean_std_from_data_processing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">MMdeployExporter</span><span class="p">(</span>
+            <span class="n">model_builder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">,</span>
+            <span class="n">model_cfg</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
+            <span class="n">deploy_cfg</span><span class="o">=</span><span class="s2">&quot;otx.algo.detection.mmdeploy.ssd_mobilenetv2&quot;</span><span class="p">,</span>
+            <span class="n">test_pipeline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_fake_test_pipeline</span><span class="p">(),</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+            <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+            <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+            <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_anchors_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Pre hook for pop anchor statistics from checkpoint state_dict.&quot;&quot;&quot;</span>

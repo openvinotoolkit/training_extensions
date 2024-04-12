@@ -253,7 +253,7 @@
 <span class="kn">from</span> <span class="nn">openvino.model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.exporter.exportable_code</span> <span class="kn">import</span> <span class="n">demo</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -268,6 +268,8 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the model exporters used in OTX.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        task_level_export_parameters (TaskLevelExportParameters): Collection of export parameters</span>
+<span class="sd">            which can be defined at a task level.</span>
 <span class="sd">        input_size (tuple[int, ...]): Input shape.</span>
 <span class="sd">        mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).</span>
 <span class="sd">        std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).</span>
@@ -277,20 +279,19 @@
 <span class="sd">            &quot;fit_to_window_letterbox&quot; resizes images and pads images to fit the size. Defaults to &quot;standard&quot;.</span>
 <span class="sd">        pad_value (int, optional): Padding value. Defaults to 0.</span>
 <span class="sd">        swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.</span>
-<span class="sd">        metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.</span>
 <span class="sd">        output_names (list[str] | None, optional): Names for model&#39;s outputs, which would be</span>
 <span class="sd">        embedded into resulting model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">task_level_export_parameters</span><span class="p">:</span> <span class="n">TaskLevelExportParameters</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">std</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
         <span class="n">resize_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">,</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span> <span class="s2">&quot;fit_to_window&quot;</span><span class="p">,</span> <span class="s2">&quot;fit_to_window_letterbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span>
         <span class="n">pad_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">swap_rgb</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">output_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
@@ -299,8 +300,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">resize_mode</span> <span class="o">=</span> <span class="n">resize_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pad_value</span> <span class="o">=</span> <span class="n">pad_value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">swap_rgb</span> <span class="o">=</span> <span class="n">swap_rgb</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_level_export_parameters</span> <span class="o">=</span> <span class="n">task_level_export_parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_names</span> <span class="o">=</span> <span class="n">output_names</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collection of metadata to be stored in OpenVINO Intermediate Representation or ONNX.</span>
+
+<span class="sd">        This metadata is mainly used to support ModelAPI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_level_export_parameters</span><span class="o">.</span><span class="n">to_metadata</span><span class="p">()</span>
 
 <div class="viewcode-block" id="OTXModelExporter.export">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.base.html#otx.core.exporter.base.OTXModelExporter.export">[docs]</a>

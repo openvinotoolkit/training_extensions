@@ -258,6 +258,7 @@
 <span class="kn">from</span> <span class="nn">mmengine.registry.default_scope</span> <span class="kn">import</span> <span class="n">DefaultScope</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">TaskLevelExportParameters</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.utils.config</span> <span class="kn">import</span> <span class="n">convert_conf_to_mmconfig_dict</span><span class="p">,</span> <span class="n">to_tuple</span>
 
@@ -277,6 +278,8 @@
 <span class="sd">        model_cfg (DictConfig): Model config for mm framework.</span>
 <span class="sd">        deploy_cfg (str | MMConfig): Deployment config module path or MMEngine Config object.</span>
 <span class="sd">        test_pipeline (list[dict]): A pipeline for test dataset.</span>
+<span class="sd">        task_level_export_parameters (TaskLevelExportParameters): Collection of export parameters</span>
+<span class="sd">            which can be defined at a task level.</span>
 <span class="sd">        input_size (tuple[int, ...]): Input shape.</span>
 <span class="sd">        mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).</span>
 <span class="sd">        std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).</span>
@@ -296,17 +299,26 @@
         <span class="n">model_cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
         <span class="n">deploy_cfg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">MMConfig</span><span class="p">,</span>
         <span class="n">test_pipeline</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">task_level_export_parameters</span><span class="p">:</span> <span class="n">TaskLevelExportParameters</span><span class="p">,</span>
         <span class="n">input_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">mean</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">std</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
         <span class="n">resize_mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;crop&quot;</span><span class="p">,</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span> <span class="s2">&quot;fit_to_window&quot;</span><span class="p">,</span> <span class="s2">&quot;fit_to_window_letterbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span>
         <span class="n">pad_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">swap_rgb</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_num_detections</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">output_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">resize_mode</span><span class="p">,</span> <span class="n">pad_value</span><span class="p">,</span> <span class="n">swap_rgb</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">output_names</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="n">task_level_export_parameters</span><span class="p">,</span>
+            <span class="n">input_size</span><span class="o">=</span><span class="n">input_size</span><span class="p">,</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+            <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+            <span class="n">resize_mode</span><span class="o">=</span><span class="n">resize_mode</span><span class="p">,</span>
+            <span class="n">pad_value</span><span class="o">=</span><span class="n">pad_value</span><span class="p">,</span>
+            <span class="n">swap_rgb</span><span class="o">=</span><span class="n">swap_rgb</span><span class="p">,</span>
+            <span class="n">output_names</span><span class="o">=</span><span class="n">output_names</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model_builder</span> <span class="o">=</span> <span class="n">model_builder</span>
         <span class="n">model_cfg</span> <span class="o">=</span> <span class="n">convert_conf_to_mmconfig_dict</span><span class="p">(</span><span class="n">model_cfg</span><span class="p">,</span> <span class="s2">&quot;list&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_model_cfg</span> <span class="o">=</span> <span class="n">MMConfig</span><span class="p">({</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_cfg</span><span class="p">,</span> <span class="s2">&quot;test_pipeline&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">to_tuple</span><span class="p">,</span> <span class="n">test_pipeline</span><span class="p">))})</span>

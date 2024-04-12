@@ -264,8 +264,8 @@
     <span class="n">AnomalySegmentationDataBatch</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
-<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span><span class="p">,</span> <span class="n">TaskLevelExportParameters</span>
+<span class="kn">from</span> <span class="nn">otx.core.types.label</span> <span class="kn">import</span> <span class="n">LabelInfo</span><span class="p">,</span> <span class="n">NullLabelInfo</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 
@@ -302,24 +302,37 @@
         <span class="n">normalization_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span> <span class="o">=</span> <span class="n">image_shape</span>
-        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_threshold&quot;</span><span class="p">):</span> <span class="n">image_threshold</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_threshold&quot;</span><span class="p">):</span> <span class="n">pixel_threshold</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;normalization_scale&quot;</span><span class="p">):</span> <span class="n">normalization_scale</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_height&quot;</span><span class="p">):</span> <span class="n">image_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_width&quot;</span><span class="p">):</span> <span class="n">image_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_shape&quot;</span><span class="p">):</span> <span class="n">image_shape</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">):</span> <span class="s2">&quot;Normal Anomaly&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">):</span> <span class="s2">&quot;AnomalyDetection&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">):</span> <span class="n">task</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span> <span class="o">=</span> <span class="n">image_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span> <span class="o">=</span> <span class="n">pixel_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalization_scale</span> <span class="o">=</span> <span class="n">normalization_scale</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="n">TaskLevelExportParameters</span><span class="p">(</span>
+                <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;anomaly&quot;</span><span class="p">,</span>
+                <span class="n">task_type</span><span class="o">=</span><span class="s2">&quot;anomaly&quot;</span><span class="p">,</span>
+                <span class="n">label_info</span><span class="o">=</span><span class="n">NullLabelInfo</span><span class="p">(),</span>
+                <span class="n">optimization_config</span><span class="o">=</span><span class="p">{},</span>
+            <span class="p">),</span>
             <span class="n">input_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">image_shape</span><span class="p">),</span>
             <span class="n">mean</span><span class="o">=</span><span class="n">mean_values</span><span class="p">,</span>
             <span class="n">std</span><span class="o">=</span><span class="n">scale_values</span><span class="p">,</span>
             <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># default value. Ideally, modelAPI should pass RGB inputs after the pre-processing step</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>  <span class="c1"># type: ignore[override]</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_threshold&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_threshold</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_threshold&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_threshold</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;normalization_scale&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalization_scale</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_height&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;orig_width&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;image_shape&quot;</span><span class="p">):</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">orig_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">orig_width</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">):</span> <span class="s2">&quot;Normal Anomaly&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">):</span> <span class="s2">&quot;AnomalyDetection&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;model_info&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">to_openvino</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
