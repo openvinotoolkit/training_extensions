@@ -37,7 +37,7 @@ class TestPerfObjectDetection(PerfTestBase):
                     "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
-                    "scheduler.monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
                 },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
@@ -56,7 +56,7 @@ class TestPerfObjectDetection(PerfTestBase):
                     "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
-                    "scheduler.monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
                 },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
@@ -73,7 +73,7 @@ class TestPerfObjectDetection(PerfTestBase):
                     "deterministic": "True",
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                     "callback_monitor": "val/f1-score",
-                    "scheduler.monitor": "val/f1-score",
+                    "model.scheduler.monitor": "val/f1-score",
                 },
                 "test": {
                     "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
