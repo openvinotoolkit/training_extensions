@@ -8,10 +8,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
+from mmcv.utils import ext_loader
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
-
-from mmcv.utils import ext_loader
 
 if TYPE_CHECKING:
     from mmcv.ops.nms import NMSop
