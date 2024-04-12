@@ -79,14 +79,18 @@ class Benchmark:
                 return
             if self.compare == "==":
                 print(
-                    f"[Check] abs({result_entry[self.name]=} - {target_entry[self.name]=}) < {target_entry[self.name]=} * {self.margin=}",
+                    f"[Check] abs({self.name}:{result_entry[self.name]} - {self.name}:{target_entry[self.name]}) < {self.name}:{target_entry[self.name]} * {self.margin}",
                 )
                 assert abs(result_entry[self.name] - target_entry[self.name]) < target_entry[self.name] * self.margin
             elif self.compare == "<":
-                print(f"[Check] {result_entry[self.name]=} < {target_entry[self.name]=} * (1.0 + {self.margin=})")
+                print(
+                    f"[Check] {self.name}:{result_entry[self.name]} < {self.name}:{target_entry[self.name]} * (1.0 + {self.margin})",
+                )
                 assert result_entry[self.name] < target_entry[self.name] * (1.0 + self.margin)
             elif self.compare == ">":
-                print(f"[Check] {result_entry[self.name]=} > {target_entry[self.name]=} * (1.0 - {self.margin=})")
+                print(
+                    f"[Check] {self.name}:{result_entry[self.name]} > {self.name}:{target_entry[self.name]} * (1.0 - {self.margin})",
+                )
                 assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
 
     def __init__(
@@ -287,6 +291,8 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
+        if result is None:
+            return None
         result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
         return result.set_index(["task", "model", "data_group", "data"])
 

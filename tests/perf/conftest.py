@@ -296,7 +296,10 @@ def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.M
     model: Benchmark.Model = request.param
     if fxt_model_category == "all":
         return model
-    if (fxt_model_category == "default" and model.category == "other") or fxt_model_category != model.category:
+    if fxt_model_category == "default":
+        if model.category == "other":
+            pytest.skip(f"{model.category} category model")
+    elif fxt_model_category != model.category:
         pytest.skip(f"{model.category} category model")
     return model
 
