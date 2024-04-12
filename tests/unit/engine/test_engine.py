@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+from unittest.mock import create_autospec
 
 import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.config.device import DeviceConfig
+from otx.core.model.base import OVModel
 from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.engine import Engine
@@ -123,6 +125,9 @@ class TestEngine:
         mock_test.assert_called_once()
         mock_torch_load.assert_not_called()
 
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.test(checkpoint="path/to/model.xml")
+
     def test_prediction_after_training(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
@@ -136,6 +141,9 @@ class TestEngine:
 
         fxt_engine.predict(checkpoint="path/to/new/checkpoint")
         mock_torch_load.assert_called_with("path/to/new/checkpoint")
+
+        fxt_engine.model = create_autospec(OVModel)
+        fxt_engine.predict(checkpoint="path/to/model.xml")
 
     def test_prediction_with_ov_model(self, fxt_engine, mocker) -> None:
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
@@ -196,6 +204,22 @@ class TestEngine:
             precision=OTXPrecisionType.FP32,
         )
 
+        # check exportable code with IR OpenVINO model
+        mock_export = mocker.patch("otx.engine.engine.OVModel.export")
+        fxt_engine.checkpoint = "path/to/checkpoint.xml"
+        mock_get_ov_model = mocker.patch(
+            "otx.engine.engine.AutoConfigurator.get_ov_model",
+            return_value=OVModel(model_name="efficientnet-b0-pytorch", model_type="classification"),
+        )
+        fxt_engine.export(export_format=OTXExportFormatType.EXPORTABLE_CODE, checkpoint="path/to/checkpoint.xml")
+        mock_get_ov_model.assert_called_once()
+        mock_export.assert_called_with(
+            output_dir=Path(fxt_engine.work_dir),
+            base_name="exported_model",
+            export_format=OTXExportFormatType.EXPORTABLE_CODE,
+            precision=OTXPrecisionType.FP32,
+        )
+
     def test_optimizing_model(self, fxt_engine, mocker) -> None:
         with pytest.raises(RuntimeError, match="supports only OV IR or ONNX checkpoints"):
             fxt_engine.optimize()
@@ -212,6 +236,11 @@ class TestEngine:
         # With max_data_subset_size
         fxt_engine.optimize(max_data_subset_size=100)
         assert mock_ov_model.return_value.optimize.call_args[0][2]["subset_size"] == 100
+
+        # Optimize and export with exportable code
+        mocker_export = mocker.patch.object(fxt_engine, "export")
+        fxt_engine.optimize(export_demo_package=True)
+        mocker_export.assert_called_once()
 
     def test_explain(self, fxt_engine, mocker) -> None:
         mocker.patch("otx.engine.engine.OTXModel.load_state_dict")

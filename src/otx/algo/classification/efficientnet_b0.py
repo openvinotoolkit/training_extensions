@@ -6,15 +6,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import torch
+from lightning.pytorch.cli import ReduceLROnPlateau
+
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.metrics.accuracy import HLabelClsMetricCallble, MultiClassClsMetricCallable, MultiLabelClsMetricCallable
-from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.classification import (
     MMPretrainHlabelClsModel,
     MMPretrainMulticlassClsModel,
     MMPretrainMultilabelClsModel,
 )
+from otx.core.model.utils.mmpretrain import ExplainableMixInMMPretrainModel
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.core.types.label import HLabelInfo
 
@@ -24,14 +27,23 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
+class EfficientNetB0ForHLabelCls(ExplainableMixInMMPretrainModel, MMPretrainHlabelClsModel):
     """EfficientNetB0 Model for hierarchical label classification task."""
 
     def __init__(
         self,
         hlabel_info: HLabelInfo,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
+            params=params,
+            lr=0.0049,
+        ),
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=0.1,
+            patience=1,
+            monitor="val/accuracy",
+        ),
         metric: MetricCallable = HLabelClsMetricCallble,
         torch_compile: bool = False,
     ) -> None:
@@ -51,15 +63,26 @@ class EfficientNetB0ForHLabelCls(MMPretrainHlabelClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "hlabel", add_prefix)
 
 
-class EfficientNetB0ForMulticlassCls(MMPretrainMulticlassClsModel):
+class EfficientNetB0ForMulticlassCls(ExplainableMixInMMPretrainModel, MMPretrainMulticlassClsModel):
     """EfficientNetB0 Model for multi-label classification task."""
 
     def __init__(
         self,
         num_classes: int,
         light: bool = False,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
+            params=params,
+            lr=0.0049,
+            momentum=0.9,
+            weight_decay=0.0001,
+        ),
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=0.1,
+            patience=1,
+            monitor="val/accuracy",
+        ),
         metric: MetricCallable = MultiClassClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:
@@ -79,14 +102,23 @@ class EfficientNetB0ForMulticlassCls(MMPretrainMulticlassClsModel):
         return OTXv1Helper.load_cls_effnet_b0_ckpt(state_dict, "multiclass", add_prefix)
 
 
-class EfficientNetB0ForMultilabelCls(MMPretrainMultilabelClsModel):
+class EfficientNetB0ForMultilabelCls(ExplainableMixInMMPretrainModel, MMPretrainMultilabelClsModel):
     """EfficientNetB0 Model for multi-class classification task."""
 
     def __init__(
         self,
         num_classes: int,
-        optimizer: OptimizerCallable = DefaultOptimizerCallable,
-        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        optimizer: OptimizerCallable = lambda params: torch.optim.SGD(
+            params=params,
+            lr=0.0049,
+        ),
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = lambda optimizer: ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=0.1,
+            patience=1,
+            monitor="val/accuracy",
+        ),
         metric: MetricCallable = MultiLabelClsMetricCallable,
         torch_compile: bool = False,
     ) -> None:

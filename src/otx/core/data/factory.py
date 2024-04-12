@@ -123,7 +123,7 @@ class OTXDatasetFactory:
         if task == OTXTaskType.SEMANTIC_SEGMENTATION:
             from .dataset.segmentation import OTXSegmentationDataset
 
-            return OTXSegmentationDataset(**common_kwargs)
+            return OTXSegmentationDataset(**common_kwargs, ignore_index=cfg_data_module.ignore_index)
 
         if task == OTXTaskType.ACTION_CLASSIFICATION:
             from .dataset.action_classification import OTXActionClsDataset

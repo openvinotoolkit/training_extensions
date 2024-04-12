@@ -6,6 +6,11 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Sequence
+
+import torch
+
+FeatureMapType = torch.Tensor | Sequence[torch.Tensor]
 
 
 class TargetExplainGroup(str, Enum):

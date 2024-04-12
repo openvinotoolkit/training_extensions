@@ -316,9 +316,9 @@ def test_otx_explain_e2e(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert (latest_dir / "saliency_maps").exists()
-    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
-    sal_map = cv2.imread(str(saliency_maps[0]))
+    assert (latest_dir / "saliency_map").exists()
+    saliency_map = sorted((latest_dir / "saliency_map").glob(pattern="*.png"))
+    sal_map = cv2.imread(str(saliency_map[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
 
@@ -354,7 +354,7 @@ def test_otx_explain_e2e(
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
+        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_map" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
             # Take corner values due to map sparsity of InstSeg
             actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
@@ -437,59 +437,16 @@ def test_otx_ov_test(
 
 
 REASON = '''
-tests/integration/cli/test_cli.py:507:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-tests/utils.py:18: in run_main
-    _run_main(command_cfg)
-tests/utils.py:37: in _run_main
-    main()
-src/otx/cli/__init__.py:17: in main
-    OTXCLI()
-src/otx/cli/cli.py:59: in __init__
-    self.run()
-src/otx/cli/cli.py:521: in run
-    fn(**fn_kwargs)
-src/otx/engine/engine.py:234: in train
-    best_config, best_trial_weight = execute_hpo(engine=self, **locals())
-src/otx/engine/hpo/hpo_api.py:67: in execute_hpo
-    hpo_configurator = HPOConfigurator(
-src/otx/engine/hpo/hpo_api.py:127: in __init__
-    self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
-src/otx/engine/hpo/hpo_api.py:168: in hpo_config
-    self._hpo_config["prior_hyper_parameters"] = {
-src/otx/engine/hpo/hpo_api.py:169: in <dictcomp>
-    hp: get_using_dot_delimited_key(hp, self._engine)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+self = <otx.hpo.hyperband.AshaTrial object at 0x7069e015e750>
 
-key = 'model.optimizer_callable.keywords.lr'
-target = <function adapt_class_type.<locals>.partial_instance at 0x71faee3b9480>
+    def finalize(self) -> None:
+        """Set done as True."""
+        if not self.score:
+            error_msg = f"Trial{self.id} didn't report any score but tries to be done."
+>           raise RuntimeError(error_msg)
+E           RuntimeError: Trial0 didn't report any score but tries to be done.
 
-    def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
-        """Get values of attribute in target object using dot delimited key.
-
-        For example, if key is "a.b.c", then get a value of 'target.a.b.c'.
-        Target should be object having attributes, dictionary or list.
-        To get an element in a list, an integer that is the index of corresponding value can be set as a key.
-
-        Args:
-            key (str): dot delimited key.
-            val (Any): value to set.
-            target (Any): target to set value to.
-        """
-        splited_key = key.split(".")
-        for each_key in splited_key:
-            if isinstance(target, dict):
-                target = target[each_key]
-            elif isinstance(target, list):
-                if not each_key.isdigit():
-                    error_msg = f"Key should be integer but '{each_key}'."
-                    raise ValueError(error_msg)
-                target = target[int(each_key)]
-            else:
->               target = getattr(target, each_key)
-E               AttributeError: 'function' object has no attribute 'keywords'
-
-src/otx/utils/utils.py:37: AttributeError
+src/otx/hpo/hpo_base.py:274: RuntimeError
 '''
 
 
@@ -514,8 +471,12 @@ def test_otx_hpo_e2e(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-
-    pytest.xfail(reason=REASON)
+    if task in {
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+    }:
+        pytest.xfail(reason=REASON)
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"

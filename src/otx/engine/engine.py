@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
@@ -67,9 +68,11 @@ def override_metric_callable(model: OTXModel, new_metric_callable: MetricCallabl
         return
 
     orig_metric_callable = model.metric_callable
-    model.metric_callable = new_metric_callable
-    yield model
-    model.metric_callable = orig_metric_callable
+    try:
+        model.metric_callable = new_metric_callable
+        yield model
+    finally:
+        model.metric_callable = orig_metric_callable
 
 
 class Engine:
@@ -350,12 +353,15 @@ class Engine:
 
         is_ir_ckpt = Path(str(checkpoint)).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
             if self.device.accelerator != "cpu":
                 msg = "IR model supports inference only on CPU device. The device is changed automatic."
                 warn(msg, stacklevel=1)
                 self.device = DeviceType.cpu  # type: ignore[assignment]
+
+        # NOTE: Re-initiate datamodule without tiling as model API supports its own tiling mechanism
+        if isinstance(model, OVModel):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
@@ -438,22 +444,29 @@ class Engine:
 
         is_ir_ckpt = checkpoint is not None and Path(checkpoint).suffix in [".xml", ".onnx"]
         if is_ir_ckpt and not isinstance(model, OVModel):
-            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
+
+        # NOTE: Re-initiate datamodule for OVModel as model API supports its own data pipeline.
+        if isinstance(model, OVModel):
+            datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
             loaded_checkpoint = torch.load(checkpoint)
             model.load_state_dict(loaded_checkpoint)
 
-        model.explain_mode = explain
-
         self._build_trainer(**kwargs)
 
-        predict_result = self.trainer.predict(
-            model=model,
-            dataloaders=datamodule,
-            return_predictions=return_predictions,
-        )
+        curr_explain_mode = model.explain_mode
+
+        try:
+            model.explain_mode = explain
+            predict_result = self.trainer.predict(
+                model=model,
+                dataloaders=datamodule,
+                return_predictions=return_predictions,
+            )
+        finally:
+            model.explain_mode = curr_explain_mode
 
         if explain:
             if explain_config is None:
@@ -461,12 +474,11 @@ class Engine:
 
             predict_result = process_saliency_maps_in_pred_entity(predict_result, explain_config)
 
-        model.explain_mode = False
         return predict_result
 
     def export(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
         explain: bool = False,
@@ -474,7 +486,7 @@ class Engine:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
@@ -505,19 +517,33 @@ class Engine:
                 ```
         """
         ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-
         if ckpt_path is None:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
+        is_ir_ckpt = Path(ckpt_path).suffix in [".xml"]
 
-        self.model.eval()
-        loaded_checkpoint = torch.load(ckpt_path)
-        self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
+        if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
+            msg = (
+                "Export format is automatically changed to EXPORTABLE_CODE, "
+                "since openvino IR model is passed as a checkpoint."
+            )
+            warn(msg, stacklevel=1)
+            export_format = OTXExportFormatType.EXPORTABLE_CODE
 
-        self.model.load_state_dict(loaded_checkpoint)
+        if is_ir_ckpt and not isinstance(self.model, OVModel):
+            # create OVModel
+            self.model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=self.datamodule.label_info,
+            )
+
+        if not is_ir_ckpt:
+            self.model.eval()
+            loaded_checkpoint = torch.load(ckpt_path)
+            self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
+            self.model.load_state_dict(loaded_checkpoint)
 
         self.model.explain_mode = explain
-
         exported_model_path = self.model.export(
             output_dir=Path(self.work_dir),
             base_name=self._EXPORTED_MODEL_BASE_NAME,
@@ -533,6 +559,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
+        export_demo_package: bool = False,
     ) -> Path:
         """Applies NNCF.PTQ to the underlying models (now works only for OV models).
 
@@ -545,6 +572,8 @@ class Engine:
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
             used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
             default settings.
+            export_demo_package (bool): Whether to export demo package with optimized models.
+            It outputs zip archive with stand-alone demo package.
 
         Returns:
             Path: path to the optimized model.
@@ -588,11 +617,19 @@ class Engine:
         if max_data_subset_size is not None:
             ptq_config["subset_size"] = max_data_subset_size
 
-        return model.optimize(
-            Path(self.work_dir),
-            optimize_datamodule,
-            ptq_config,
-        )
+        if not export_demo_package:
+            return model.optimize(
+                Path(self.work_dir),
+                optimize_datamodule,
+                ptq_config,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
+            return self.export(
+                checkpoint=tmp_model_path,
+                export_format=OTXExportFormatType.EXPORTABLE_CODE,
+            )
 
     def explain(
         self,

@@ -55,6 +55,7 @@ def test_forward_explain(
 
     predict_result = engine.predict()
     assert isinstance(predict_result[0], OTXBatchPredEntity)
+    assert not predict_result[0].has_xai_outputs
 
     predict_result_explain = engine.predict(explain=True)
     assert isinstance(predict_result_explain[0], OTXBatchPredEntity)
@@ -109,8 +110,8 @@ def test_predict_with_explain(
     predict_result_explain_torch = engine.predict(explain=True)
     assert isinstance(predict_result_explain_torch[0], OTXBatchPredEntity)
     assert predict_result_explain_torch[0].has_xai_outputs
-    assert predict_result_explain_torch[0].saliency_maps is not None
-    assert isinstance(predict_result_explain_torch[0].saliency_maps[0], dict)
+    assert predict_result_explain_torch[0].saliency_map is not None
+    assert isinstance(predict_result_explain_torch[0].saliency_map[0], dict)
 
     # Export with explain
     ckpt_path = tmp_path / "checkpoint.ckpt"
@@ -138,10 +139,10 @@ def test_predict_with_explain(
     predict_result_explain_ov = engine.predict(checkpoint=exported_model_path, explain=True)
     assert isinstance(predict_result_explain_ov[0], OTXBatchPredEntity)
     assert predict_result_explain_ov[0].has_xai_outputs
-    assert predict_result_explain_ov[0].saliency_maps is not None
-    assert isinstance(predict_result_explain_ov[0].saliency_maps[0], dict)
-    assert predict_result_explain_ov[0].feature_vectors is not None
-    assert isinstance(predict_result_explain_ov[0].feature_vectors[0], np.ndarray)
+    assert predict_result_explain_ov[0].saliency_map is not None
+    assert isinstance(predict_result_explain_ov[0].saliency_map[0], dict)
+    assert predict_result_explain_ov[0].feature_vector is not None
+    assert isinstance(predict_result_explain_ov[0].feature_vector[0], np.ndarray)
 
     if task == "instance_segmentation" or "atss_r50_fpn" in recipe:
         # For instance segmentation and atss_r50_fpn batch_size for Torch task 1, for OV 2.
@@ -151,8 +152,8 @@ def test_predict_with_explain(
         # TODO(gzalessk): remove this if statement when the issue is resolved
         return
 
-    maps_torch = predict_result_explain_torch[0].saliency_maps
-    maps_ov = predict_result_explain_ov[0].saliency_maps
+    maps_torch = predict_result_explain_torch[0].saliency_map
+    maps_ov = predict_result_explain_ov[0].saliency_map
 
     assert len(maps_torch) == len(maps_ov)
 
