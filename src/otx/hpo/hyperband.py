@@ -502,6 +502,24 @@ class HyperBand(HpoBase):
         https://arxiv.org/abs/1810.05934
 
     Args:
+        search_space (dict[str, dict[str, Any]]): hyper parameter search space to find.
+        save_path (str | None, optional): path where result of HPO is saved.
+        mode ("max" | "min", optional): One of {min, max}. Determines whether objective is
+                                        minimizing or maximizing the score.
+        num_trials (int | None, optional): How many training to conduct for HPO.
+        num_workers (int, optional): How many trains are executed in parallel.
+        num_full_iterations (int, optional): epoch for traninig after HPO.
+        full_dataset_size (int, optional): train dataset size
+        expected_time_ratio (int | float | None, optional): Time to use for HPO.
+                                                            If HPO is configured automatically,
+                                                            HPO use time about exepected_time_ratio *
+                                                            train time after HPO times.
+        maximum_resource (int | float | None, optional): Maximum resource to use for training each trial.
+        resume (bool, optional): resume flag decide to use previous HPO results.
+                                 If HPO completed, you can just use optimized hyper parameters.
+                                 If HPO stopped in middle, you can resume in middle.
+        prior_hyper_parameters (dict | list[dict] | None, optional) = Hyper parameters to try first.
+        acceptable_additional_time_ratio (float | int, optional) = Decide how much additional time can be acceptable.
         minimum_resource (float | int | None, optional): Minimum resource to use for training a trial. Defaults to None.
         reduction_factor (int, optional): Decicdes how many trials to promote to next rung.
                                           Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.
@@ -514,13 +532,37 @@ class HyperBand(HpoBase):
 
     def __init__(
         self,
+        search_space: dict[str, dict[str, Any]],
+        save_path: str | None = None,
+        mode: Literal["max", "min"] = "max",
+        num_trials: int | None = None,
+        num_workers: int = 1,
+        num_full_iterations: int | float = 1,
+        full_dataset_size: int = 0,
+        expected_time_ratio: int | float | None = None,
+        maximum_resource: int | float | None = None,
+        resume: bool = False,
+        prior_hyper_parameters: dict | list[dict] | None = None,
+        acceptable_additional_time_ratio: float | int = 1.0,
         minimum_resource: int | float | None = None,
         reduction_factor: int = 3,
         asynchronous_sha: bool = True,
         asynchronous_bracket: bool = False,
-        **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(
+            search_space,
+            save_path,
+            mode,
+            num_trials,
+            num_workers,
+            num_full_iterations,
+            full_dataset_size,
+            expected_time_ratio,
+            maximum_resource,
+            resume,
+            prior_hyper_parameters,
+            acceptable_additional_time_ratio,
+        )
 
         if minimum_resource is not None:
             check_positive(minimum_resource, "minimum_resource")

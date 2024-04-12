@@ -28,3 +28,4 @@ class HpoConfig:
     reduction_factor: int = 3
     asynchronous_bracket: bool = True
     asynchronous_sha: bool = torch.cuda.device_count() != 1
+    metric_name: str | None = None
