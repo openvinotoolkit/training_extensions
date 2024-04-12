@@ -384,7 +384,7 @@ def fxt_benchmark_summary(
         if fxt_summary_file.suffix != ".csv":
             print(f"{fxt_summary_file.suffix} output is not supported.")
             fxt_summary_file = fxt_summary_file.with_suffix(".csv")
-        summary_results.to_csv(fxt_summary_file, index=False)
+        summary_results.to_csv(fxt_summary_file)
     print(f"  -> Saved to {fxt_summary_file}.")
 
     if fxt_mlflow_client:
