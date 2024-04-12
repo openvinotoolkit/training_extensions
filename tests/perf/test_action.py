@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""OTX visual prompting perfomance benchmark tests."""
+"""OTX action perfomance benchmark tests."""
 
 from __future__ import annotations
 
@@ -13,47 +13,59 @@ from .benchmark import Benchmark
 from .conftest import PerfTestBase
 
 
-class TestPerfVisualPrompting(PerfTestBase):
-    """Benchmark visual prompting."""
+class TestPerfActionClassification(PerfTestBase):
+    """Benchmark action classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="visual_prompting", name="sam_tiny_vit", category="speed"),
-        Benchmark.Model(task="visual_prompting", name="sam_vit_b", category="accuracy"),
+        Benchmark.Model(task="action/action_classification", name="movinet", category="speed"),
+        Benchmark.Model(task="action/action_classification", name="x3d", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name=f"wgisd_small_{idx}",
-            path=Path("visual_prompting/wgisd_small") / f"{idx}",
+            name="ucf-5percent-small",
+            path=Path("action/action_classification/ucf_kinetics_5percent_small"),
             group="small",
             num_repeat=5,
-            extra_overrides={},
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="coco_car_person_medium",
-            path=Path("visual_prompting/coco_car_person_medium"),
-            group="medium",
-            num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "train": {
+                    "max_epochs": "10",
+                    "deterministic": "True",
+                },
+            },
         ),
         Benchmark.Dataset(
-            name="vitens_coliform",
-            path=Path("visual_prompting/Vitens-Coliform-coco"),
+            name="ucf-30percent-medium",
+            path=Path("action/action_classification/ucf_kinetics_30percent_medium"),
+            group="medium",
+            num_repeat=5,
+            extra_overrides={
+                "train": {
+                    "max_epochs": "10",
+                    "deterministic": "True",
+                },
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_classification/ucf_kinetics_large"),
             group="large",
             num_repeat=5,
-            extra_overrides={},
+            extra_overrides={
+                "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
+            },
         ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
@@ -86,23 +98,47 @@ class TestPerfVisualPrompting(PerfTestBase):
         )
 
 
-class TestPerfZeroShotVisualPrompting(PerfTestBase):
-    """Benchmark zero-shot visual prompting."""
+class TestPerfActionDetection(PerfTestBase):
+    """Benchmark action detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_tiny_vit", category="speed"),
-        Benchmark.Model(task="zero_shot_visual_prompting", name="sam_vit_b", category="accuracy"),
+        Benchmark.Model(task="action/action_detection", name="x3d_fastrcnn", category="accuracy"),
     ]
 
     DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name="coco_car_person_medium",
-            path=Path("zero_shot_visual_prompting/coco_car_person_medium"),
+            name="ucf-5percent-small",
+            path=Path("action/action_detection/UCF101_ava_5percent"),
+            group="small",
+            num_repeat=5,
+            extra_overrides={
+                "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-30percent-medium",
+            path=Path("action/action_detection/UCF101_ava_30percent"),
             group="medium",
             num_repeat=5,
             extra_overrides={
                 "train": {
+                    "max_epochs": "3",
+                    "deterministic": "True",
+                },
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_detection/UCF101_ava"),
+            group="large",
+            num_repeat=5,
+            extra_overrides={
+                "train": {
                     "max_epochs": "1",
+                    "deterministic": "True",
                 },
             },
         ),
@@ -111,10 +147,9 @@ class TestPerfZeroShotVisualPrompting(PerfTestBase):
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/dice", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/dice", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/map_50", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),

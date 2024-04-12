@@ -61,9 +61,9 @@ def pytest_addoption(parser: pytest.Parser):
         help="Output root directory. Defaults to temp directory.",
     )
     parser.addoption(
-        "--summary-csv",
+        "--summary-file",
         action="store",
-        help="Path to output summary cvs file. Defaults to {output-root}/benchmark-summary.csv",
+        help="Path to output summary file. Defaults to {output-root}/benchmark-summary.csv",
     )
     parser.addoption(
         "--dry-run",
