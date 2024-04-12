@@ -30,17 +30,19 @@ class TestSingleXPUStrategy:
             "otx.algo.strategies.xpu_single.is_xpu_available",
             return_value=True,
         )
-        return SingleXPUStrategy(device="xpu:0")
+        return SingleXPUStrategy(device="xpu:0", accelerator="xpu")
 
     def test_is_distributed(self, strategy):
         assert not strategy.is_distributed
 
     def test_setup_optimizers(self, strategy, mocker):
+        from otx.algo.strategies.xpu_single import SingleDeviceStrategy
         mocker.patch("otx.algo.strategies.xpu_single.torch")
         mocker.patch(
             "otx.algo.strategies.xpu_single.torch.xpu.optimize",
             return_value=(mocker.MagicMock(), mocker.MagicMock()),
         )
+        mocker.patch.object(SingleDeviceStrategy, "setup_optimizers")
         trainer = pl.Trainer()
         trainer.task = "CLASSIFICATION"
         # Create mock optimizers and models for testing
