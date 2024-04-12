@@ -244,9 +244,6 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">mmdet.models.losses</span> <span class="kn">import</span> <span class="n">smooth_l1_loss</span>
-<span class="kn">from</span> <span class="nn">mmdet.models.utils</span> <span class="kn">import</span> <span class="n">multi_apply</span>
-<span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">MODELS</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.anchor_head</span> <span class="kn">import</span> <span class="n">AnchorHead</span>
@@ -254,10 +251,12 @@
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.custom_anchor_generator</span> <span class="kn">import</span> <span class="n">SSDAnchorGeneratorClustered</span>
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.delta_xywh_bbox_coder</span> <span class="kn">import</span> <span class="n">DeltaXYWHBBoxCoder</span>
 <span class="kn">from</span> <span class="nn">otx.algo.detection.heads.max_iou_assigner</span> <span class="kn">import</span> <span class="n">MaxIoUAssigner</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.losses.cross_entropy_loss</span> <span class="kn">import</span> <span class="n">CrossEntropyLoss</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.losses.weighted_loss</span> <span class="kn">import</span> <span class="n">smooth_l1_loss</span>
+<span class="kn">from</span> <span class="nn">otx.algo.detection.utils.utils</span> <span class="kn">import</span> <span class="n">multi_apply</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">mmdet.utils</span> <span class="kn">import</span> <span class="n">ConfigType</span><span class="p">,</span> <span class="n">InstanceList</span><span class="p">,</span> <span class="n">MultiConfig</span><span class="p">,</span> <span class="n">OptInstanceList</span>
-    <span class="kn">from</span> <span class="nn">mmengine.config</span> <span class="kn">import</span> <span class="n">Config</span>
+    <span class="kn">from</span> <span class="nn">mmengine.config</span> <span class="kn">import</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">InstanceData</span>
 
 
 <span class="c1"># This class and its supporting functions below lightly adapted from the mmdet SSDHead available at:</span>
@@ -278,12 +277,6 @@
 <span class="sd">            &gt; 0. Defaults to 256.</span>
 <span class="sd">        use_depthwise (bool): Whether to use DepthwiseSeparableConv.</span>
 <span class="sd">            Defaults to False.</span>
-<span class="sd">        conv_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
-<span class="sd">            and config conv layer. Defaults to None.</span>
-<span class="sd">        norm_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
-<span class="sd">            and config norm layer. Defaults to None.</span>
-<span class="sd">        act_cfg (:obj:`ConfigDict` or dict, Optional): Dictionary to construct</span>
-<span class="sd">            and config activation layer. Defaults to None.</span>
 <span class="sd">        anchor_generator (:obj:`ConfigDict` or dict): Config dict for anchor</span>
 <span class="sd">            generator.</span>
 <span class="sd">        bbox_coder (:obj:`ConfigDict` or dict): Config of bounding box coder.</span>
@@ -302,21 +295,18 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
-        <span class="n">bbox_coder</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
-        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">MultiConfig</span><span class="p">,</span>
-        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
+        <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">bbox_coder</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+        <span class="n">act_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
         <span class="n">stacked_convs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">feat_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
         <span class="n">use_depthwise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">conv_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">norm_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">reg_decoded_bbox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">loss_cls</span><span class="p">:</span> <span class="n">Config</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AnchorHead</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">init_cfg</span><span class="o">=</span><span class="n">init_cfg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
@@ -324,9 +314,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stacked_convs</span> <span class="o">=</span> <span class="n">stacked_convs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feat_channels</span> <span class="o">=</span> <span class="n">feat_channels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_depthwise</span> <span class="o">=</span> <span class="n">use_depthwise</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_cfg</span> <span class="o">=</span> <span class="n">conv_cfg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">norm_cfg</span> <span class="o">=</span> <span class="n">norm_cfg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span> <span class="o">=</span> <span class="n">act_cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span> <span class="o">=</span> <span class="n">act_cfg</span>  <span class="c1"># TODO(Jaeguk): act_cfg will be deprecated after implementing export.</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cls_out_channels</span> <span class="o">=</span> <span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># add background class</span>
         <span class="n">anchor_generator</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
@@ -337,14 +325,7 @@
         <span class="c1"># heads but a list of int in SSDHead</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_base_priors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_generator</span><span class="o">.</span><span class="n">num_base_priors</span>
 
-        <span class="k">if</span> <span class="n">loss_cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">loss_cls</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;CrossEntropyLoss&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;use_sigmoid&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                <span class="s2">&quot;reduction&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;loss_weight&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span> <span class="o">=</span> <span class="n">MODELS</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">loss_cls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_cls</span> <span class="o">=</span> <span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">use_sigmoid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">loss_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_layers</span><span class="p">()</span>
 
@@ -465,9 +446,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cls_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">bbox_preds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span>
-        <span class="n">batch_gt_instances</span><span class="p">:</span> <span class="n">InstanceList</span><span class="p">,</span>
+        <span class="n">batch_gt_instances</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
         <span class="n">batch_img_metas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
-        <span class="n">batch_gt_instances_ignore</span><span class="p">:</span> <span class="n">OptInstanceList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_gt_instances_ignore</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute losses of the head.</span>
 
@@ -546,11 +527,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cls_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
 
-        <span class="n">activation_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act_cfg</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">activation_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;inplace&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">num_base_priors</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_base_priors</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_depthwise</span><span class="p">:</span>
-                <span class="n">activation_layer</span> <span class="o">=</span> <span class="n">MODELS</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">activation_config</span><span class="p">)</span>
+                <span class="n">activation_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">reg_convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
