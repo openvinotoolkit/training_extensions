@@ -3,6 +3,7 @@ import torch
 from otx.algo.classification.torchvision_model import OTXTVModel, TVModelWithLossComputation
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchPredEntity
+from otx.core.types.export import TaskLevelExportParameters
 
 
 @pytest.fixture()
@@ -31,16 +32,10 @@ class TestOTXTVModel:
         assert isinstance(preds, MulticlassClsBatchPredEntity)
 
     def test_export_parameters(self, fxt_tv_model):
-        params = fxt_tv_model._export_parameters
-        assert isinstance(params, dict)
-        assert "input_size" in params
-        assert "resize_mode" in params
-        assert "pad_value" in params
-        assert "swap_rgb" in params
-        assert "via_onnx" in params
-        assert "onnx_export_configuration" in params
-        assert "mean" in params
-        assert "std" in params
+        export_parameters = fxt_tv_model._export_parameters
+        assert isinstance(export_parameters, TaskLevelExportParameters)
+        assert export_parameters.model_type == "Classification"
+        assert export_parameters.task_type == "classification"
 
     @pytest.mark.parametrize("explain_mode", [True, False])
     def test_predict_step(self, fxt_tv_model: OTXTVModel, fxt_multiclass_cls_batch_data_entity, explain_mode):

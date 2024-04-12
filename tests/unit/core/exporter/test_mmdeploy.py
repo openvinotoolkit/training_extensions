@@ -34,6 +34,7 @@ class TestMMdeployExporter:
             model_builder=MagicMock(),
             model_cfg=MagicMock(),
             deploy_cfg=self.DEFAULT_MMDEPLOY_CFG,
+            task_level_export_parameters=MagicMock(),
             test_pipeline=MagicMock(),
             input_size=(1, 3, 256, 256),
             max_num_detections=max_num_detections,

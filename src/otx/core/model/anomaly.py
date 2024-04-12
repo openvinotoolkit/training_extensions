@@ -27,8 +27,8 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationDataBatch,
 )
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType
-from otx.core.types.label import LabelInfo
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
+from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
@@ -65,24 +65,37 @@ class _AnomalyModelExporter(OTXModelExporter):
         normalization_scale: float = 1.0,
     ) -> None:
         self.orig_height, self.orig_width = image_shape
-        metadata = {
-            ("model_info", "image_threshold"): image_threshold,
-            ("model_info", "pixel_threshold"): pixel_threshold,
-            ("model_info", "normalization_scale"): normalization_scale,
-            ("model_info", "orig_height"): image_shape[0],
-            ("model_info", "orig_width"): image_shape[1],
-            ("model_info", "image_shape"): image_shape,
-            ("model_info", "labels"): "Normal Anomaly",
-            ("model_info", "model_type"): "AnomalyDetection",
-            ("model_info", "task"): task.value,
-        }
+        self.image_threshold = image_threshold
+        self.pixel_threshold = pixel_threshold
+        self.task = task
+        self.normalization_scale = normalization_scale
+
         super().__init__(
+            task_level_export_parameters=TaskLevelExportParameters(
+                model_type="anomaly",
+                task_type="anomaly",
+                label_info=NullLabelInfo(),
+                optimization_config={},
+            ),
             input_size=(1, 3, *image_shape),
             mean=mean_values,
             std=scale_values,
             swap_rgb=False,  # default value. Ideally, modelAPI should pass RGB inputs after the pre-processing step
-            metadata=metadata,
         )
+
+    @property
+    def metadata(self) -> dict[tuple[str, str], str | float | int | tuple[int, int]]:  # type: ignore[override]
+        return {
+            ("model_info", "image_threshold"): self.image_threshold,
+            ("model_info", "pixel_threshold"): self.pixel_threshold,
+            ("model_info", "normalization_scale"): self.normalization_scale,
+            ("model_info", "orig_height"): self.orig_height,
+            ("model_info", "orig_width"): self.orig_width,
+            ("model_info", "image_shape"): (self.orig_height, self.orig_width),
+            ("model_info", "labels"): "Normal Anomaly",
+            ("model_info", "model_type"): "AnomalyDetection",
+            ("model_info", "task"): self.task.value,
+        }
 
     def to_openvino(
         self,
