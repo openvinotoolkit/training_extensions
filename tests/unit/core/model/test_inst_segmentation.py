@@ -8,6 +8,7 @@ import torch
 from otx.algo.explain.explain_algo import get_feature_vector
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
+from otx.core.types.export import TaskLevelExportParameters
 
 
 class TestOTXInstanceSegModel:
@@ -68,9 +69,5 @@ class TestOTXInstanceSegModel:
         otx_model.image_size = (1, 64, 64, 3)
         otx_model.explain_mode = False
         parameters = otx_model._export_parameters
-        assert isinstance(parameters, dict)
-        assert "output_names" in parameters
-
-        otx_model.explain_mode = True
-        parameters = otx_model._export_parameters
-        assert parameters["output_names"] == ["feature_vector", "saliency_map"]
+        assert isinstance(parameters, TaskLevelExportParameters)
+        assert parameters.task_type == "instance_segmentation"

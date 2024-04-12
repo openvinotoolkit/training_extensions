@@ -431,10 +431,10 @@ class InstanceSegTileMerge(TileMerge):
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
 
         if masks is None:
             return np.ndarray([])
 
         pred = {"labels": labels, "scores": scores, "masks": masks}
-        return MaskRCNNRecordingForwardHook.average_and_normalize(pred, num_classes)
+        return MaskRCNNExplainAlgo.average_and_normalize(pred, num_classes)

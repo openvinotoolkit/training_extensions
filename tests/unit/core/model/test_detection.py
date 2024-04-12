@@ -16,6 +16,7 @@ from omegaconf import OmegaConf
 from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
+from otx.core.types.export import TaskLevelExportParameters
 from torch.optim import Optimizer
 
 if TYPE_CHECKING:
@@ -130,11 +131,6 @@ class TestOTXDetectionModel:
 
     def test_export_parameters(self, otx_model):
         otx_model.image_size = (1, 64, 64, 3)
-        otx_model.explain_mode = False
         parameters = otx_model._export_parameters
-        assert isinstance(parameters, dict)
-        assert "output_names" in parameters
-
-        otx_model.explain_mode = True
-        parameters = otx_model._export_parameters
-        assert parameters["output_names"] == ["feature_vector", "saliency_map"]
+        assert isinstance(parameters, TaskLevelExportParameters)
+        assert parameters.task_type == "detection"
