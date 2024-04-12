@@ -63,9 +63,9 @@ def test_get_mean_std_from_data_processing():
             "std": 0.1,
         },
     }
-    result = get_mean_std_from_data_processing(config)
-    assert result["mean"] == 0.5
-    assert result["std"] == 0.1
+    mean, std = get_mean_std_from_data_processing(config)
+    assert mean == 0.5
+    assert std == 0.1
 
 
 @pytest.fixture()
