@@ -152,7 +152,7 @@ class TestToolsOTXDetection:
         if template.name == "YOLOX-L" or template.name == "SSD":
             pytest.skip(reason="Issue#2548: Exported model performance is too low")
         # update threshold for XPU
-        threshold = 0.4 if is_xpu_available and template.name == "MobileNetV2-ATSS" else 0.2
+        threshold = 0.4 if is_xpu_available() and template.name == "MobileNetV2-ATSS" else 0.2
         tmp_dir_path = tmp_dir_path / "detection"
         otx_eval_openvino_testing(
             template, tmp_dir_path, otx_dir, args, threshold=threshold, half_precision=half_precision
