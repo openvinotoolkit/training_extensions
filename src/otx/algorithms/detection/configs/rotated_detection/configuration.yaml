@@ -294,6 +294,25 @@ postprocessing:
     value: 0.01
     visible_in_ui: true
     warning: null
+  nms_iou_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: 0.5
+    description:
+      IoU Threshold for NMS Postprocessing. Intersection over Union (IoU) threshold is set to remove overlapping predictions.
+      If the IoU between two predictions is greater than or equal to the IoU threshold, they are considered overlapping and will be discarded.
+    editable: true
+    header: NMS IoU Threshold
+    max_value: 1
+    min_value: 0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
+    visible_in_ui: true
+    warning: If you want to chage the value of IoU Threshold of model, then you need to re-train model with new IoU threshold.
   description: Postprocessing
   header: Postprocessing
   result_based_confidence_threshold:

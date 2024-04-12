@@ -110,6 +110,7 @@ def get_det_model_api_configuration(
     confidence_threshold: float,
     tiling_parameters: Any,
     use_ellipse_shapes: bool,
+    nms_iou_threshold: float,
 ):
     """Get ModelAPI config."""
     omz_config = {}
@@ -134,7 +135,7 @@ def get_det_model_api_configuration(
             omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
 
     omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
-    omz_config[("model_info", "iou_threshold")] = str(0.5)
+    omz_config[("model_info", "iou_threshold")] = str(nms_iou_threshold)
     omz_config[("model_info", "use_ellipse_shapes")] = str(use_ellipse_shapes)
 
     if tiling_parameters.enable_tiling:

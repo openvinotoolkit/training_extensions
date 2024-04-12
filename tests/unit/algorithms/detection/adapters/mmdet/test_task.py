@@ -184,22 +184,35 @@ class TestMMDetectionTask:
     def test_load_postprocessing(self):
         """Test _load_postprocessing function."""
         mock_model_data = {
-            "config": {"postprocessing": {"use_ellipse_shapes": {"value": True}}},
+            "config": {
+                "postprocessing": {
+                    "use_ellipse_shapes": {"value": True},
+                    "nms_iou_threshold": {"value": 0.4},
+                },
+            },
             "confidence_threshold": 0.75,
         }
         self.det_task._load_postprocessing(mock_model_data)
         assert self.det_task._hyperparams.postprocessing.use_ellipse_shapes == True
         assert self.det_task.confidence_threshold == 0.75
+        assert self.det_task.nms_iou_threshold == 0.4
 
         mock_model_data = {
-            "config": {"postprocessing": {"use_ellipse_shapes": {"value": False}}},
+            "config": {
+                "postprocessing": {
+                    "use_ellipse_shapes": {"value": False},
+                    "nms_iou_threshold": {"value": 0.4},
+                },
+            },
             "confidence_threshold": 0.75,
         }
         self.det_task._hyperparams.postprocessing.result_based_confidence_threshold = False
         self.det_task._hyperparams.postprocessing.confidence_threshold = 0.45
+        self.det_task.nms_iou_threshold = 0.45
         self.det_task._load_postprocessing(mock_model_data)
         assert self.det_task._hyperparams.postprocessing.use_ellipse_shapes == False
         assert self.det_task.confidence_threshold == 0.45
+        assert self.det_task.nms_iou_threshold == 0.4
 
     @e2e_pytest_unit
     def test_train(self, mocker) -> None:

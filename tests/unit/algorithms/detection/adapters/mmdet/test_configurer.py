@@ -23,6 +23,7 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_TEMPLATE_DIR,
+    DEFAULT_ISEG_TEMPLATE_DIR,
     generate_det_dataset,
 )
 
@@ -48,6 +49,7 @@ class TestDetectionConfigurer:
             None,
             None,
         )
+        self.iseg_model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_pipeline_path = os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py")
 
@@ -359,6 +361,17 @@ class TestDetectionConfigurer:
         config.merge_from_dict(data_pipeline_cfg)
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
         assert [1, 2, 3] == self.configurer.get_subset_data_cfg(config, "train")
+
+    @e2e_pytest_unit
+    def test_configure_max_num_detections(self):
+        nms_threshold = 0.4
+        config = copy.deepcopy(self.model_cfg)
+        self.configurer.configure_nms_iou_threshold(config, nms_threshold)
+        assert config.model.test_cfg.nms.iou_threshold == nms_threshold
+
+        config = copy.deepcopy(self.iseg_model_cfg)
+        self.configurer.configure_nms_iou_threshold(config, nms_threshold)
+        assert config.model.test_cfg.rcnn.nms.iou_threshold == nms_threshold
 
 
 class TestIncrDetectionConfigurer:

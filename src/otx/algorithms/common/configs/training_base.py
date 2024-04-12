@@ -231,6 +231,20 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        nms_iou_threshold = configurable_float(
+            default_value=0.5,
+            min_value=0,
+            max_value=1,
+            header="NMS IoU Threshold",
+            description="IoU Threshold for NMS Postprocessing."
+            "Intersection over Union (IoU) threshold is set to remove overlapping predictions."
+            "If the IoU between two predictions is greater than or equal to the IoU threshold, "
+            "they are considered overlapping and will be discarded.",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+            warning="If you want to chage the value of IoU Threshold of model, "
+            "then you need to re-train model with new IoU threshold.",
+        )
+
         max_num_detections = configurable_integer(
             header="Maximum number of detection per image",
             description="Extra detection outputs will be discared in non-maximum suppression process. "
