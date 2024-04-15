@@ -2,7 +2,7 @@ import onnx
 import pytest
 import torch
 from otx.core.exporter.native import OTXNativeModelExporter
-from otx.core.types import TaskLevelExportParameters
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
 
 

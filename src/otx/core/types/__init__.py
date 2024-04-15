@@ -9,7 +9,6 @@ from typing import Union
 
 from typing_extensions import TypeAlias
 
-from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo, LabelInfo, NullLabelInfo, SegLabelInfo
 from otx.core.types.task import OTXTaskType
 
@@ -20,9 +19,7 @@ __all__ = [
     "SegLabelInfo",
     "NullLabelInfo",
     # task_type
-    "OTXTaskType",
-    # export
-    "TaskLevelExportParameters",
+    "OTXTaskType"
 ]
 
 PathLike: TypeAlias = Union[str, Path, os.PathLike]
