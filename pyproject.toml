@@ -73,7 +73,7 @@ base = [
     "timm",
     "openvino==2023.3.0",
     "openvino-dev==2023.3.0",
-    "openvino-model-api==0.1.9",
+    "openvino-model-api==0.1.9.1",
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
     "nncf==2.8.1",
