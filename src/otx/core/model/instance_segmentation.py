@@ -66,7 +66,7 @@ class OTXInstanceSegModel(
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.tile_config = TileConfig()
+        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -206,18 +206,34 @@ class OTXInstanceSegModel(
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
-    """OTX Instance Segmentation model which can attach a XAI hook."""
+    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        from otx.algo.explain.explain_algo import get_feature_vector
+
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(
         self,
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
-        self.model.explain_fn = self.get_explain_fn()
-
         # If customize_inputs is overridden
         outputs = (
             self._forward_explain_inst_seg(self.model, **self._customize_inputs(inputs))
@@ -272,9 +288,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
 
-        explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
+        explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
     def _reset_model_forward(self) -> None:

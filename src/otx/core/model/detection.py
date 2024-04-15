@@ -18,7 +18,7 @@ from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
-from otx.core.metrics import MetricInput
+from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
@@ -35,8 +35,6 @@ if TYPE_CHECKING:
     from openvino.model_api.models.utils import DetectionResult
     from torch import nn
     from torchmetrics import Metric
-
-    from otx.core.metrics import MetricCallable
 
 
 class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
@@ -57,7 +55,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.tile_config = TileConfig()
+        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
         """Unpack detection tiles.
@@ -167,18 +165,34 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
-    """OTX detection model which can attach a XAI hook."""
+    """OTX detection model which can attach a XAI (Explainable AI) branch."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        from otx.algo.explain.explain_algo import get_feature_vector
+
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(
         self,
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
-        self.model.explain_fn = self.get_explain_fn()
-
         # If customize_inputs is overridden
         outputs = (
             self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
@@ -239,11 +253,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         from otx.algo.detection.heads.custom_ssd_head import SSDHead
-        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+        from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
-        explainer = DetClassProbabilityMapHook(
+        explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )

@@ -12,7 +12,7 @@ import torch
 from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
 from mmpretrain.registry import MODELS
 
-from otx.algo.hooks.recording_forward_hook import get_feature_vector
+from otx.algo.explain.explain_algo import ReciproCAM, get_feature_vector
 from otx.core.data.entity.base import T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.utils.build import build_mm_model, get_classification_layers
 
@@ -134,9 +134,7 @@ class ExplainableMixInMMPretrainModel(Generic[T_OTXBatchPredEntity, T_OTXBatchDa
         Note:
             Can be redefined at the model's level.
         """
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
-
-        explainer = ReciproCAMHook(
+        explainer = ReciproCAM(
             self.head_forward_fn,
             num_classes=self.num_classes,
             optimize_gap=self.has_gap,
