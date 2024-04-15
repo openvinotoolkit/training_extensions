@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from copy import deepcopy
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion
+from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
@@ -105,3 +105,31 @@ class TestPhotoMetricDistortion:
         results = photo_metric_distortion(deepcopy(data_entity))
 
         assert results.image.dtype == torch.float32
+
+
+class TestRandomAffine:
+    @pytest.fixture()
+    def random_affine(self) -> RandomAffine:
+        return RandomAffine()
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_translate_ratio(self) -> None:
+        transform = RandomAffine(max_translate_ratio=1.5)
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_scaling_ratio_range_inverse_order(self) -> None:
+        transform = RandomAffine(scaling_ratio_range=(1.5, 0.5))
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
+        transform = RandomAffine(scaling_ratio_range=(0, 0.5))
+
+    def test_forward(self, random_affine, data_entity) -> None:
+        """Test forward."""
+        results = random_affine(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (112, 224)
+        assert results.labels.shape[0] == results.bboxes.shape[0]
+        assert results.labels.dtype == torch.int64
+        assert results.bboxes.dtype == torch.float32
+        assert results.img_info.img_shape == results.image.shape[-2:]

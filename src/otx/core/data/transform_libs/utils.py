@@ -481,3 +481,62 @@ def flip_image(img: np.ndarray, direction: str = 'horizontal') -> np.ndarray:
         return np.flip(img, axis=0)
     else:
         return np.flip(img, axis=(0, 1))
+
+
+def project_bboxes(boxes: Tensor, homography_matrix: Tensor | np.ndarray) -> Tensor:
+    """Geometric transformat boxes in-place.
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/horizontal_boxes.py#L184-L202
+
+    Args:
+        homography_matrix (Tensor or np.ndarray]):
+            Shape (3, 3) for geometric transformation.
+
+    Returns:
+        (Tensor | np.ndarray): Projected bounding boxes.
+    """
+    if isinstance(homography_matrix, np.ndarray):
+        homography_matrix = boxes.new_tensor(homography_matrix)
+    corners = hbox2corner(boxes)
+    corners = torch.cat(
+        [corners, corners.new_ones(*corners.shape[:-1], 1)], dim=-1)
+    corners_T = torch.transpose(corners, -1, -2)
+    corners_T = torch.matmul(homography_matrix, corners_T)
+    corners = torch.transpose(corners_T, -1, -2)
+    # Convert to homogeneous coordinates by normalization
+    corners = corners[..., :2] / corners[..., 2:3]
+    return corner2hbox(corners)
+
+
+def hbox2corner(boxes: Tensor) -> Tensor:
+    """Convert box coordinates from (x1, y1, x2, y2) to corners ((x1, y1), (x2, y1), (x1, y2), (x2, y2)).
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/horizontal_boxes.py#L204-L217
+
+    Args:
+        boxes (Tensor): Horizontal box tensor with shape of (..., 4).
+
+    Returns:
+        Tensor: Corner tensor with shape of (..., 4, 2).
+    """
+    x1, y1, x2, y2 = torch.split(boxes, 1, dim=-1)
+    corners = torch.cat([x1, y1, x2, y1, x1, y2, x2, y2], dim=-1)
+    return corners.reshape(*corners.shape[:-1], 4, 2)
+
+
+def corner2hbox(corners: Tensor) -> Tensor:
+    """Convert box coordinates from corners ((x1, y1), (x2, y1), (x1, y2), (x2, y2)) to (x1, y1, x2, y2).
+
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/structures/bbox/horizontal_boxes.py#L219-L234
+
+    Args:
+        corners (Tensor): Corner tensor with shape of (..., 4, 2).
+
+    Returns:
+        Tensor: Horizontal box tensor with shape of (..., 4).
+    """
+    if corners.numel() == 0:
+        return corners.new_zeros((0, 4))
+    min_xy = corners.min(dim=-2)[0]
+    max_xy = corners.max(dim=-2)[0]
+    return torch.cat([min_xy, max_xy], dim=-1)

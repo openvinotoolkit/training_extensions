@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import copy
+import math
 from inspect import isclass
 from typing import TYPE_CHECKING, Any, Sequence, Iterable
 
@@ -32,7 +33,7 @@ from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness, f
                                                 flip_bboxes, is_inside_bboxes,
                                                 overlap_bboxes, rescale_bboxes,
                                                 rescale_size, to_np_image,
-                                                translate_bboxes)
+                                                translate_bboxes, project_bboxes)
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
@@ -771,6 +772,161 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         repr_str += f'{(self.saturation_lower, self.saturation_upper)}, '
         repr_str += f'hue_delta={self.hue_delta})'
         return repr_str
+
+
+class RandomAffine(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.RandomAffine with torchvision format.
+    
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2736-L2901
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+
+    Args:
+        max_rotate_degree (float): Maximum degrees of rotation transform.
+            Defaults to 10.
+        max_translate_ratio (float): Maximum ratio of translation.
+            Defaults to 0.1.
+        scaling_ratio_range (tuple[float]): Min and max ratio of
+            scaling transform. Defaults to (0.5, 1.5).
+        max_shear_degree (float): Maximum degrees of shear
+            transform. Defaults to 2.
+        border (tuple[int]): Distance from width and height sides of input
+            image to adjust output shape. Only used in mosaic dataset.
+            Defaults to (0, 0).
+        border_val (tuple[int]): Border padding values of 3 channels.
+            Defaults to (114, 114, 114).
+        bbox_clip_border (bool, optional): Whether to clip the objects outside
+            the border of the image. In some dataset like MOT17, the gt bboxes
+            are allowed to cross the border of images. Therefore, we don't
+            need to clip the gt bboxes in these cases. Defaults to True.
+    """
+
+    def __init__(self,
+                 max_rotate_degree: float = 10.0,
+                 max_translate_ratio: float = 0.1,
+                 scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
+                 max_shear_degree: float = 2.0,
+                 border: tuple[int, int] = (0, 0),
+                 border_val: tuple[int, int, int] = (114, 114, 114),
+                 bbox_clip_border: bool = True) -> None:
+        super().__init__()
+
+        assert 0 <= max_translate_ratio <= 1
+        assert scaling_ratio_range[0] <= scaling_ratio_range[1]
+        assert scaling_ratio_range[0] > 0
+        self.max_rotate_degree = max_rotate_degree
+        self.max_translate_ratio = max_translate_ratio
+        self.scaling_ratio_range = scaling_ratio_range
+        self.max_shear_degree = max_shear_degree
+        self.border = border
+        self.border_val = border_val
+        self.bbox_clip_border = bbox_clip_border
+
+    @cache_randomness
+    def _get_random_homography_matrix(self, height, width):
+        # Rotation
+        rotation_degree = random.uniform(-self.max_rotate_degree,
+                                         self.max_rotate_degree)
+        rotation_matrix = self._get_rotation_matrix(rotation_degree)
+
+        # Scaling
+        scaling_ratio = random.uniform(self.scaling_ratio_range[0],
+                                       self.scaling_ratio_range[1])
+        scaling_matrix = self._get_scaling_matrix(scaling_ratio)
+
+        # Shear
+        x_degree = random.uniform(-self.max_shear_degree,
+                                  self.max_shear_degree)
+        y_degree = random.uniform(-self.max_shear_degree,
+                                  self.max_shear_degree)
+        shear_matrix = self._get_shear_matrix(x_degree, y_degree)
+
+        # Translation
+        trans_x = random.uniform(-self.max_translate_ratio,
+                                 self.max_translate_ratio) * width
+        trans_y = random.uniform(-self.max_translate_ratio,
+                                 self.max_translate_ratio) * height
+        translate_matrix = self._get_translation_matrix(trans_x, trans_y)
+
+        warp_matrix = (
+            translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix)
+        return warp_matrix
+
+    def forward(self, *inputs: Any) -> Any:
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        img = to_np_image(inputs.image)
+        height = img.shape[0] + self.border[1] * 2
+        width = img.shape[1] + self.border[0] * 2
+
+        warp_matrix = self._get_random_homography_matrix(height, width)
+
+        img = cv2.warpPerspective(
+            img,
+            warp_matrix,
+            dsize=(width, height),
+            borderValue=self.border_val)
+        inputs.image = F.to_image(img)
+        inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
+
+        bboxes = inputs.bboxes
+        num_bboxes = len(bboxes)
+        if num_bboxes:
+            bboxes = project_bboxes(bboxes, warp_matrix)
+            if self.bbox_clip_border:
+                bboxes = clip_bboxes(bboxes, [height, width])
+            # remove outside bbox
+            valid_index = is_inside_bboxes(bboxes, [height, width])
+            inputs.bboxes = tv_tensors.BoundingBoxes(
+                bboxes[valid_index], format="XYXY", canvas_size=(height, width))
+            inputs.labels = inputs.labels[valid_index]
+
+        return inputs
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(max_rotate_degree={self.max_rotate_degree}, '
+        repr_str += f'max_translate_ratio={self.max_translate_ratio}, '
+        repr_str += f'scaling_ratio_range={self.scaling_ratio_range}, '
+        repr_str += f'max_shear_degree={self.max_shear_degree}, '
+        repr_str += f'border={self.border}, '
+        repr_str += f'border_val={self.border_val}, '
+        repr_str += f'bbox_clip_border={self.bbox_clip_border})'
+        return repr_str
+
+    @staticmethod
+    def _get_rotation_matrix(rotate_degrees: float) -> np.ndarray:
+        radian = math.radians(rotate_degrees)
+        rotation_matrix = np.array(
+            [[np.cos(radian), -np.sin(radian), 0.],
+             [np.sin(radian), np.cos(radian), 0.], [0., 0., 1.]],
+            dtype=np.float32)
+        return rotation_matrix
+
+    @staticmethod
+    def _get_scaling_matrix(scale_ratio: float) -> np.ndarray:
+        scaling_matrix = np.array(
+            [[scale_ratio, 0., 0.], [0., scale_ratio, 0.], [0., 0., 1.]],
+            dtype=np.float32)
+        return scaling_matrix
+
+    @staticmethod
+    def _get_shear_matrix(x_shear_degrees: float,
+                          y_shear_degrees: float) -> np.ndarray:
+        x_radian = math.radians(x_shear_degrees)
+        y_radian = math.radians(y_shear_degrees)
+        shear_matrix = np.array([[1, np.tan(x_radian), 0.],
+                                 [np.tan(y_radian), 1, 0.], [0., 0., 1.]],
+                                dtype=np.float32)
+        return shear_matrix
+
+    @staticmethod
+    def _get_translation_matrix(x: float, y: float) -> np.ndarray:
+        translation_matrix = np.array([[1, 0., x], [0., 1, y], [0., 0., 1.]],
+                                      dtype=np.float32)
+        return translation_matrix
 
 
 class CachedMosaic(tvt_v2.Transform):

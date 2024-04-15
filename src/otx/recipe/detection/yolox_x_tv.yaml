@@ -48,17 +48,14 @@ overrides:
               img_scale: # (H, W)
                 - 640
                 - 640
-          - class_path: torchvision.transforms.v2.RandomAffine
+          - class_path: otx.core.data.transform_libs.torchvision.RandomAffine
             init_args:
-              degrees:
-                - -10
-                - 10
-              scale:
+              scaling_ratio_range:
                 - 0.5
                 - 1.5
-              translate:
-                - 0.5
-                - 0.5
+              border:
+                - -320
+                - -320
           - class_path: otx.core.data.transform_libs.torchvision.CachedMixUp
             init_args:
               img_scale: # (H, W)
