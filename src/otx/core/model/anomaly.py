@@ -33,8 +33,6 @@ from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from collections import OrderedDict
-
     from anomalib.metrics import AnomalibMetricCollection
     from anomalib.metrics.threshold import BaseThreshold
     from lightning.pytorch import Trainer
@@ -159,6 +157,22 @@ class OTXAnomaly:
         self.image_metrics: AnomalibMetricCollection
         self.pixel_metrics: AnomalibMetricCollection
 
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)  # type: ignore[misc]
+
+        attrs = ["_task_type", "_input_size", "mean_values", "scale_values", "image_threshold", "pixel_threshold"]
+
+        checkpoint["anomaly"] = {key: getattr(self, key, None) for key in attrs}
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on loading checkpoint."""
+        super().on_load_checkpoint(checkpoint)  # type: ignore[misc]
+
+        if anomaly_attrs := checkpoint.get("anomaly", None):
+            for key, value in anomaly_attrs.items():
+                setattr(self, key, value)
+
     @property
     def input_size(self) -> tuple[int, int]:
         """Returns the input size of the model.
@@ -238,7 +252,7 @@ class OTXAnomaly:
     def setup(self, stage: str | None = None) -> None:
         """Setup the model."""
         super().setup(stage)  # type: ignore[misc]
-        if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
+        if stage == "fit" and hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
             if hasattr(self.trainer.datamodule.config, "test_subset"):
                 self._extract_mean_scale_from_transforms(self.trainer.datamodule.config.test_subset.transforms)
             elif hasattr(self.trainer.datamodule.config, "val_subset"):
@@ -326,24 +340,6 @@ class OTXAnomaly:
             params = getattr(self.model, self.trainable_model).parameters()
             return optimizer(params=params)
         return super().configure_optimizers()  # type: ignore[misc]
-
-    def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with meta information.
-
-        Returns:
-            A dictionary containing datamodule state.
-
-        """
-        state_dict = super().state_dict()  # type: ignore[misc]
-        # This is defined in OTXModel
-        state_dict["label_info"] = self.label_info  # type: ignore[attr-defined]
-        return state_dict
-
-    def load_state_dict(self, ckpt: OrderedDict[str, Any], *args, **kwargs) -> None:
-        """Pass the checkpoint to the anomaly model."""
-        ckpt = ckpt.get("state_dict", ckpt)
-        ckpt.pop("label_info", None)  # [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model
-        return super().load_state_dict(ckpt, *args, **kwargs)  # type: ignore[misc]
 
     def forward(
         self,

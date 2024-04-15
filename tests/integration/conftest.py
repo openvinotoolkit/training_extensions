@@ -103,7 +103,7 @@ def fxt_rtmdet_tiny_config(fxt_asset_dir: Path) -> MMConfig:
 
 
 # [TODO]: This is a temporary approach.
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def fxt_target_dataset_per_task() -> dict:
     return {
         "multi_class_cls": "tests/assets/classification_dataset",
@@ -123,7 +123,7 @@ def fxt_target_dataset_per_task() -> dict:
     }
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def fxt_cli_override_command_per_task() -> dict:
     return {
         "multi_class_cls": [],
