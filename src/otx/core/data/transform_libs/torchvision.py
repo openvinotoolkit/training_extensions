@@ -621,7 +621,6 @@ class RandomFlip(tvt_v2.Transform):
             img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
 
             inputs.image = F.to_image(img)
-            inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
             # flip bboxes
             if (bboxes := getattr(inputs, "bboxes", None)) is not None:
@@ -634,6 +633,139 @@ class RandomFlip(tvt_v2.Transform):
         repr_str = self.__class__.__name__
         repr_str += f'(prob={self.prob}, '
         repr_str += f'direction={self.direction})'
+        return repr_str
+
+
+class PhotoMetricDistortion(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.PhotoMetricDistortion with torchvision format.
+    
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1084-L1210
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+    
+    Apply photometric distortion to image sequentially, every transformation
+    is applied with a probability of 0.5. The position of random contrast is in
+    second or second to last.
+
+    1. random brightness
+    2. random contrast (mode 0)
+    3. convert color from BGR to HSV
+    4. random saturation
+    5. random hue
+    6. convert color from HSV to BGR
+    7. random contrast (mode 1)
+    8. randomly swap channels
+
+    Args:
+        brightness_delta (int): delta of brightness.
+        contrast_range (sequence): range of contrast.
+        saturation_range (sequence): range of saturation.
+        hue_delta (int): delta of hue.
+    """
+
+    def __init__(self,
+                 brightness_delta: int = 32,
+                 contrast_range: Sequence[int | float] = (0.5, 1.5),
+                 saturation_range: Sequence[int | float] = (0.5, 1.5),
+                 hue_delta: int = 18) -> None:
+        super().__init__()
+
+        self.brightness_delta = brightness_delta
+        self.contrast_lower, self.contrast_upper = contrast_range
+        self.saturation_lower, self.saturation_upper = saturation_range
+        self.hue_delta = hue_delta
+
+    @cache_randomness
+    def _random_flags(self) -> Sequence[int | float]:
+        mode = random.randint(2)
+        brightness_flag = random.randint(2)
+        contrast_flag = random.randint(2)
+        saturation_flag = random.randint(2)
+        hue_flag = random.randint(2)
+        swap_flag = random.randint(2)
+        delta_value = random.uniform(-self.brightness_delta,
+                                     self.brightness_delta)
+        alpha_value = random.uniform(self.contrast_lower, self.contrast_upper)
+        saturation_value = random.uniform(self.saturation_lower,
+                                          self.saturation_upper)
+        hue_value = random.uniform(-self.hue_delta, self.hue_delta)
+        swap_value = random.permutation(3)
+
+        return (mode, brightness_flag, contrast_flag, saturation_flag,
+                hue_flag, swap_flag, delta_value, alpha_value,
+                saturation_value, hue_value, swap_value)
+
+    def forward(self, *inputs: Any) -> Any:
+        """Transform function to perform photometric distortion on images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Result dict with images distorted.
+        """
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        if (img := getattr(inputs, "image", None)) is not None:
+            img = to_np_image(img)
+            img = img.astype(np.float32)
+
+            (mode, brightness_flag, contrast_flag, saturation_flag, hue_flag,
+            swap_flag, delta_value, alpha_value, saturation_value, hue_value,
+            swap_value) = self._random_flags()
+
+            # random brightness
+            if brightness_flag:
+                img += delta_value
+
+            # mode == 0 --> do random contrast first
+            # mode == 1 --> do random contrast last
+            if mode == 1:
+                if contrast_flag:
+                    img *= alpha_value
+
+            # convert color from BGR to HSV
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # f32 -> f32
+
+            # random saturation
+            if saturation_flag:
+                img[..., 1] *= saturation_value
+                # For image(type=float32), after convert bgr to hsv by opencv,
+                # valid saturation value range is [0, 1]
+                if saturation_value > 1:
+                    img[..., 1] = img[..., 1].clip(0, 1)
+
+            # random hue
+            if hue_flag:
+                img[..., 0] += hue_value
+                img[..., 0][img[..., 0] > 360] -= 360
+                img[..., 0][img[..., 0] < 0] += 360
+
+            # convert color from HSV to BGR
+            img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR) # f32 -> f32
+
+            # random contrast
+            if mode == 0:
+                if contrast_flag:
+                    img *= alpha_value
+
+            # randomly swap channels
+            if swap_flag:
+                img = img[..., swap_value]
+
+            inputs.image = F.to_image(img) # f32
+        return inputs
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(brightness_delta={self.brightness_delta}, '
+        repr_str += 'contrast_range='
+        repr_str += f'{(self.contrast_lower, self.contrast_upper)}, '
+        repr_str += 'saturation_range='
+        repr_str += f'{(self.saturation_lower, self.saturation_upper)}, '
+        repr_str += f'hue_delta={self.hue_delta})'
         return repr_str
 
 
