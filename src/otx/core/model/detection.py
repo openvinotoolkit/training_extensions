@@ -183,7 +183,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             torch_compile=torch_compile,
         )
 
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
+        from otx.algo.explain.explain_algo import get_feature_vector
 
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()

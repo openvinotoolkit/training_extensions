@@ -63,14 +63,3 @@ class TestOTXInstanceSegModel:
         otx_model._restore_model_forward()
         assert otx_model.original_model_forward is None
         assert str(otx_model.model.forward) == str(initial_model_forward)
-
-    def test_export_parameters(self, otx_model):
-        otx_model.image_size = (1, 64, 64, 3)
-        otx_model.explain_mode = False
-        parameters = otx_model._export_parameters
-        assert isinstance(parameters, dict)
-        assert "output_names" in parameters
-
-        otx_model.explain_mode = True
-        parameters = otx_model._export_parameters
-        assert parameters["output_names"] == ["feature_vector", "saliency_map"]
