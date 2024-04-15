@@ -60,19 +60,19 @@ class BasicBlock(BaseModule):
         self.with_cp = with_cp
 
     @property
-    def norm1(self):
+    def norm1(self) -> nn.Module:
         """nn.Module: normalization layer after the first convolution layer."""
         return getattr(self, self.norm1_name)
 
     @property
-    def norm2(self):
+    def norm2(self) -> nn.Module:
         """nn.Module: normalization layer after the second convolution layer."""
         return getattr(self, self.norm2_name)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
 
-        def _inner_forward(x):
+        def _inner_forward(x: torch.Tensor) -> torch.Tensor:
             identity = x
 
             out = self.conv1(x)
@@ -103,11 +103,11 @@ class Bottleneck(BaseModule):
         planes: int,
         stride: int = 1,
         dilation: int = 1,
-        downsample=None,
-        with_cp=False,
-        conv_cfg=None,
-        norm_cfg=dict(type="BN"),
-        init_cfg=None,
+        downsample: nn.Module | None = None,
+        with_cp: bool = False,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict = dict(type="BN"),
+        init_cfg: dict | None = None,
     ):
         """Bottleneck block for ResNet.
 
@@ -277,7 +277,7 @@ class ResNet(BaseModule):
         norm_eval: bool = True,
         with_cp: bool = False,
         zero_init_residual: bool = True,
-        pretrained: str | bool = None,
+        pretrained: str | bool | None = None,
         init_cfg: list[dict] | dict | None = None,
     ):
         super(ResNet, self).__init__(init_cfg)

@@ -50,7 +50,12 @@ class ResLayer(Sequential):
             if avg_down:
                 conv_stride = 1
                 downsample.append(
-                    nn.AvgPool2d(kernel_size=stride, stride=stride, ceil_mode=True, count_include_pad=False),
+                    nn.AvgPool2d(
+                        kernel_size=stride,
+                        stride=stride,
+                        ceil_mode=True,
+                        count_include_pad=False,
+                    ),
                 )
             downsample.extend(
                 [
@@ -81,10 +86,10 @@ class ResLayer(Sequential):
                 ),
             )
             inplanes = planes * block.expansion
-            layers = [
-                block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs)
-                for _ in range(1, num_blocks)
-            ]
+            for _ in range(1, num_blocks):
+                layers.append(
+                    block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs),
+                )
 
         else:  # downsample_first=False is for HourglassModule
             for _ in range(num_blocks - 1):
