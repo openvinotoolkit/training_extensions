@@ -12,7 +12,7 @@ on:
           - accuracy
           - default # speed, balance, accuracy models only
           - all # default + other models
-        default: default
+        default: all
       data-group:
         type: choice
         description: Data group to run benchmark
