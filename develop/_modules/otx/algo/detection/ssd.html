@@ -597,7 +597,6 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">864</span><span class="p">,</span> <span class="mi">864</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tile_image_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_register_load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_anchors_hook</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">mmdet.models.data_preprocessors</span> <span class="kn">import</span> <span class="p">(</span>
@@ -650,7 +649,11 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">anchor_generator</span><span class="o">.</span><span class="n">heights</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">new_anchors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">anchor_generator</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">new_anchors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">anchor_generator</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="n">new_anchors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">anchor_generator</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span></div>
+                <span class="n">anchor_generator</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;ssd_anchors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;heights&quot;</span><span class="p">:</span> <span class="n">anchor_generator</span><span class="o">.</span><span class="n">heights</span><span class="p">,</span>
+                    <span class="s2">&quot;widths&quot;</span><span class="p">:</span> <span class="n">anchor_generator</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span>
+                <span class="p">}</span></div>
 
 
     <span class="k">def</span> <span class="nf">_get_new_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">OTXDataset</span><span class="p">,</span> <span class="n">anchor_generator</span><span class="p">:</span> <span class="n">SSDAnchorGeneratorClustered</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -766,22 +769,6 @@
         <span class="k">return</span> <span class="n">classification_layers</span></div>
 
 
-<div class="viewcode-block" id="SSD.state_dict">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.state_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return state dictionary of model entity with anchor information.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary containing SSD state.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">anchor_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span>
-        <span class="n">anchors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;heights&quot;</span><span class="p">:</span> <span class="n">anchor_generator</span><span class="o">.</span><span class="n">heights</span><span class="p">,</span> <span class="s2">&quot;widths&quot;</span><span class="p">:</span> <span class="n">anchor_generator</span><span class="o">.</span><span class="n">widths</span><span class="p">}</span>
-        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;model.model.anchors&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchors</span>
-        <span class="k">return</span> <span class="n">state_dict</span></div>
-
-
 <div class="viewcode-block" id="SSD.load_state_dict_pre_hook">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.load_state_dict_pre_hook">[docs]</a>
     <span class="k">def</span> <span class="nf">load_state_dict_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -839,14 +826,18 @@
             <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_anchors_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pre hook for pop anchor statistics from checkpoint state_dict.&quot;&quot;&quot;</span>
-        <span class="n">anchors</span> <span class="o">=</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model.model.anchors&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">anchors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="SSD.on_load_checkpoint">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.on_load_checkpoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on load checkpoint.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hparams</span> <span class="o">:=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hyper_parameters&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">anchors</span> <span class="o">:=</span> <span class="n">hparams</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ssd_anchors&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
             <span class="n">anchor_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">anchor_generator</span>
             <span class="n">anchor_generator</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">anchors</span><span class="p">[</span><span class="s2">&quot;widths&quot;</span><span class="p">]</span>
             <span class="n">anchor_generator</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="n">anchors</span><span class="p">[</span><span class="s2">&quot;heights&quot;</span><span class="p">]</span>
             <span class="n">anchor_generator</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_load_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="SSD.load_from_otx_v1_ckpt">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.load_from_otx_v1_ckpt">[docs]</a>

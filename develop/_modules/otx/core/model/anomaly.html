@@ -270,8 +270,6 @@
 <span class="kn">from</span> <span class="nn">otx.core.types.task</span> <span class="kn">import</span> <span class="n">OTXTaskType</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-
     <span class="kn">from</span> <span class="nn">anomalib.metrics</span> <span class="kn">import</span> <span class="n">AnomalibMetricCollection</span>
     <span class="kn">from</span> <span class="nn">anomalib.metrics.threshold</span> <span class="kn">import</span> <span class="n">BaseThreshold</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch</span> <span class="kn">import</span> <span class="n">Trainer</span>
@@ -398,6 +396,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">image_metrics</span><span class="p">:</span> <span class="n">AnomalibMetricCollection</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixel_metrics</span><span class="p">:</span> <span class="n">AnomalibMetricCollection</span>
 
+<div class="viewcode-block" id="OTXAnomaly.on_save_checkpoint">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_save_checkpoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on saving checkpoint.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_save_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_task_type&quot;</span><span class="p">,</span> <span class="s2">&quot;_input_size&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_values&quot;</span><span class="p">,</span> <span class="s2">&quot;scale_values&quot;</span><span class="p">,</span> <span class="s2">&quot;image_threshold&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel_threshold&quot;</span><span class="p">]</span>
+
+        <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="OTXAnomaly.on_load_checkpoint">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.on_load_checkpoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on loading checkpoint.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_load_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+
+        <span class="k">if</span> <span class="n">anomaly_attrs</span> <span class="o">:=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;anomaly&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">anomaly_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">input_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the input size of the model.</span>
@@ -479,7 +499,7 @@
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the model.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;fit&quot;</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="s2">&quot;datamodule&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;test_subset&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extract_mean_scale_from_transforms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">test_subset</span><span class="o">.</span><span class="n">transforms</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;val_subset&quot;</span><span class="p">):</span>
@@ -582,30 +602,6 @@
             <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainable_model</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">configure_optimizers</span><span class="p">()</span>  <span class="c1"># type: ignore[misc]</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.state_dict">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.state_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return state dictionary of model entity with meta information.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary containing datamodule state.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>  <span class="c1"># type: ignore[misc]</span>
-        <span class="c1"># This is defined in OTXModel</span>
-        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>  <span class="c1"># type: ignore[attr-defined]</span>
-        <span class="k">return</span> <span class="n">state_dict</span></div>
-
-
-<div class="viewcode-block" id="OTXAnomaly.load_state_dict">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.anomaly.html#otx.core.model.anomaly.OTXAnomaly.load_state_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckpt</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pass the checkpoint to the anomaly model.&quot;&quot;&quot;</span>
-        <span class="n">ckpt</span> <span class="o">=</span> <span class="n">ckpt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state_dict&quot;</span><span class="p">,</span> <span class="n">ckpt</span><span class="p">)</span>
-        <span class="n">ckpt</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">ckpt</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span></div>
 
 
 <div class="viewcode-block" id="OTXAnomaly.forward">

@@ -428,6 +428,7 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>
@@ -546,6 +547,7 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">NullLabelInfo</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_exporter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OTXModelExporter</span><span class="p">:</span>

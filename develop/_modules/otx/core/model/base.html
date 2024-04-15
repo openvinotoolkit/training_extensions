@@ -264,6 +264,8 @@
 <span class="kn">from</span> <span class="nn">torch.optim.sgd</span> <span class="kn">import</span> <span class="n">SGD</span>
 <span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">Metric</span><span class="p">,</span> <span class="n">MetricCollection</span>
 
+<span class="kn">from</span> <span class="nn">otx</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">OTXBatchLossEntity</span><span class="p">,</span>
     <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
@@ -351,6 +353,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">torch_compile</span> <span class="o">=</span> <span class="n">torch_compile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_explain_mode</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span><span class="p">:</span> <span class="n">TileConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># this line allows to access init params with &#39;self.hparams&#39; attribute</span>
         <span class="c1"># also ensures init params will be stored in ckpt</span>
@@ -614,18 +618,62 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">log_metric_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OTXModel.state_dict">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.state_dict">[docs]</a>
-    <span class="k">def</span> <span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return state dictionary of model entity with meta information.</span>
+<div class="viewcode-block" id="OTXModel.on_save_checkpoint">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_save_checkpoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on saving checkpoint.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_save_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary containing datamodule state.</span>
+        <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>
+        <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;otx_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__version__</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
-        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span>
-        <span class="k">return</span> <span class="n">state_dict</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span><span class="p">:</span>
+            <span class="n">checkpoint</span><span class="p">[</span><span class="s2">&quot;tile_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span></div>
+
+
+<div class="viewcode-block" id="OTXModel.on_load_checkpoint">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.on_load_checkpoint">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback on loading checkpoint.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_load_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="o">:=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label_info</span> <span class="o">=</span> <span class="n">ckpt_label_info</span>
+
+        <span class="k">if</span> <span class="n">ckpt_tile_config</span> <span class="o">:=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tile_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="o">=</span> <span class="n">ckpt_tile_config</span></div>
+
+
+<div class="viewcode-block" id="OTXModel.load_state_dict_incrementally">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.load_state_dict_incrementally">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_state_dict_incrementally</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ckpt</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load state dict incrementally.&quot;&quot;&quot;</span>
+        <span class="n">ckpt_label_info</span><span class="p">:</span> <span class="n">LabelInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">ckpt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Checkpoint should have `label_info`.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ckpt_label_info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Load model state dictionary incrementally: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Label info from checkpoint: </span><span class="si">{</span><span class="n">ckpt_label_info</span><span class="si">}</span><span class="s2"> -&gt; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Label info from training data: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_load_state_dict_pre_hook</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">,</span>
+                <span class="n">ckpt_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Model weights</span>
+        <span class="n">state_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">ckpt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state_dict&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Checkpoint should have `state_dict`.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ckpt_label_info</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OTXModel.load_state_dict">
@@ -647,23 +695,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">state_dict</span> <span class="o">=</span> <span class="n">ckpt</span>
 
-        <span class="n">ckpt_label_info</span> <span class="o">=</span> <span class="n">state_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;`state_dict` to load has `label_info`, but the current model has no `label_info`. &quot;</span>
-                <span class="s2">&quot;It is recommended to set proper `label_info` for the incremental learning case.&quot;</span>
-            <span class="p">)</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ckpt_label_info</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span> <span class="ow">and</span> <span class="n">ckpt_label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Data classes from checkpoint: </span><span class="si">{</span><span class="n">ckpt_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="si">}</span><span class="s2"> -&gt; &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Data classes from training data: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">label_names</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_load_state_dict_pre_hook</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">,</span>
-                <span class="n">ckpt_label_info</span><span class="o">.</span><span class="n">label_names</span><span class="p">,</span>
-            <span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
@@ -1016,7 +1047,21 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span><span class="p">,</span> <span class="n">PicklableLRSchedulerCallable</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span> <span class="o">=</span> <span class="n">PicklableLRSchedulerCallable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_callable</span><span class="p">)</span></div>
-</div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tile_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TileConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get tiling configurations.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This task type does not support tiling.&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span>
+
+    <span class="nd">@tile_config</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tile_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tile_config</span><span class="p">:</span> <span class="n">TileConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set tiling configurations.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_config</span> <span class="o">=</span> <span class="n">tile_config</span></div>
 
 
 

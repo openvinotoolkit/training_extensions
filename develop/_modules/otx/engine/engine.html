@@ -421,6 +421,7 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">run_hpo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hpo_config</span><span class="p">:</span> <span class="n">HpoConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">checkpoint</span><span class="p">:</span> <span class="n">PathLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Trains the model using the provided LightningModule and OTXDataModule.</span>
@@ -440,6 +441,7 @@
 <span class="sd">                metric callable. It will temporarilly change the evaluation metric for the validation and test.</span>
 <span class="sd">            run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.</span>
 <span class="sd">            hpo_config (HpoConfig | None, optional): Configuration for HPO.</span>
+<span class="sd">            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for pl.Trainer configuration.</span>
 
 <span class="sd">        Returns:</span>
@@ -475,6 +477,8 @@
 <span class="sd">                otx train --data_root &lt;DATASET_PATH&gt; --config &lt;CONFIG_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
+
         <span class="k">if</span> <span class="n">run_hpo</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">hpo_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">hpo_config</span> <span class="o">=</span> <span class="n">HpoConfig</span><span class="p">()</span>
@@ -482,7 +486,7 @@
             <span class="k">if</span> <span class="n">best_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">update_hyper_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">best_config</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">best_trial_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="o">=</span> <span class="n">best_trial_weight</span>
+                <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">best_trial_weight</span>
                 <span class="n">resume</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -499,7 +503,7 @@
         <span class="p">)</span>
         <span class="n">fit_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="c1"># NOTE Model&#39;s label info should be converted datamodule&#39;s label info before ckpt loading</span>
+        <span class="c1"># NOTE: Model&#39;s label info should be converted datamodule&#39;s label info before ckpt loading</span>
         <span class="c1"># This is due to smart weight loading check label name as well as number of classes.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
             <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
@@ -510,12 +514,17 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
 
-        <span class="k">if</span> <span class="n">resume</span><span class="p">:</span>
-            <span class="n">fit_kwargs</span><span class="p">[</span><span class="s2">&quot;ckpt_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="c1"># loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resume</span> <span class="ow">and</span> <span class="n">checkpoint</span><span class="p">:</span>
+            <span class="c1"># NOTE: If both `resume` and `checkpoint` are provided,</span>
+            <span class="c1"># load the entire model state from the checkpoint using the pl.Trainer&#39;s API.</span>
+            <span class="n">fit_kwargs</span><span class="p">[</span><span class="s2">&quot;ckpt_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">checkpoint</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">resume</span> <span class="ow">and</span> <span class="n">checkpoint</span><span class="p">:</span>
+            <span class="c1"># NOTE: If `resume` is not enabled but `checkpoint` is provided,</span>
+            <span class="c1"># load the model state from the checkpoint incrementally.</span>
+            <span class="c1"># This means only the model weights are loaded. If there is a mismatch in label_info,</span>
+            <span class="c1"># perform incremental weight loading for the model&#39;s classification layer.</span>
+            <span class="n">ckpt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict_incrementally</span><span class="p">(</span><span class="n">ckpt</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="n">override_metric_callable</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">new_metric_callable</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
@@ -577,20 +586,6 @@
 <span class="sd">                otx test --config &lt;CONFIG_PATH, str&gt; --checkpoint &lt;CKPT_PATH, str&gt;</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># NOTE Model&#39;s label info should be converted datamodule&#39;s label info before ckpt loading</span>
-        <span class="c1"># This is due to smart weight loading check label name as well as number of classes.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
-            <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Model label_info is not equal to the Datamodule label_info. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;It will be overriden: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-
-            <span class="c1"># TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test</span>
-            <span class="c1"># raise ValueError()</span>
-
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
         <span class="n">datamodule</span> <span class="o">=</span> <span class="n">datamodule</span> <span class="k">if</span> <span class="n">datamodule</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span>
@@ -610,8 +605,18 @@
         <span class="c1"># NOTE, trainer.test takes only lightning based checkpoint.</span>
         <span class="c1"># So, it can&#39;t take the OTX1.x checkpoint.</span>
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
-            <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;To launch a test pipeline, the label information should be same &quot;</span>
+                <span class="s2">&quot;between the training and testing datasets. &quot;</span>
+                <span class="s2">&quot;Please check whether you use the same dataset: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;model.label_info=</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;datamodule.label_info=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -670,20 +675,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.utils.xai_utils</span> <span class="kn">import</span> <span class="n">process_saliency_maps_in_pred_entity</span>
 
-        <span class="c1"># NOTE Model&#39;s label info should be converted datamodule&#39;s label info before ckpt loading</span>
-        <span class="c1"># This is due to smart weight loading check label name as well as number of classes.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
-            <span class="c1"># TODO (vinnamki): Revisit label_info logic to make it cleaner</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;Model label_info is not equal to the Datamodule label_info. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;It will be overriden: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-
-            <span class="c1"># TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test</span>
-            <span class="c1"># raise ValueError()</span>
-
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
 
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
@@ -698,8 +689,18 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
-            <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;To launch a predict pipeline, the label information should be same &quot;</span>
+                <span class="s2">&quot;between the training and testing datasets. &quot;</span>
+                <span class="s2">&quot;Please check whether you use the same dataset: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;model.label_info=</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;datamodule.label_info=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_trainer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -766,11 +767,12 @@
 <span class="sd">                    --checkpoint &lt;CKPT_PATH, str&gt; --export_precision FP16 --export_format ONNX</span>
 <span class="sd">                ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ckpt_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
-        <span class="k">if</span> <span class="n">ckpt_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">checkpoint</span> <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoint</span>
+
+        <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;To make export, checkpoint must be specified.&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="n">is_ir_ckpt</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.xml&quot;</span><span class="p">]</span>
+        <span class="n">is_ir_ckpt</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.xml&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">is_ir_ckpt</span> <span class="ow">and</span> <span class="n">export_format</span> <span class="o">!=</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">EXPORTABLE_CODE</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
@@ -788,10 +790,9 @@
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
+            <span class="n">model_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-            <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">loaded_checkpoint</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">][</span><span class="s2">&quot;label_info&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="n">explain</span>
         <span class="n">exported_model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">export</span><span class="p">(</span>
@@ -935,11 +936,19 @@
             <span class="n">datamodule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">update_ov_subset_pipeline</span><span class="p">(</span><span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_configurator</span><span class="o">.</span><span class="n">get_ov_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span> <span class="n">label_info</span><span class="o">=</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">)</span>
 
-        <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
-
         <span class="k">if</span> <span class="n">checkpoint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_ir_ckpt</span><span class="p">:</span>
-            <span class="n">loaded_checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_checkpoint</span><span class="p">)</span>
+            <span class="n">model_cls</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model_cls</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;To launch a explain pipeline, the label information should be same &quot;</span>
+                <span class="s2">&quot;between the training and testing datasets. &quot;</span>
+                <span class="s2">&quot;Please check whether you use the same dataset: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;model.label_info=</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;datamodule.label_info=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="n">model</span><span class="o">.</span><span class="n">explain_mode</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -985,7 +994,7 @@
 <span class="sd">                Defaults to None. If work_dir is None, use the work_dir from the configuration file.</span>
 <span class="sd">            kwargs: Arguments that can override the engine&#39;s arguments.</span>
 
-<span class="sd">        Returns:s</span>
+<span class="sd">        Returns:</span>
 <span class="sd">            Engine: An instance of the Engine class.</span>
 
 <span class="sd">        Example:</span>
@@ -1024,10 +1033,24 @@
             <span class="p">)</span>
             <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="p">(</span><span class="n">datamodule</span> <span class="o">:=</span> <span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot instantiate datamodule from config.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datamodule</span><span class="p">,</span> <span class="n">OTXDataModule</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">datamodule</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">model</span> <span class="o">:=</span> <span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">))</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot instantiate model from config.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">label_info</span> <span class="o">=</span> <span class="n">datamodule</span><span class="o">.</span><span class="n">label_info</span>
+
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">work_dir</span><span class="o">=</span><span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;work_dir&quot;</span><span class="p">,</span> <span class="n">work_dir</span><span class="p">),</span>
-            <span class="n">datamodule</span><span class="o">=</span><span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">),</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">instantiated_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">),</span>
+            <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="o">**</span><span class="n">engine_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 

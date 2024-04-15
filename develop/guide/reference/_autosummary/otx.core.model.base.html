@@ -499,6 +499,12 @@ load_state_pre_hook for smart weight loading will be registered.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.load_state_dict_incrementally">
+<span class="sig-name descname"><span class="pre">load_state_dict_incrementally</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ckpt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.load_state_dict_incrementally"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.load_state_dict_incrementally" title="Link to this definition">#</a></dt>
+<dd><p>Load state dict incrementally.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.base.OTXModel.load_state_dict_pre_hook">
 <span class="sig-name descname"><span class="pre">load_state_dict_pre_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.load_state_dict_pre_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.load_state_dict_pre_hook" title="Link to this definition">#</a></dt>
 <dd><p>Modify input state_dict according to class name matching before weight loading.</p>
@@ -524,6 +530,18 @@ ex)</p>
 dst_classes = [‘tree’, ‘person’, ‘sky’, ‘ball’]
 -&gt; Returns src2dst = [1, -1, 0]</p>
 </div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.on_load_checkpoint">
+<span class="sig-name descname"><span class="pre">on_load_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.on_load_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.on_load_checkpoint" title="Link to this definition">#</a></dt>
+<dd><p>Callback on loading checkpoint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.on_save_checkpoint">
+<span class="sig-name descname"><span class="pre">on_save_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.on_save_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.on_save_checkpoint" title="Link to this definition">#</a></dt>
+<dd><p>Callback on saving checkpoint.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -628,17 +646,6 @@ them. This hook is called on every process when using DDP.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.state_dict">
-<span class="sig-name descname"><span class="pre">state_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.state_dict" title="Link to this definition">#</a></dt>
-<dd><p>Return state dictionary of model entity with meta information.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary containing datamodule state.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.base.OTXModel.test_step">
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T_OTXBatchDataEntity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.test_step" title="Link to this definition">#</a></dt>
 <dd><p>Perform a single test step on a batch of data from the test set.</p>
@@ -696,6 +703,12 @@ labels.</p></li>
 <dt class="sig sig-object py" id="otx.core.model.base.OTXModel.num_classes">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_classes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></em><a class="headerlink" href="#otx.core.model.base.OTXModel.num_classes" title="Link to this definition">#</a></dt>
 <dd><p>Returns model’s number of classes. Can be redefined at the model’s level.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.tile_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tile_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="otx.core.config.data.html#otx.core.config.data.TileConfig" title="otx.core.config.data.TileConfig"><span class="pre">TileConfig</span></a></em><a class="headerlink" href="#otx.core.model.base.OTXModel.tile_config" title="Link to this definition">#</a></dt>
+<dd><p>Get tiling configurations.</p>
 </dd></dl>
 
 </dd></dl>
@@ -887,6 +900,15 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.load_state_dict_incrementally">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.load_state_dict_incrementally()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.load_state_dict_pre_hook">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -909,6 +931,24 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXModel.map_class_names()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.on_load_checkpoint">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.on_load_checkpoint()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.on_save_checkpoint">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.on_save_checkpoint()
       </span>
      </code>
     </a>
@@ -1013,15 +1053,6 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.state_dict">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXModel.state_dict()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.test_step">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1080,6 +1111,15 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXModel.num_classes
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.tile_config">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.tile_config
       </span>
      </code>
     </a>
