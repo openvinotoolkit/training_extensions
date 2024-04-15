@@ -19,7 +19,7 @@ __all__ = [
     "SegLabelInfo",
     "NullLabelInfo",
     # task_type
-    "OTXTaskType"
+    "OTXTaskType",
 ]
 
 PathLike: TypeAlias = Union[str, Path, os.PathLike]
