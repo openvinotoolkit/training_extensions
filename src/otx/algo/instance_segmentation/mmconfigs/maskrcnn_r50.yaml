@@ -2,7 +2,6 @@ load_from: https://download.openmmlab.com/mmdetection/v2.0/mask_rcnn/mask_rcnn_r
 type: "MaskRCNN"
 backbone:
   type: "ResNet"
-  style: "pytorch"
   depth: 50
   frozen_stages: 1
   init_cfg:
