@@ -92,6 +92,7 @@ def execute_hpo(
             hpo_workdir=hpo_workdir,
             engine=engine,
             max_epochs=max_epochs,
+            callbacks=callbacks,
             metric_name=hpo_config.metric_name,
             **_adjust_train_args(train_args),
         ),
