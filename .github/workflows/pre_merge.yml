@@ -45,8 +45,6 @@ jobs:
         include:
           - python-version: "3.9"
             tox-env: "py39"
-          # - python-version: "3.10"
-          #   tox-env: "py310"
     name: Unit-Test-with-Python${{ matrix.python-version }}
     # This is what will cancel the job concurrency
     concurrency:
@@ -70,12 +68,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Installing Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
       - name: Install Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
