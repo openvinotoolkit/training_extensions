@@ -45,18 +45,6 @@ class TestMobileNetV3ForMulticlassCls:
         preds = fxt_multi_class_cls_model._customize_outputs(outputs, fxt_multiclass_cls_batch_data_entity)
         assert isinstance(preds, MulticlassClsBatchPredEntity)
 
-    def test_export_parameters(self, fxt_multi_class_cls_model):
-        params = fxt_multi_class_cls_model._export_parameters
-        assert isinstance(params, dict)
-        assert "input_size" in params
-        assert "resize_mode" in params
-        assert "pad_value" in params
-        assert "swap_rgb" in params
-        assert "via_onnx" in params
-        assert "onnx_export_configuration" in params
-        assert "mean" in params
-        assert "std" in params
-
     @pytest.mark.parametrize("explain_mode", [True, False])
     def test_predict_step(self, fxt_multi_class_cls_model, fxt_multiclass_cls_batch_data_entity, explain_mode):
         fxt_multi_class_cls_model.eval()
@@ -95,18 +83,6 @@ class TestMobileNetV3ForMultilabelCls:
         preds = fxt_multi_label_cls_model._customize_outputs(outputs, fxt_multilabel_cls_batch_data_entity)
         assert isinstance(preds, MultilabelClsBatchPredEntity)
 
-    def test_export_parameters(self, fxt_multi_label_cls_model):
-        params = fxt_multi_label_cls_model._export_parameters
-        assert isinstance(params, dict)
-        assert "input_size" in params
-        assert "resize_mode" in params
-        assert "pad_value" in params
-        assert "swap_rgb" in params
-        assert "via_onnx" in params
-        assert "onnx_export_configuration" in params
-        assert "mean" in params
-        assert "std" in params
-
     @pytest.mark.parametrize("explain_mode", [True, False])
     def test_predict_step(self, fxt_multi_label_cls_model, fxt_multilabel_cls_batch_data_entity, explain_mode):
         fxt_multi_label_cls_model.eval()
@@ -144,18 +120,6 @@ class TestMobileNetV3ForHLabelCls:
         fxt_h_label_cls_model.training = False
         preds = fxt_h_label_cls_model._customize_outputs(outputs, fxt_hlabel_cls_batch_data_entity)
         assert isinstance(preds, HlabelClsBatchPredEntity)
-
-    def test_export_parameters(self, fxt_h_label_cls_model):
-        params = fxt_h_label_cls_model._export_parameters
-        assert isinstance(params, dict)
-        assert "input_size" in params
-        assert "resize_mode" in params
-        assert "pad_value" in params
-        assert "swap_rgb" in params
-        assert "via_onnx" in params
-        assert "onnx_export_configuration" in params
-        assert "mean" in params
-        assert "std" in params
 
     @pytest.mark.parametrize("explain_mode", [True, False])
     def test_predict_step(self, fxt_h_label_cls_model, fxt_hlabel_cls_batch_data_entity, explain_mode):

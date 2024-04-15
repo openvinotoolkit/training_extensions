@@ -131,25 +131,18 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params: dict[str, Any] = {}
-        export_params["input_size"] = (1, 3, 224, 224)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = True
-        export_params["onnx_export_configuration"] = None
-        export_params["mean"] = [123.675, 116.28, 103.53]
-        export_params["std"] = [58.395, 57.12, 57.375]
-
-        parameters = super()._export_parameters
-        parameters.update(export_params)
-
-        return parameters
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, 224, 224),
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # NOTE: This should be done via onnx
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_explain(self, inputs: MulticlassClsBatchDataEntity) -> MulticlassClsBatchPredEntity:
         """Model forward explain function."""
@@ -257,25 +250,18 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params: dict[str, Any] = {}
-        export_params["input_size"] = (1, 3, 224, 224)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = True
-        export_params["onnx_export_configuration"] = None
-        export_params["mean"] = [123.675, 116.28, 103.53]
-        export_params["std"] = [58.395, 57.12, 57.375]
-
-        parameters = super()._export_parameters
-        parameters.update(export_params)
-
-        return parameters
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, 224, 224),
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # NOTE: This should be done via onnx
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_explain(self, inputs: MultilabelClsBatchDataEntity) -> MultilabelClsBatchPredEntity:
         """Model forward explain function."""
@@ -410,25 +396,18 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params: dict[str, Any] = {}
-        export_params["input_size"] = (1, 3, 224, 224)
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = True
-        export_params["onnx_export_configuration"] = None
-        export_params["mean"] = [123.675, 116.28, 103.53]
-        export_params["std"] = [58.395, 57.12, 57.375]
-
-        parameters = super()._export_parameters
-        parameters.update(export_params)
-
-        return parameters
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, 224, 224),
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=True,  # NOTE: This should be done via onnx
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
     def forward_explain(self, inputs: HlabelClsBatchDataEntity) -> HlabelClsBatchPredEntity:
         """Model forward explain function."""

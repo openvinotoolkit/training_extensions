@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import torch
 from mmengine.model.base_model import BaseModel
 
-from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
+from otx.algo.explain.explain_algo import ReciproCAM
 from otx.core.model.utils.mmpretrain import ClsDataPreprocessor
 
 if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class ImageClassifier(BaseModel):
         self.neck = neck
         self.head = head
 
-        self.explainer = ReciproCAMHook(
+        self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=head.num_classes,
             optimize_gap=True,
@@ -200,7 +200,7 @@ class ImageClassifier(BaseModel):
         x = self.backbone(images)
         backbone_feat = x
 
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
+        from otx.algo.explain.explain_algo import get_feature_vector
 
         feature_vector = get_feature_vector(backbone_feat)
         saliency_map = self.explainer.func(backbone_feat)
