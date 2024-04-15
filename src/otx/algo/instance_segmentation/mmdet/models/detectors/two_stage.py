@@ -30,57 +30,54 @@ class TwoStageDetector(BaseDetector):
     def __init__(
         self,
         backbone: ConfigType,
-        neck: OptConfigType = None,
-        rpn_head: OptConfigType = None,
-        roi_head: OptConfigType = None,
-        train_cfg: OptConfigType = None,
-        test_cfg: OptConfigType = None,
+        neck: ConfigType,
+        rpn_head: ConfigType,
+        roi_head: ConfigType,
+        train_cfg: ConfigType,
+        test_cfg: ConfigType,
         data_preprocessor: OptConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(data_preprocessor=data_preprocessor, init_cfg=init_cfg)
         self.backbone = MODELS.build(backbone)
 
-        if neck is not None:
-            if neck.type != FPN.__name__:
-                msg = f"neck type must be {FPN.__name__}, but got {neck.type}"
-                raise ValueError(msg)
-            # pop out type for FPN
-            neck.pop("type")
-            self.neck = FPN(**neck)
+        if neck["type"] != FPN.__name__:
+            msg = f"neck type must be {FPN.__name__}, but got {neck['type']}"
+            raise ValueError(msg)
+        # pop out type for FPN
+        neck.pop("type")
+        self.neck = FPN(**neck)
 
-        if rpn_head is not None:
-            rpn_train_cfg = train_cfg.rpn if train_cfg is not None else None
-            rpn_head_ = rpn_head.copy()
-            rpn_head_.update(train_cfg=rpn_train_cfg, test_cfg=test_cfg.rpn)
-            rpn_head_num_classes = rpn_head_.get("num_classes", None)
-            if rpn_head_num_classes is None:
-                rpn_head_.update(num_classes=1)
-            elif rpn_head_num_classes != 1:
-                warnings.warn(
-                    "The `num_classes` should be 1 in RPN, but get "
-                    f"{rpn_head_num_classes}, please set "
-                    "rpn_head.num_classes = 1 in your config file.",
-                )
-                rpn_head_.update(num_classes=1)
-            if rpn_head_.type != RPNHead.__name__:
-                msg = f"rpn_head type must be {RPNHead.__name__}, but got {rpn_head_.type}"
-                raise ValueError(msg)
-            # pop out type for RPNHead
-            rpn_head_.pop("type")
-            self.rpn_head = RPNHead(**rpn_head_)
+        rpn_train_cfg = train_cfg["rpn"]
+        rpn_head_ = rpn_head.copy()
+        rpn_head_.update(train_cfg=rpn_train_cfg, test_cfg=test_cfg["rpn"])
+        rpn_head_num_classes = rpn_head_.get("num_classes", None)
+        if rpn_head_num_classes is None:
+            rpn_head_.update(num_classes=1)
+        elif rpn_head_num_classes != 1:
+            warnings.warn(
+                "The `num_classes` should be 1 in RPN, but get "
+                f"{rpn_head_num_classes}, please set "
+                "rpn_head.num_classes = 1 in your config file.",
+            )
+            rpn_head_.update(num_classes=1)
+        if rpn_head_["type"] != RPNHead.__name__:
+            msg = f"rpn_head type must be {RPNHead.__name__}, but got {rpn_head_['type']}"
+            raise ValueError(msg)
+        # pop out type for RPNHead
+        rpn_head_.pop("type")
+        self.rpn_head = RPNHead(**rpn_head_)
 
-        if roi_head is not None:
-            # update train and test cfg here for now
-            rcnn_train_cfg = train_cfg.rcnn if train_cfg is not None else None
-            roi_head.update(train_cfg=rcnn_train_cfg)
-            roi_head.update(test_cfg=test_cfg.rcnn)
-            if roi_head.type != CustomRoIHead.__name__:
-                msg = f"roi_head type must be {CustomRoIHead.__name__}, but got {roi_head.type}"
-                raise ValueError(msg)
-            # pop out type for RoIHead
-            roi_head.pop("type")
-            self.roi_head = CustomRoIHead(**roi_head)
+        # update train and test cfg here for now
+        rcnn_train_cfg = train_cfg["rcnn"]
+        roi_head.update(train_cfg=rcnn_train_cfg)
+        roi_head.update(test_cfg=test_cfg["rcnn"])
+        if roi_head["type"] != CustomRoIHead.__name__:
+            msg = f"roi_head type must be {CustomRoIHead.__name__}, but got {roi_head['type']}"
+            raise ValueError(msg)
+        # pop out type for RoIHead
+        roi_head.pop("type")
+        self.roi_head = CustomRoIHead(**roi_head)
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -158,7 +155,7 @@ class TwoStageDetector(BaseDetector):
                 raise ValueError(msg)
             rpn_results_list = [data_sample.proposals for data_sample in batch_data_samples]
         roi_outs = self.roi_head.forward(x, rpn_results_list, batch_data_samples)
-        return results + (roi_outs,)
+        return (*results, roi_outs)
 
     def loss(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> dict:
         """Calculate losses from a batch of inputs and data samples.
@@ -175,11 +172,11 @@ class TwoStageDetector(BaseDetector):
         """
         x = self.extract_feat(batch_inputs)
 
-        losses = dict()
+        losses = {}
 
         # RPN forward and loss
         if self.with_rpn:
-            proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg.rpn)
+            proposal_cfg = self.train_cfg.get("rpn_proposal", self.test_cfg["rpn"])
             rpn_data_samples = copy.deepcopy(batch_data_samples)
             # set cat_id of gt_labels to 0 in RPN
             for data_sample in rpn_data_samples:

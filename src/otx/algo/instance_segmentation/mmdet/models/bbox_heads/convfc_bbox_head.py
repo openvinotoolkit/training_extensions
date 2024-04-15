@@ -37,7 +37,7 @@ class ConvFCBBoxHead(BBoxHead):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(*args, init_cfg=init_cfg, **kwargs)
+        super().__init__(*args, init_cfg=init_cfg, **kwargs)  # type: ignore
         assert num_shared_convs + num_shared_fcs + num_cls_convs + num_cls_fcs + num_reg_convs + num_reg_fcs > 0
         if num_cls_convs > 0 or num_reg_convs > 0:
             assert num_shared_fcs == 0
@@ -137,12 +137,11 @@ class ConvFCBBoxHead(BBoxHead):
             last_layer_dim = self.fc_out_channels
         return branch_convs, branch_fcs, last_layer_dim
 
-    def forward(self, x: tuple[Tensor]) -> tuple:
+    def forward(self, x: Tensor) -> tuple:
         """Forward features from the upstream network.
 
         Args:
-            x (tuple[Tensor]): Features from the upstream network, each is
-                a 4D-tensor.
+            x (Tensor): Features from the upstream network, each is a 4D-tensor.
 
         Returns:
             tuple: A tuple of classification scores and bbox prediction.
@@ -173,7 +172,7 @@ class ConvFCBBoxHead(BBoxHead):
 @MODELS.register_module()
 class Shared2FCBBoxHead(ConvFCBBoxHead):
     def __init__(self, fc_out_channels: int = 1024, *args, **kwargs) -> None:
-        super().__init__(
+        super().__init__(  # type: ignore
             num_shared_convs=0,
             num_shared_fcs=2,
             num_cls_convs=0,

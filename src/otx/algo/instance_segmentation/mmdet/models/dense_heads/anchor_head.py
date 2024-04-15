@@ -9,10 +9,10 @@ from mmengine.structures import InstanceData
 from torch import Tensor
 
 from otx.algo.instance_segmentation.mmdet.models.utils import (
+    ConfigType,
     InstanceList,
-    OptConfigType,
+    MultiConfig,
     OptInstanceList,
-    OptMultiConfig,
     images_to_levels,
     multi_apply,
     unmap,
@@ -80,16 +80,16 @@ class AnchorHead(BaseDenseHead):
     def __init__(
         self,
         num_classes: int,
-        in_channels: tuple[int, ...],
+        in_channels: int,
         anchor_generator: dict,
         bbox_coder: dict,
         loss_cls: dict,
         loss_bbox: dict,
+        train_cfg: ConfigType,
+        test_cfg: ConfigType,
+        init_cfg: MultiConfig,
         feat_channels: int = 256,
         reg_decoded_bbox: bool = False,
-        train_cfg: OptConfigType = None,
-        test_cfg: OptConfigType = None,
-        init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
@@ -142,7 +142,7 @@ class AnchorHead(BaseDenseHead):
                     scale levels, each is a 4D-tensor, the channels number \
                     is num_base_priors * 4.
         """
-        return multi_apply(self.forward_single, x)
+        return multi_apply(self.forward_single, x)  # type: ignore
 
     def get_anchors(
         self,
@@ -389,10 +389,6 @@ class AnchorHead(BaseDenseHead):
         bbox_targets_list = images_to_levels(all_bbox_targets, num_level_anchors)
         bbox_weights_list = images_to_levels(all_bbox_weights, num_level_anchors)
         res = (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, avg_factor)
-        if return_sampling_results:
-            res = (*res, sampling_results_list)
-        for i, r in enumerate(rest_results):  # user-added return values
-            rest_results[i] = images_to_levels(r, num_level_anchors)
 
         return res + tuple(rest_results)
 

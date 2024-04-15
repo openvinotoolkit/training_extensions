@@ -21,7 +21,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     multi_apply,
     unpack_gt_instances,
 )
-from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
+from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
     from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
     from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList
-    from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
+    from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
 
 
 @MODELS.register_module()
@@ -41,11 +41,8 @@ class StandardRoIHead(BaseRoIHead):
 
     def init_assigner_sampler(self) -> None:
         """Initialize assigner and sampler."""
-        self.bbox_assigner = None
-        self.bbox_sampler = None
-        if self.train_cfg:
-            self.bbox_assigner = TASK_UTILS.build(self.train_cfg.assigner)
-            self.bbox_sampler = TASK_UTILS.build(self.train_cfg.sampler, default_args=dict(context=self))
+        self.bbox_assigner = TASK_UTILS.build(self.train_cfg["assigner"])
+        self.bbox_sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
 
     def init_bbox_head(self, bbox_roi_extractor: ConfigType, bbox_head: ConfigType) -> None:
         """Initialize box head and box roi extractor.
@@ -90,7 +87,12 @@ class StandardRoIHead(BaseRoIHead):
         mask_head.pop("type")
         self.mask_head = FCNMaskHead(**mask_head)
 
-    def forward(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList = None) -> tuple:
+    def forward(
+        self,
+        x: tuple[Tensor],
+        rpn_results_list: InstanceList,
+        batch_data_samples: SampleList | None = None,
+    ) -> tuple:
         """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
 
         Args:
@@ -106,19 +108,7 @@ class StandardRoIHead(BaseRoIHead):
             tuple: A tuple of features from ``bbox_head`` and ``mask_head``
             forward.
         """
-        results = ()
-        proposals = [rpn_results.bboxes for rpn_results in rpn_results_list]
-        rois = bbox2roi(proposals)
-        # bbox head
-        if self.with_bbox:
-            bbox_results = self._bbox_forward(x, rois)
-            results = results + (bbox_results["cls_score"], bbox_results["bbox_pred"])
-        # mask head
-        if self.with_mask:
-            mask_rois = rois[:100]
-            mask_results = self._mask_forward(x, mask_rois)
-            results = results + (mask_results["mask_preds"],)
-        return results
+        raise NotImplementedError
 
     def _bbox_forward(self, x: tuple[Tensor], rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
@@ -326,7 +316,7 @@ class StandardRoIHead(BaseRoIHead):
                 mask_rois.device,
                 task_type="mask",
                 instance_results=results_list,
-                mask_thr_binary=self.test_cfg.mask_thr_binary,
+                mask_thr_binary=self.test_cfg["mask_thr_binary"],
             )
 
         mask_results = self._mask_forward(x, mask_rois)

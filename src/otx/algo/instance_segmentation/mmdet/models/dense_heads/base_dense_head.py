@@ -3,7 +3,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import TYPE_CHECKING
 
 # TODO(Eugene): replace mmcv.batched_nms with torchvision
@@ -77,10 +77,6 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
             if hasattr(m, "conv_offset"):
                 constant_init(m.conv_offset, 0)
 
-    @abstractmethod
-    def loss_by_feat(self, **kwargs) -> dict:
-        """Calculate the loss based on the features extracted by the detection head."""
-
     def loss_and_predict(
         self,
         x: tuple[Tensor],
@@ -142,8 +138,8 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
+        batch_img_metas: list[dict],
         score_factors: list[Tensor] | None = None,
-        batch_img_metas: list[dict] | None = None,
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,

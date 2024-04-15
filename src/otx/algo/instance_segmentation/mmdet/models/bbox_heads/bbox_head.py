@@ -171,7 +171,7 @@ class BBoxHead(BaseModule):
         cls_scores: tuple[Tensor],
         bbox_preds: tuple[Tensor],
         batch_img_metas: list[dict],
-        rcnn_test_cfg: ConfigDict | None = None,
+        rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
     ) -> InstanceList:
         """Transform a batch of output features extracted from the head into bbox results.
@@ -224,8 +224,8 @@ class BBoxHead(BaseModule):
         cls_score: Tensor,
         bbox_pred: Tensor,
         img_meta: dict,
+        rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
-        rcnn_test_cfg: ConfigDict | None = None,
     ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox results.
 
@@ -278,13 +278,13 @@ class BBoxHead(BaseModule):
         if rescale and bboxes.size(0) > 0:
             assert img_meta.get("scale_factor") is not None
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            bboxes = scale_boxes(bboxes, scale_factor)
+            bboxes = scale_boxes(bboxes, scale_factor)  # type: ignore
 
         # Get the inside tensor when `bboxes` is a box type
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 
-        det_bboxes, det_labels = multiclass_nms(
+        det_bboxes, det_labels = multiclass_nms(  # type: ignore
             bboxes,
             scores,
             rcnn_test_cfg.score_thr,

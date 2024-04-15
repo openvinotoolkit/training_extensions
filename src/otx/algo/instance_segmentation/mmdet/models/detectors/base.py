@@ -95,7 +95,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """Predict results from a batch of inputs and data samples with post-processing."""
 
     @abstractmethod
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: OptSampleList = None) -> tuple:
+    def _forward(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> tuple:
         """Network forward process.
 
         Usually includes backbone, neck and head forward without any post-

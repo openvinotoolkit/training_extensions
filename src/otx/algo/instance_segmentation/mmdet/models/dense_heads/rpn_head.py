@@ -23,7 +23,6 @@ from torch import Tensor, nn
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
-    scale_boxes,
 )
 
 from .anchor_head import AnchorHead
@@ -266,12 +265,8 @@ class RPNHead(AnchorHead):
             raise RuntimeError(msg)
 
         if rescale:
-            if img_meta.get("scale_factor") is None:
-                msg = "scale_factor is required when rescale is True"
-                raise ValueError(msg)
-
-            scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            results.bboxes = scale_boxes(results.bboxes, scale_factor)
+            msg = "Rescale is not implemented in RPNHead"
+            raise NotImplementedError
 
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:

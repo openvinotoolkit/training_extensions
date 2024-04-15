@@ -31,7 +31,7 @@ def images_to_levels(target: list[Tensor], num_levels: list[int]) -> list[Tensor
     return level_targets
 
 
-def multi_apply(func, *args, **kwargs):
+def multi_apply(func, *args, **kwargs) -> tuple:
     """Apply function to a list of arguments.
 
     Note:
@@ -50,10 +50,10 @@ def multi_apply(func, *args, **kwargs):
     """
     pfunc = partial(func, **kwargs) if kwargs else func
     map_results = map(pfunc, *args)
-    return tuple(map(list, zip(*map_results)))
+    return tuple(map(list, zip(*map_results)))  # type: ignore
 
 
-def unmap(data, count, inds, fill=0):
+def unmap(data: torch.Tensor, count: int, inds: torch.Tensor, fill: int = 0) -> torch.Tensor:
     """Unmap a subset of item (data) back to the original set of items (of size count)."""
     if data.dim() == 1:
         ret = data.new_full((count,), fill)
@@ -65,7 +65,7 @@ def unmap(data, count, inds, fill=0):
     return ret
 
 
-def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
+def select_single_mlvl(mlvl_tensors: list[Tensor] | None, batch_id: int, detach: bool = True) -> list[Tensor]:
     """Extract a multi-scale single image tensor from a multi-scale batch tensor based on batch index.
 
     Note: The default value of detach is True, because the proposal gradient
@@ -81,7 +81,9 @@ def select_single_mlvl(mlvl_tensors, batch_id, detach=True):
     Returns:
         list[Tensor]: Multi-scale single image tensor.
     """
-    assert isinstance(mlvl_tensors, (list, tuple))
+    if not isinstance(mlvl_tensors, (list, tuple)):
+        msg = f"mlvl_tensors should be a list or tuple, but got {type(mlvl_tensors)}"
+        raise TypeError(msg)
     num_levels = len(mlvl_tensors)
 
     if detach:

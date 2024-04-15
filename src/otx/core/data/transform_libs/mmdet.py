@@ -99,14 +99,13 @@ class LoadAnnotations(MMDetLoadAnnotations):
             gt_masks (BitmapMasks or PolygonMasks): The generated ground truth masks.
         """
         if len(otx_data_entity.masks):
-            gt_masks = BitmapMasks(otx_data_entity.masks.numpy(), height, width)
-        else:
-            gt_masks = PolygonMasks(
-                [[np.array(polygon.points)] for polygon in otx_data_entity.polygons],
-                height,
-                width,
-            )
-        return gt_masks
+            return BitmapMasks(otx_data_entity.masks.numpy(), height, width)
+
+        return PolygonMasks(
+            [[np.array(polygon.points)] for polygon in otx_data_entity.polygons],
+            height,
+            width,
+        )
 
 
 @TRANSFORMS.register_module(force=True)

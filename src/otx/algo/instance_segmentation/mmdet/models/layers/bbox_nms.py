@@ -1,7 +1,8 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple, Union
+
+from __future__ import annotations
 
 import torch
 
@@ -19,10 +20,10 @@ def multiclass_nms(
     score_thr: float,
     nms_cfg: ConfigType,
     max_num: int = -1,
-    score_factors: Optional[Tensor] = None,
+    score_factors: Tensor | None = None,
     return_inds: bool = False,
     box_dim: int = 4,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[Tensor, Tensor]]:
+) -> tuple[Tensor, Tensor, Tensor] | tuple[Tensor, Tensor]:
     """NMS for multi-class bboxes.
 
     Args:
@@ -91,8 +92,7 @@ def multiclass_nms(
         dets = torch.cat([bboxes, scores[:, None]], -1)
         if return_inds:
             return dets, labels, inds
-        else:
-            return dets, labels
+        return dets, labels
 
     dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
 
@@ -102,5 +102,4 @@ def multiclass_nms(
 
     if return_inds:
         return dets, labels[keep], inds[keep]
-    else:
-        return dets, labels[keep]
+    return dets, labels[keep]
