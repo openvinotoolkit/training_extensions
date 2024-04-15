@@ -34,7 +34,9 @@ class TestOTXModel:
                 "model.head.bias": {"stride": 1, "num_extra_classes": 0},
             }
             current_model.label_info = ["car", "bus", "truck"]
-            current_model.load_state_dict(prev_state_dict)
+            current_model.load_state_dict_incrementally(
+                {"state_dict": prev_state_dict, "label_info": prev_model.label_info},
+            )
             curr_state_dict = current_model.state_dict()
 
         indices = torch.Tensor([0, 2]).to(torch.int32)
