@@ -26,7 +26,7 @@ class RandomSampler(BaseSampler):
     """
 
     def __init__(self, num: int, pos_fraction: float, neg_pos_ub: int = -1, add_gt_as_proposals: bool = True, **kwargs):
-        from .sampling_result import ensure_rng
+        from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
 
         super().__init__(
             num=num,

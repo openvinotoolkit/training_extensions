@@ -12,14 +12,11 @@ from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
-from otx.algo.detection.losses import accuracy
 from otx.algo.instance_segmentation.mmdet.models.layers import multiclass_nms
-from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
     OptMultiConfig,
     empty_instances,
-    multi_apply,
 )
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
 
@@ -67,10 +64,7 @@ class BBoxHead(BaseModule):
             in_channels *= self.roi_feat_area
         if self.with_cls:
             # need to add background class
-            if self.custom_cls_channels:
-                cls_channels = self.loss_cls.get_cls_channels(self.num_classes)
-            else:
-                cls_channels = num_classes + 1
+            cls_channels = num_classes + 1
             self.fc_cls = nn.Linear(in_features=in_channels, out_features=cls_channels)
         if self.with_reg:
             box_dim = self.bbox_coder.encode_size
@@ -100,16 +94,6 @@ class BBoxHead(BaseModule):
     def custom_cls_channels(self) -> bool:
         """Get custom_cls_channels from loss_cls."""
         return getattr(self.loss_cls, "custom_cls_channels", False)
-
-    @property
-    def custom_activation(self) -> bool:
-        """Get custom_activation from loss_cls."""
-        return getattr(self.loss_cls, "custom_activation", False)
-
-    @property
-    def custom_accuracy(self) -> bool:
-        """Get custom_accuracy from loss_cls."""
-        return getattr(self.loss_cls, "custom_accuracy", False)
 
     def _get_targets_single(
         self,
@@ -180,204 +164,6 @@ class BBoxHead(BaseModule):
             label_weights[-num_neg:] = 1.0
 
         return labels, label_weights, bbox_targets, bbox_weights
-
-    def get_targets(
-        self,
-        sampling_results: list[SamplingResult],
-        rcnn_train_cfg: ConfigDict,
-        concat: bool = True,
-    ) -> tuple:
-        """Calculate the ground truth for all samples in a batch according to the sampling_results.
-
-        Almost the same as the implementation in bbox_head, we passed
-        additional parameters pos_inds_list and neg_inds_list to
-        `_get_targets_single` function.
-
-        Args:
-            sampling_results (List[obj:SamplingResult]): Assign results of
-                all images in a batch after sampling.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
-            concat (bool): Whether to concatenate the results of all
-                the images in a single batch.
-
-        Returns:
-            Tuple[Tensor]: Ground truth for proposals in a single image.
-            Containing the following list of Tensors:
-
-            - labels (list[Tensor],Tensor): Gt_labels for all
-                proposals in a batch, each tensor in list has
-                shape (num_proposals,) when `concat=False`, otherwise
-                just a single tensor has shape (num_all_proposals,).
-            - label_weights (list[Tensor]): Labels_weights for
-                all proposals in a batch, each tensor in list has
-                shape (num_proposals,) when `concat=False`, otherwise
-                just a single tensor has shape (num_all_proposals,).
-            - bbox_targets (list[Tensor],Tensor): Regression target
-                for all proposals in a batch, each tensor in list
-                has shape (num_proposals, 4) when `concat=False`,
-                otherwise just a single tensor has shape
-                (num_all_proposals, 4), the last dimension 4 represents
-                [tl_x, tl_y, br_x, br_y].
-            - bbox_weights (list[tensor],Tensor): Regression weights for
-                all proposals in a batch, each tensor in list has shape
-                (num_proposals, 4) when `concat=False`, otherwise just a
-                single tensor has shape (num_all_proposals, 4).
-        """
-        pos_priors_list = [res.pos_priors for res in sampling_results]
-        neg_priors_list = [res.neg_priors for res in sampling_results]
-        pos_gt_bboxes_list = [res.pos_gt_bboxes for res in sampling_results]
-        pos_gt_labels_list = [res.pos_gt_labels for res in sampling_results]
-        labels, label_weights, bbox_targets, bbox_weights = multi_apply(
-            self._get_targets_single,
-            pos_priors_list,
-            neg_priors_list,
-            pos_gt_bboxes_list,
-            pos_gt_labels_list,
-            cfg=rcnn_train_cfg,
-        )
-
-        if concat:
-            labels = torch.cat(labels, 0)
-            label_weights = torch.cat(label_weights, 0)
-            bbox_targets = torch.cat(bbox_targets, 0)
-            bbox_weights = torch.cat(bbox_weights, 0)
-        return labels, label_weights, bbox_targets, bbox_weights
-
-    def loss_and_target(
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        rois: Tensor,
-        sampling_results: list[SamplingResult],
-        rcnn_train_cfg: ConfigDict,
-        concat: bool = True,
-        reduction_override: str | None = None,
-    ) -> dict:
-        """Calculate the loss based on the features extracted by the bbox head.
-
-        Args:
-            cls_score (Tensor): Classification prediction
-                results of all class, has shape
-                (batch_size * num_proposals_single_image, num_classes)
-            bbox_pred (Tensor): Regression prediction results,
-                has shape
-                (batch_size * num_proposals_single_image, 4), the last
-                dimension 4 represents [tl_x, tl_y, br_x, br_y].
-            rois (Tensor): RoIs with the shape
-                (batch_size * num_proposals_single_image, 5) where the first
-                column indicates batch id of each RoI.
-            sampling_results (List[obj:SamplingResult]): Assign results of
-                all images in a batch after sampling.
-            rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
-            concat (bool): Whether to concatenate the results of all
-                the images in a single batch. Defaults to True.
-            reduction_override (str, optional): The reduction
-                method used to override the original reduction
-                method of the loss. Options are "none",
-                "mean" and "sum". Defaults to None,
-
-        Returns:
-            dict: A dictionary of loss and targets components.
-                The targets are only used for cascade rcnn.
-        """
-        cls_reg_targets = self.get_targets(sampling_results, rcnn_train_cfg, concat=concat)
-        losses = self.loss(cls_score, bbox_pred, rois, *cls_reg_targets, reduction_override=reduction_override)
-
-        # cls_reg_targets is only for cascade rcnn
-        return {"loss_bbox": losses, "bbox_targets": cls_reg_targets}
-
-    def loss(
-        self,
-        cls_score: Tensor,
-        bbox_pred: Tensor,
-        rois: Tensor,
-        labels: Tensor,
-        label_weights: Tensor,
-        bbox_targets: Tensor,
-        bbox_weights: Tensor,
-        reduction_override: str | None = None,
-    ) -> dict:
-        """Calculate the loss based on the network predictions and targets.
-
-        Args:
-            cls_score (Tensor): Classification prediction
-                results of all class, has shape
-                (batch_size * num_proposals_single_image, num_classes)
-            bbox_pred (Tensor): Regression prediction results,
-                has shape
-                (batch_size * num_proposals_single_image, 4), the last
-                dimension 4 represents [tl_x, tl_y, br_x, br_y].
-            rois (Tensor): RoIs with the shape
-                (batch_size * num_proposals_single_image, 5) where the first
-                column indicates batch id of each RoI.
-            labels (Tensor): Gt_labels for all proposals in a batch, has
-                shape (batch_size * num_proposals_single_image, ).
-            label_weights (Tensor): Labels_weights for all proposals in a
-                batch, has shape (batch_size * num_proposals_single_image, ).
-            bbox_targets (Tensor): Regression target for all proposals in a
-                batch, has shape (batch_size * num_proposals_single_image, 4),
-                the last dimension 4 represents [tl_x, tl_y, br_x, br_y].
-            bbox_weights (Tensor): Regression weights for all proposals in a
-                batch, has shape (batch_size * num_proposals_single_image, 4).
-            reduction_override (str, optional): The reduction
-                method used to override the original reduction
-                method of the loss. Options are "none",
-                "mean" and "sum". Defaults to None,
-
-        Returns:
-            dict: A dictionary of loss.
-        """
-        losses = {}
-
-        if cls_score is not None:
-            avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
-            if cls_score.numel() > 0:
-                loss_cls_ = self.loss_cls(
-                    cls_score,
-                    labels,
-                    label_weights,
-                    avg_factor=avg_factor,
-                    reduction_override=reduction_override,
-                )
-                if isinstance(loss_cls_, dict):
-                    losses.update(loss_cls_)
-                else:
-                    losses["loss_cls"] = loss_cls_
-                if self.custom_activation:
-                    acc_ = self.loss_cls.get_accuracy(cls_score, labels)
-                    losses.update(acc_)
-                else:
-                    losses["acc"] = accuracy(cls_score, labels)
-        if bbox_pred is not None:
-            bg_class_ind = self.num_classes
-            # 0~self.num_classes-1 are FG, self.num_classes is BG
-            pos_inds = (labels >= 0) & (labels < bg_class_ind)
-            # do not perform bounding box regression for BG anymore.
-            if pos_inds.any():
-                if self.reg_decoded_bbox:
-                    # When the regression loss (e.g. `IouLoss`,
-                    # `GIouLoss`, `DIouLoss`) is applied directly on
-                    # the decoded bounding boxes, it decodes the
-                    # already encoded coordinates to absolute format.
-                    bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
-                if self.reg_class_agnostic:
-                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1)[pos_inds.type(torch.bool)]
-                else:
-                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), self.num_classes, -1)[
-                        pos_inds.type(torch.bool),
-                        labels[pos_inds.type(torch.bool)],
-                    ]
-                losses["loss_bbox"] = self.loss_bbox(
-                    pos_bbox_pred,
-                    bbox_targets[pos_inds.type(torch.bool)],
-                    bbox_weights[pos_inds.type(torch.bool)],
-                    avg_factor=bbox_targets.size(0),
-                    reduction_override=reduction_override,
-                )
-            else:
-                losses["loss_bbox"] = bbox_pred[pos_inds].sum()
-
-        return losses
 
     def predict_by_feat(
         self,
@@ -478,26 +264,16 @@ class BBoxHead(BaseModule):
                 score_per_cls=rcnn_test_cfg is None,
             )[0]
 
-        # some loss (Seesaw loss..) may have custom activation
-        if self.custom_cls_channels:
-            scores = self.loss_cls.get_activation(cls_score)
-        else:
-            scores = F.softmax(cls_score, dim=-1) if cls_score is not None else None
+        scores = F.softmax(cls_score, dim=-1) if cls_score is not None else None
 
         img_shape = img_meta["img_shape"]
         num_rois = roi.size(0)
         # bbox_pred would be None in some detector when with_reg is False,
         # e.g. Grid R-CNN.
-        if bbox_pred is not None:
-            num_classes = 1 if self.reg_class_agnostic else self.num_classes
-            roi = roi.repeat_interleave(num_classes, dim=0)
-            bbox_pred = bbox_pred.view(-1, self.bbox_coder.encode_size)
-            bboxes = self.bbox_coder.decode(roi[..., 1:], bbox_pred, max_shape=img_shape)
-        else:
-            bboxes = roi[:, 1:].clone()
-            if img_shape is not None and bboxes.size(-1) == 4:
-                bboxes[:, [0, 2]].clamp_(min=0, max=img_shape[1])
-                bboxes[:, [1, 3]].clamp_(min=0, max=img_shape[0])
+        num_classes = 1 if self.reg_class_agnostic else self.num_classes
+        roi = roi.repeat_interleave(num_classes, dim=0)
+        bbox_pred = bbox_pred.view(-1, self.bbox_coder.encode_size)
+        bboxes = self.bbox_coder.decode(roi[..., 1:], bbox_pred, max_shape=img_shape)
 
         if rescale and bboxes.size(0) > 0:
             assert img_meta.get("scale_factor") is not None
@@ -508,156 +284,15 @@ class BBoxHead(BaseModule):
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 
-        if rcnn_test_cfg is None:
-            # This means that it is aug test.
-            # It needs to return the raw results without nms.
-            results.bboxes = bboxes
-            results.scores = scores
-        else:
-            det_bboxes, det_labels = multiclass_nms(
-                bboxes,
-                scores,
-                rcnn_test_cfg.score_thr,
-                rcnn_test_cfg.nms,
-                rcnn_test_cfg.max_per_img,
-                box_dim=box_dim,
-            )
-            results.bboxes = det_bboxes[:, :-1]
-            results.scores = det_bboxes[:, -1]
-            results.labels = det_labels
+        det_bboxes, det_labels = multiclass_nms(
+            bboxes,
+            scores,
+            rcnn_test_cfg.score_thr,
+            rcnn_test_cfg.nms,
+            rcnn_test_cfg.max_per_img,
+            box_dim=box_dim,
+        )
+        results.bboxes = det_bboxes[:, :-1]
+        results.scores = det_bboxes[:, -1]
+        results.labels = det_labels
         return results
-
-    def refine_bboxes(
-        self,
-        sampling_results: list[SamplingResult] | InstanceList,
-        bbox_results: dict,
-        batch_img_metas: list[dict],
-    ) -> InstanceList:
-        """Refine bboxes during training.
-
-        Args:
-            sampling_results (List[:obj:`SamplingResult`] or
-                List[:obj:`InstanceData`]): Sampling results.
-                :obj:`SamplingResult` is the real sampling results
-                calculate from bbox_head, while :obj:`InstanceData` is
-                fake sampling results, e.g., in Sparse R-CNN or QueryInst, etc.
-            bbox_results (dict): Usually is a dictionary with keys:
-
-                - `cls_score` (Tensor): Classification scores.
-                - `bbox_pred` (Tensor): Box energies / deltas.
-                - `rois` (Tensor): RoIs with the shape (n, 5) where the first
-                  column indicates batch id of each RoI.
-                - `bbox_targets` (tuple):  Ground truth for proposals in a
-                  single image. Containing the following list of Tensors:
-                  (labels, label_weights, bbox_targets, bbox_weights)
-            batch_img_metas (List[dict]): List of image information.
-
-        Returns:
-            list[:obj:`InstanceData`]: Refined bboxes of each image.
-
-        Example:
-            >>> # xdoctest: +REQUIRES(module:kwarray)
-            >>> import numpy as np
-            >>> from mmdet.models.task_modules.samplers.
-            ... sampling_result import random_boxes
-            >>> from mmdet.models.task_modules.samplers import SamplingResult
-            >>> self = BBoxHead(reg_class_agnostic=True)
-            >>> n_roi = 2
-            >>> n_img = 4
-            >>> scale = 512
-            >>> rng = np.random.RandomState(0)
-            ... batch_img_metas = [{'img_shape': (scale, scale)}
-            >>>                     for _ in range(n_img)]
-            >>> sampling_results = [SamplingResult.random(rng=10)
-            ...                     for _ in range(n_img)]
-            >>> # Create rois in the expected format
-            >>> roi_boxes = random_boxes(n_roi, scale=scale, rng=rng)
-            >>> img_ids = torch.randint(0, n_img, (n_roi,))
-            >>> img_ids = img_ids.float()
-            >>> rois = torch.cat([img_ids[:, None], roi_boxes], dim=1)
-            >>> # Create other args
-            >>> labels = torch.randint(0, 81, (scale,)).long()
-            >>> bbox_preds = random_boxes(n_roi, scale=scale, rng=rng)
-            >>> cls_score = torch.randn((scale, 81))
-            ... # For each image, pretend random positive boxes are gts
-            >>> bbox_targets = (labels, None, None, None)
-            ... bbox_results = dict(rois=rois, bbox_pred=bbox_preds,
-            ...                     cls_score=cls_score,
-            ...                     bbox_targets=bbox_targets)
-            >>> bboxes_list = self.refine_bboxes(sampling_results,
-            ...                                  bbox_results,
-            ...                                  batch_img_metas)
-            >>> print(bboxes_list)
-        """
-        pos_is_gts = [res.pos_is_gt for res in sampling_results]
-        # bbox_targets is a tuple
-        labels = bbox_results["bbox_targets"][0]
-        cls_scores = bbox_results["cls_score"]
-        rois = bbox_results["rois"]
-        bbox_preds = bbox_results["bbox_pred"]
-        if self.custom_activation:
-            cls_scores = self.loss_cls.get_activation(cls_scores)
-        if cls_scores.numel() == 0:
-            return None
-        if cls_scores.shape[-1] == self.num_classes + 1:
-            # remove background class
-            cls_scores = cls_scores[:, :-1]
-        elif cls_scores.shape[-1] != self.num_classes:
-            msg = (
-                "The last dim of `cls_scores` should equal to "
-                "`num_classes` or `num_classes + 1`,"
-                f"but got {cls_scores.shape[-1]}.",
-            )
-            raise ValueError(msg)
-        labels = torch.where(labels == self.num_classes, cls_scores.argmax(1), labels)
-
-        img_ids = rois[:, 0].long().unique(sorted=True)
-        assert img_ids.numel() <= len(batch_img_metas)
-
-        results_list = []
-        for i in range(len(batch_img_metas)):
-            inds = torch.nonzero(rois[:, 0] == i, as_tuple=False).squeeze(dim=1)
-            num_rois = inds.numel()
-
-            bboxes_ = rois[inds, 1:]
-            label_ = labels[inds]
-            bbox_pred_ = bbox_preds[inds]
-            img_meta_ = batch_img_metas[i]
-            pos_is_gts_ = pos_is_gts[i]
-
-            bboxes = self.regress_by_class(bboxes_, label_, bbox_pred_, img_meta_)
-            # filter gt bboxes
-            pos_keep = 1 - pos_is_gts_
-            keep_inds = pos_is_gts_.new_ones(num_rois)
-            keep_inds[: len(pos_is_gts_)] = pos_keep
-            results = InstanceData(bboxes=bboxes[keep_inds.type(torch.bool)])
-            results_list.append(results)
-
-        return results_list
-
-    def regress_by_class(self, priors: Tensor, label: Tensor, bbox_pred: Tensor, img_meta: dict) -> Tensor:
-        """Regress the bbox for the predicted class. Used in Cascade R-CNN.
-
-        Args:
-            priors (Tensor): Priors from `rpn_head` or last stage
-                `bbox_head`, has shape (num_proposals, 4).
-            label (Tensor): Only used when `self.reg_class_agnostic`
-                is False, has shape (num_proposals, ).
-            bbox_pred (Tensor): Regression prediction of
-                current stage `bbox_head`. When `self.reg_class_agnostic`
-                is False, it has shape (n, num_classes * 4), otherwise
-                it has shape (n, 4).
-            img_meta (dict): Image meta info.
-
-        Returns:
-            Tensor: Regressed bboxes, the same shape as input rois.
-        """
-        reg_dim = self.bbox_coder.encode_size
-        if not self.reg_class_agnostic:
-            label = label * reg_dim
-            inds = torch.stack([label + i for i in range(reg_dim)], 1)
-            bbox_pred = torch.gather(bbox_pred, 1, inds)
-        assert bbox_pred.size()[1] == reg_dim
-
-        max_shape = img_meta["img_shape"]
-        return self.bbox_coder.decode(priors, bbox_pred, max_shape=max_shape)

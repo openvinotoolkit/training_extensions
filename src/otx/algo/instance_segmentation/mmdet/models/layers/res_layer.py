@@ -90,21 +90,4 @@ class ResLayer(Sequential):
                 layers.append(
                     block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs),
                 )
-
-        else:  # downsample_first=False is for HourglassModule
-            for _ in range(num_blocks - 1):
-                layers.append(
-                    block(inplanes=inplanes, planes=inplanes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs),
-                )
-            layers.append(
-                block(
-                    inplanes=inplanes,
-                    planes=planes,
-                    stride=stride,
-                    downsample=downsample,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    **kwargs,
-                ),
-            )
         super().__init__(*layers)

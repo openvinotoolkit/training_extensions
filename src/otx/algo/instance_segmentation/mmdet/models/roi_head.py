@@ -77,16 +77,11 @@ class StandardRoIHead(BaseRoIHead):
                 extractor.
             mask_head (dict or ConfigDict): Config of mask in mask head.
         """
-        if mask_roi_extractor is not None:
-            if mask_roi_extractor["type"] != SingleRoIExtractor.__name__:
-                msg = f"mask_roi_extractor should be SingleRoIExtractor, but got {mask_roi_extractor['type']}"
-                raise ValueError(msg)
-            mask_roi_extractor.pop("type")
-            self.mask_roi_extractor = SingleRoIExtractor(**mask_roi_extractor)
-            self.share_roi_extractor = False
-        else:
-            self.share_roi_extractor = True
-            self.mask_roi_extractor = self.bbox_roi_extractor
+        if mask_roi_extractor["type"] != SingleRoIExtractor.__name__:
+            msg = f"mask_roi_extractor should be SingleRoIExtractor, but got {mask_roi_extractor['type']}"
+            raise ValueError(msg)
+        mask_roi_extractor.pop("type")
+        self.mask_roi_extractor = SingleRoIExtractor(**mask_roi_extractor)
 
         if mask_head["type"] != FCNMaskHead.__name__:
             msg = f"mask_head should be FCNMaskHead, but got {mask_head['type']}"
@@ -125,54 +120,6 @@ class StandardRoIHead(BaseRoIHead):
             results = results + (mask_results["mask_preds"],)
         return results
 
-    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
-        """Perform forward propagation and loss calculation of the detection roi on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): List of multi-level img features.
-            rpn_results_list (list[:obj:`InstanceData`]): List of region
-                proposals.
-            batch_data_samples (list[:obj:`DetDataSample`]): The batch
-                data samples. It usually includes information such
-                as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.
-
-        Returns:
-            dict[str, Tensor]: A dictionary of loss components
-        """
-        assert len(rpn_results_list) == len(batch_data_samples)
-        outputs = unpack_gt_instances(batch_data_samples)
-        batch_gt_instances, batch_gt_instances_ignore, _ = outputs
-
-        # assign gts and sample proposals
-        num_imgs = len(batch_data_samples)
-        sampling_results = []
-        for i in range(num_imgs):
-            # rename rpn_results.bboxes to rpn_results.priors
-            rpn_results = rpn_results_list[i]
-            rpn_results.priors = rpn_results.pop("bboxes")
-
-            assign_result = self.bbox_assigner.assign(rpn_results, batch_gt_instances[i], batch_gt_instances_ignore[i])
-            sampling_result = self.bbox_sampler.sample(
-                assign_result,
-                rpn_results,
-                batch_gt_instances[i],
-                feats=[lvl_feat[i][None] for lvl_feat in x],
-            )
-            sampling_results.append(sampling_result)
-
-        losses = {}
-        # bbox head loss
-        if self.with_bbox:
-            bbox_results = self.bbox_loss(x, sampling_results)
-            losses.update(bbox_results["loss_bbox"])
-
-        # mask head forward and loss
-        if self.with_mask:
-            mask_results = self.mask_loss(x, sampling_results, bbox_results["bbox_feats"], batch_gt_instances)
-            losses.update(mask_results["loss_mask"])
-
-        return losses
-
     def _bbox_forward(self, x: tuple[Tensor], rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
 
@@ -194,35 +141,6 @@ class StandardRoIHead(BaseRoIHead):
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
         return dict(cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
-
-    def bbox_loss(self, x: tuple[Tensor], sampling_results: list[SamplingResult]) -> dict:
-        """Perform forward propagation and loss calculation of the bbox head on the features of the upstream network.
-
-        Args:
-            x (tuple[Tensor]): List of multi-level img features.
-            sampling_results (list["obj:`SamplingResult`]): Sampling results.
-
-        Returns:
-            dict[str, Tensor]: Usually returns a dictionary with keys:
-
-                - `cls_score` (Tensor): Classification scores.
-                - `bbox_pred` (Tensor): Box energies / deltas.
-                - `bbox_feats` (Tensor): Extract bbox RoI features.
-                - `loss_bbox` (dict): A dictionary of bbox loss components.
-        """
-        rois = bbox2roi([res.priors for res in sampling_results])
-        bbox_results = self._bbox_forward(x, rois)
-
-        bbox_loss_and_target = self.bbox_head.loss_and_target(
-            cls_score=bbox_results["cls_score"],
-            bbox_pred=bbox_results["bbox_pred"],
-            rois=rois,
-            sampling_results=sampling_results,
-            rcnn_train_cfg=self.train_cfg,
-        )
-
-        bbox_results.update(loss_bbox=bbox_loss_and_target["loss_bbox"])
-        return bbox_results
 
     def mask_loss(
         self,
@@ -250,18 +168,8 @@ class StandardRoIHead(BaseRoIHead):
                     proposals in the image.
                 - `loss_mask` (dict): A dictionary of mask loss components.
         """
-        if not self.share_roi_extractor:
-            pos_rois = bbox2roi([res.pos_priors for res in sampling_results])
-            mask_results = self._mask_forward(x, pos_rois)
-        else:
-            pos_inds = []
-            device = bbox_feats.device
-            for res in sampling_results:
-                pos_inds.append(torch.ones(res.pos_priors.shape[0], device=device, dtype=torch.uint8))
-                pos_inds.append(torch.zeros(res.neg_priors.shape[0], device=device, dtype=torch.uint8))
-            pos_inds = torch.cat(pos_inds)
-
-            mask_results = self._mask_forward(x, pos_inds=pos_inds, bbox_feats=bbox_feats)
+        pos_rois = bbox2roi([res.pos_priors for res in sampling_results])
+        mask_results = self._mask_forward(x, pos_rois)
 
         mask_loss_and_target = self.mask_head.loss_and_target(
             mask_preds=mask_results["mask_preds"],

@@ -6,10 +6,9 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 
 from mmengine.model import BaseModule
-from mmengine.registry import MODELS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
+from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, InstanceList, OptMultiConfig
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
@@ -24,14 +23,11 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         bbox_head: OptMultiConfig = None,
         mask_roi_extractor: OptMultiConfig = None,
         mask_head: OptMultiConfig = None,
-        shared_head: OptConfigType = None,
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-        if shared_head is not None:
-            self.shared_head = MODELS.build(shared_head)
 
         if bbox_head is not None:
             self.init_bbox_head(bbox_roi_extractor, bbox_head)
@@ -57,19 +53,19 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         return hasattr(self, "shared_head") and self.shared_head is not None
 
     @abstractmethod
-    def init_bbox_head(self, *args, **kwargs):
+    def init_bbox_head(self, *args, **kwargs) -> None:
         """Initialize ``bbox_head``."""
 
     @abstractmethod
-    def init_mask_head(self, *args, **kwargs):
+    def init_mask_head(self, *args, **kwargs) -> None:
         """Initialize ``mask_head``."""
 
     @abstractmethod
-    def init_assigner_sampler(self, *args, **kwargs):
+    def init_assigner_sampler(self, *args, **kwargs) -> None:
         """Initialize assigner and sampler."""
 
     @abstractmethod
-    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList):
+    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList) -> dict:
         """Perform forward propagation and loss calculation of the roi head on the features of the upstream network."""
 
     def predict(

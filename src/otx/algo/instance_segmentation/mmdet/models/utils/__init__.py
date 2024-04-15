@@ -3,7 +3,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .misc import (
     empty_instances,
-    filter_scores_and_topk,
     images_to_levels,
     multi_apply,
     select_single_mlvl,
@@ -21,7 +20,6 @@ from .typing_utils import (
 
 __all__ = [
     "empty_instances",
-    "filter_scores_and_topk",
     "images_to_levels",
     "multi_apply",
     "select_single_mlvl",

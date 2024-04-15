@@ -42,24 +42,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         """bool: whether the detector has a neck."""
         return hasattr(self, "neck") and self.neck is not None
 
-    # for both single stage & two stage detectors
-    @property
-    def with_shared_head(self) -> bool:
-        """bool: whether the detector has a shared head in the RoI Head."""
-        return hasattr(self, "roi_head") and self.roi_head.with_shared_head
-
     @property
     def with_bbox(self) -> bool:
         """bool: whether the detector has a bbox head."""
         return (hasattr(self, "roi_head") and self.roi_head.with_bbox) or (
             hasattr(self, "bbox_head") and self.bbox_head is not None
-        )
-
-    @property
-    def with_mask(self) -> bool:
-        """bool: whether the detector has a mask head."""
-        return (hasattr(self, "roi_head") and self.roi_head.with_mask) or (
-            hasattr(self, "mask_head") and self.mask_head is not None
         )
 
     def forward(self, inputs: torch.Tensor, data_samples: OptSampleList = None, mode: str = "tensor") -> ForwardResults:
@@ -96,9 +83,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             return self.loss(inputs, data_samples)
         if mode == "predict":
             return self.predict(inputs, data_samples)
-        if mode == "tensor":
-            return self._forward(inputs, data_samples)
-        msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode."
+        msg = f"Invalid mode {mode}. Only supports loss and predict mode."
         raise RuntimeError(msg)
 
     @abstractmethod

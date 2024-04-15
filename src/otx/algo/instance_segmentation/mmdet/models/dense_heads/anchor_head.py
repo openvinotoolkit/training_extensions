@@ -3,15 +3,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-import warnings
-
 import torch
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
-from torch import Tensor, nn
+from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.prior_generators import AnchorGenerator
-from otx.algo.instance_segmentation.mmdet.models.samplers import PseudoSampler
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
     OptConfigType,
@@ -115,12 +111,9 @@ class AnchorHead(BaseDenseHead):
         self.loss_bbox = MODELS.build(loss_bbox)
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
-        if self.train_cfg:
+        if self.train_cfg is not None:
             self.assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-            if train_cfg.get("sampler", None) is not None:
-                self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
-            else:
-                self.sampler = PseudoSampler(context=self)
+            self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
 
         self.fp16_enabled = False
 
@@ -131,49 +124,6 @@ class AnchorHead(BaseDenseHead):
         # heads but a list of int in SSDHead
         self.num_base_priors = self.prior_generator.num_base_priors[0]
         self._init_layers()
-
-    @property
-    def num_anchors(self) -> int:
-        """Number of anchors in total."""
-        warnings.warn(
-            "DeprecationWarning: `num_anchors` is deprecated, "
-            "for consistency or also use "
-            "`num_base_priors` instead",
-            stacklevel=2,
-        )
-        return self.prior_generator.num_base_priors[0]
-
-    @property
-    def anchor_generator(self) -> AnchorGenerator:
-        """Anchor generator."""
-        warnings.warn(
-            "DeprecationWarning: anchor_generator is deprecated, please use prior_generator instead",
-            stacklevel=2,
-        )
-        return self.prior_generator
-
-    def _init_layers(self) -> None:
-        """Initialize layers of the head."""
-        self.conv_cls = nn.Conv2d(self.in_channels, self.num_base_priors * self.cls_out_channels, 1)
-        reg_dim = self.bbox_coder.encode_size
-        self.conv_reg = nn.Conv2d(self.in_channels, self.num_base_priors * reg_dim, 1)
-
-    def forward_single(self, x: Tensor) -> tuple[Tensor, Tensor]:
-        """Forward feature of a single scale level.
-
-        Args:
-            x (Tensor): Features of a single scale level.
-
-        Returns:
-            tuple:
-                cls_score (Tensor): Cls scores for a single scale level \
-                    the channels number is num_base_priors * num_classes.
-                bbox_pred (Tensor): Box energies / deltas for a single scale \
-                    level, the channels number is num_base_priors * 4.
-        """
-        cls_score = self.conv_cls(x)
-        bbox_pred = self.conv_reg(x)
-        return cls_score, bbox_pred
 
     def forward(self, x: tuple[Tensor]) -> tuple[list[Tensor]]:
         """Forward features from the upstream network.

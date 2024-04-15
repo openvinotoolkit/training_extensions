@@ -119,11 +119,6 @@ class TwoStageDetector(BaseDetector):
         """bool: whether the detector has RPN."""
         return hasattr(self, "rpn_head") and self.rpn_head is not None
 
-    @property
-    def with_roi_head(self) -> bool:
-        """bool: whether the detector has a RoI head."""
-        return hasattr(self, "roi_head") and self.roi_head is not None
-
     def extract_feat(self, batch_inputs: Tensor) -> tuple[Tensor]:
         """Extract features.
 

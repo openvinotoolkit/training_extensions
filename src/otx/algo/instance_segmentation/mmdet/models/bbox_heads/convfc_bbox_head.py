@@ -3,9 +3,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-# TODO(Eugene): replace mmcv.ConvModule with torch.nn.Conv2d + torch.nn.BatchNorm2d + torch.nn.ReLU
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-from mmcv.cnn import ConvModule
 from mmengine.config import ConfigDict
 from mmengine.registry import MODELS
 from torch import Tensor, nn
@@ -82,19 +79,10 @@ class ConvFCBBoxHead(BBoxHead):
             self.shared_out_channels,
         )
 
-        if self.num_shared_fcs == 0 and not self.with_avg_pool:
-            if self.num_cls_fcs == 0:
-                self.cls_last_dim *= self.roi_feat_area
-            if self.num_reg_fcs == 0:
-                self.reg_last_dim *= self.roi_feat_area
-
         self.relu = nn.ReLU(inplace=True)
         # reconstruct fc_cls and fc_reg since input channels are changed
         if self.with_cls:
-            if self.custom_cls_channels:
-                cls_channels = self.loss_cls.get_cls_channels(self.num_classes)
-            else:
-                cls_channels = self.num_classes + 1
+            cls_channels = self.num_classes + 1
             self.fc_cls = nn.Linear(in_features=self.cls_last_dim, out_features=cls_channels)
         if self.with_reg:
             box_dim = self.bbox_coder.encode_size
@@ -135,20 +123,7 @@ class ConvFCBBoxHead(BBoxHead):
         last_layer_dim = in_channels
         # add branch specific conv layers
         branch_convs = nn.ModuleList()
-        if num_branch_convs > 0:
-            for i in range(num_branch_convs):
-                conv_in_channels = last_layer_dim if i == 0 else self.conv_out_channels
-                branch_convs.append(
-                    ConvModule(
-                        conv_in_channels,
-                        self.conv_out_channels,
-                        3,
-                        padding=1,
-                        conv_cfg=self.conv_cfg,
-                        norm_cfg=self.norm_cfg,
-                    ),
-                )
-            last_layer_dim = self.conv_out_channels
+
         # add branch specific fc layers
         branch_fcs = nn.ModuleList()
         if num_branch_fcs > 0:
@@ -180,14 +155,8 @@ class ConvFCBBoxHead(BBoxHead):
                     is num_base_priors * 4.
         """
         # shared part
-        if self.num_shared_convs > 0:
-            for conv in self.shared_convs:
-                x = conv(x)
 
         if self.num_shared_fcs > 0:
-            if self.with_avg_pool:
-                x = self.avg_pool(x)
-
             x = x.flatten(1)
 
             for fc in self.shared_fcs:
@@ -195,24 +164,6 @@ class ConvFCBBoxHead(BBoxHead):
         # separate branches
         x_cls = x
         x_reg = x
-
-        for conv in self.cls_convs:
-            x_cls = conv(x_cls)
-        if x_cls.dim() > 2:
-            if self.with_avg_pool:
-                x_cls = self.avg_pool(x_cls)
-            x_cls = x_cls.flatten(1)
-        for fc in self.cls_fcs:
-            x_cls = self.relu(fc(x_cls))
-
-        for conv in self.reg_convs:
-            x_reg = conv(x_reg)
-        if x_reg.dim() > 2:
-            if self.with_avg_pool:
-                x_reg = self.avg_pool(x_reg)
-            x_reg = x_reg.flatten(1)
-        for fc in self.reg_fcs:
-            x_reg = self.relu(fc(x_reg))
 
         cls_score = self.fc_cls(x_cls) if self.with_cls else None
         bbox_pred = self.fc_reg(x_reg) if self.with_reg else None

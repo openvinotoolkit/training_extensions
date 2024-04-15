@@ -5,52 +5,13 @@ from __future__ import annotations
 
 import warnings
 
-import numpy as np
 import torch
 from torch import Tensor
 
 from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
-from otx.algo.instance_segmentation.mmdet.models.utils import util_mixins
-from otx.algo.instance_segmentation.mmdet.models.utils.util_random import ensure_rng
 
 
-def random_boxes(num: int = 1, scale: int = 1, rng: int | None = None) -> Tensor:
-    """Simple version of ``kwimage.Boxes.random``.
-
-    Returns:
-        Tensor: shape (n, 4) in x1, y1, x2, y2 format.
-
-    References:
-        https://gitlab.kitware.com/computer-vision/kwimage/blob/master/kwimage/structs/boxes.py#L1390
-
-    Example:
-        >>> num = 3
-        >>> scale = 512
-        >>> rng = 0
-        >>> boxes = random_boxes(num, scale, rng)
-        >>> print(boxes)
-        tensor([[280.9925, 278.9802, 308.6148, 366.1769],
-                [216.9113, 330.6978, 224.0446, 456.5878],
-                [405.3632, 196.3221, 493.3953, 270.7942]])
-    """
-    rng = ensure_rng(rng)
-
-    tlbr = rng.rand(num, 4).astype(np.float32)  # type: ignore [union-attr]
-
-    tl_x = np.minimum(tlbr[:, 0], tlbr[:, 2])
-    tl_y = np.minimum(tlbr[:, 1], tlbr[:, 3])
-    br_x = np.maximum(tlbr[:, 0], tlbr[:, 2])
-    br_y = np.maximum(tlbr[:, 1], tlbr[:, 3])
-
-    tlbr[:, 0] = tl_x * scale
-    tlbr[:, 1] = tl_y * scale
-    tlbr[:, 2] = br_x * scale
-    tlbr[:, 3] = br_y * scale
-
-    return torch.from_numpy(tlbr)
-
-
-class SamplingResult(util_mixins.NiceRepr):
+class SamplingResult:
     """Bbox sampling result.
 
     Args:
@@ -154,85 +115,3 @@ class SamplingResult(util_mixins.NiceRepr):
             if isinstance(value, torch.Tensor):
                 _dict[key] = value.to(device)
         return self
-
-    def __nice__(self):
-        data = self.info.copy()
-        data["pos_priors"] = data.pop("pos_priors").shape
-        data["neg_priors"] = data.pop("neg_priors").shape
-        parts = [f"'{k}': {v!r}" for k, v in sorted(data.items())]
-        body = "    " + ",\n    ".join(parts)
-        return "{\n" + body + "\n}"
-
-    @property
-    def info(self) -> dict:
-        """Returns a dictionary of info about the object."""
-        return {
-            "pos_inds": self.pos_inds,
-            "neg_inds": self.neg_inds,
-            "pos_priors": self.pos_priors,
-            "neg_priors": self.neg_priors,
-            "pos_is_gt": self.pos_is_gt,
-            "num_gts": self.num_gts,
-            "pos_assigned_gt_inds": self.pos_assigned_gt_inds,
-            "num_pos": self.num_pos,
-            "num_neg": self.num_neg,
-            "avg_factor": self.avg_factor,
-        }
-
-    @classmethod
-    def random(cls, rng: int | None = None, **kwargs) -> SamplingResult:
-        """Creates a random sampling result for testing purposes.
-
-        Args:
-            rng (None | int | numpy.random.RandomState): seed or state.
-            kwargs (keyword arguments):
-                - num_preds: Number of predicted boxes.
-                - num_gts: Number of true boxes.
-                - p_ignore (float): Probability of a predicted box assigned to
-                    an ignored truth.
-                - p_assigned (float): probability of a predicted box not being
-                    assigned.
-
-        Returns:
-            :obj:`SamplingResult`: Randomly generated sampling result.
-
-        Example:
-            >>> from mmdet.models.task_modules.samplers.sampling_result import *  # NOQA
-            >>> self = SamplingResult.random()
-            >>> print(self.__dict__)
-        """
-        from mmdet.models.task_modules.assigners import AssignResult
-        from mmdet.models.task_modules.samplers import RandomSampler
-        from mmengine.structures import InstanceData
-
-        rng = ensure_rng(rng)
-
-        # make probabilistic?
-        num = 32
-        pos_fraction = 0.5
-        neg_pos_ub = -1
-
-        assign_result = AssignResult.random(rng=rng, **kwargs)
-
-        # Note we could just compute an assignment
-        priors = random_boxes(assign_result.num_preds, rng=rng)
-        gt_bboxes = random_boxes(assign_result.num_gts, rng=rng)
-        gt_labels = torch.randint(0, 5, (assign_result.num_gts,), dtype=torch.long)
-
-        pred_instances = InstanceData()
-        pred_instances.priors = priors
-
-        gt_instances = InstanceData()
-        gt_instances.bboxes = gt_bboxes
-        gt_instances.labels = gt_labels
-
-        add_gt_as_proposals = True
-
-        sampler = RandomSampler(
-            num,
-            pos_fraction,
-            neg_pos_ub=neg_pos_ub,
-            add_gt_as_proposals=add_gt_as_proposals,
-            rng=rng,
-        )
-        return sampler.sample(assign_result=assign_result, pred_instances=pred_instances, gt_instances=gt_instances)

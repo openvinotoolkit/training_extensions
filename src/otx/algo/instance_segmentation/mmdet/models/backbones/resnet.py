@@ -17,83 +17,6 @@ from torch.nn.modules.batchnorm import _BatchNorm
 from otx.algo.instance_segmentation.mmdet.models.layers import ResLayer
 
 
-class BasicBlock(BaseModule):
-    """Basic block for ResNet."""
-
-    expansion = 1
-
-    def __init__(
-        self,
-        inplanes: int,
-        planes: int,
-        stride: int = 1,
-        dilation: int = 1,
-        downsample: nn.Module | None = None,
-        with_cp: bool = False,
-        conv_cfg: dict | None = None,
-        norm_cfg: dict = dict(type="BN"),
-        init_cfg: dict | None = None,
-    ):
-        super().__init__(init_cfg)
-
-        self.norm1_name, norm1 = build_norm_layer(norm_cfg, planes, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(norm_cfg, planes, postfix=2)
-
-        self.conv1 = build_conv_layer(
-            conv_cfg,
-            inplanes,
-            planes,
-            3,
-            stride=stride,
-            padding=dilation,
-            dilation=dilation,
-            bias=False,
-        )
-        self.add_module(self.norm1_name, norm1)
-        self.conv2 = build_conv_layer(conv_cfg, planes, planes, 3, padding=1, bias=False)
-        self.add_module(self.norm2_name, norm2)
-
-        self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
-        self.dilation = dilation
-        self.with_cp = with_cp
-
-    @property
-    def norm1(self) -> nn.Module:
-        """nn.Module: normalization layer after the first convolution layer."""
-        return getattr(self, self.norm1_name)
-
-    @property
-    def norm2(self) -> nn.Module:
-        """nn.Module: normalization layer after the second convolution layer."""
-        return getattr(self, self.norm2_name)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward function."""
-
-        def _inner_forward(x: torch.Tensor) -> torch.Tensor:
-            identity = x
-
-            out = self.conv1(x)
-            out = self.norm1(out)
-            out = self.relu(out)
-
-            out = self.conv2(out)
-            out = self.norm2(out)
-
-            if self.downsample is not None:
-                identity = self.downsample(x)
-
-            out += identity
-
-            return out
-
-        out = cp.checkpoint(_inner_forward, x) if self.with_cp and x.requires_grad else _inner_forward(x)
-
-        return self.relu(out)
-
-
 class Bottleneck(BaseModule):
     expansion = 4
 
@@ -252,8 +175,6 @@ class ResNet(BaseModule):
     """
 
     arch_settings: ClassVar = {
-        18: (BasicBlock, (2, 2, 2, 2)),
-        34: (BasicBlock, (3, 4, 6, 3)),
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
         152: (Bottleneck, (3, 8, 36, 3)),
@@ -269,7 +190,6 @@ class ResNet(BaseModule):
         strides: tuple[int, int, int, int] = (1, 2, 2, 2),
         dilations: tuple[int, int, int, int] = (1, 1, 1, 1),
         out_indices: tuple[int, int, int, int] = (0, 1, 2, 3),
-        deep_stem: bool = False,
         avg_down: bool = False,
         frozen_stages: int = -1,
         conv_cfg: dict | None = None,
@@ -280,12 +200,13 @@ class ResNet(BaseModule):
         pretrained: str | bool | None = None,
         init_cfg: list[dict] | dict | None = None,
     ):
-        super(ResNet, self).__init__(init_cfg)
+        super().__init__(init_cfg)
         self.zero_init_residual = zero_init_residual
         if depth not in self.arch_settings:
             raise KeyError(f"invalid depth {depth} for resnet")
 
         block_init_cfg = None
+        self.init_cfg: list[dict] | dict | None = None
         if init_cfg and pretrained:
             msg = "init_cfg and pretrained cannot be specified at the same time"
             raise ValueError(msg)
@@ -298,12 +219,8 @@ class ResNet(BaseModule):
                     dict(type="Kaiming", layer="Conv2d"),
                     dict(type="Constant", val=1, layer=["_BatchNorm", "GroupNorm"]),
                 ]
-                block = self.arch_settings[depth][0]
                 if self.zero_init_residual:
-                    if block is BasicBlock:
-                        block_init_cfg = dict(type="Constant", val=0, override=dict(name="norm2"))
-                    elif block is Bottleneck:
-                        block_init_cfg = dict(type="Constant", val=0, override=dict(name="norm3"))
+                    block_init_cfg = dict(type="Constant", val=0, override=dict(name="norm3"))
         else:
             raise TypeError("pretrained must be a str or None")
 
@@ -319,7 +236,6 @@ class ResNet(BaseModule):
         assert len(strides) == len(dilations) == num_stages
         self.out_indices = out_indices
         assert max(out_indices) < num_stages
-        self.deep_stem = deep_stem
         self.avg_down = avg_down
         self.frozen_stages = frozen_stages
         self.conv_cfg = conv_cfg
@@ -369,68 +285,26 @@ class ResNet(BaseModule):
         return getattr(self, self.norm1_name)
 
     def _make_stem_layer(self, in_channels: int, stem_channels: int) -> None:
-        if self.deep_stem:
-            self.stem = nn.Sequential(
-                build_conv_layer(
-                    self.conv_cfg,
-                    in_channels,
-                    stem_channels // 2,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    bias=False,
-                ),
-                build_norm_layer(self.norm_cfg, stem_channels // 2)[1],
-                nn.ReLU(inplace=True),
-                build_conv_layer(
-                    self.conv_cfg,
-                    stem_channels // 2,
-                    stem_channels // 2,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                    bias=False,
-                ),
-                build_norm_layer(self.norm_cfg, stem_channels // 2)[1],
-                nn.ReLU(inplace=True),
-                build_conv_layer(
-                    self.conv_cfg,
-                    stem_channels // 2,
-                    stem_channels,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
-                    bias=False,
-                ),
-                build_norm_layer(self.norm_cfg, stem_channels)[1],
-                nn.ReLU(inplace=True),
-            )
-        else:
-            self.conv1 = build_conv_layer(
-                self.conv_cfg,
-                in_channels,
-                stem_channels,
-                kernel_size=7,
-                stride=2,
-                padding=3,
-                bias=False,
-            )
-            self.norm1_name, norm1 = build_norm_layer(self.norm_cfg, stem_channels, postfix=1)
-            self.add_module(self.norm1_name, norm1)
-            self.relu = nn.ReLU(inplace=True)
+        self.conv1 = build_conv_layer(
+            self.conv_cfg,
+            in_channels,
+            stem_channels,
+            kernel_size=7,
+            stride=2,
+            padding=3,
+            bias=False,
+        )
+        self.norm1_name, norm1 = build_norm_layer(self.norm_cfg, stem_channels, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+        self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
     def _freeze_stages(self) -> None:
         if self.frozen_stages >= 0:
-            if self.deep_stem:
-                self.stem.eval()
-                for param in self.stem.parameters():
+            self.norm1.eval()
+            for m in [self.conv1, self.norm1]:
+                for param in m.parameters():
                     param.requires_grad = False
-            else:
-                self.norm1.eval()
-                for m in [self.conv1, self.norm1]:
-                    for param in m.parameters():
-                        param.requires_grad = False
 
         for i in range(1, self.frozen_stages + 1):
             m = getattr(self, f"layer{i}")
@@ -440,12 +314,9 @@ class ResNet(BaseModule):
 
     def forward(self, x: torch.Tensor) -> tuple:
         """Forward function."""
-        if self.deep_stem:
-            x = self.stem(x)
-        else:
-            x = self.conv1(x)
-            x = self.norm1(x)
-            x = self.relu(x)
+        x = self.conv1(x)
+        x = self.norm1(x)
+        x = self.relu(x)
         x = self.maxpool(x)
         outs = []
         for i, layer_name in enumerate(self.res_layers):

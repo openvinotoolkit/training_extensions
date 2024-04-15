@@ -433,19 +433,12 @@ class PolygonMasks:
     def __iter__(self):
         return iter(self.masks)
 
-    def __repr__(self):
-        s = self.__class__.__name__ + "("
-        s += f"num_masks={len(self.masks)}, "
-        s += f"height={self.height}, "
-        s += f"width={self.width})"
-        return s
-
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
 
     def rescale(self, scale, interpolation=None):
-        """See :func:`BaseInstanceMasks.rescale`"""
+        """See :func:`BaseInstanceMasks.rescale`."""
         new_w, new_h = mmcv.rescale_size((self.width, self.height), scale)
         if len(self.masks) == 0:
             rescaled_masks = PolygonMasks([], new_h, new_w)
@@ -858,7 +851,7 @@ class PolygonMasks:
         return cls(mask_list, masks[0].height, masks[0].width)
 
 
-def polygon_to_bitmap(polygons, height, width):
+def polygon_to_bitmap(polygons: list[np.ndarray], height: int, width: int) -> np.ndarray:
     """Convert masks from the form of polygons to bitmaps.
 
     Args:
@@ -871,35 +864,4 @@ def polygon_to_bitmap(polygons, height, width):
     """
     rles = maskUtils.frPyObjects(polygons, height, width)
     rle = maskUtils.merge(rles)
-    bitmap_mask = maskUtils.decode(rle).astype(bool)
-    return bitmap_mask
-
-
-def bitmap_to_polygon(bitmap):
-    """Convert masks from the form of bitmaps to polygons.
-
-    Args:
-        bitmap (ndarray): masks in bitmap representation.
-
-    Return:
-        list[ndarray]: the converted mask in polygon representation.
-        bool: whether the mask has holes.
-    """
-    bitmap = np.ascontiguousarray(bitmap).astype(np.uint8)
-    # cv2.RETR_CCOMP: retrieves all of the contours and organizes them
-    #   into a two-level hierarchy. At the top level, there are external
-    #   boundaries of the components. At the second level, there are
-    #   boundaries of the holes. If there is another contour inside a hole
-    #   of a connected component, it is still put at the top level.
-    # cv2.CHAIN_APPROX_NONE: stores absolutely all the contour points.
-    outs = cv2.findContours(bitmap, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-    contours = outs[-2]
-    hierarchy = outs[-1]
-    if hierarchy is None:
-        return [], False
-    # hierarchy[i]: 4 elements, for the indexes of next, previous,
-    # parent, or nested contours. If there is no corresponding contour,
-    # it will be -1.
-    with_hole = (hierarchy.reshape(-1, 4)[:, 3] >= 0).any()
-    contours = [c.reshape(-1, 2) for c in contours]
-    return contours, with_hole
+    return maskUtils.decode(rle).astype(bool)

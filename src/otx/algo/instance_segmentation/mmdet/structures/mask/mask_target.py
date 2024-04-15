@@ -1,17 +1,12 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import torch
 from torch.nn.modules.utils import _pair
 
 
-def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg):
+def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg) -> torch.Tensor:
     """Compute mask target for positive proposals in multiple images.
 
     Args:
@@ -63,10 +58,10 @@ def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cf
     """
     cfg_list = [cfg for _ in range(len(pos_proposals_list))]
     mask_targets = map(mask_target_single, pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg_list)
-    mask_targets = list(mask_targets)
-    if len(mask_targets) > 0:
-        mask_targets = torch.cat(mask_targets)
-    return mask_targets
+    _mask_targets = list(mask_targets)
+    if len(_mask_targets) > 0:
+        _mask_targets = torch.cat(_mask_targets)
+    return _mask_targets
 
 
 def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
