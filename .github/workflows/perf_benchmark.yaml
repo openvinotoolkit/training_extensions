@@ -154,6 +154,7 @@ jobs:
         if: ${{ always() }}
 
   Perf-Benchmark-Summary:
+    if: ${{ always() }}
     needs: Perf-Benchmark-Run
     runs-on: ubuntu-latest
     steps:
