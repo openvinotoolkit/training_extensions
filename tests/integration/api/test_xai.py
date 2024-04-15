@@ -24,7 +24,6 @@ MEAN_TORCH_OV_DIFF = 150
 @pytest.mark.parametrize(
     "recipe",
     EXPLAIN_MODEL_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_forward_explain(
     recipe: str,
@@ -71,7 +70,6 @@ def test_forward_explain(
 @pytest.mark.parametrize(
     "recipe",
     EXPLAIN_MODEL_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
 def test_predict_with_explain(
     recipe: str,
