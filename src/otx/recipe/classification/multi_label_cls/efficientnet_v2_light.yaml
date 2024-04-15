@@ -37,7 +37,7 @@ overrides:
   callbacks:
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        patience: 3
+        patience: 4
   data:
     task: MULTI_LABEL_CLS
     config:
