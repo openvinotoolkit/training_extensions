@@ -50,8 +50,6 @@ bbox_head:
     - 96
     - 320
   use_depthwise: true
-  norm_cfg:
-    type: BN
   act_cfg:
     type: ReLU
   init_cfg:
