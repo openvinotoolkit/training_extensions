@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 from zipfile import ZipFile
 
+from openvino.model_api.models import Model
+
 from otx.core.exporter.exportable_code import demo
-from otx.core.types.export import OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
@@ -27,6 +29,8 @@ class OTXModelExporter:
     """Base class for the model exporters used in OTX.
 
     Args:
+        task_level_export_parameters (TaskLevelExportParameters): Collection of export parameters
+            which can be defined at a task level.
         input_size (tuple[int, ...]): Input shape.
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
@@ -36,20 +40,19 @@ class OTXModelExporter:
             "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
-        metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
         output_names (list[str] | None, optional): Names for model's outputs, which would be
         embedded into resulting model.
     """
 
     def __init__(
         self,
+        task_level_export_parameters: TaskLevelExportParameters,
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
-        metadata: dict[tuple[str, str], str] | None = None,
         output_names: list[str] | None = None,
     ) -> None:
         self.input_size = input_size
@@ -58,8 +61,16 @@ class OTXModelExporter:
         self.resize_mode = resize_mode
         self.pad_value = pad_value
         self.swap_rgb = swap_rgb
-        self.metadata = metadata
+        self.task_level_export_parameters = task_level_export_parameters
         self.output_names = output_names
+
+    @property
+    def metadata(self) -> dict[tuple[str, str], str]:
+        """Collection of metadata to be stored in OpenVINO Intermediate Representation or ONNX.
+
+        This metadata is mainly used to support ModelAPI.
+        """
+        return self.task_level_export_parameters.to_metadata()
 
     def export(
         self,
@@ -86,7 +97,12 @@ class OTXModelExporter:
         if export_format == OTXExportFormatType.ONNX:
             return self.to_onnx(model, output_dir, base_model_name, precision)
         if export_format == OTXExportFormatType.EXPORTABLE_CODE:
-            return self.to_exportable_code(model, output_dir, base_model_name, precision)
+            return self.to_exportable_code(
+                model,
+                output_dir,
+                base_model_name,
+                precision,
+            )
 
         msg = f"Unsupported export format: {export_format}"
         raise ValueError(msg)
@@ -154,21 +170,40 @@ class OTXModelExporter:
         Returns:
             Path: path to the exported model.
         """
-        work_dir = Path(demo.__file__).parent
+        work_demo_dir = Path(demo.__file__).parent
         parameters: dict[str, Any] = {}
-        if self.metadata is not None:
-            parameters["type_of_model"] = self.metadata.get(("model_info", "task_type"), "")
-            parameters["converter_type"] = self.metadata.get(("model_info", "model_type"), "")
-            parameters["model_parameters"] = {
-                "labels": self.metadata.get(("model_info", "labels"), ""),
-                "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
-            }
-
         output_zip_path = output_dir / "exportable_code.zip"
         Path.mkdir(output_dir, exist_ok=True)
+        is_ir_model = isinstance(model, Model)
+
         with tempfile.TemporaryDirectory() as temp_dir, ZipFile(output_zip_path, "x") as arch:
             # model files
-            path_to_model = self.to_openvino(model, Path(temp_dir), base_model_name, precision)
+            path_to_model = (
+                self.to_openvino(model, Path(temp_dir), base_model_name, precision)
+                if not is_ir_model
+                else Path(model.inference_adapter.model_path)
+            )
+
+            if not path_to_model.exists():
+                msg = f"File {path_to_model} does not exist. Check the model path."
+                raise RuntimeError(msg)
+
+            if not is_ir_model and self.metadata is not None:
+                parameters["type_of_model"] = self.metadata.get(("model_info", "task_type"), "")
+                parameters["converter_type"] = self.metadata.get(("model_info", "model_type"), "")
+                parameters["model_parameters"] = {
+                    "labels": self.metadata.get(("model_info", "labels"), ""),
+                    "labels_ids": self.metadata.get(("model_info", "label_ids"), ""),
+                }
+            elif is_ir_model:
+                model_info = model.get_model().rt_info["model_info"]
+                parameters["type_of_model"] = model_info["task_type"].value if "task_type" in model_info else ""
+                parameters["converter_type"] = model_info["model_type"].value if "model_type" in model_info else ""
+                parameters["model_parameters"] = {
+                    "labels": model_info["labels"].value if "labels" in model_info else "",
+                    "labels_ids": model_info["label_ids"].value if "label_ids" in model_info else "",
+                }
+
             arch.write(str(path_to_model), Path("model") / "model.xml")
             arch.write(path_to_model.with_suffix(".bin"), Path("model") / "model.bin")
 
@@ -178,15 +213,15 @@ class OTXModelExporter:
             )
             # python files
             arch.write(
-                work_dir / "requirements.txt",
+                work_demo_dir / "requirements.txt",
                 Path("python") / "requirements.txt",
             )
-            arch.write(work_dir.parents[5] / "LICENSE", Path("python") / "LICENSE")
-            arch.write(work_dir / "demo.py", Path("python") / "demo.py")
-            arch.write(work_dir / "README.md", Path("./") / "README.md")
-            arch.write(work_dir / "setup.py", Path("python") / "setup.py")
+            arch.write(work_demo_dir / "demo.py", Path("python") / "demo.py")
+            arch.write(work_demo_dir / "setup.py", Path("python") / "setup.py")
+            arch.write(work_demo_dir / "README.md", Path("./") / "README.md")
+            arch.write(work_demo_dir / "LICENSE", Path("./") / "LICENSE")
             # write demo_package
-            demo_package = work_dir / "demo_package"
+            demo_package = work_demo_dir / "demo_package"
             for root, _, files in os.walk(demo_package):
                 if root.endswith("__pycache__"):
                     continue

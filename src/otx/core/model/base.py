@@ -3,6 +3,8 @@
 #
 """Class definition for base model entity used in OTX."""
 
+# mypy: disable-error-code="arg-type"
+
 from __future__ import annotations
 
 import contextlib
@@ -32,10 +34,12 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
-from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.optimizer.callable import OptimizerCallableSupportHPO
+from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
-from otx.core.types.export import OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
@@ -594,6 +598,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     @property
     def _exporter(self) -> OTXModelExporter:
+        """Defines exporter of the model. Should be overridden in subclasses."""
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."
@@ -601,36 +606,41 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         raise NotImplementedError(msg)
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation.
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines export parameters sharable at a task level.
 
-        To export OTXModel, you should define an appropriate parameters."
-        "This is used in the constructor of `self._exporter`. "
-        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
-        "Please refer to `otx.core.exporter.*` for detailed examples."
+        To export OTXModel which is compatible with ModelAPI,
+        you should define an appropriate export parameters for each task.
+        This property is usually defined at the task level classes defined in `otx.core.model.*`.
+        Please refer to `TaskLevelExportParameters` for more details.
+
         Returns:
-            dict[str, Any]: parameters of exporter.
+            Collection of exporter parameters that can be defined at a task level.
+
+        Examples:
+            This example shows how this property is used at the new model development
+
+            ```python
+
+            class MyDetectionModel(OTXDetectionModel):
+                ...
+
+                @property
+                def _exporter(self) -> OTXModelExporter:
+                    # `self._export_parameters` defined at `OTXDetectionModel`
+                    # You can redefine it `MyDetectionModel` if you need
+                    return OTXModelExporter(
+                        task_level_export_parameters=self._export_parameters,
+                        ...
+                    )
+            ```
         """
-        parameters: dict[str, Any] = {}
-        all_labels = ""
-        all_label_ids = ""
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
-
-        # not every model requires ptq_config
-        optimization_config = self._optimization_config
-        parameters["metadata"] = {
-            ("model_info", "labels"): all_labels.strip(),
-            ("model_info", "label_ids"): all_label_ids.strip(),
-            ("model_info", "optimization_config"): json.dumps(optimization_config),
-            ("model_info", "label_info"): self.label_info.to_json(),
-        }
-
-        if self.explain_mode:
-            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
-
-        return parameters
+        return TaskLevelExportParameters(
+            model_type="null",
+            task_type="null",
+            label_info=self.label_info,
+            optimization_config=self._optimization_config,
+        )
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
@@ -674,6 +684,19 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             return None
 
         return super().lr_scheduler_step(scheduler=scheduler, metric=metric)
+
+    def patch_optimizer_and_scheduler_for_hpo(self) -> None:
+        """Patch optimizer and scheduler for hyperparameter optimization.
+
+        This is inplace function changing inner states (`optimizer_callable` and `scheduler_callable`).
+        Both will be changed to be picklable. In addition, `optimizer_callable` is changed
+        to make its hyperparameters gettable.
+        """
+        if not isinstance(self.optimizer_callable, OptimizerCallableSupportHPO):
+            self.optimizer_callable = OptimizerCallableSupportHPO.from_callable(self.optimizer_callable)
+
+        if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
+            self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -866,6 +889,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def _exporter(self) -> OTXNativeModelExporter:
+        """Exporter of the OVModel for exportable code."""
+        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
 
     @property
     def model_adapter_parameters(self) -> dict:

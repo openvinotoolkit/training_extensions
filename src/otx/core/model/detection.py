@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import logging as log
 import types
 from typing import TYPE_CHECKING, Any, Callable, Literal
@@ -15,18 +14,18 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import DetectionTiler
 from torchvision import tv_tensors
 
+from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
 from otx.core.data.entity.tile import TileBatchDetDataEntity
-from otx.core.exporter.base import OTXModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.tile_merge import DetectionTileMerge
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -96,29 +95,15 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "ssd",
-                ("model_info", "task_type"): "detection",
-                ("model_info", "confidence_threshold"): str(
-                    self.hparams.get("best_confidence_threshold", 0.0),
-                ),  # it was able to be set in OTX 1.X
-                ("model_info", "iou_threshold"): str(0.5),
-            },
+        return super()._export_parameters.wrap(
+            model_type="ssd",
+            task_type="detection",
+            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.0),
+            iou_threshold=0.5,
+            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
-        if self.tile_config.enable_tiler:
-            parameters["metadata"].update(
-                {
-                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
-                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
-                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
-                },
-            )
-
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -183,15 +168,13 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
-    """OTX detection model which can attach a XAI hook."""
+    """OTX detection model which can attach a XAI (Explainable AI) branch."""
 
     def forward_explain(
         self,
         inputs: DetBatchDataEntity,
     ) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.hooks.recording_forward_hook import get_feature_vector
-
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
@@ -254,12 +237,12 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.detection.heads.custom_ssd_head import CustomSSDHead
-        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+        from otx.algo.detection.heads.custom_ssd_head import SSDHead
+        from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
-        background_class = isinstance(self.model.bbox_head, CustomSSDHead)
-        explainer = DetClassProbabilityMapHook(
+        background_class = isinstance(self.model.bbox_head, SSDHead)
+        explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )
@@ -302,13 +285,6 @@ class ExplainableOTXDetModel(OTXDetectionModel):
 
         return [1] * 10
 
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
-        return parameters
-
 
 class MMDetCompatibleModel(ExplainableOTXDetModel):
     """Detection model compatible for MMDet.
@@ -338,21 +314,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        if self.image_size is None:
-            error_msg = "self.image_size shouldn't be None to use mmdeploy."
-            raise ValueError(error_msg)
-
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy.copy(self.config)
-        export_params["test_pipeline"] = self._make_fake_test_pipeline()
-
-        return export_params
 
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
@@ -482,13 +443,6 @@ class MMDetCompatibleModel(ExplainableOTXDetModel):
             bboxes=bboxes,
             labels=labels,
         )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        from otx.core.exporter.mmdeploy import MMdeployExporter
-
-        return MMdeployExporter(**self._export_parameters)
 
 
 class OVDetectionModel(OVModel[DetBatchDataEntity, DetBatchPredEntity]):

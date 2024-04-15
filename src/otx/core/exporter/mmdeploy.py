@@ -21,6 +21,7 @@ from mmengine.config import Config as MMConfig
 from mmengine.registry.default_scope import DefaultScope
 
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.config import convert_conf_to_mmconfig_dict, to_tuple
 
@@ -38,6 +39,8 @@ class MMdeployExporter(OTXModelExporter):
         model_cfg (DictConfig): Model config for mm framework.
         deploy_cfg (str | MMConfig): Deployment config module path or MMEngine Config object.
         test_pipeline (list[dict]): A pipeline for test dataset.
+        task_level_export_parameters (TaskLevelExportParameters): Collection of export parameters
+            which can be defined at a task level.
         input_size (tuple[int, ...]): Input shape.
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
@@ -57,17 +60,26 @@ class MMdeployExporter(OTXModelExporter):
         model_cfg: DictConfig,
         deploy_cfg: str | MMConfig,
         test_pipeline: list[dict],
+        task_level_export_parameters: TaskLevelExportParameters,
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
-        metadata: dict[tuple[str, str], str] | None = None,
         max_num_detections: int = 0,
         output_names: list[str] | None = None,
     ) -> None:
-        super().__init__(input_size, mean, std, resize_mode, pad_value, swap_rgb, metadata, output_names)
+        super().__init__(
+            task_level_export_parameters=task_level_export_parameters,
+            input_size=input_size,
+            mean=mean,
+            std=std,
+            resize_mode=resize_mode,
+            pad_value=pad_value,
+            swap_rgb=swap_rgb,
+            output_names=output_names,
+        )
         self._model_builder = model_builder
         model_cfg = convert_conf_to_mmconfig_dict(model_cfg, "list")
         self._model_cfg = MMConfig({"model": model_cfg, "test_pipeline": list(map(to_tuple, test_pipeline))})
