@@ -45,8 +45,8 @@ jobs:
         include:
           - python-version: "3.9"
             tox-env: "py39"
-          - python-version: "3.10"
-            tox-env: "py310"
+          # - python-version: "3.10"
+          #   tox-env: "py310"
     name: Unit-Test-with-Python${{ matrix.python-version }}
     # This is what will cancel the job concurrency
     concurrency:
@@ -73,7 +73,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
         with:
-          python-version: "3.8"
+          python-version: "3.10"
       - name: Install dependencies
         run: |
           pip install --require-hashes --no-deps -r requirements/gh-actions.txt
@@ -81,7 +81,7 @@ jobs:
           pip install --require-hashes --no-deps -r /tmp/otx-dev-requirements.txt
           rm /tmp/otx-dev-requirements.txt
       - name: Run unit test
-        run: tox -vv -e unittest-all-py38-pt1
+        run: tox -vv -e unittest-all-py310-pt1
       - name: Upload coverage artifact
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:

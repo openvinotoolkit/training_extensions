@@ -5,7 +5,7 @@ on:
         type: string
         default: "3.10"
       toxenv-pyver:
-        description: "[py38, py39, py310]"
+        description: "[py38, py39, py310, py311]"
         type: string
         default: "py310"
       toxenv-task:
