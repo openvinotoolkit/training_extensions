@@ -7,7 +7,8 @@ from __future__ import annotations
 import pytest
 from copy import deepcopy
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip
+from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion
+from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
 from torch import LongTensor
@@ -24,6 +25,27 @@ def data_entity() -> DetDataEntity:
     )
 
 
+class TestMinIoURandomCrop:
+    @pytest.fixture()
+    def min_iou_random_crop(self) -> MinIoURandomCrop:
+        return MinIoURandomCrop()
+
+    def test_forward(self, min_iou_random_crop, data_entity) -> None:
+        """Test forward."""
+        results = min_iou_random_crop(deepcopy(data_entity))
+
+        if (mode := min_iou_random_crop.mode) == 1:
+            assert torch.equal(results.bboxes, data_entity.bboxes)
+        else:
+            patch = tv_tensors.wrap(
+                torch.tensor([[0, 0, *results.img_info.img_shape]]),
+                like=results.bboxes)
+            ious = overlap_bboxes(patch, results.bboxes)
+            assert torch.all(ious >= mode)
+            assert results.image.shape[-2:] == results.img_info.img_shape
+            assert results.img_info.scale_factor is None
+
+
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
@@ -35,7 +57,7 @@ class TestResize:
         resize.keep_ratio = keep_ratio
         data_entity.img_info.img_shape = resize.scale
 
-        results = resize._resize_img(data_entity)
+        results = resize._resize_img(deepcopy(data_entity))
 
         assert results.img_info.ori_shape == (112, 224)
         if keep_ratio:
@@ -58,7 +80,7 @@ class TestResize:
         """Test _resize_bboxes."""
         data_entity.img_info.scale_factor = scale_factor
 
-        results = resize._resize_bboxes(data_entity)
+        results = resize._resize_bboxes(deepcopy(data_entity))
 
         assert torch.all(results.bboxes.data == expected)
 
@@ -78,3 +100,15 @@ class TestRandomFlip:
         bboxes_results[..., 0] = results.img_info.img_shape[1] - results.bboxes[..., 2]
         bboxes_results[..., 2] = results.img_info.img_shape[1] - results.bboxes[..., 0]
         assert torch.all(bboxes_results == data_entity.bboxes)
+
+
+class TestPhotoMetricDistortion:
+    @pytest.fixture()
+    def photo_metric_distortion(self) -> PhotoMetricDistortion:
+        return PhotoMetricDistortion()
+
+    def test_forward(self, photo_metric_distortion, data_entity) -> None:
+        """Test forward."""
+        results = photo_metric_distortion(deepcopy(data_entity))
+
+        assert results.image.dtype == torch.float32
