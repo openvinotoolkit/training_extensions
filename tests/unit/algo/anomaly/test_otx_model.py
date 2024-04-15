@@ -5,7 +5,7 @@
 
 import pytest
 import torch
-from otx.algo.anomaly.draem import Draem
+
 from otx.algo.anomaly.padim import Padim
 from otx.algo.anomaly.stfpm import Stfpm
 from otx.core.data.entity.anomaly import (
@@ -62,7 +62,7 @@ class TestAnomalyModel:
             )
         return batch
 
-    @pytest.mark.parametrize("model", [Draem, Padim, Stfpm])
+    @pytest.mark.parametrize("model", [Padim, Stfpm])
     def test_model_instantiation(self, model):
         """Test if the model can be instantiated."""
         anomaly_model = model()
