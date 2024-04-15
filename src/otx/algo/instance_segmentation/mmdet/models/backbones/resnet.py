@@ -28,11 +28,11 @@ class BasicBlock(BaseModule):
         planes: int,
         stride: int = 1,
         dilation: int = 1,
-        downsample=None,
-        with_cp=False,
-        conv_cfg=None,
-        norm_cfg=dict(type="BN"),
-        init_cfg=None,
+        downsample: nn.Module | None = None,
+        with_cp: bool = False,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict = dict(type="BN"),
+        init_cfg: dict | None = None,
     ):
         super().__init__(init_cfg)
 
