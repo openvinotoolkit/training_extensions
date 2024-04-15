@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from copy import deepcopy
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug
+from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug, CachedMosaic, CachedMixUp
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
@@ -127,6 +127,58 @@ class TestRandomAffine:
     def test_forward(self, random_affine, data_entity) -> None:
         """Test forward."""
         results = random_affine(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (112, 224)
+        assert results.labels.shape[0] == results.bboxes.shape[0]
+        assert results.labels.dtype == torch.int64
+        assert results.bboxes.dtype == torch.float32
+        assert results.img_info.img_shape == results.image.shape[-2:]
+
+
+class TestCachedMosaic:
+    @pytest.fixture()
+    def cached_mosaic(self) -> CachedMosaic:
+        return CachedMosaic(random_pop=False, max_cached_images=20)
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_img_scale(self) -> None:
+        transform = CachedMosaic(img_scale=640)
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_probability(self) -> None:
+        transform = CachedMosaic(prob=1.5)
+
+    def test_forward(self, cached_mosaic, data_entity) -> None:
+        """Test forward."""
+        cached_mosaic.mix_results = [deepcopy(data_entity)] * 3
+
+        results = cached_mosaic(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (112, 224)
+        assert results.labels.shape[0] == results.bboxes.shape[0]
+        assert results.labels.dtype == torch.int64
+        assert results.bboxes.dtype == torch.float32
+        assert results.img_info.img_shape == results.image.shape[-2:]
+
+
+class TestCachedMixUp:
+    @pytest.fixture()
+    def cached_mixup(self) -> CachedMixUp:
+        return CachedMixUp(ratio_range=(1.0, 1.0), prob=0.5, random_pop=False, max_cached_images=10)
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_img_scale(self) -> None:
+        transform = CachedMixUp(img_scale=640)
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_init_invalid_probability(self) -> None:
+        transform = CachedMosaic(prob=1.5)
+
+    def test_forward(self, cached_mixup, data_entity) -> None:
+        """Test forward."""
+        cached_mixup.mix_results = [deepcopy(data_entity)]
+
+        results = cached_mixup(deepcopy(data_entity))
 
         assert results.image.shape[-2:] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]

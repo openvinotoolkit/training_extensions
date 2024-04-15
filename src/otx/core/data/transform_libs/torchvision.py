@@ -25,7 +25,7 @@ from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (Points, _crop_image_info,
-                                       _resize_image_info)
+                                       _resize_image_info, _resized_crop_image_info)
 from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness, flip_image,
                                                 centers_bboxes, clip_bboxes,
                                                 flip_bboxes, is_inside_bboxes,
@@ -431,7 +431,7 @@ class Resize(tvt_v2.Transform):
     }
 
     def __init__(self,
-                 scale: int | tuple[int, int] = None,
+                 scale: int | Sequence[int, int] = None,
                  scale_factor: float | tuple[float, float] = None,
                  keep_ratio: bool = False,
                  clip_object_border: bool = True,
@@ -447,7 +447,7 @@ class Resize(tvt_v2.Transform):
             if isinstance(scale, int):
                 self.scale = (scale, scale)
             else:
-                self.scale = scale
+                self.scale = tuple(scale)
 
         self.interpolation = interpolation
         self.keep_ratio = keep_ratio
@@ -477,8 +477,7 @@ class Resize(tvt_v2.Transform):
                 scale = _scale_size(img_shape[::-1], self.scale_factor)
 
             if self.keep_ratio:
-                h, w = img.shape[:2]
-                scale = rescale_size((w, h), scale)
+                scale = rescale_size(img_shape[::-1], scale)
 
             img = cv2.resize(img, scale, interpolation=self.cv2_interp_codes[self.interpolation])
 
@@ -1091,7 +1090,7 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
         inputs.image = F.to_image(mosaic_img)
-        inputs.img_info = _resize_image_info(inputs.img_info, mosaic_img.shape[:2])
+        inputs.img_info = _resized_crop_image_info(inputs.img_info, mosaic_img.shape[:2]) # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
         return inputs
@@ -1360,7 +1359,7 @@ class CachedMixUp(tvt_v2.Transform):
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
         inputs.image = F.to_image(mixup_img.astype(np.uint8))
-        inputs.img_info = _resize_image_info(inputs.img_info, mixup_img.shape[:2])
+        inputs.img_info = _resized_crop_image_info(inputs.img_info, mixup_img.shape[:2]) # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
         return inputs
