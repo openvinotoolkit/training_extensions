@@ -72,7 +72,7 @@ def run_hpo_trial(
     _set_trial_hyper_parameter(hp_config["configuration"], engine, train_args)
 
     if (checkpoint := _find_last_weight(hpo_weight_dir)) is not None:
-        engine.checkpoint = checkpoint
+        train_args["checkpoint"] = checkpoint
         train_args["resume"] = True
 
     callbacks = _register_hpo_callback(report_func, callbacks, metric_name)
