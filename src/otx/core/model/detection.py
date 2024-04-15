@@ -165,7 +165,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
 
 
 class ExplainableOTXDetModel(OTXDetectionModel):
-    """OTX detection model which can attach a XAI hook."""
+    """OTX detection model which can attach a XAI (Explainable AI) branch."""
 
     def __init__(
         self,
@@ -253,11 +253,11 @@ class ExplainableOTXDetModel(OTXDetectionModel):
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         from otx.algo.detection.heads.custom_ssd_head import SSDHead
-        from otx.algo.hooks.recording_forward_hook import DetClassProbabilityMapHook
+        from otx.algo.explain.explain_algo import DetClassProbabilityMap
 
         # SSD-like heads also have background class
         background_class = isinstance(self.model.bbox_head, SSDHead)
-        explainer = DetClassProbabilityMapHook(
+        explainer = DetClassProbabilityMap(
             num_classes=self.num_classes + background_class,
             num_anchors=self.get_num_anchors(),
         )

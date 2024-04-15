@@ -206,7 +206,7 @@ class OTXInstanceSegModel(
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
-    """OTX Instance Segmentation model which can attach a XAI hook."""
+    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
 
     def __init__(
         self,
@@ -288,9 +288,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook
+        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
 
-        explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
+        explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
     def _reset_model_forward(self) -> None:
