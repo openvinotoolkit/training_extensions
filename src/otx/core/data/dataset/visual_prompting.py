@@ -26,6 +26,7 @@ from otx.core.data.entity.visual_prompting import (
     ZeroShotVisualPromptingBatchDataEntity,
     ZeroShotVisualPromptingDataEntity,
 )
+from otx.core.types.label import NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
 from .base import OTXDataset, Transforms
@@ -60,6 +61,8 @@ class OTXVisualPromptingDataset(OTXDataset[VisualPromptingDataEntity]):
         if not use_bbox and use_point:
             # if using only point prompt
             self.prob = 0.0
+
+        self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> VisualPromptingDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)
@@ -188,6 +191,8 @@ class OTXZeroShotVisualPromptingDataset(OTXDataset[ZeroShotVisualPromptingDataEn
         if not use_bbox and use_point:
             # if using only point prompt
             self.prob = 0.0
+
+        self.label_info = NullLabelInfo()
 
     def _get_item_impl(self, index: int) -> ZeroShotVisualPromptingDataEntity | None:
         item = self.dm_subset.get(id=self.ids[index], subset=self.dm_subset.name)

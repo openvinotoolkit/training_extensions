@@ -3,6 +3,8 @@
 #
 """Class definition for base model entity used in OTX."""
 
+# mypy: disable-error-code="arg-type"
+
 from __future__ import annotations
 
 import contextlib
@@ -25,6 +27,8 @@ from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
 from torchmetrics import Metric, MetricCollection
 
+from otx import __version__
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -32,11 +36,12 @@ from otx.core.data.entity.base import (
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
 from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
 from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
-from otx.core.types.export import OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.utils.build import get_default_num_async_infer_requests
@@ -109,6 +114,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         self.torch_compile = torch_compile
         self._explain_mode = False
+
+        self._tile_config: TileConfig | None = None
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -333,16 +340,54 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
             self.log(log_metric_name, value, sync_dist=True, prog_bar=True)
 
-    def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with meta information.
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)
 
-        Returns:
-            A dictionary containing datamodule state.
+        checkpoint["label_info"] = self.label_info
+        checkpoint["otx_version"] = __version__
 
-        """
-        state_dict = super().state_dict()
-        state_dict["label_info"] = self.label_info
-        return state_dict
+        if self._tile_config:
+            checkpoint["tile_config"] = self._tile_config
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on loading checkpoint."""
+        super().on_load_checkpoint(checkpoint)
+
+        if ckpt_label_info := checkpoint.get("label_info", None):
+            self._label_info = ckpt_label_info
+
+        if ckpt_tile_config := checkpoint.get("tile_config", None):
+            self._tile_config = ckpt_tile_config
+
+    def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state dict incrementally."""
+        ckpt_label_info: LabelInfo | None = ckpt.get("label_info", None)
+
+        if ckpt_label_info is None:
+            msg = "Checkpoint should have `label_info`."
+            raise ValueError(msg, ckpt_label_info)
+
+        if ckpt_label_info != self.label_info:
+            msg = (
+                "Load model state dictionary incrementally: "
+                f"Label info from checkpoint: {ckpt_label_info} -> "
+                f"Label info from training data: {self.label_info}"
+            )
+            logger.info(msg)
+            self.register_load_state_dict_pre_hook(
+                self.label_info.label_names,
+                ckpt_label_info.label_names,
+            )
+
+        # Model weights
+        state_dict: dict[str, Any] = ckpt.get("state_dict", None)
+
+        if ckpt_label_info is None:
+            msg = "Checkpoint should have `state_dict`."
+            raise ValueError(msg, ckpt_label_info)
+
+        self.load_state_dict(state_dict, *args, **kwargs)
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
@@ -361,23 +406,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         else:
             state_dict = ckpt
 
-        ckpt_label_info = state_dict.pop("label_info", None)
-
-        if ckpt_label_info and self.label_info is None:
-            msg = (
-                "`state_dict` to load has `label_info`, but the current model has no `label_info`. "
-                "It is recommended to set proper `label_info` for the incremental learning case."
-            )
-            warnings.warn(msg, stacklevel=2)
-        if ckpt_label_info and self.label_info and ckpt_label_info != self.label_info:
-            logger.warning(
-                f"Data classes from checkpoint: {ckpt_label_info.label_names} -> "
-                f"Data classes from training data: {self.label_info.label_names}",
-            )
-            self.register_load_state_dict_pre_hook(
-                self.label_info.label_names,
-                ckpt_label_info.label_names,
-            )
         return super().load_state_dict(state_dict, *args, **kwargs)
 
     def load_from_otx_v1_ckpt(self, ckpt: dict[str, Any]) -> dict:
@@ -595,6 +623,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     @property
     def _exporter(self) -> OTXModelExporter:
+        """Defines exporter of the model. Should be overridden in subclasses."""
         msg = (
             "To export this OTXModel, you should implement an appropriate exporter for it. "
             "You can try to reuse ones provided in `otx.core.exporter.*`."
@@ -602,36 +631,41 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         raise NotImplementedError(msg)
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation.
+    def _export_parameters(self) -> TaskLevelExportParameters:
+        """Defines export parameters sharable at a task level.
 
-        To export OTXModel, you should define an appropriate parameters."
-        "This is used in the constructor of `self._exporter`. "
-        "For example, `self._exporter = SomeExporter(**self.export_parameters)`. "
-        "Please refer to `otx.core.exporter.*` for detailed examples."
+        To export OTXModel which is compatible with ModelAPI,
+        you should define an appropriate export parameters for each task.
+        This property is usually defined at the task level classes defined in `otx.core.model.*`.
+        Please refer to `TaskLevelExportParameters` for more details.
+
         Returns:
-            dict[str, Any]: parameters of exporter.
+            Collection of exporter parameters that can be defined at a task level.
+
+        Examples:
+            This example shows how this property is used at the new model development
+
+            ```python
+
+            class MyDetectionModel(OTXDetectionModel):
+                ...
+
+                @property
+                def _exporter(self) -> OTXModelExporter:
+                    # `self._export_parameters` defined at `OTXDetectionModel`
+                    # You can redefine it `MyDetectionModel` if you need
+                    return OTXModelExporter(
+                        task_level_export_parameters=self._export_parameters,
+                        ...
+                    )
+            ```
         """
-        parameters: dict[str, Any] = {}
-        all_labels = ""
-        all_label_ids = ""
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
-
-        # not every model requires ptq_config
-        optimization_config = self._optimization_config
-        parameters["metadata"] = {
-            ("model_info", "labels"): all_labels.strip(),
-            ("model_info", "label_ids"): all_label_ids.strip(),
-            ("model_info", "optimization_config"): json.dumps(optimization_config),
-            ("model_info", "label_info"): self.label_info.to_json(),
-        }
-
-        if self.explain_mode:
-            parameters["output_names"] = ["logits", "feature_vector", "saliency_map"]
-
-        return parameters
+        return TaskLevelExportParameters(
+            model_type="null",
+            task_type="null",
+            label_info=self.label_info,
+            optimization_config=self._optimization_config,
+        )
 
     def _reset_prediction_layer(self, num_classes: int) -> None:
         """Reset its prediction layer with a given number of classes.
@@ -688,6 +722,20 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
             self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
+
+    @property
+    def tile_config(self) -> TileConfig:
+        """Get tiling configurations."""
+        if self._tile_config is None:
+            msg = "This task type does not support tiling."
+            raise RuntimeError(msg)
+
+        return self._tile_config
+
+    @tile_config.setter
+    def tile_config(self, tile_config: TileConfig) -> None:
+        """Set tiling configurations."""
+        self._tile_config = tile_config
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
@@ -880,6 +928,11 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
         initial_ptq_config = argparser.parse_object(initial_ptq_config)
 
         return argparser.instantiate_classes(initial_ptq_config).as_dict()
+
+    @property
+    def _exporter(self) -> OTXNativeModelExporter:
+        """Exporter of the OVModel for exportable code."""
+        return OTXNativeModelExporter(input_size=(1, 3, self.model.h, self.model.w), **self._export_parameters)
 
     @property
     def model_adapter_parameters(self) -> dict:

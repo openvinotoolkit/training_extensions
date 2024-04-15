@@ -2,16 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from unittest.mock import create_autospec
 
 import pytest
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.algo.classification.torchvision_model import OTXTVModel
 from otx.core.config.device import DeviceConfig
-from otx.core.model.base import OVModel
+from otx.core.model.base import OTXModel, OVModel
 from otx.core.types.export import OTXExportFormatType
+from otx.core.types.label import NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.engine import Engine
+from pytest_mock import MockerFixture
 
 
 @pytest.fixture()
@@ -73,13 +74,30 @@ class TestEngine:
         assert fxt_engine._cache.args["max_epochs"] == 100
         mock_seed_everything.assert_called_once_with(1234, workers=True)
 
-    def test_training_with_checkpoint(self, fxt_engine, mocker) -> None:
-        mock_torch_load = mocker.patch("torch.load")
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
+    @pytest.mark.parametrize("resume", [True, False])
+    def test_training_with_checkpoint(self, fxt_engine, resume: bool, mocker: MockerFixture, tmpdir) -> None:
+        checkpoint = "path/to/checkpoint.ckpt"
 
-        fxt_engine.checkpoint = "path/to/checkpoint"
-        fxt_engine.train()
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
+        mock_trainer = mocker.patch("otx.engine.engine.Trainer")
+        mock_trainer.return_value.default_root_dir = Path(tmpdir)
+        mock_trainer_fit = mock_trainer.return_value.fit
+
+        mock_torch_load = mocker.patch("otx.engine.engine.torch.load")
+        mock_load_state_dict_incrementally = mocker.patch.object(fxt_engine.model, "load_state_dict_incrementally")
+
+        trained_checkpoint = Path(tmpdir) / "best.ckpt"
+        trained_checkpoint.touch()
+        mock_trainer.return_value.checkpoint_callback.best_model_path = trained_checkpoint
+
+        fxt_engine.train(resume=resume, checkpoint=checkpoint)
+
+        if resume:
+            assert mock_trainer_fit.call_args.kwargs.get("ckpt_path") == checkpoint
+        else:
+            assert "ckpt_path" not in mock_trainer_fit.call_args.kwargs
+
+            mock_torch_load.assert_called_once()
+            mock_load_state_dict_incrementally.assert_called_once()
 
     def test_training_with_run_hpo(self, fxt_engine, mocker) -> None:
         mocker.patch("pathlib.Path.symlink_to")
@@ -93,94 +111,97 @@ class TestEngine:
         mock_update_hyper_parameter.assert_called_once_with(fxt_engine, {})
         assert mock_fit.call_args[1]["ckpt_path"] == "hpo/best/checkpoint"
 
-    def test_training_with_resume(self, fxt_engine, mocker) -> None:
-        mocker.patch("pathlib.Path.symlink_to")
-        mock_fit = mocker.patch("otx.engine.engine.Trainer.fit")
-
-        fxt_engine.checkpoint = "path/to/checkpoint"
-        fxt_engine.train(resume=True)
-        assert mock_fit.call_args[1]["ckpt_path"] == "path/to/checkpoint"
-
-    def test_testing_after_training(self, fxt_engine, mocker) -> None:
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
+    @pytest.mark.parametrize(
+        "checkpoint",
+        [
+            "path/to/checkpoint.ckpt",
+            "path/to/checkpoint.xml",
+        ],
+    )
+    def test_test(self, fxt_engine, checkpoint, mocker: MockerFixture) -> None:
         mock_test = mocker.patch("otx.engine.engine.Trainer.test")
-        mock_torch_load = mocker.patch("torch.load")
+        _ = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
 
-        # Fetch Checkpoint
-        fxt_engine.checkpoint = "path/to/checkpoint"
-        fxt_engine.test()
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
+        ext = Path(checkpoint).suffix
+
+        if ext == ".ckpt":
+            mock_model = mocker.create_autospec(OTXModel)
+
+            mock_load_from_checkpoint.return_value = mock_model
+        else:
+            mock_model = mocker.create_autospec(OVModel)
+
+            mock_get_ov_model.return_value = mock_model
+
+        # Correct label_info from the checkpoint
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        fxt_engine.test(checkpoint=checkpoint)
         mock_test.assert_called_once()
 
-        fxt_engine.test(checkpoint="path/to/new/checkpoint")
-        mock_torch_load.assert_called_with("path/to/new/checkpoint")
+        mock_model.label_info = NullLabelInfo()
+        # Incorrect label_info from the checkpoint
+        with pytest.raises(
+            ValueError,
+            match="To launch a test pipeline, the label information should be same (.*)",
+        ):
+            fxt_engine.test(checkpoint=checkpoint)
 
-    def test_testing_with_ov_model(self, fxt_engine, mocker) -> None:
-        mock_test = mocker.patch("otx.engine.engine.Trainer.test")
-        mock_torch_load = mocker.patch("torch.load")
-        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
-        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-
-        fxt_engine.test(checkpoint="path/to/model.xml")
-        mock_test.assert_called_once()
-        mock_torch_load.assert_not_called()
-
-        fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.test(checkpoint="path/to/model.xml")
-
-    def test_prediction_after_training(self, fxt_engine, mocker) -> None:
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
+    @pytest.mark.parametrize("explain", [True, False])
+    @pytest.mark.parametrize(
+        "checkpoint",
+        [
+            "path/to/checkpoint.ckpt",
+            "path/to/checkpoint.xml",
+        ],
+    )
+    def test_predict(self, fxt_engine, checkpoint, explain, mocker: MockerFixture) -> None:
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
-        mock_torch_load = mocker.patch("torch.load")
+        _ = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
+        mock_process_saliency_maps = mocker.patch("otx.algo.utils.xai_utils.process_saliency_maps_in_pred_entity")
 
-        # Fetch Checkpoint
-        fxt_engine.checkpoint = "path/to/checkpoint"
-        fxt_engine.predict()
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
+        ext = Path(checkpoint).suffix
+
+        if ext == ".ckpt":
+            mock_model = mocker.create_autospec(OTXModel)
+
+            mock_load_from_checkpoint.return_value = mock_model
+        else:
+            mock_model = mocker.create_autospec(OVModel)
+
+            mock_get_ov_model.return_value = mock_model
+
+        # Correct label_info from the checkpoint
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        fxt_engine.predict(checkpoint=checkpoint, explain=explain)
         mock_predict.assert_called_once()
+        assert mock_process_saliency_maps.called == explain
 
-        fxt_engine.predict(checkpoint="path/to/new/checkpoint")
-        mock_torch_load.assert_called_with("path/to/new/checkpoint")
-
-        fxt_engine.model = create_autospec(OVModel)
-        fxt_engine.predict(checkpoint="path/to/model.xml")
-
-    def test_prediction_with_ov_model(self, fxt_engine, mocker) -> None:
-        mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
-        mock_torch_load = mocker.patch("torch.load")
-        mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
-        mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-
-        fxt_engine.predict(checkpoint="path/to/model.xml")
-        mock_predict.assert_called_once()
-        mock_torch_load.assert_not_called()
-
-    def test_prediction_explain_mode(self, fxt_engine, mocker) -> None:
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
-        mock_explain = mocker.patch("otx.algo.utils.xai_utils.process_saliency_maps_in_pred_entity")
-        mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
-        mock_torch_load = mocker.patch("torch.load")
-
-        # Fetch Checkpoint
-        fxt_engine.checkpoint = "path/to/checkpoint"
-        fxt_engine.predict(explain=True)
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
-        mock_explain.assert_called_once()
-        mock_predict.assert_called_once()
+        mock_model.label_info = NullLabelInfo()
+        # Incorrect label_info from the checkpoint
+        with pytest.raises(
+            ValueError,
+            match="To launch a predict pipeline, the label information should be same (.*)",
+        ):
+            fxt_engine.predict(checkpoint=checkpoint)
 
     def test_exporting(self, fxt_engine, mocker) -> None:
         with pytest.raises(RuntimeError, match="To make export, checkpoint must be specified."):
             fxt_engine.export()
 
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
-        mocker.patch("otx.engine.engine.OTXModel.label_info")
         mock_export = mocker.patch("otx.engine.engine.OTXModel.export")
-        mock_torch_load = mocker.patch("torch.load")
+
+        mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
+        mock_load_from_checkpoint.return_value = fxt_engine.model
 
         # Fetch Checkpoint
-        fxt_engine.checkpoint = "path/to/checkpoint"
+        checkpoint = "path/to/checkpoint.ckpt"
+        fxt_engine.checkpoint = checkpoint
         fxt_engine.export()
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
+        mock_load_from_checkpoint.assert_called_once_with(checkpoint_path=checkpoint, map_location="cpu")
         mock_export.assert_called_once_with(
             output_dir=Path(fxt_engine.work_dir),
             base_name="exported_model",
@@ -204,6 +225,22 @@ class TestEngine:
             precision=OTXPrecisionType.FP32,
         )
 
+        # check exportable code with IR OpenVINO model
+        mock_export = mocker.patch("otx.engine.engine.OVModel.export")
+        fxt_engine.checkpoint = "path/to/checkpoint.xml"
+        mock_get_ov_model = mocker.patch(
+            "otx.engine.engine.AutoConfigurator.get_ov_model",
+            return_value=OVModel(model_name="efficientnet-b0-pytorch", model_type="classification"),
+        )
+        fxt_engine.export(export_format=OTXExportFormatType.EXPORTABLE_CODE, checkpoint="path/to/checkpoint.xml")
+        mock_get_ov_model.assert_called_once()
+        mock_export.assert_called_with(
+            output_dir=Path(fxt_engine.work_dir),
+            base_name="exported_model",
+            export_format=OTXExportFormatType.EXPORTABLE_CODE,
+            precision=OTXPrecisionType.FP32,
+        )
+
     def test_optimizing_model(self, fxt_engine, mocker) -> None:
         with pytest.raises(RuntimeError, match="supports only OV IR or ONNX checkpoints"):
             fxt_engine.optimize()
@@ -221,32 +258,52 @@ class TestEngine:
         fxt_engine.optimize(max_data_subset_size=100)
         assert mock_ov_model.return_value.optimize.call_args[0][2]["subset_size"] == 100
 
-    def test_explain(self, fxt_engine, mocker) -> None:
-        mocker.patch("otx.engine.engine.OTXModel.load_state_dict")
-        mock_process_explain = mocker.patch("otx.algo.utils.xai_utils.process_saliency_maps_in_pred_entity")
+        # Optimize and export with exportable code
+        mocker_export = mocker.patch.object(fxt_engine, "export")
+        fxt_engine.optimize(export_demo_package=True)
+        mocker_export.assert_called_once()
 
-        mock_torch_load = mocker.patch("torch.load")
+    @pytest.mark.parametrize("dump", [True, False])
+    @pytest.mark.parametrize(
+        "checkpoint",
+        [
+            "path/to/checkpoint.ckpt",
+            "path/to/checkpoint.xml",
+        ],
+    )
+    def test_explain(self, fxt_engine, checkpoint, dump, mocker) -> None:
         mock_predict = mocker.patch("otx.engine.engine.Trainer.predict")
-
-        fxt_engine.explain(checkpoint="path/to/checkpoint")
-        mock_torch_load.assert_called_once_with("path/to/checkpoint")
-        mock_predict.assert_called_once()
-        mock_process_explain.assert_called_once()
-
+        _ = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
+        mock_get_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
+        mock_load_from_checkpoint = mocker.patch.object(fxt_engine.model.__class__, "load_from_checkpoint")
+        mock_process_saliency_maps = mocker.patch("otx.algo.utils.xai_utils.process_saliency_maps_in_pred_entity")
         mock_dump_saliency_maps = mocker.patch("otx.algo.utils.xai_utils.dump_saliency_maps")
-        fxt_engine.explain(checkpoint="path/to/checkpoint", dump=True)
-        mock_torch_load.assert_called_with("path/to/checkpoint")
-        mock_predict.assert_called()
-        mock_process_explain.assert_called()
-        mock_dump_saliency_maps.assert_called_once()
 
-        mock_ov_pipeline = mocker.patch("otx.engine.engine.AutoConfigurator.update_ov_subset_pipeline")
-        mock_ov_model = mocker.patch("otx.engine.engine.AutoConfigurator.get_ov_model")
-        fxt_engine.explain(checkpoint="path/to/model.xml")
-        mock_predict.assert_called()
-        mock_process_explain.assert_called()
-        mock_ov_model.assert_called_once()
-        mock_ov_pipeline.assert_called_once()
+        ext = Path(checkpoint).suffix
+
+        if ext == ".ckpt":
+            mock_model = mocker.create_autospec(OTXModel)
+
+            mock_load_from_checkpoint.return_value = mock_model
+        else:
+            mock_model = mocker.create_autospec(OVModel)
+
+            mock_get_ov_model.return_value = mock_model
+
+        # Correct label_info from the checkpoint
+        mock_model.label_info = fxt_engine.datamodule.label_info
+        fxt_engine.explain(checkpoint=checkpoint, dump=dump)
+        mock_predict.assert_called_once()
+        mock_process_saliency_maps.assert_called_once()
+        assert mock_dump_saliency_maps.called == dump
+
+        mock_model.label_info = NullLabelInfo()
+        # Incorrect label_info from the checkpoint
+        with pytest.raises(
+            ValueError,
+            match="To launch a explain pipeline, the label information should be same (.*)",
+        ):
+            fxt_engine.explain(checkpoint=checkpoint)
 
     def test_from_config_with_model_name(self, tmp_path) -> None:
         model_name = "efficientnet_b0_light"

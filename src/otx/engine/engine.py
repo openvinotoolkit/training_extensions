@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Iterator, Literal
@@ -179,6 +180,7 @@ class Engine:
         metric: MetricCallable | None = None,
         run_hpo: bool = False,
         hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
+        checkpoint: PathLike | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -198,6 +200,7 @@ class Engine:
                 metric callable. It will temporarilly change the evaluation metric for the validation and test.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -233,12 +236,14 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+
         if run_hpo:
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)
             if best_trial_weight is not None:
-                self.checkpoint = best_trial_weight
+                checkpoint = best_trial_weight
                 resume = True
 
         if seed is not None:
@@ -255,7 +260,7 @@ class Engine:
         )
         fit_kwargs: dict[str, Any] = {}
 
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
@@ -266,12 +271,17 @@ class Engine:
             logging.warning(msg)
             self.model.label_info = self.datamodule.label_info
 
-        if resume:
-            fit_kwargs["ckpt_path"] = self.checkpoint
-        elif self.checkpoint is not None:
-            loaded_checkpoint = torch.load(self.checkpoint)
-            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
-            self.model.load_state_dict(loaded_checkpoint)
+        if resume and checkpoint:
+            # NOTE: If both `resume` and `checkpoint` are provided,
+            # load the entire model state from the checkpoint using the pl.Trainer's API.
+            fit_kwargs["ckpt_path"] = checkpoint
+        elif not resume and checkpoint:
+            # NOTE: If `resume` is not enabled but `checkpoint` is provided,
+            # load the model state from the checkpoint incrementally.
+            # This means only the model weights are loaded. If there is a mismatch in label_info,
+            # perform incremental weight loading for the model's classification layer.
+            ckpt = torch.load(checkpoint)
+            self.model.load_state_dict_incrementally(ckpt)
 
         with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
             self.trainer.fit(
@@ -330,20 +340,6 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
-        # This is due to smart weight loading check label name as well as number of classes.
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
-
         model = self.model
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
@@ -363,8 +359,18 @@ class Engine:
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = self.model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a test pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         self._build_trainer(**kwargs)
 
@@ -420,20 +426,6 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
-        # This is due to smart weight loading check label name as well as number of classes.
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
-
         model = self.model
 
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -448,8 +440,18 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = self.model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a predict pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         self._build_trainer(**kwargs)
 
@@ -475,7 +477,7 @@ class Engine:
 
     def export(
         self,
-        checkpoint: str | Path | None = None,
+        checkpoint: PathLike | None = None,
         export_format: OTXExportFormatType = OTXExportFormatType.OPENVINO,
         export_precision: OTXPrecisionType = OTXPrecisionType.FP32,
         explain: bool = False,
@@ -483,7 +485,7 @@ class Engine:
         """Export the trained model to OpenVINO Intermediate Representation (IR) or ONNX formats.
 
         Args:
-            checkpoint (str | Path | None, optional): Checkpoint to export. Defaults to None.
+            checkpoint (PathLike | None, optional): Checkpoint to export. Defaults to None.
             export_config (ExportConfig | None, optional): Config that allows to set export
             format and precision. Defaults to None.
             explain (bool): Whether to get "saliency_map" and "feature_vector" or not.
@@ -513,20 +515,34 @@ class Engine:
                     --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
-        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
-        if ckpt_path is None:
+        if checkpoint is None:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
+        is_ir_ckpt = Path(checkpoint).suffix in [".xml"]
 
-        self.model.eval()
-        loaded_checkpoint = torch.load(ckpt_path)
-        self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
+        if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
+            msg = (
+                "Export format is automatically changed to EXPORTABLE_CODE, "
+                "since openvino IR model is passed as a checkpoint."
+            )
+            warn(msg, stacklevel=1)
+            export_format = OTXExportFormatType.EXPORTABLE_CODE
 
-        self.model.load_state_dict(loaded_checkpoint)
+        if is_ir_ckpt and not isinstance(self.model, OVModel):
+            # create OVModel
+            self.model = self._auto_configurator.get_ov_model(
+                model_name=str(checkpoint),
+                label_info=self.datamodule.label_info,
+            )
+
+        if not is_ir_ckpt:
+            model_cls = self.model.__class__
+            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
+            self.model.eval()
 
         self.model.explain_mode = explain
-
         exported_model_path = self.model.export(
             output_dir=Path(self.work_dir),
             base_name=self._EXPORTED_MODEL_BASE_NAME,
@@ -542,6 +558,7 @@ class Engine:
         checkpoint: PathLike | None = None,
         datamodule: TRAIN_DATALOADERS | OTXDataModule | None = None,
         max_data_subset_size: int | None = None,
+        export_demo_package: bool = False,
     ) -> Path:
         """Applies NNCF.PTQ to the underlying models (now works only for OV models).
 
@@ -554,6 +571,8 @@ class Engine:
             max_data_subset_size (int | None): The maximum size of the train subset from `datamodule` that would be
             used for model optimization. If not set, NNCF.PTQ will select subset size according to it's
             default settings.
+            export_demo_package (bool): Whether to export demo package with optimized models.
+            It outputs zip archive with stand-alone demo package.
 
         Returns:
             Path: path to the optimized model.
@@ -597,11 +616,19 @@ class Engine:
         if max_data_subset_size is not None:
             ptq_config["subset_size"] = max_data_subset_size
 
-        return model.optimize(
-            Path(self.work_dir),
-            optimize_datamodule,
-            ptq_config,
-        )
+        if not export_demo_package:
+            return model.optimize(
+                Path(self.work_dir),
+                optimize_datamodule,
+                ptq_config,
+            )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_model_path = model.optimize(Path(tmp_dir), optimize_datamodule, ptq_config)
+            return self.export(
+                checkpoint=tmp_model_path,
+                export_format=OTXExportFormatType.EXPORTABLE_CODE,
+            )
 
     def explain(
         self,
@@ -651,11 +678,19 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        model.label_info = datamodule.label_info
-
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a explain pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         model.explain_mode = True
 
@@ -698,7 +733,7 @@ class Engine:
                 Defaults to None. If work_dir is None, use the work_dir from the configuration file.
             kwargs: Arguments that can override the engine's arguments.
 
-        Returns:s
+        Returns:
             Engine: An instance of the Engine class.
 
         Example:
@@ -737,10 +772,24 @@ class Engine:
             )
             warn(msg, stacklevel=1)
 
+        if (datamodule := instantiated_config.get("data")) is None:
+            msg = "Cannot instantiate datamodule from config."
+            raise ValueError(msg)
+        if not isinstance(datamodule, OTXDataModule):
+            raise TypeError(datamodule)
+
+        if (model := instantiated_config.get("model")) is None:
+            msg = "Cannot instantiate model from config."
+            raise ValueError(msg)
+        if not isinstance(model, OTXModel):
+            raise TypeError(model)
+
+        model.label_info = datamodule.label_info
+
         return cls(
             work_dir=instantiated_config.get("work_dir", work_dir),
-            datamodule=instantiated_config.get("data"),
-            model=instantiated_config.get("model"),
+            datamodule=datamodule,
+            model=model,
             **engine_kwargs,
         )
 

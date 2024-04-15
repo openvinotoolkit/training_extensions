@@ -11,28 +11,327 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from datumaro.components.annotation import Bbox
+from mmdet.registry import MODELS
+from torch import nn
 
+from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
+from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
+from otx.core.exporter.base import OTXModelExporter
+from otx.core.exporter.mmdeploy import MMdeployExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
-from otx.core.utils.build import build_mm_model, modify_num_classes
+from otx.core.utils.build import modify_num_classes
+from otx.core.utils.config import convert_conf_to_mmconfig_dict
+from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmdet.models.task_modules.prior_generators.anchor_generator import AnchorGenerator
-    from mmengine.registry import Registry
+    from mmdet.structures import DetDataSample, OptSampleList, SampleList
+    from mmdet.utils import ConfigType, InstanceList, OptConfigType, OptMultiConfig
     from omegaconf import DictConfig
-    from torch import device, nn
+    from torch import Tensor, device
 
+    from otx.algo.detection.heads.custom_anchor_generator import SSDAnchorGeneratorClustered
     from otx.core.data.dataset.base import OTXDataset
     from otx.core.metrics import MetricCallable
 
 
 logger = logging.getLogger()
+
+
+# This class and its supporting functions below lightly adapted from the mmdet SingleStageDetector available at:
+# https://github.com/open-mmlab/mmdetection/blob/cfd5d3a985b0249de009b67d04f37263e11cdf3d/mmdet/models/detectors/single_stage.py
+class SingleStageDetector(nn.Module):
+    """Single stage detector implementation from mmdet."""
+
+    def __init__(
+        self,
+        backbone: ConfigType,
+        bbox_head: OptConfigType = None,
+        train_cfg: OptConfigType = None,
+        test_cfg: OptConfigType = None,
+        data_preprocessor: OptConfigType = None,
+        init_cfg: OptMultiConfig = None,
+    ) -> None:
+        super().__init__()
+        self._is_init = False
+        self.backbone = _build_pytorchcv_model(**backbone)
+        bbox_head.update(train_cfg=train_cfg)
+        bbox_head.update(test_cfg=test_cfg)
+        bbox_head.pop("type")
+        self.bbox_head = SSDHead(**bbox_head)
+        if isinstance(data_preprocessor, nn.Module):
+            self.data_preprocessor = data_preprocessor
+        elif isinstance(data_preprocessor, dict):
+            self.data_preprocessor = MODELS.build(data_preprocessor)
+        self.init_cfg = init_cfg
+        self.train_cfg = train_cfg
+        self.test_cfg = test_cfg
+
+    def _load_from_state_dict(
+        self,
+        state_dict: dict,
+        prefix: str,
+        local_metadata: dict,
+        strict: bool,
+        missing_keys: list[str] | str,
+        unexpected_keys: list[str] | str,
+        error_msgs: list[str] | str,
+    ) -> None:
+        """Exchange bbox_head key to rpn_head key.
+
+        When loading two-stage weights into single-stage model.
+        """
+        bbox_head_prefix = prefix + ".bbox_head" if prefix else "bbox_head"
+        bbox_head_keys = [k for k in state_dict if k.startswith(bbox_head_prefix)]
+        rpn_head_prefix = prefix + ".rpn_head" if prefix else "rpn_head"
+        rpn_head_keys = [k for k in state_dict if k.startswith(rpn_head_prefix)]
+        if len(bbox_head_keys) == 0 and len(rpn_head_keys) != 0:
+            for rpn_head_key in rpn_head_keys:
+                bbox_head_key = bbox_head_prefix + rpn_head_key[len(rpn_head_prefix) :]
+                state_dict[bbox_head_key] = state_dict.pop(rpn_head_key)
+        super()._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
+
+    def init_weights(self) -> None:
+        """Initialize the weights."""
+        from mmengine.logging import print_log
+        from mmengine.model.weight_init import PretrainedInit, initialize
+        from mmengine.model.wrappers.utils import is_model_wrapper
+
+        module_name = self.__class__.__name__
+        if not self._is_init:
+            if self.init_cfg:
+                print_log(
+                    f"initialize {module_name} with init_cfg {self.init_cfg}",
+                    logger="current",
+                    level=logging.DEBUG,
+                )
+
+                init_cfgs = self.init_cfg
+                if isinstance(self.init_cfg, dict):
+                    init_cfgs = [self.init_cfg]
+
+                # PretrainedInit has higher priority than any other init_cfg.
+                # Therefore we initialize `pretrained_cfg` last to overwrite
+                # the previous initialized weights.
+                # See details in https://github.com/open-mmlab/mmengine/issues/691 # E501
+                other_cfgs = []
+                pretrained_cfg = []
+                for init_cfg in init_cfgs:
+                    if init_cfg["type"] == "Pretrained" or init_cfg["type"] is PretrainedInit:
+                        pretrained_cfg.append(init_cfg)
+                    else:
+                        other_cfgs.append(init_cfg)
+
+                initialize(self, other_cfgs)
+
+            for m in self.children():
+                if is_model_wrapper(m) and not hasattr(m, "init_weights"):
+                    m = m.module  # noqa: PLW2901
+                if hasattr(m, "init_weights") and not getattr(m, "is_init", False):
+                    m.init_weights()
+            if self.init_cfg and pretrained_cfg:
+                initialize(self, pretrained_cfg)
+            self._is_init = True
+        else:
+            print_log(
+                f"init_weights of {self.__class__.__name__} has been called more than once.",
+                logger="current",
+                level=logging.WARNING,
+            )
+
+    def forward(
+        self,
+        inputs: torch.Tensor,
+        data_samples: OptSampleList = None,
+        mode: str = "tensor",
+    ) -> dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor:
+        """The unified entry for a forward process in both training and test.
+
+        The method should accept three modes: "tensor", "predict" and "loss":
+
+        - "tensor": Forward the whole network and return tensor or tuple of
+        tensor without any post-processing, same as a common nn.Module.
+        - "predict": Forward and return the predictions, which are fully
+        processed to a list of :obj:`DetDataSample`.
+        - "loss": Forward and return a dict of losses according to the given
+        inputs and data samples.
+
+        Note that this method doesn't handle either back propagation or
+        parameter update, which are supposed to be done in :meth:`train_step`.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+                data samples that contain annotations and predictions.
+                Defaults to None.
+            mode (str): Return what kind of value. Defaults to 'tensor'.
+
+        Returns:
+            The return type depends on ``mode``.
+
+            - If ``mode="tensor"``, return a tensor or a tuple of tensor.
+            - If ``mode="predict"``, return a list of :obj:`DetDataSample`.
+            - If ``mode="loss"``, return a dict of tensor.
+        """
+        if mode == "loss":
+            return self.loss(inputs, data_samples)
+        if mode == "predict":
+            return self.predict(inputs, data_samples)
+        if mode == "tensor":
+            return self._forward(inputs, data_samples)
+
+        msg = f"Invalid mode {mode}. Only supports loss, predict and tensor mode"
+        raise RuntimeError(msg)
+
+    def loss(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: SampleList,
+    ) -> dict | list:
+        """Calculate losses from a batch of inputs and data samples.
+
+        Args:
+            batch_inputs (Tensor): Input images of shape (N, C, H, W).
+                These should usually be mean centered and std scaled.
+            batch_data_samples (list[:obj:`DetDataSample`]): The batch
+                data samples. It usually includes information such
+                as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.
+
+        Returns:
+            dict: A dictionary of loss components.
+        """
+        x = self.extract_feat(batch_inputs)
+        return self.bbox_head.loss(x, batch_data_samples)
+
+    def predict(self, batch_inputs: Tensor, batch_data_samples: SampleList, rescale: bool = True) -> SampleList:
+        """Predict results from a batch of inputs and data samples with post-processing.
+
+        Args:
+            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
+            batch_data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool): Whether to rescale the results.
+                Defaults to True.
+
+        Returns:
+            list[:obj:`DetDataSample`]: Detection results of the
+            input images. Each DetDataSample usually contain
+            'pred_instances'. And the ``pred_instances`` usually
+            contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        x = self.extract_feat(batch_inputs)
+        results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
+        return self.add_pred_to_datasample(batch_data_samples, results_list)
+
+    def _forward(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: OptSampleList = None,
+    ) -> tuple[list[Tensor], list[Tensor]]:
+        """Network forward process.
+
+        Args:
+            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
+            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains
+                the meta information of each image and corresponding
+                annotations.
+
+        Returns:
+            tuple[list]: A tuple of features from ``bbox_head`` forward.
+        """
+        x = self.extract_feat(batch_inputs)
+        return self.bbox_head.forward(x)
+
+    def extract_feat(self, batch_inputs: Tensor) -> tuple[Tensor]:
+        """Extract features.
+
+        Args:
+            batch_inputs (Tensor): Image tensor with shape (N, C, H ,W).
+
+        Returns:
+            tuple[Tensor]: Multi-level features that may have
+            different resolutions.
+        """
+        x = self.backbone(batch_inputs)
+        if self.with_neck:
+            x = self.neck(x)
+        return x
+
+    def add_pred_to_datasample(self, data_samples: SampleList, results_list: InstanceList) -> SampleList:
+        """Add predictions to `DetDataSample`.
+
+        Args:
+            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+                data samples that contain annotations and predictions.
+            results_list (list[:obj:`InstanceData`]): Detection results of
+                each image.
+
+        Returns:
+            list[:obj:`DetDataSample`]: Detection results of the
+            input images. Each DetDataSample usually contain
+            'pred_instances'. And the ``pred_instances`` usually
+            contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        from mmdet.models.utils import samplelist_boxtype2tensor
+
+        for data_sample, pred_instances in zip(data_samples, results_list):
+            data_sample.pred_instances = pred_instances
+        samplelist_boxtype2tensor(data_samples)
+        return data_samples
+
+    @property
+    def with_neck(self) -> bool:
+        """bool: whether the detector has a neck."""
+        return hasattr(self, "neck") and self.neck is not None
+
+    @property
+    def with_shared_head(self) -> bool:
+        """bool: whether the detector has a shared head in the RoI Head."""
+        return hasattr(self, "roi_head") and self.roi_head.with_shared_head
+
+    @property
+    def with_bbox(self) -> bool:
+        """bool: whether the detector has a bbox head."""
+        return (hasattr(self, "roi_head") and self.roi_head.with_bbox) or (
+            hasattr(self, "bbox_head") and self.bbox_head is not None
+        )
+
+    @property
+    def with_mask(self) -> bool:
+        """bool: whether the detector has a mask head."""
+        return (hasattr(self, "roi_head") and self.roi_head.with_mask) or (
+            hasattr(self, "mask_head") and self.mask_head is not None
+        )
 
 
 class SSD(MMDetCompatibleModel):
@@ -59,18 +358,17 @@ class SSD(MMDetCompatibleModel):
         )
         self.image_size = (1, 3, 864, 864)
         self.tile_image_size = self.image_size
-        self._register_load_state_dict_pre_hook(self._set_anchors_hook)
 
     def _create_model(self) -> nn.Module:
         from mmdet.models.data_preprocessors import (
             DetDataPreprocessor as _DetDataPreprocessor,
         )
         from mmdet.registry import MODELS
-        from mmengine.registry import MODELS as MMENGINE_MODELS
+        from mmengine.runner import load_checkpoint
 
         # NOTE: For the history of this monkey patching, please see
         # https://github.com/openvinotoolkit/training_extensions/issues/2743
-        @MMENGINE_MODELS.register_module(force=True)
+        @MODELS.register_module(force=True)
         class DetDataPreprocessor(_DetDataPreprocessor):
             @property
             def device(self) -> device:
@@ -81,8 +379,13 @@ class SSD(MMDetCompatibleModel):
                 else:
                     return buf.device
 
-        self.classification_layers = self.get_classification_layers(self.config, MODELS, "model.")
-        return build_mm_model(self.config, MODELS, self.load_from)
+        config = deepcopy(self.config)
+        self.classification_layers = self.get_classification_layers(config, "model.")
+        config.pop("type")
+        detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
+        if self.load_from is not None:
+            load_checkpoint(detector, self.load_from, map_location="cpu")
+        return detector
 
     def setup(self, stage: str) -> None:
         """Callback for setup OTX SSD Model.
@@ -106,8 +409,12 @@ class SSD(MMDetCompatibleModel):
                 anchor_generator.widths = new_anchors[0]
                 anchor_generator.heights = new_anchors[1]
                 anchor_generator.gen_base_anchors()
+                self.hparams["ssd_anchors"] = {
+                    "heights": anchor_generator.heights,
+                    "widths": anchor_generator.widths,
+                }
 
-    def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: AnchorGenerator) -> tuple | None:
+    def _get_new_anchors(self, dataset: OTXDataset, anchor_generator: SSDAnchorGeneratorClustered) -> tuple | None:
         """Get new anchors for SSD from OTXDataset."""
         from mmdet.datasets.transforms import Resize
 
@@ -177,7 +484,6 @@ class SSD(MMDetCompatibleModel):
     @staticmethod
     def get_classification_layers(
         config: DictConfig,
-        model_registry: Registry,
         prefix: str,
     ) -> dict[str, dict[str, bool | int]]:
         """Return classification layer names by comparing two different number of classes models.
@@ -197,11 +503,12 @@ class SSD(MMDetCompatibleModel):
             so we have to update every anchors.
         """
         sample_config = deepcopy(config)
+        sample_config.pop("type")
         modify_num_classes(sample_config, 3)
-        sample_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+        sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
         modify_num_classes(sample_config, 4)
-        incremental_model_dict = build_mm_model(sample_config, model_registry, None).state_dict()
+        incremental_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
         classification_layers = {}
         for key in sample_model_dict:
@@ -216,19 +523,6 @@ class SSD(MMDetCompatibleModel):
                     num_anchors = int(sample_model_dim / 3)
                     classification_layers[prefix + key] = {"use_bg": use_bg, "num_anchors": num_anchors}
         return classification_layers
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        """Return state dictionary of model entity with anchor information.
-
-        Returns:
-            A dictionary containing SSD state.
-
-        """
-        state_dict = super().state_dict(*args, **kwargs)
-        anchor_generator = self.model.bbox_head.anchor_generator
-        anchors = {"heights": anchor_generator.heights, "widths": anchor_generator.widths}
-        state_dict["model.model.anchors"] = anchors
-        return state_dict
 
     def load_state_dict_pre_hook(self, state_dict: dict[str, torch.Tensor], prefix: str, *args, **kwargs) -> None:
         """Modify input state_dict according to class name matching before weight loading."""
@@ -262,25 +556,37 @@ class SSD(MMDetCompatibleModel):
             state_dict[prefix + param_name] = model_param
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        export_params = super()._export_parameters
-        export_params["deploy_cfg"] = "otx.algo.detection.mmdeploy.ssd_mobilenetv2"
-        export_params["input_size"] = self.image_size
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        if self.image_size is None:
+            raise ValueError(self.image_size)
 
-        return export_params
+        mean, std = get_mean_std_from_data_processing(self.config)
 
-    def _set_anchors_hook(self, state_dict: dict[str, Any], *args, **kwargs) -> None:
-        """Pre hook for pop anchor statistics from checkpoint state_dict."""
-        anchors = state_dict.pop("model.model.anchors", None)
-        if anchors is not None:
+        return MMdeployExporter(
+            model_builder=self._create_model,
+            model_cfg=deepcopy(self.config),
+            deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
+            test_pipeline=self._make_fake_test_pipeline(),
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on load checkpoint."""
+        if (hparams := checkpoint.get("hyper_parameters")) and (anchors := hparams.get("ssd_anchors", None)):
             anchor_generator = self.model.bbox_head.anchor_generator
             anchor_generator.widths = anchors["widths"]
             anchor_generator.heights = anchors["heights"]
             anchor_generator.gen_base_anchors()
+
+        return super().on_load_checkpoint(checkpoint)
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

@@ -657,7 +657,7 @@ class FMeasure(Metric):
         self._f_measure_per_nms: dict | None = None
         self._best_confidence_threshold: float | None = None
         self._best_nms_threshold: float | None = None
-        self._f_measure = 0.0
+        self._f_measure = float("-inf")
 
         self.reset()
 
