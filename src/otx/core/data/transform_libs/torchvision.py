@@ -392,7 +392,7 @@ class MinIoURandomCrop(tvt_v2.Transform):
                 # adjust the img no matter whether the gt is empty before crop
                 img = img[patch[1]:patch[3], patch[0]:patch[2]]
                 inputs.image = F.to_image(img)
-                inputs.img_info = _crop_image_info(inputs.img_info, patch[3] - patch[1], patch[2] - patch[0])
+                inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
                 return inputs
 
     def __repr__(self) -> str:
@@ -465,25 +465,34 @@ class Resize(tvt_v2.Transform):
                 f'expect scale_factor is float or Tuple(float), but'
                 f'get {type(scale_factor)}')
 
-    def _resize_img(self, inputs: DetDataEntity) -> DetDataEntity:
+    def _resize_img(self, inputs: DetDataEntity) -> tuple[DetDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
+        scale_factor : tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
+
+            img_shape = img.shape[:2]
+            if self.scale:
+                scale = self.scale
+            else:
+                scale = _scale_size(img_shape[::-1], self.scale_factor)
+
             if self.keep_ratio:
                 h, w = img.shape[:2]
-                new_size, scale_factor = rescale_size((w, h), inputs.img_info.img_shape[::-1], return_scale=True)
-                img = cv2.resize(img, new_size, interpolation=self.cv2_interp_codes[self.interpolation])
-            else:
-                img = cv2.resize(img, inputs.img_info.img_shape[::-1], interpolation=self.cv2_interp_codes[self.interpolation])
+                scale = rescale_size((w, h), scale)
+
+            img = cv2.resize(img, scale, interpolation=self.cv2_interp_codes[self.interpolation])
 
             inputs.image = F.to_image(img)
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
-        return inputs
 
-    def _resize_bboxes(self, inputs: DetDataEntity) -> DetDataEntity:
+            scale_factor = (scale[0]/img_shape[1], scale[1]/img_shape[0]) # TODO (sungchul): revert to (h, w)
+        return inputs, scale_factor
+
+    def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float] | None) -> DetDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
-            bboxes = rescale_bboxes(bboxes, inputs.img_info.scale_factor[::-1]) # HW -> WH
+            bboxes = rescale_bboxes(bboxes, scale_factor) # TODO (sungchul): revert to (h, w)
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
@@ -502,14 +511,8 @@ class Resize(tvt_v2.Transform):
         assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
         inputs = inputs[0]
 
-        if self.scale:
-            inputs.img_info = _resize_image_info(inputs.img_info, self.scale)
-        else:
-            img_shape = to_np_image(inputs.image).shape[:2]
-            inputs.img_info = _resize_image_info(inputs.img_info, _scale_size(img_shape[::-1], self.scale_factor))
-
-        inputs = self._resize_img(inputs)
-        inputs = self._resize_bboxes(inputs)
+        inputs, scale_factor = self._resize_img(inputs)
+        inputs = self._resize_bboxes(inputs, scale_factor)
 
         return inputs
 
@@ -615,7 +618,7 @@ class RandomFlip(tvt_v2.Transform):
         assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
         inputs = inputs[0]
 
-        if (cur_dir := self._choose_direction()):
+        if (cur_dir := self._choose_direction()) is not None:
             # flip image
             img = to_np_image(inputs.image)
             img = np.ascontiguousarray(flip_image(img, direction=cur_dir))
@@ -625,7 +628,7 @@ class RandomFlip(tvt_v2.Transform):
             # flip bboxes
             if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
-                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
+                inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
 
         return inputs
 
@@ -726,6 +729,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
                 if contrast_flag:
                     img *= alpha_value
 
+            # TODO (sungchul): OTX consumes RGB images but mmx assumes they are BGR.
             # convert color from BGR to HSV
             img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # f32 -> f32
 

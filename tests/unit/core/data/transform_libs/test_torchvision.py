@@ -11,7 +11,7 @@ from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, R
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
-from torch import LongTensor
+from torch import LongTensor, Tensor
 from torchvision import tv_tensors
 
 
@@ -49,15 +49,21 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(448, 448))
+        return Resize(scale=(448, 448)) # (112, 224) -> (448, 448)
 
-    @pytest.mark.parametrize("keep_ratio", [True, False])
-    def test_resize_img(self, resize, data_entity, keep_ratio: bool) -> None:
-        """Test _resize_img."""
+    @pytest.mark.parametrize(
+        ("keep_ratio", "expected"), 
+        [
+            (True, torch.tensor([[0., 0., 100., 100.]])),
+            (False, torch.tensor([[0., 0., 100., 200.]]))
+        ]
+    )
+    def test_forward(self, resize, data_entity, keep_ratio: bool, expected: Tensor) -> None:
+        """Test forward."""
         resize.keep_ratio = keep_ratio
         data_entity.img_info.img_shape = resize.scale
 
-        results = resize._resize_img(deepcopy(data_entity))
+        results = resize(deepcopy(data_entity))
 
         assert results.img_info.ori_shape == (112, 224)
         if keep_ratio:
@@ -68,19 +74,6 @@ class TestResize:
             assert results.image.shape == (3, 448, 448)
             assert results.img_info.img_shape == (448, 448)
             assert results.img_info.scale_factor == (2., 4.)
-
-    @pytest.mark.parametrize(
-        ("scale_factor", "expected"),
-        [
-            ((2., 2.), torch.tensor([[0., 0., 100., 100.]])),
-            ((2., 4.), torch.tensor([[0., 0., 200., 100.]])), 
-        ]
-    )
-    def test_resize_bboxes(self, resize, data_entity, scale_factor: tuple[float, float], expected: Tensor) -> None:
-        """Test _resize_bboxes."""
-        data_entity.img_info.scale_factor = scale_factor
-
-        results = resize._resize_bboxes(deepcopy(data_entity))
 
         assert torch.all(results.bboxes.data == expected)
 
