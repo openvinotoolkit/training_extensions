@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Releases &#8212; OpenVINO™ Training Extensions 2.0.0 documentation</title>
+    <title>Releases &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -35,7 +35,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
 
-    <script src="../../_static/documentation_options.js?v=79f5c508"></script>
+    <script src="../../_static/documentation_options.js?v=b28fb44a"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -380,6 +380,91 @@
 <section id="v2-0-0-1q24">
 <h2>v2.0.0 (1Q24)<a class="headerlink" href="#v2-0-0-1q24" title="Link to this heading">#</a></h2>
 </section>
+<section id="v1-6-0-2024-04">
+<h2>v1.6.0 (2024.04)<a class="headerlink" href="#v1-6-0-2024-04" title="Link to this heading">#</a></h2>
+<section id="new-features">
+<h3>New features<a class="headerlink" href="#new-features" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Changed supported Python version range (&gt;=3.9, &lt;=3.11)</p></li>
+<li><p>Support MMDetection COCO format</p></li>
+<li><p>Develop JsonSectionPageMapper in Rust API</p></li>
+<li><p>Add Filtering via User-Provided Python Functions</p></li>
+<li><p>Remove supporting MacOS platform</p></li>
+<li><p>Support Kaggle image data (<cite>KaggleImageCsvBase</cite>, <cite>KaggleImageTxtBase</cite>, <cite>KaggleImageMaskBase</cite>, <cite>KaggleVocBase</cite>, <cite>KaggleYoloBase</cite>)</p></li>
+<li><p>Add <cite>__getitem__()</cite> for random accessing with O(1) time complexity</p></li>
+<li><p>Add Data-aware Anchor Generator</p></li>
+<li><p>Support bounding box import within Kaggle extractors and add <cite>KaggleCocoBase</cite></p></li>
+</ul>
+</section>
+<section id="enhancements">
+<h3>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Optimize Python import to make CLI entrypoint faster</p></li>
+<li><p>Add ImageColorScale context manager</p></li>
+<li><p>Enhance visualizer to toggle plot title visibility</p></li>
+<li><p>Enhance Datumaro data format detect() to be memory-bounded and performant</p></li>
+<li><p>Change RoIImage and MosaicImage to have np.uint8 dtype as default</p></li>
+<li><p>Enable image backend and color channel format to be selectable</p></li>
+<li><p>Boost up <cite>CityscapesBase</cite> and <cite>KaggleImageMaskBase</cite> by dropping <cite>np.unique</cite></p></li>
+<li><p>Enhance RISE algortihm for explainable AI</p></li>
+<li><p>Enhance explore unit test to use real dataset from ImageNet</p></li>
+<li><p>Fix each method of the comparator to be used separately</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug fixes<a class="headerlink" href="#bug-fixes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Fix wrong example of Datumaro dataset creation in document</p></li>
+<li><p>Fix wrong command to install datumaro from github</p></li>
+<li><p>Update document to correct wrong <cite>datum project import</cite> command and add filtering example to filter out items containing annotations.</p></li>
+<li><p>Fix label compare of distance method</p></li>
+<li><p>Fix Datumaro visualizer’s import errors after introducing lazy import</p></li>
+<li><p>Fix broken link to supported formats in readme</p></li>
+<li><p>Fix Kinetics data format to have media data</p></li>
+<li><p>Handling undefined labels at the annotation statistics</p></li>
+<li><p>Add unit test for item rename</p></li>
+<li><p>Fix a bug in the previous behavior when importing nested datasets in the project</p></li>
+<li><p>Fix Kaggle importer when adding duplicated labels</p></li>
+<li><p>Fix input tensor shape in model interpreter for OpenVINO 2023.3</p></li>
+<li><p>Add default value for target in prune cli</p></li>
+<li><p>Remove deprecated MediaManager</p></li>
+<li><p>Fix explore command without project</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-5-2-2024-01">
+<h2>v1.5.2 (2024.01)<a class="headerlink" href="#v1-5-2-2024-01" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3>Enhancements<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Add memory bounded datumaro data format detect</p></li>
+<li><p>Remove Protobuf version limitation (&lt;4)</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-5-1-2023-11">
+<h2>v1.5.1 (2023.11)<a class="headerlink" href="#v1-5-1-2023-11" title="Link to this heading">#</a></h2>
+<section id="id2">
+<h3>Enhancements<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Enhance Datumaro data format stream importer performance</p></li>
+<li><p>Change image default dtype from float32 to uint8</p></li>
+<li><p>Add comparison level-up doc</p></li>
+<li><p>Add ImportError to catch GitPython import error</p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>Bug fixes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Modify the draw function in the visualizer not to raise an error for unsupported annotation types.</p></li>
+<li><p>Correct explore path in the related document.</p></li>
+<li><p>Fix errata in the voc document. Color values in the labelmap.txt should be separated by commas, not colons.</p></li>
+<li><p>Fix hyperlink errors in the document.</p></li>
+<li><p>Fix memory unbounded Arrow data format export/import.</p></li>
+<li><p>Update CVAT format doc to bypass warning.</p></li>
+</ul>
+</section>
+</section>
 <section id="v1-5-0-4q23">
 <h2>v1.5.0 (4Q23)<a class="headerlink" href="#v1-5-0-4q23" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -617,6 +702,57 @@
   <a class="reference internal nav-link" href="#v2-0-0-1q24">
    v2.0.0 (1Q24)
   </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-6-0-2024-04">
+   v1.6.0 (2024.04)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#new-features">
+     New features
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#enhancements">
+     Enhancements
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#bug-fixes">
+     Bug fixes
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-5-2-2024-01">
+   v1.5.2 (2024.01)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id1">
+     Enhancements
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-5-1-2023-11">
+   v1.5.1 (2023.11)
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id2">
+     Enhancements
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#id3">
+     Bug fixes
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-5-0-4q23">
