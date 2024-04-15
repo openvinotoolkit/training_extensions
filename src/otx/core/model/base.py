@@ -27,6 +27,8 @@ from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
 from torchmetrics import Metric, MetricCollection
 
+from otx import __version__
+from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import (
     OTXBatchLossEntity,
     T_OTXBatchDataEntity,
@@ -112,6 +114,8 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         self.torch_compile = torch_compile
         self._explain_mode = False
+
+        self._tile_config: TileConfig | None = None
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -336,16 +340,54 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
             self.log(log_metric_name, value, sync_dist=True, prog_bar=True)
 
-    def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with meta information.
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)
 
-        Returns:
-            A dictionary containing datamodule state.
+        checkpoint["label_info"] = self.label_info
+        checkpoint["otx_version"] = __version__
 
-        """
-        state_dict = super().state_dict()
-        state_dict["label_info"] = self.label_info
-        return state_dict
+        if self._tile_config:
+            checkpoint["tile_config"] = self._tile_config
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on loading checkpoint."""
+        super().on_load_checkpoint(checkpoint)
+
+        if ckpt_label_info := checkpoint.get("label_info", None):
+            self._label_info = ckpt_label_info
+
+        if ckpt_tile_config := checkpoint.get("tile_config", None):
+            self._tile_config = ckpt_tile_config
+
+    def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
+        """Load state dict incrementally."""
+        ckpt_label_info: LabelInfo | None = ckpt.get("label_info", None)
+
+        if ckpt_label_info is None:
+            msg = "Checkpoint should have `label_info`."
+            raise ValueError(msg, ckpt_label_info)
+
+        if ckpt_label_info != self.label_info:
+            msg = (
+                "Load model state dictionary incrementally: "
+                f"Label info from checkpoint: {ckpt_label_info} -> "
+                f"Label info from training data: {self.label_info}"
+            )
+            logger.info(msg)
+            self.register_load_state_dict_pre_hook(
+                self.label_info.label_names,
+                ckpt_label_info.label_names,
+            )
+
+        # Model weights
+        state_dict: dict[str, Any] = ckpt.get("state_dict", None)
+
+        if ckpt_label_info is None:
+            msg = "Checkpoint should have `state_dict`."
+            raise ValueError(msg, ckpt_label_info)
+
+        self.load_state_dict(state_dict, *args, **kwargs)
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dictionary from checkpoint state dictionary.
@@ -364,23 +406,6 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         else:
             state_dict = ckpt
 
-        ckpt_label_info = state_dict.pop("label_info", None)
-
-        if ckpt_label_info and self.label_info is None:
-            msg = (
-                "`state_dict` to load has `label_info`, but the current model has no `label_info`. "
-                "It is recommended to set proper `label_info` for the incremental learning case."
-            )
-            warnings.warn(msg, stacklevel=2)
-        if ckpt_label_info and self.label_info and ckpt_label_info != self.label_info:
-            logger.warning(
-                f"Data classes from checkpoint: {ckpt_label_info.label_names} -> "
-                f"Data classes from training data: {self.label_info.label_names}",
-            )
-            self.register_load_state_dict_pre_hook(
-                self.label_info.label_names,
-                ckpt_label_info.label_names,
-            )
         return super().load_state_dict(state_dict, *args, **kwargs)
 
     def load_from_otx_v1_ckpt(self, ckpt: dict[str, Any]) -> dict:
@@ -697,6 +722,20 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
             self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
+
+    @property
+    def tile_config(self) -> TileConfig:
+        """Get tiling configurations."""
+        if self._tile_config is None:
+            msg = "This task type does not support tiling."
+            raise RuntimeError(msg)
+
+        return self._tile_config
+
+    @tile_config.setter
+    def tile_config(self, tile_config: TileConfig) -> None:
+        """Set tiling configurations."""
+        self._tile_config = tile_config
 
 
 class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):

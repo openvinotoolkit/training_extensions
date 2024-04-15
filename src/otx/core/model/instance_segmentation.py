@@ -16,7 +16,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo, get_feature_vector
+from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -67,7 +67,7 @@ class OTXInstanceSegModel(
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.tile_config = TileConfig()
+        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -214,6 +214,27 @@ class OTXInstanceSegModel(
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
     """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
 
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        from otx.algo.explain.explain_algo import get_feature_vector
+
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
+
     def forward_explain(
         self,
         inputs: InstanceSegBatchDataEntity | TileBatchInstSegDataEntity,
@@ -279,6 +300,8 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
+        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
+
         explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
