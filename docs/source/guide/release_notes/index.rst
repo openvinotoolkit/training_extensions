@@ -8,6 +8,79 @@ Releases
 v2.0.0 (1Q24)
 -------------
 
+v1.6.0 (2024.04)
+----------------
+
+New features
+^^^^^^^^^^^^
+- Changed supported Python version range (>=3.9, <=3.11)
+- Support MMDetection COCO format
+- Develop JsonSectionPageMapper in Rust API
+- Add Filtering via User-Provided Python Functions
+- Remove supporting MacOS platform
+- Support Kaggle image data (`KaggleImageCsvBase`, `KaggleImageTxtBase`, `KaggleImageMaskBase`, `KaggleVocBase`, `KaggleYoloBase`)
+- Add `__getitem__()` for random accessing with O(1) time complexity
+- Add Data-aware Anchor Generator
+- Support bounding box import within Kaggle extractors and add `KaggleCocoBase`
+
+Enhancements
+^^^^^^^^^^^^
+- Optimize Python import to make CLI entrypoint faster
+- Add ImageColorScale context manager
+- Enhance visualizer to toggle plot title visibility
+- Enhance Datumaro data format detect() to be memory-bounded and performant
+- Change RoIImage and MosaicImage to have np.uint8 dtype as default
+- Enable image backend and color channel format to be selectable
+- Boost up `CityscapesBase` and `KaggleImageMaskBase` by dropping `np.unique`
+- Enhance RISE algortihm for explainable AI
+- Enhance explore unit test to use real dataset from ImageNet
+- Fix each method of the comparator to be used separately
+
+Bug fixes
+^^^^^^^^^
+- Fix wrong example of Datumaro dataset creation in document
+- Fix wrong command to install datumaro from github
+- Update document to correct wrong `datum project import` command and add filtering example to filter out items containing annotations.
+- Fix label compare of distance method
+- Fix Datumaro visualizer's import errors after introducing lazy import
+- Fix broken link to supported formats in readme
+- Fix Kinetics data format to have media data
+- Handling undefined labels at the annotation statistics
+- Add unit test for item rename
+- Fix a bug in the previous behavior when importing nested datasets in the project
+- Fix Kaggle importer when adding duplicated labels
+- Fix input tensor shape in model interpreter for OpenVINO 2023.3
+- Add default value for target in prune cli
+- Remove deprecated MediaManager
+- Fix explore command without project
+
+v1.5.2 (2024.01)
+----------------
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add memory bounded datumaro data format detect
+- Remove Protobuf version limitation (<4)
+
+v1.5.1 (2023.11)
+----------------
+
+Enhancements
+^^^^^^^^^^^^
+- Enhance Datumaro data format stream importer performance
+- Change image default dtype from float32 to uint8
+- Add comparison level-up doc
+- Add ImportError to catch GitPython import error
+
+Bug fixes
+^^^^^^^^^
+- Modify the draw function in the visualizer not to raise an error for unsupported annotation types.
+- Correct explore path in the related document.
+- Fix errata in the voc document. Color values in the labelmap.txt should be separated by commas, not colons.
+- Fix hyperlink errors in the document.
+- Fix memory unbounded Arrow data format export/import.
+- Update CVAT format doc to bypass warning.
 
 v1.5.0 (4Q23)
 -------------
