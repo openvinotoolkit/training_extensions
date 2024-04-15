@@ -1,7 +1,8 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional
+
+from __future__ import annotations
 
 from mmengine.structures import BaseDataElement, InstanceData, PixelData
 
@@ -234,5 +235,5 @@ class DetDataSample(BaseDataElement):
         del self._pred_sem_seg
 
 
-SampleList = List[DetDataSample]
-OptSampleList = Optional[SampleList]
+SampleList = list[DetDataSample]
+OptSampleList = SampleList | None

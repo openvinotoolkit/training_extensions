@@ -1,26 +1,23 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
-# TODO(Eugene): Revisit mypy errors after deprecation of mmlab
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
-# mypy: ignore-errors
-# ruff: noqa
-
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from typing import TypeAlias
 
 import torch
 from mmengine.model import BaseModel
+from torch import Tensor
+
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
     OptConfigType,
     OptMultiConfig,
 )
-from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, OptSampleList, SampleList
-from torch import Tensor
+from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
 
-ForwardResults = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
+ForwardResults: TypeAlias = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
 
 
 class BaseDetector(BaseModel, metaclass=ABCMeta):
@@ -49,7 +46,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             hasattr(self, "bbox_head") and self.bbox_head is not None
         )
 
-    def forward(self, inputs: torch.Tensor, data_samples: OptSampleList = None, mode: str = "tensor") -> ForwardResults:
+    def forward(self, inputs: torch.Tensor, data_samples: SampleList, mode: str = "tensor") -> ForwardResults:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
