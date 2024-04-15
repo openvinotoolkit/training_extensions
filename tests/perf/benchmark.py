@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import gc
 import logging
-import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +15,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from .history import summary
 
 log = logging.getLogger(__name__)
 
@@ -71,14 +72,25 @@ class Benchmark:
         def __call__(self, result_entry: pd.Series, target_entry: pd.Series) -> None:
             """Check result against given target."""
             if self.name not in result_entry or result_entry[self.name] is None or np.isnan(result_entry[self.name]):
+                print(f"[Check] {self.name} not in result")
                 return
             if self.name not in target_entry or target_entry[self.name] is None or np.isnan(target_entry[self.name]):
+                print(f"[Check] {self.name} not in target")
                 return
             if self.compare == "==":
+                print(
+                    f"[Check] abs({self.name}:{result_entry[self.name]} - {self.name}:{target_entry[self.name]}) < {self.name}:{target_entry[self.name]} * {self.margin}",
+                )
                 assert abs(result_entry[self.name] - target_entry[self.name]) < target_entry[self.name] * self.margin
             elif self.compare == "<":
+                print(
+                    f"[Check] {self.name}:{result_entry[self.name]} < {self.name}:{target_entry[self.name]} * (1.0 + {self.margin})",
+                )
                 assert result_entry[self.name] < target_entry[self.name] * (1.0 + self.margin)
             elif self.compare == ">":
+                print(
+                    f"[Check] {self.name}:{result_entry[self.name]} > {self.name}:{target_entry[self.name]} * (1.0 - {self.margin})",
+                )
                 assert result_entry[self.name] > target_entry[self.name] * (1.0 - self.margin)
 
     def __init__(
@@ -279,7 +291,10 @@ class Benchmark:
             gc.collect()
 
         result = self.load_result(work_dir)
-        return self.average_result(result, keys=["task", "model", "data_group", "data"])
+        if result is None:
+            return None
+        result = summary.average(result, keys=["task", "model", "data_group", "data"])  # Average out seeds
+        return result.set_index(["task", "model", "data_group", "data"])
 
     def _run_command(self, command: list[str]) -> None:
         print(" ".join(command))
@@ -370,40 +385,7 @@ class Benchmark:
         if len(results) == 0:
             return None
 
-        return pd.concat(results, ignore_index=True).set_index(["task", "model", "data_group", "data"])
-
-    @staticmethod
-    def average_result(data: pd.DataFrame, keys: list[str]) -> pd.DataFrame | None:
-        """Average result w.r.t. given keys
-
-        Args:
-            result (pd.DataFrame): Result data frame
-            keys (list[str]): Keys to summarize whole data
-
-        Retruns:
-            pd.DataFrame: Averaged result table
-        """
-        if data is None:
-            return None
-
-        # Flatten index
-        index_names = data.index.names
-        column_names = data.columns
-        data = data.reset_index()
-        # Average by keys
-        grouped = data.groupby(keys)
-        aggregated = grouped.mean(numeric_only=True)
-        # Merge index columns
-        idx_columns = set(index_names) - set(keys)
-        for col in idx_columns:
-            aggregated[col] = "all"
-        # Merge tag columns (non-numeric & non-index)
-        tag_columns = set(column_names) - set(aggregated.columns) - set(keys)
-        for col in tag_columns:
-            # Take common string prefix such as: ["data/1", "data/2", "data/3"] -> "data/"
-            aggregated[col] = grouped[col].agg(lambda x: os.path.commonprefix(x.tolist()))
-        # Recover index
-        return aggregated.reset_index().set_index(index_names)
+        return pd.concat(results, ignore_index=True)
 
     def check(self, result: pd.DataFrame, criteria: list[Criterion]):
         """Check result w.r.t. reference data.
@@ -413,19 +395,24 @@ class Benchmark:
             criteria (list[Criterion]): Criteria to check results
         """
         if result is None:
+            print("[Check] No results loaded. Skipping result checking.")
             return
 
         if self.reference_results is None:
-            print("No benchmark references loaded. Skipping result checking.")
+            print("[Check] No benchmark references loaded. Skipping result checking.")
             return
 
         for key, result_entry in result.iterrows():
             if key not in self.reference_results.index:
-                print(f"No benchmark reference for {key} loaded. Skipping result checking.")
+                print(f"[Check] No benchmark reference for {key} loaded. Skipping result checking.")
                 continue
             target_entry = self.reference_results.loc[key]
             if isinstance(target_entry, pd.DataFrame):
-                target_entry = target_entry.iloc[0]  # 1-row pd.DataFrame to pd.Series
+                # Match num_repeat of result and target
+                result_seed_average = result_entry["seed"]
+                result_num_repeat = 2 * result_seed_average + 1  # (0+1+2+3+4)/5 = 2.0 -> 2*2.0+1 = 5
+                target_entry = target_entry.query(f"seed < {result_num_repeat}")
+                target_entry = target_entry.mean(numeric_only=True)  # N-row pd.DataFrame to pd.Series
 
             for criterion in criteria:
                 criterion(result_entry, target_entry)
