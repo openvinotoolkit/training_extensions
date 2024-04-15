@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from copy import deepcopy
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine
+from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
@@ -133,3 +133,18 @@ class TestRandomAffine:
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
         assert results.img_info.img_shape == results.image.shape[-2:]
+
+
+class TestYOLOXHSVRandomAug:
+    @pytest.fixture()
+    def yolox_hsv_random_aug(self) -> YOLOXHSVRandomAug:
+        return YOLOXHSVRandomAug()
+
+    def test_forward(self, yolox_hsv_random_aug, data_entity) -> None:
+        """Test forward."""
+        results = yolox_hsv_random_aug(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (112, 224)
+        assert results.labels.shape[0] == results.bboxes.shape[0]
+        assert results.labels.dtype == torch.int64
+        assert results.bboxes.dtype == torch.float32

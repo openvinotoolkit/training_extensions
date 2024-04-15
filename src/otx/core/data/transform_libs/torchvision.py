@@ -22,8 +22,6 @@ from omegaconf import DictConfig
 from torchvision import tv_tensors
 from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
-from torchvision.transforms.v2.functional._color import (_hsv_to_rgb,
-                                                         _rgb_to_hsv)
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import (Points, _crop_image_info,
@@ -1407,29 +1405,30 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
 
     @cache_randomness
     def _get_hsv_gains(self):
-        hsv_gains = torch.FloatTensor(3).uniform_(-1, 1) * torch.tensor([
+        hsv_gains = np.random.uniform(-1, 1, 3) * [
             self.hue_delta, self.saturation_delta, self.value_delta
-        ])
+        ]
         # random selection of h, s, v
-        hsv_gains *= torch.randint(0, 2, (3,))
+        hsv_gains *= np.random.randint(0, 2, 3)
         # prevent overflow
-        hsv_gains = hsv_gains.to(torch.int16)
+        hsv_gains = hsv_gains.astype(np.int16)
         return hsv_gains
 
     def forward(self, *inputs: Any) -> Any:
         assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
         inputs = inputs[0]
 
-        img = inputs.image
+        img = to_np_image(inputs.image)
         hsv_gains = self._get_hsv_gains()
-        img_hsv = _rgb_to_hsv(img).to(torch.int16)
+        # TODO (sungchul): OTX consumes RGB images but mmx assumes they are BGR.
+        img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.int16)
 
         img_hsv[..., 0] = (img_hsv[..., 0] + hsv_gains[0]) % 180
-        img_hsv[..., 1] = torch.clip(img_hsv[..., 1] + hsv_gains[1], 0, 255)
-        img_hsv[..., 2] = torch.clip(img_hsv[..., 2] + hsv_gains[2], 0, 255)
+        img_hsv[..., 1] = np.clip(img_hsv[..., 1] + hsv_gains[1], 0, 255)
+        img_hsv[..., 2] = np.clip(img_hsv[..., 2] + hsv_gains[2], 0, 255)
+        cv2.cvtColor(img_hsv.astype(img.dtype), cv2.COLOR_HSV2BGR, dst=img)
         
-        # TODO (sungchul): check if _hsv_to_rgb only supports fp, not uint8
-        inputs.image = tv_tensors.Image((_hsv_to_rgb(img_hsv / 255) * 255).to(img.dtype))
+        inputs.image = F.to_image(img)
         return inputs
 
     def __repr__(self):
