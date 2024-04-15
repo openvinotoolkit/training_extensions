@@ -16,6 +16,7 @@ from omegaconf import OmegaConf
 from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.metrics.fmeasure import FMeasureCallable
 from otx.core.model.detection import MMDetCompatibleModel, OTXDetectionModel
+from otx.core.types.export import TaskLevelExportParameters
 from torch.optim import Optimizer
 
 if TYPE_CHECKING:
@@ -127,3 +128,8 @@ class TestOTXDetectionModel:
         otx_model._restore_model_forward()
         assert otx_model.original_model_forward is None
         assert str(otx_model.model.forward) == str(initial_model_forward)
+
+    def test_export_parameters(self, otx_model):
+        parameters = otx_model._export_parameters
+        assert isinstance(parameters, TaskLevelExportParameters)
+        assert parameters.task_type == "detection"
