@@ -26,19 +26,24 @@ from otx.core.model.visual_prompting import (
     _inference_step,
     _inference_step_for_zero_shot,
 )
+from otx.core.types.export import TaskLevelExportParameters
 from torchvision import tv_tensors
 
 
 @pytest.fixture()
 def otx_visual_prompting_model(mocker) -> OTXVisualPromptingModel:
     mocker.patch.object(OTXVisualPromptingModel, "_create_model")
-    return OTXVisualPromptingModel(num_classes=1)
+    model = OTXVisualPromptingModel(num_classes=1)
+    model.model.image_size = 1024
+    return model
 
 
 @pytest.fixture()
 def otx_zero_shot_visual_prompting_model(mocker) -> OTXZeroShotVisualPromptingModel:
     mocker.patch.object(OTXZeroShotVisualPromptingModel, "_create_model")
-    return OTXZeroShotVisualPromptingModel(num_classes=1)
+    model = OTXZeroShotVisualPromptingModel(num_classes=1)
+    model.model.image_size = 1024
+    return model
 
 
 def test_inference_step(mocker, otx_visual_prompting_model, fxt_vpm_data_entity) -> None:
@@ -136,18 +141,20 @@ def test_inference_step_for_zero_shot_with_more_target(
 class TestOTXVisualPromptingModel:
     def test_exporter(self, otx_visual_prompting_model) -> None:
         """Test _exporter."""
-        assert isinstance(otx_visual_prompting_model._exporter, OTXVisualPromptingModelExporter)
+        exporter = otx_visual_prompting_model._exporter
+        assert isinstance(exporter, OTXVisualPromptingModelExporter)
+        assert exporter.input_size == (1, 3, 1024, 1024)
+        assert exporter.resize_mode == "fit_to_window"
+        assert exporter.mean == (123.675, 116.28, 103.53)
+        assert exporter.std == (58.395, 57.12, 57.375)
 
     def test_export_parameters(self, otx_visual_prompting_model) -> None:
         """Test _export_parameters."""
-        otx_visual_prompting_model.model.image_size = 1024
-
         export_parameters = otx_visual_prompting_model._export_parameters
 
-        assert export_parameters["input_size"] == (1, 3, 1024, 1024)
-        assert export_parameters["resize_mode"] == "fit_to_window"
-        assert export_parameters["mean"] == (123.675, 116.28, 103.53)
-        assert export_parameters["std"] == (58.395, 57.12, 57.375)
+        assert isinstance(export_parameters, TaskLevelExportParameters)
+        assert export_parameters.model_type == "Visual_Prompting"
+        assert export_parameters.task_type == "visual_prompting"
 
     def test_optimization_config(self, otx_visual_prompting_model) -> None:
         """Test _optimization_config."""
@@ -175,18 +182,20 @@ class TestOTXVisualPromptingModel:
 class TestOTXZeroShotVisualPromptingModel:
     def test_exporter(self, otx_zero_shot_visual_prompting_model) -> None:
         """Test _exporter."""
-        assert isinstance(otx_zero_shot_visual_prompting_model._exporter, OTXVisualPromptingModelExporter)
+        exporter = otx_zero_shot_visual_prompting_model._exporter
+        assert isinstance(exporter, OTXVisualPromptingModelExporter)
+        assert exporter.input_size == (1, 3, 1024, 1024)
+        assert exporter.resize_mode == "fit_to_window"
+        assert exporter.mean == (123.675, 116.28, 103.53)
+        assert exporter.std == (58.395, 57.12, 57.375)
 
     def test_export_parameters(self, otx_zero_shot_visual_prompting_model) -> None:
         """Test _export_parameters."""
-        otx_zero_shot_visual_prompting_model.model.image_size = 1024
-
         export_parameters = otx_zero_shot_visual_prompting_model._export_parameters
 
-        assert export_parameters["input_size"] == (1, 3, 1024, 1024)
-        assert export_parameters["resize_mode"] == "fit_to_window"
-        assert export_parameters["mean"] == (123.675, 116.28, 103.53)
-        assert export_parameters["std"] == (58.395, 57.12, 57.375)
+        assert isinstance(export_parameters, TaskLevelExportParameters)
+        assert export_parameters.model_type == "Visual_Prompting"
+        assert export_parameters.task_type == "visual_prompting"
 
     def test_optimization_config(self, otx_zero_shot_visual_prompting_model) -> None:
         """Test _optimization_config."""

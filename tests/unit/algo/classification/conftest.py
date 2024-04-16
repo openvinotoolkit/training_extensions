@@ -3,12 +3,15 @@
 #
 from __future__ import annotations
 
+from dataclasses import asdict
+
 import pytest
 import torch
 from mmpretrain.structures import DataSample
 from omegaconf import DictConfig
 from otx.core.data.dataset.classification import MulticlassClsBatchDataEntity
 from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.classification import HlabelClsBatchDataEntity, MultilabelClsBatchDataEntity
 from otx.core.types.label import HLabelInfo
 from torchvision import tv_tensors
 
@@ -151,6 +154,27 @@ def fxt_multiclass_cls_batch_data_entity() -> MulticlassClsBatchDataEntity:
         imgs_info=img_infos,
         labels=[torch.tensor([0]), torch.tensor([1])],
     )
+
+
+@pytest.fixture()
+def fxt_multilabel_cls_batch_data_entity(
+    fxt_multiclass_cls_batch_data_entity,
+    fxt_hlabel_data,
+) -> MultilabelClsBatchDataEntity:
+    return MultilabelClsBatchDataEntity(
+        batch_size=2,
+        images=fxt_multiclass_cls_batch_data_entity.images,
+        imgs_info=fxt_multiclass_cls_batch_data_entity.imgs_info,
+        labels=[
+            torch.nn.functional.one_hot(label, num_classes=fxt_hlabel_data.num_classes).flatten()
+            for label in fxt_multiclass_cls_batch_data_entity.labels
+        ],
+    )
+
+
+@pytest.fixture()
+def fxt_hlabel_cls_batch_data_entity(fxt_multilabel_cls_batch_data_entity) -> HlabelClsBatchDataEntity:
+    return HlabelClsBatchDataEntity(**asdict(fxt_multilabel_cls_batch_data_entity))
 
 
 @pytest.fixture()

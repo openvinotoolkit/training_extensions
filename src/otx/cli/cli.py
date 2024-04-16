@@ -365,7 +365,7 @@ class OTXCLI:
         Returns:
             tuple: The model and optimizer and scheduler.
         """
-        from otx.core.model.base import OTXModel
+        from otx.core.model.base import OTXModel, OVModel
 
         skip = set()
 
@@ -393,7 +393,7 @@ class OTXCLI:
         self.config_init[self.subcommand]["model"] = model
 
         # Update tile config due to adaptive tiling
-        if self.datamodule.config.tile_config.enable_tiler:
+        if not isinstance(model, OVModel) and self.datamodule.config.tile_config.enable_tiler:
             if not hasattr(model, "tile_config"):
                 msg = "The model does not have a tile_config attribute. Please check if the model supports tiling."
                 raise AttributeError(msg)
@@ -454,6 +454,7 @@ class OTXCLI:
         The configuration is saved as a YAML file in the engine's working directory.
         """
         self.config[self.subcommand].pop("workspace", None)
+        self.config[self.subcommand]["work_dir"] = str(self.workspace.work_dir.parent)
         # TODO(vinnamki): Revisit it after changing the optimizer and scheduler instantiating.
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")

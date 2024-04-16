@@ -55,20 +55,52 @@ ASHA also includes a technique called Hyperband, which is used to determine how 
 How to configure hyper-parameter optimization
 *********************************************
 
-You can configure HPO by modifying the ``hpo_config.yaml`` file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The ``hpo_config.yaml`` file already exists with default values in the same directory where ``template.yaml`` resides. Here is the default ``hpo_config.yaml`` file for classification:
+You can configure HPO using argument named *hpo_config*.
+It's *HpoConfig* dataclass which inlcudes hyperparameters to optimize, expected time ratio and more.
+If HPO is executed without confgiguration, default value of *HpoConfig* is used and learning rate and batch size are set as hyper parameterse to optimize.
+Here is how to configure using *hpo_config*.
 
-.. code-block::
+.. tab-set::
 
-    Need to Update!
+    .. tab-item:: API
 
-As you can see, there are a few attributes required to run HPO.
-Fortunately, there are not many attributes, so it's not difficult to write your own ``hpo_config.yaml`` file. The more detailed description is as follows:
+        .. code-block:: python
 
-- **hp_space** (*List[Dict[str, Any]]*, `required`) - Hyper parameter search space to find. It should be list of dictionary. Each dictionary has a hyperparameter name as the key and param_type and range as the values. You can optimize any learning parameters of each task.
+            from otx.engine import Engine
+            from otx.core.config.hpo import HpoConfig
+
+            hpo_config = HpoConfig(
+                search_space={
+                    "optimizer.lr" : {
+                        "type" : "uniform",
+                        "min" : 0.001,
+                        "max" : 0.1,
+                    }
+                },
+                expected_time_ratio=6,
+            )
+
+            engine = Engine(data_root="<path_to_data_root>")
+            engine.train(run_hpo=True, hpo_config=hpo_config)
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --run_hpo True  --hpo_config.expected_time_ratio 6
+
+
+As above, you can set HPO configuration by both API and CLI. Including ones here, you can configure various parameters of HPO.
+You can configure almost parameters using CLI except search space of hyper parameters.
+But search space requires dictionray format, so it can be set only on API.
+Here is explanation of all HPO configuration.
+
+
+- **search_space** (*list[dict[str, Any]]*, `required`) - Hyper parameter search space to find. It should be list of dictionary. Each dictionary has a hyperparameter name as the key and param_type and range as the values. You can optimize any learning parameters of each task.
 
   - **Keys of each hyper parameter**
 
-    - **param_type** (*str*, `required`) : Hyper parameter search space type. It must be one of the following:
+    - **type** (*str*, `required`) : Hyper parameter search space type. It must be one of the following:
 
       - uniform : Samples a float value uniformly between the lower and upper bounds.
       - quniform : Samples a quantized float value uniformly between the lower and upper bounds.
@@ -76,40 +108,57 @@ Fortunately, there are not many attributes, so it's not difficult to write your 
       - qloguniform : Samples a quantized float value after scaling the search space by logarithm scale.
       - choice : Samples a categorical value.
 
-    - **range** (*List[Any]*, `required`)
+    - **range** (*list*, `required`)
 
-      - uniform : List[Union[float, int]]
+      - uniform : list[float | int]
 
-        - min (*Union[float, int]*, `required`) : The lower bound of search space.
-        - max (*Union[float, int]*, `required`) : The upper bound of search space.
+        - min (*float | int*, `required`) : The lower bound of search space.
+        - max (*float | int*, `required`) : The upper bound of search space.
 
-      - quniform : List[Union[float, int]]
+      - quniform : list[float | int]
 
-        - min (*Union[float, int]*, `required`) : The lower bound of search space.
-        - max (*Union[float, int]*, `required`) : The upper bound of search space.
-        - step (*Union[float, int]*, `required`) : The unit value of search space.
+        - min (*float | int*, `required`) : The lower bound of search space.
+        - max (*float | int*, `required`) : The upper bound of search space.
+        - step (*float | int*, `required`) : The unit value of search space.
 
-      - loguniform : List[Union[float, int])
+      - loguniform : list[float | int]
 
-        - min (*Union[float, int]*, `required`) : The lower bound of search space.
-        - max (*Union[float, int]*, `required`) : The upper bound of search space.
-        - log_base (*Union[float, int]*, *default=10*) : The logarithm base.
+        - min (*float | int*, `required`) : The lower bound of search space.
+        - max (*float | int*, `required`) : The upper bound of search space.
+        - log_base (*float | int*, *default=10*) : The logarithm base.
 
       - qloguniform : List[Union[float, int]]
 
-        - min (*Union[float, int]*, `required`) : The lower bound of search space
-        - max (*Union[float, int]*, `required`) : The upper bound of search space
-        - step (*Union[float, int]*, `required`) : The unit value of search space
-        - log_base (*Union[float, int]*, *default=10*) : The logarithm base.
+        - min (*float | int*, `required`) : The lower bound of search space
+        - max (*float | int*, `required`) : The upper bound of search space
+        - step (*float | int*, `required`) : The unit value of search space
+        - log_base (*float | int*, *default=10*) : The logarithm base.
 
-      - choice : List[Any]
+      - choice : *list | tuple*
 
-        - vaule : values to be chosen from candidates.
+        - vaule : values to choose as candidates.
 
-- **metric** (*str*, *default='mAP*') - Name of the metric that will be used to evaluate the performance of each trial. The hyperparameter optimization algorithm will aim to maximize or minimize this metric depending on the value of the mode hyperparameter. The default value is 'mAP'.
 
-- **mode** (*str*, *default='max*') - Optimization mode for the metric. It determines whether the metric should be maximized or minimized. The possible values are 'max' and 'min', respectively. The default value is 'max'.
+- **save_path** (*str*, *default='None'*) Path to save a HPO result.
 
-- **maximum_resource** (*int*, *default=None*) - Maximum number of training epochs for each trial. When the number of training epochs reaches this value, the training of the trial will stop. The default value is None.
+- **mode** (*str*, *default='max'*) - Optimization mode for the metric. It determines whether the metric should be maximized or minimized. The possible values are 'max' and 'min', respectively.
 
-- **minimum_resource** (*int*, *default=None*) - Minimum number of training epochs for each trial. Each trial will run for at least this many epochs, even if the performance of the model is not improving. The default value is None.
+- **num_workers** (*int*, *default=1*) How many trials will be executed in parallel.
+
+- **expected_time_ratio** (*int*, *default=4*) How many times to use for HPO compared to training time.
+
+- **maximum_resource** (*int*, *default=None*) - Maximum number of training epochs for each trial. When the training epochs reaches this value, the trial stop to train.
+
+- **minimum_resource** (*int*, *default=None*) - Minimum number of training epochs for each trial. Each trial will run at least this epochs, even if the performance of the model is not improving.
+
+- **prior_hyper_parameters** (*dict | list[dict]*, *default=None*) Hyper parameters to try first.
+
+- **acceptable_additional_time_ratio** (*float | int*, *default=1.0*) How much ratio of additional time is acceptable.
+
+- **reduction_factor** (*int*, *default=3*) How many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted.
+
+- **asynchronous_bracket** (*bool*, *default=True*) Whether to operate SHA asynchronously.
+
+- **asynchronous_sha** (*bool*, *default=True*) Whether SHAs(brackets) are running parallelly or not.
+
+**reduction_factor**, **asynchronous_bracket** and **asynchronous_sha** are HyperBand hyper parameters. If you want to know them more, please refer `ASHA <https://arxiv.org/pdf/1810.05934.pdf>`_.

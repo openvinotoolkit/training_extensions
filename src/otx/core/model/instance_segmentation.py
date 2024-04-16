@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging as log
 import types
-from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import numpy as np
@@ -17,20 +16,19 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.hooks.recording_forward_hook import MaskRCNNRecordingForwardHook, feature_vector_fn
+from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.tile import TileBatchInstSegDataEntity
-from otx.core.exporter.base import OTXModelExporter
+from otx.core.data.entity.tile import OTXTileBatchDataEntity, TileBatchInstSegDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.mask_util import encode_rle, polygon_to_rle
 from otx.core.utils.tile_merge import InstanceSegTileMerge
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -69,7 +67,7 @@ class OTXInstanceSegModel(
             metric=metric,
             torch_compile=torch_compile,
         )
-        self.tile_config = TileConfig()
+        self._tile_config = TileConfig()
 
     def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
@@ -84,11 +82,11 @@ class OTXInstanceSegModel(
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = InstanceSegTileMerge(
             inputs.imgs_info,
-            self.tile_config.iou_threshold,
-            self.tile_config.max_num_instances,
+            self.num_classes,
+            self.tile_config,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
-            output = self.forward(batch_tile_input)
+            output = self.forward_explain(batch_tile_input) if self.explain_mode else self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
                 msg = "Loss output is not supported for tile merging"
                 raise TypeError(msg)
@@ -96,7 +94,7 @@ class OTXInstanceSegModel(
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        return InstanceSegBatchPredEntity(
+        pred_entity = InstanceSegBatchPredEntity(
             batch_size=inputs.batch_size,
             images=[pred_entity.image for pred_entity in pred_entities],
             imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
@@ -106,42 +104,22 @@ class OTXInstanceSegModel(
             masks=[pred_entity.masks for pred_entity in pred_entities],
             polygons=[pred_entity.polygons for pred_entity in pred_entities],
         )
+        if self.explain_mode:
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "MaskRCNN",
-                ("model_info", "task_type"): "instance_segmentation",
-                ("model_info", "confidence_threshold"): str(
-                    self.hparams.get("best_confidence_threshold", 0.0),
-                ),  # it was able to be set in OTX 1.X
-                ("model_info", "iou_threshold"): str(0.5),
-            },
+        return super()._export_parameters.wrap(
+            model_type="MaskRCNN",
+            task_type="instance_segmentation",
+            confidence_threshold=self.hparams.get("best_confidence_threshold", 0.0),
+            iou_threshold=0.5,
+            tile_config=self.tile_config if self.tile_config.enable_tiler else None,
         )
-
-        # Instance segmentation needs to add empty label
-        all_labels = "otx_empty_lbl "
-        all_label_ids = "None "
-        for lbl in self.label_info.label_names:
-            all_labels += lbl.replace(" ", "_") + " "
-            all_label_ids += lbl.replace(" ", "_") + " "
-
-        parameters["metadata"][("model_info", "labels")] = all_labels.strip()
-        parameters["metadata"][("model_info", "label_ids")] = all_label_ids.strip()
-
-        if self.tile_config.enable_tiler:
-            parameters["metadata"].update(
-                {
-                    ("model_info", "tile_size"): str(self.tile_config.tile_size[0]),
-                    ("model_info", "tiles_overlap"): str(self.tile_config.overlap),
-                    ("model_info", "max_pred_number"): str(self.tile_config.max_num_instances),
-                },
-            )
-
-        return parameters
 
     def load_state_dict(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state_dict from checkpoint.
@@ -234,14 +212,38 @@ class OTXInstanceSegModel(
 
 
 class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
-    """OTX Instance Segmentation model which can attach a XAI hook."""
+    """OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch."""
+
+    def __init__(
+        self,
+        num_classes: int,
+        optimizer: OptimizerCallable = DefaultOptimizerCallable,
+        scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
+        metric: MetricCallable = MaskRLEMeanAPCallable,
+        torch_compile: bool = False,
+    ) -> None:
+        super().__init__(
+            num_classes=num_classes,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            metric=metric,
+            torch_compile=torch_compile,
+        )
+
+        from otx.algo.explain.explain_algo import get_feature_vector
+
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(
         self,
-        inputs: InstanceSegBatchDataEntity,
+        inputs: InstanceSegBatchDataEntity | TileBatchInstSegDataEntity,
     ) -> InstanceSegBatchPredEntity:
         """Model forward function."""
-        self.model.feature_vector_fn = feature_vector_fn
+        if isinstance(inputs, OTXTileBatchDataEntity):
+            return self.forward_tiles(inputs)
+
+        self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -298,7 +300,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
-        explainer = MaskRCNNRecordingForwardHook(num_classes=self.num_classes)
+        from otx.algo.explain.explain_algo import MaskRCNNExplainAlgo
+
+        explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
 
     def _reset_model_forward(self) -> None:
@@ -327,13 +331,6 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.forward = func_type(self.original_model_forward, self.model)
         self.original_model_forward = None
 
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["output_names"] = ["feature_vector", "saliency_map"] if self.explain_mode else None
-        return parameters
-
 
 class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
     """Instance Segmentation model compatible for MMDet."""
@@ -358,21 +355,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Parameters for an exporter."""
-        if self.image_size is None:
-            error_msg = "self.image_size shouldn't be None to use mmdeploy."
-            raise ValueError(error_msg)
-
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["model_builder"] = self._create_model
-        export_params["model_cfg"] = copy(self.config)
-        export_params["test_pipeline"] = self._make_fake_test_pipeline()
-
-        return export_params
 
     def _create_model(self) -> nn.Module:
         from .utils.mmdet import create_model
@@ -501,8 +483,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
+            saliency_map = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach().cpu().numpy()
 
             return InstanceSegBatchPredEntity(
                 batch_size=len(predictions),
@@ -513,8 +495,8 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
                 masks=masks,
                 polygons=[],
                 labels=labels,
-                saliency_maps=list(saliency_maps),
-                feature_vectors=list(feature_vectors),
+                saliency_map=list(saliency_map),
+                feature_vector=list(feature_vector),
             )
 
         return InstanceSegBatchPredEntity(
@@ -527,13 +509,6 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
             polygons=[],
             labels=labels,
         )
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        from otx.core.exporter.mmdeploy import MMdeployExporter
-
-        return MMdeployExporter(**self._export_parameters)
 
 
 class OVInstanceSegmentationModel(
@@ -656,8 +631,8 @@ class OVInstanceSegmentationModel(
                 masks=masks,
                 polygons=[],
                 labels=labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return InstanceSegBatchPredEntity(

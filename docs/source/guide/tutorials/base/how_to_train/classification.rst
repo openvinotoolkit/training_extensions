@@ -85,23 +85,21 @@ please keep the exact same name for the train/val/test folder, to identify the d
       ├── tulips
     val
       ├── daisy
-      ├── ... 
+      ├── ...
     test
       ├── daisy
-      ├── ... 
+      ├── ...
 
 *********
 Training
 *********
 
 1. First of all, you need to choose which classification model you want to train.
-The list of supported templates for classification is available with the command line below.
+The list of supported recipes for classification is available with the command line below.
 
 .. note::
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/classification/multi_class_classification>`.
-
-  You also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
 .. tab-set::
 
@@ -110,26 +108,26 @@ The list of supported templates for classification is available with the command
     .. code-block:: shell
 
       (otx) ...$ otx find --task MULTI_CLASS_CLS
-      ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                  
-      ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃                                  
-      ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                  
-      │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │                                  
-      │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │                                  
-      │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │                                  
-      │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │                                  
-      │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │                                  
-      │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │                                  
-      │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │                                  
-      │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │                                  
-      │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │                                  
-      │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │                                  
-      │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │                                  
-      │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │                                  
-      │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │                                  
+      ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+      ┃ Task            ┃ Model Name               ┃ Recipe Path                                                                    ┃
+      ┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+      │ MULTI_CLASS_CLS │ openvino_model           │ src/otx/recipe/classification/multi_class_cls/openvino_model.yaml              │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b0       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b0.yaml          │
+      │ MULTI_CLASS_CLS │ tv_resnet_50             │ src/otx/recipe/classification/multi_class_cls/tv_resnet_50.yaml                │
+      │ MULTI_CLASS_CLS │ efficientnet_v2_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_v2_light.yaml       │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b3       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b3.yaml          │
+      │ MULTI_CLASS_CLS │ efficientnet_b0_light    │ src/otx/recipe/classification/multi_class_cls/efficientnet_b0_light.yaml       │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_v2_l     │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_v2_l.yaml        │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b1       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b1.yaml          │
+      │ MULTI_CLASS_CLS │ tv_mobilenet_v3_small    │ src/otx/recipe/classification/multi_class_cls/tv_mobilenet_v3_small.yaml       │
+      │ MULTI_CLASS_CLS │ otx_mobilenet_v3_large   │ src/otx/recipe/classification/multi_class_cls/otx_mobilenet_v3_large.yaml      │
+      │ MULTI_CLASS_CLS │ otx_deit_tiny            │ src/otx/recipe/classification/multi_class_cls/otx_deit_tiny.yaml               │
+      │ MULTI_CLASS_CLS │ tv_efficientnet_b4       │ src/otx/recipe/classification/multi_class_cls/tv_efficientnet_b4.yaml          │
+      │ MULTI_CLASS_CLS │ otx_efficientnet_v2      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_v2.yaml         │
+      │ MULTI_CLASS_CLS │ mobilenet_v3_large_light │ src/otx/recipe/classification/multi_class_cls/mobilenet_v3_large_light.yaml    │
+      │ MULTI_CLASS_CLS │ otx_efficientnet_b0      │ src/otx/recipe/classification/multi_class_cls/otx_efficientnet_b0.yaml         │
+      │ MULTI_CLASS_CLS │ otx_dino_v2              │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2.yaml                 │
+      │ MULTI_CLASS_CLS │ otx_dino_v2_linear_probe │ src/otx/recipe/classification/multi_class_cls/otx_dino_v2_linear_probe.yaml    │
       └─────────────────┴──────────────────────────┴────────────────────────────────────────────────────────────────────────────────┘
 
   .. tab-item:: API
@@ -138,7 +136,7 @@ The list of supported templates for classification is available with the command
 
       from otx.engine.utils.api import list_models
 
-      model_lists = list_models(task="MULTI_CLASS_CLS", pattern="*efficient") 
+      model_lists = list_models(task="MULTI_CLASS_CLS", pattern="*efficient")
       print(model_lists)
       '''
       [
@@ -149,7 +147,7 @@ The list of supported templates for classification is available with the command
       ]
       '''
 
-2. On this step we will prepare custom configuration
+1. On this step we will prepare custom configuration
 with:
 
 - all necessary configs for otx_efficientnet_b0
@@ -186,7 +184,7 @@ Let's check the multi-class classification configuration running the following c
         (otx) ...$ otx train --config configs.yaml
 
 
-3. ``otx train`` trains a model (a particular model template)
+3. ``otx train`` trains a model (a particular model recipe)
 on a dataset and results:
 
 Here are the main outputs can expect with CLI:
@@ -281,20 +279,19 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
     otx-workspace
-    ├── outputs/
-        ├── 20240403_134256/
-            ├── csv/
-            ├── checkpoints/
-            |   └── epoch_*.pth
-            ├── tensorboard/
-            └── configs.yaml
-        └── .latest
-            └── train/
+    ├── 20240403_134256/
+        ├── csv/
+        ├── checkpoints/
+        |   └── epoch_*.pth
+        ├── tensorboard/
+        └── configs.yaml
+    └── .latest
+        └── train/
     ...
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
-After that, we have the PyTorch multi-class classification model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch multi-class classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Evaluation
@@ -357,7 +354,7 @@ Export
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
-Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
+Also, the resulting IR model is required to run PTQ optimization in the section below. IR model contains 2 files: ``exported_model.xml`` for architecture and ``exported_model.bin`` for weights.
 
 2. That's how we can export the trained model ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt``
 from the previous section and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
@@ -434,7 +431,7 @@ using ``otx test`` and passing the IR model path to the ``--checkpoint`` paramet
 
 
 4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
-Learn more about template-specific parameters using ``otx export --help``.
+Learn more about recipe-specific parameters using ``otx export --help``.
 
 For example, If you want to get the ONNX model format you can run it like below.
 
@@ -489,7 +486,7 @@ with OpenVINO™ PTQ.
 
         .. code-block:: shell
 
-            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+            (otx) ...$ otx optimize  --work_dir otx-workspace \
                                      --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
             ...
@@ -505,8 +502,12 @@ with OpenVINO™ PTQ.
             engine.optimize(checkpoint=ckpt_path)
 
 
-The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
+The optimization time highly relies on the hardware characteristics, for example on Intel(R) Core(TM) i9-10980XE it took about 9 seconds.
 Please note, that PTQ will take some time without logging to optimize the model.
+
+.. note::
+
+    You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
 
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
@@ -517,7 +518,7 @@ it to the ``otx test`` function.
 
         .. code-block:: shell
 
-            (otx) ...$ otx test --work_dir otx-workspace \ 
+            (otx) ...$ otx test --work_dir otx-workspace \
                                 --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
                                 --engine.device cpu
 

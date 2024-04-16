@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from openvino.model_api.tilers import Tiler
+from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
@@ -105,7 +106,7 @@ def test_engine_from_config(
 
     # Predict Torch model with explain
     predictions = engine.predict(explain=True)
-    assert len(predictions[0].saliency_maps) > 0
+    assert len(predictions[0].saliency_map) > 0
 
     # Export IR model with explain
     exported_model_with_explain = engine.export(explain=True)
@@ -114,13 +115,13 @@ def test_engine_from_config(
     # Infer IR Model with explain: predict
     predictions = engine.predict(explain=True, checkpoint=exported_model_with_explain, accelerator="cpu")
     assert len(predictions) > 0
-    sal_maps_from_prediction = predictions[0].saliency_maps
+    sal_maps_from_prediction = predictions[0].saliency_map
     assert len(sal_maps_from_prediction) > 0
 
     # Infer IR Model with explain: explain
     explain_results = engine.explain(checkpoint=exported_model_with_explain, accelerator="cpu")
-    assert len(explain_results[0].saliency_maps) > 0
-    sal_maps_from_explain = explain_results[0].saliency_maps
+    assert len(explain_results[0].saliency_map) > 0
+    sal_maps_from_explain = explain_results[0].saliency_map
     assert (sal_maps_from_prediction[0][0] == sal_maps_from_explain[0][0]).all()
 
 
@@ -153,3 +154,42 @@ def test_engine_from_tile_recipe(
     assert isinstance(ov_model.model, Tiler), "Model should be an instance of Tiler"
     assert engine.datamodule.config.tile_config.tile_size[0] == ov_model.model.tile_size
     assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
+
+
+REASON = """
+Traceback (most recent call last):
+  File "/home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/vinnamki/otx/training_extensions/src/otx/hpo/hpo_runner.py", line 200, in _run_train
+    train_func(hp_config, report_func)
+  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 75, in run_hpo_trial
+    callbacks = _register_hpo_callback(report_func, callbacks)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 101, in _register_hpo_callback
+    callbacks.append(HPOCallback(report_func, _get_metric(callbacks)))
+                                              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 110, in _get_metric
+    raise RuntimeError(error_msg)
+RuntimeError: Failed to find a metric. There is no ModelCheckpoint in callback list.
+"""
+
+
+@pytest.mark.parametrize("task", pytest.TASK_LIST)
+def test_otx_hpo(
+    task: OTXTaskType,
+    tmp_path: Path,
+    fxt_target_dataset_per_task: dict,
+) -> None:
+    pytest.xfail(reason=REASON)
+
+    model = EfficientNetB0ForMulticlassCls(num_classes=3)
+    work_dir = str(tmp_path)
+    engine = Engine(
+        data_root=fxt_target_dataset_per_task[task.lower()],
+        task=task,
+        work_dir=work_dir,
+        model=model,
+    )
+    engine.train(run_hpo=True)

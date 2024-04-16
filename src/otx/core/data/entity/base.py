@@ -669,25 +669,29 @@ class OTXBatchPredEntity(OTXBatchDataEntity):
 
     Attributes:
         scores: List of probability scores representing model predictions.
-        saliency_maps: List of saliency maps used to explain model predictions.
+        saliency_map: List of saliency maps used to explain model predictions.
             This field is optional and will be an empty list for non-XAI pipelines.
-        feature_vectors: List of intermediate feature vectors used for model predictions.
+        feature_vector: List of intermediate feature vectors used for model predictions.
             This field is optional and will be an empty list for non-XAI pipelines.
     """
 
     scores: list[np.ndarray] | list[Tensor]
 
     # (Optional) XAI-related outputs
-    saliency_maps: list[np.ndarray] | list[Tensor] = field(default_factory=list)
-    feature_vectors: list[np.ndarray] | list[Tensor] = field(default_factory=list)
+    # TODO(vinnamkim): These are actually plural, but their namings are not
+    # This is because ModelAPI requires the OV IR to produce `saliency_map`
+    # and `feature_vector` (singular) named outputs.
+    # It should be fixed later.
+    saliency_map: list[np.ndarray] | list[Tensor] = field(default_factory=list)
+    feature_vector: list[np.ndarray] | list[Tensor] = field(default_factory=list)
 
     @property
     def has_xai_outputs(self) -> bool:
         """If the XAI related fields are fulfilled, return True."""
         # NOTE: Don't know why but some of test cases in tests/integration/api/test_xai.py
-        # produce `len(self.saliency_maps) > 0` and `len(self.feature_vectors) == 0`
-        # return len(self.saliency_maps) > 0 and len(self.feature_vectors) > 0
-        return len(self.saliency_maps) > 0
+        # produce `len(self.saliency_map) > 0` and `len(self.feature_vector) == 0`
+        # return len(self.saliency_map) > 0 and len(self.feature_vector) > 0
+        return len(self.saliency_map) > 0
 
 
 class OTXBatchLossEntity(Dict[str, Tensor]):

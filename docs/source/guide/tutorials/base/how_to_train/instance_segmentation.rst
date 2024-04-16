@@ -47,13 +47,14 @@ Dataset preparation
 
 
 1. Clone a repository with
-`car-seg dataset <https://universe.roboflow.com/gianmarco-russo-vt9xr/car-seg-un1pm>`_.
+`WGISD dataset <https://github.com/thsant/wgisd>`_.
 
-.. code-block:: shell
+.. code-block::
 
-  mkdir data ; cd data
-  wget https://ultralytics.com/assets/carparts-seg.zip
-  unzip carparts-seg.zip
+    mkdir data ; cd data
+    git clone https://github.com/thsant/wgisd.git
+    cd wgisd
+    git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes.
@@ -81,10 +82,8 @@ we will need the following file structure:
   ├── annotations/
       ├── instances_train.json
       ├── instances_val.json
-      (Optional)
       └── instances_test.json
   ├──images/
-      (Optional)
       ├── train
       ├── val
       └── test
@@ -115,7 +114,7 @@ Training
 *********
 
 1. First of all, you need to choose which instance segmentation model you want to train.
-The list of supported templates for instance segmentation is available with the command line below.
+The list of supported recipes for instance segmentation is available with the command line below.
 
 .. note::
 
@@ -130,17 +129,17 @@ The list of supported templates for instance segmentation is available with the 
 
           (otx) ...$ otx find --task INSTANCE_SEGMENTATION
 
-          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓               
-          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃               
-          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩               
-          │ INSTANCE_SEGMENTATION │ openvino_model                │ src/otx/recipe/instance_segmentation/openvino_model.yaml                           │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_r50                  │ src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml                             │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_r50_tile             │ src/otx/recipe/instance_segmentation/maskrcnn_r50_tile.yaml                        │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_swint                │ src/otx/recipe/instance_segmentation/maskrcnn_swint.yaml                           │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b      │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml                 │               
-          │ INSTANCE_SEGMENTATION │ rtmdet_inst_tiny              │ src/otx/recipe/instance_segmentation/rtmdet_inst_tiny.yaml                         │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b_tile │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b_tile.yaml            │               
-          │ INSTANCE_SEGMENTATION │ maskrcnn_swint_tile           │ src/otx/recipe/instance_segmentation/maskrcnn_swint_tile.yaml                      │               
+          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃
+          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+          │ INSTANCE_SEGMENTATION │ openvino_model                │ src/otx/recipe/instance_segmentation/openvino_model.yaml                           │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_r50                  │ src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml                             │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_r50_tile             │ src/otx/recipe/instance_segmentation/maskrcnn_r50_tile.yaml                        │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_swint                │ src/otx/recipe/instance_segmentation/maskrcnn_swint.yaml                           │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b      │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b.yaml                 │
+          │ INSTANCE_SEGMENTATION │ rtmdet_inst_tiny              │ src/otx/recipe/instance_segmentation/rtmdet_inst_tiny.yaml                         │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_efficientnetb2b_tile │ src/otx/recipe/instance_segmentation/maskrcnn_efficientnetb2b_tile.yaml            │
+          │ INSTANCE_SEGMENTATION │ maskrcnn_swint_tile           │ src/otx/recipe/instance_segmentation/maskrcnn_swint_tile.yaml                      │
           └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
 
     .. tab-item:: API
@@ -178,7 +177,10 @@ Let's check the object detection configuration running the following command:
 .. code-block:: shell
 
   # or its config path
-  (otx) ...$ otx train --config src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml --data_root data/wgisd --print_config
+  (otx) ...$ otx train --config  src/otx/recipe/instance_segmentation/maskrcnn_r50.yaml \
+                       --data_root data/wgisd \
+                       --work_dir otx-workspace \
+                       --print_config
 
   ...
   data_root: data/wgisd
@@ -263,9 +265,9 @@ Here are the main outputs can expect with CLI:
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 10 minutes with full dataset.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
-Learn more about template-specific parameters using ``otx train params --help``.
+Learn more about recipe-specific parameters using ``otx train params --help``.
 
-It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
+It can be done by manually updating parameters in the ``configs.yaml`` file in your workplace or via the command line.
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
@@ -303,15 +305,14 @@ while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 .. code-block::
 
   otx-workspace
-  └── outputs/
-      ├── 20240403_134256/
-      |   ├── csv/
-      |   ├── checkpoints/
-      |   |   └── epoch_*.pth
-      |   ├── tensorboard/
-      |   └── configs.yaml
-      └── .latest
-          └── train/
+    ├── 20240403_134256/
+    |   ├── csv/
+    |   ├── checkpoints/
+    |   |   └── epoch_*.pth
+    |   ├── tensorboard/
+    |   └── configs.yaml
+    └── .latest
+        └── train/
   ...
 
 After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
@@ -430,7 +431,7 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
         .. code-block:: shell
 
-            (otx) ...$ otx optimize  --work_dir otx-workspace \ 
+            (otx) ...$ otx optimize  --work_dir otx-workspace \
                                      --checkpoint otx-workspace/20240312_052847/exported_model.xml
 
             ...
@@ -447,6 +448,10 @@ OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
+.. note::
+
+    You can also pass `export_demo_package=True` parameter to obtain `exportable_code.zip` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
+
 3. Finally, we can also evaluate the optimized model by passing
 it to the ``otx test`` function.
 
@@ -456,7 +461,7 @@ it to the ``otx test`` function.
 
         .. code-block:: shell
 
-            (otx) ...$ otx test --work_dir otx-workspace \ 
+            (otx) ...$ otx test --work_dir otx-workspace \
                                 --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
                                 --engine.device cpu
 

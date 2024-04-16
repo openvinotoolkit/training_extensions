@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import copy
 import json
 from typing import TYPE_CHECKING, Any
 
@@ -14,15 +13,13 @@ from torchvision import tv_tensors
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
 from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
-from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
-from otx.core.metrics.dice import DiceCallable
+from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import SegLabelInfo
 from otx.core.utils.config import inplace_num_classes
-from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -42,7 +39,7 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OT
         num_classes: int,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ):
         super().__init__(
@@ -54,23 +51,15 @@ class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OT
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        hierarchical_config: dict = {}
-        hierarchical_config["cls_heads_info"] = {}
-        hierarchical_config["label_tree_edges"] = []
-
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Segmentation",
-                ("model_info", "task_type"): "segmentation",
-                ("model_info", "return_soft_prediction"): str(True),
-                ("model_info", "soft_threshold"): str(0.5),
-                ("model_info", "blur_strength"): str(-1),
-            },
+        return super()._export_parameters.wrap(
+            model_type="Segmentation",
+            task_type="segmentation",
+            return_soft_prediction=True,
+            soft_threshold=0.5,
+            blur_strength=-1,
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -100,7 +89,7 @@ class MMSegCompatibleModel(OTXSegmentationModel):
         config: DictConfig,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
     ) -> None:
         config = inplace_num_classes(cfg=config, num_classes=num_classes)
@@ -176,20 +165,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
                 raise TypeError(output)
             masks.append(output.pred_sem_seg.data)
 
-        if hasattr(self, "explain_hook"):
-            hook_records = self.explain_hook.records
-            explain_results = copy.deepcopy(hook_records[-len(outputs) :])
-
-            return SegBatchPredEntity(
-                batch_size=len(outputs),
-                images=inputs.images,
-                imgs_info=inputs.imgs_info,
-                scores=[],
-                masks=masks,
-                saliency_maps=explain_results,
-                feature_vectors=[],
-            )
-
         return SegBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,
@@ -197,25 +172,6 @@ class MMSegCompatibleModel(OTXSegmentationModel):
             scores=[],
             masks=masks,
         )
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
 
 
 class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
@@ -233,7 +189,7 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
         max_num_requests: int | None = None,
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
-        metric: MetricCallable = DiceCallable,
+        metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         **kwargs,
     ) -> None:
         super().__init__(
@@ -260,8 +216,8 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
                 imgs_info=inputs.imgs_info,
                 scores=[],
                 masks=[tv_tensors.Mask(mask.resultImage) for mask in outputs],
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return SegBatchPredEntity(

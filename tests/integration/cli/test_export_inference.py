@@ -46,6 +46,7 @@ TASK_NAME_TO_MAIN_METRIC_NAME = {
     "instance_segmentation": "test/map_50",
     "visual_prompting": "test/f1-score",
     "zero_shot_visual_prompting": "test/f1-score",
+    "action_classification": "test/accuracy",
 }
 
 
@@ -189,6 +190,8 @@ def test_otx_export_infer(
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
     if "_cls" in recipe:
         export_test_recipe = f"src/otx/recipe/classification/{task}/openvino_model.yaml"
+    elif "action_classification" in recipe:
+        export_test_recipe = f"src/otx/recipe/action/{task}/openvino_model.yaml"
     else:
         export_test_recipe = f"src/otx/recipe/{task}/openvino_model.yaml"
 

@@ -10,15 +10,15 @@ Especially, in this section, we try to automatically predict given images withou
 Unlike fine-tuning, zero-shot learning needs only pre-processing component.
 
 
-.. _visual_prompting_zeroshot_pipeline:
+.. _zero_shot_visual_prompting_pipeline:
 
-- ``Pre-processing``: Resize an image according to the longest axis and pad the rest with zero.
+- ``Pre-processing``: Resize an image according to the longest axis and pad the rest with zero. This pre-processing step is internalized in the model for standalone usecases unlike other models.
 
 
 .. note::
 
-    Currently, zero-shot learning with `SAM <https://arxiv.org/abs/2304.02643>`_ with bounding boxes in the OpenVINO Training Extensions is only supported.
-    We will support zero-shot learning with other prompts (points and texts) in the near future.
+    In OTX 2.0, zero-shot learning supports various types of prompts, such as bounding boxes, points, and masks. (Polygon will be available soon.)
+    Regardless of the prompt types, prediction will be made in the order prompts come in.
 
 .. note::
 
@@ -28,11 +28,11 @@ Unlike fine-tuning, zero-shot learning needs only pre-processing component.
 **************
 Dataset Format
 **************
-.. _visual_prompting_dataset:
+.. _zero_shot_visual_prompting_dataset:
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
-We support three dataset formats for visual prompting:
+We support four dataset formats for zero-shot visual prompting:
 
 - `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/common_semantic_segmentation.html>`_ for semantic segmentation
 
@@ -40,40 +40,46 @@ We support three dataset formats for visual prompting:
 
 - `Pascal VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
 
+- `Datumaro <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/datumaro.html>`_ for custom format dataset
+
 
 ******
 Models
 ******
-.. _visual_prompting_zero_shot_model:
+.. _zero_shot_visual_prompting_model:
 
-We support the following model templates in experimental phase:
+We support the following model recipes in experimental phase:
 
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-|                                                                                          Template ID                                                          |          Name          | Complexity (GFLOPs) | Model size (MB) |
-+===============================================================================================================================================================+========================+=====================+=================+
-| `Zero_Shot_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/zeto_shot_visual_prompting/sam_tiny_vit.yaml>`_   | Zero_Shot_SAM_Tiny_ViT | 38.18               | 25              |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+|                                                                         Template ID                                                                         |          Name          | Complexity (GFLOPs) | Model size (MB) |
++=============================================================================================================================================================+========================+=====================+=================+
+| `Zero_Shot_SAM_Tiny_ViT <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/zero_shot_visual_prompting/sam_tiny_vit.yaml>`_ | Zero_Shot_SAM_Tiny_ViT | 38.54               | 47              |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+| `Zero_Shot_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/recipe/zero_shot_visual_prompting/sam_vit_b.yaml>`_       | Zero_Shot_SAM_ViT_B    | 454.76              | 363             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 ***************
 Simple tutorial
 ***************
-.. _visual_prompting_zero_shot_tutorial:
+.. _zero_shot_visual_prompting_tutorial:
 
 There are two steps for zero-shot inference: ``learn`` and ``infer``.
-``Learn`` is to extracet reference features from given reference images and prompts. These extracted reference features will be used to get point candidates on given target images.
-Extracted reference features will be saved in the model checkpoint (such as `weight.pth`) with the model.
+``Learn`` is to extract reference features from given reference images and prompts. These extracted reference features will be used to get point candidates on given target images.
+Extracted reference features will be returned as outputs and saved at a given path for OTX standalone usecase.
 You can do ``learn`` with the following source code:
 
 .. code-block:: shell
 
-    (otx) ...$ otx train --config <model_config_path> \
+    (otx) ...$ otx train \
+        --config <model_config_path> \
         --data_root <path_to_data_root>
 
 ``Infer`` is to get predicted masks on given target images. Unlike ``learn``, this stage doesn't need any prompt information.
 
 .. code-block::
 
-    (otx) ...$ otx test --config <model_config_path> \
+    (otx) ...$ otx test 
+        --config <model_config_path> \
         --data_root <path_to_data_root> \
         --checkpoint <path_to_weights_from_learn>
 

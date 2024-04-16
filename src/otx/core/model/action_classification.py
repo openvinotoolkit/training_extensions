@@ -18,6 +18,7 @@ from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
@@ -57,16 +58,12 @@ class OTXActionClsModel(
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Action Classification",
-                ("model_info", "task_type"): "action classification",
-            },
+        return super()._export_parameters.wrap(
+            model_type="Action Classification",
+            task_type="action classification",
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -176,23 +173,22 @@ class MMActionCompatibleModel(OTXActionClsModel):
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
-
-    @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
+        mean, std = get_mean_std_from_data_processing(self.config)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
 
 
 class OVActionClsModel(
@@ -245,6 +241,25 @@ class OVActionClsModel(
             scores=pred_scores,
             labels=pred_labels,
         )
+
+    def _convert_pred_entity_to_compute_metric(
+        self,
+        preds: ActionClsBatchPredEntity,
+        inputs: ActionClsBatchDataEntity,
+    ) -> MetricInput:
+        pred = torch.tensor(preds.labels)
+        target = torch.tensor(inputs.labels)
+        return {
+            "preds": pred,
+            "target": target,
+        }
+
+    def transform_fn(self, data_batch: ActionClsBatchDataEntity) -> np.array:
+        """Data transform function for PTQ."""
+        np_data = self._customize_inputs(data_batch)
+        vid = np_data["inputs"][0]
+        vid = self.model.preprocess(vid)[0][self.model.image_blob_name]
+        return self.model._change_layout(vid)  # noqa: SLF001
 
     @property
     def model_adapter_parameters(self) -> dict:

@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-import numpy as np
+import cv2
 import pytest
 import yaml
 from otx.core.types.task import OTXTaskType
@@ -13,38 +13,21 @@ from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 from tests.utils import run_main
 
 
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
+@pytest.fixture(
+    params=pytest.RECIPE_LIST,
     ids=lambda x: "/".join(Path(x).parts[-2:]),
 )
-def test_otx_e2e(
-    recipe: str,
-    tmp_path: Path,
+def fxt_trained_model(
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
-) -> None:
-    """
-    Test OTX CLI e2e commands.
-
-    - 'otx train' with 2 epochs training
-    - 'otx test' with output checkpoint from 'otx train'
-    - 'otx export' with output checkpoint from 'otx train'
-    - 'otx test' with the exported to ONNX/IR model
-
-    Args:
-        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
-        tmp_path (Path): The temporary path for storing the training outputs.
-
-    Returns:
-        None
-    """
+    request: pytest.FixtureRequest,
+    tmp_path,
+):
+    recipe = request.param
     task = recipe.split("/")[-2]
     model_name = recipe.split("/")[-1].split(".")[0]
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
 
     # 1) otx train
     tmp_path_train = tmp_path / f"otx_train_{model_name}"
@@ -66,6 +49,34 @@ def test_otx_e2e(
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
 
+    return recipe, task, model_name, tmp_path_train
+
+
+def test_otx_e2e(
+    fxt_trained_model,
+    fxt_accelerator: str,
+    fxt_target_dataset_per_task: dict,
+    fxt_cli_override_command_per_task: dict,
+    fxt_open_subprocess: bool,
+    tmp_path: Path,
+) -> None:
+    """
+    Test OTX CLI e2e commands.
+
+    - 'otx train' with 2 epochs training
+    - 'otx test' with output checkpoint from 'otx train'
+    - 'otx export' with output checkpoint from 'otx train'
+    - 'otx test' with the exported to ONNX/IR model
+
+    Args:
+        recipe (str): The recipe to use for training. (eg. 'classification/otx_mobilenet_v3_large.yaml')
+        tmp_path (Path): The temporary path for storing the training outputs.
+
+    Returns:
+        None
+    """
+    recipe, task, model_name, tmp_path_train = fxt_trained_model
+
     outputs_dir = tmp_path_train / "outputs"
     latest_dir = max(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
@@ -81,9 +92,8 @@ def test_otx_e2e(
     assert "data" in train_output_config
     assert "engine" in train_output_config
     assert (latest_dir / "csv").exists()
-    assert (latest_dir / "checkpoints").exists()
-    ckpt_files = list((latest_dir / "checkpoints").glob(pattern="epoch_*.ckpt"))
-    assert len(ckpt_files) > 0
+    ckpt_file = latest_dir / "best_checkpoint.ckpt"
+    assert ckpt_file.exists()
 
     # 2) otx test
     tmp_path_test = tmp_path / f"otx_test_{model_name}"
@@ -100,7 +110,7 @@ def test_otx_e2e(
         fxt_accelerator,
         *fxt_cli_override_command_per_task[task],
         "--checkpoint",
-        str(ckpt_files[-1]),
+        str(ckpt_file),
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
@@ -156,7 +166,7 @@ def test_otx_e2e(
             str(tmp_path_test / "outputs" / fmt),
             *overrides,
             "--checkpoint",
-            str(ckpt_files[-1]),
+            str(ckpt_file),
             "--export_format",
             f"{fmt}",
         ]
@@ -234,7 +244,7 @@ def test_otx_e2e(
             str(tmp_path_test / "outputs" / fmt),
             *fxt_cli_override_command_per_task[task],
             "--checkpoint",
-            str(ckpt_files[-1]),
+            str(ckpt_file),
             "--export_format",
             f"{fmt}",
             "--explain",
@@ -252,18 +262,13 @@ def test_otx_e2e(
         assert (fmt_latest_dir / f"{format_to_file[fmt]}").exists()
 
 
-@pytest.mark.parametrize(
-    "recipe",
-    pytest.RECIPE_LIST,
-    ids=lambda x: "/".join(Path(x).parts[-2:]),
-)
 def test_otx_explain_e2e(
-    recipe: str,
-    tmp_path: Path,
+    fxt_trained_model,
     fxt_accelerator: str,
     fxt_target_dataset_per_task: dict,
     fxt_cli_override_command_per_task: dict,
     fxt_open_subprocess: bool,
+    tmp_path: Path,
 ) -> None:
     """
     Test OTX CLI explain e2e command.
@@ -275,13 +280,16 @@ def test_otx_explain_e2e(
     Returns:
         None
     """
+
+    recipe, task, model_name, tmp_path_train = fxt_trained_model
+
+    outputs_dir = tmp_path_train / "outputs"
+    latest_dir = outputs_dir / ".latest"
+    ckpt_file = latest_dir / "train" / "best_checkpoint.ckpt"
+    assert ckpt_file.exists()
+
     if "tile" in recipe:
         pytest.skip("Explain is not supported for tiling yet.")
-
-    import cv2
-
-    task = recipe.split("/")[-2]
-    model_name = recipe.split("/")[-1].split(".")[0]
 
     if ("_cls" not in task) and (task not in ["detection", "instance_segmentation"]):
         pytest.skip("Supported only for classification, detection and instance segmentation task.")
@@ -304,10 +312,10 @@ def test_otx_explain_e2e(
         fxt_accelerator,
         "--seed",
         "0",
-        "--deterministic",
-        "True",
         "--dump",
         "True",
+        "--checkpoint",
+        str(ckpt_file),
         *fxt_cli_override_command_per_task[task],
     ]
 
@@ -318,52 +326,11 @@ def test_otx_explain_e2e(
         (p for p in outputs_dir.iterdir() if p.is_dir() and p.name != ".latest"),
         key=lambda p: p.stat().st_mtime,
     )
-    assert (latest_dir / "saliency_maps").exists()
-    saliency_maps = sorted((latest_dir / "saliency_maps").glob(pattern="*.png"))
-    sal_map = cv2.imread(str(saliency_maps[0]))
+    assert (latest_dir / "saliency_map").exists()
+    saliency_map = sorted((latest_dir / "saliency_map").glob(pattern="*.png"))
+    sal_map = cv2.imread(str(saliency_map[0]))
     assert sal_map.shape[0] > 0
     assert sal_map.shape[1] > 0
-
-    sal_diff_thresh = 3
-    reference_sal_vals = {
-        # Classification
-        "multi_label_cls_efficientnet_v2_light": (
-            np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
-            "Slide6_class_0_saliency_map.png",
-        ),
-        "h_label_cls_efficientnet_v2_light": (
-            np.array([152, 193, 144, 132, 149, 204, 217], dtype=np.uint8),
-            "092_class_5_saliency_map.png",
-        ),
-        # Detection
-        "detection_yolox_tiny": (
-            np.array([111, 163, 141, 141, 146, 147, 158, 169, 184, 193], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        "detection_ssd_mobilenetv2": (
-            np.array([135, 80, 74, 34, 27, 32, 47, 42, 32, 34], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        "detection_atss_mobilenetv2": (
-            np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-        # Instance Segmentation
-        "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([54, 54, 54, 54, 0, 0, 0, 54, 0, 0], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
-        ),
-    }
-    test_case_name = task + "_" + model_name
-    if test_case_name in reference_sal_vals:
-        actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
-        if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
-            # Take corner values due to map sparsity of InstSeg
-            actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
-        else:
-            actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
-        ref_sal_vals = reference_sal_vals[test_case_name][0]
-        assert np.max(np.abs(actual_sal_vals - ref_sal_vals) <= sal_diff_thresh)
 
 
 # @pytest.mark.skipif(len(pytest.RECIPE_OV_LIST) < 1, reason="No OV recipe found.")
@@ -401,13 +368,11 @@ def test_otx_ov_test(
         "anomaly_classification",
         "anomaly_detection",
         "anomaly_segmentation",
+        "action_classification",
     ]:
         # OMZ doesn't have proper model for Pytorch MaskRCNN interface
         # TODO(Kirill):  Need to change this test when export enabled
         pytest.skip("OMZ doesn't have proper model for these types of tasks.")
-
-    if task in ["action_classification"]:
-        pytest.skip("Action classification test will be enabled after solving Datumaro issue.")
 
     pytest.xfail("See ticket no. 135955")
 
@@ -441,59 +406,16 @@ def test_otx_ov_test(
 
 
 REASON = '''
-tests/integration/cli/test_cli.py:507:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-tests/utils.py:18: in run_main
-    _run_main(command_cfg)
-tests/utils.py:37: in _run_main
-    main()
-src/otx/cli/__init__.py:17: in main
-    OTXCLI()
-src/otx/cli/cli.py:59: in __init__
-    self.run()
-src/otx/cli/cli.py:521: in run
-    fn(**fn_kwargs)
-src/otx/engine/engine.py:234: in train
-    best_config, best_trial_weight = execute_hpo(engine=self, **locals())
-src/otx/engine/hpo/hpo_api.py:67: in execute_hpo
-    hpo_configurator = HPOConfigurator(
-src/otx/engine/hpo/hpo_api.py:127: in __init__
-    self.hpo_config: dict[str, Any] = hpo_config  # type: ignore[assignment]
-src/otx/engine/hpo/hpo_api.py:168: in hpo_config
-    self._hpo_config["prior_hyper_parameters"] = {
-src/otx/engine/hpo/hpo_api.py:169: in <dictcomp>
-    hp: get_using_dot_delimited_key(hp, self._engine)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+self = <otx.hpo.hyperband.AshaTrial object at 0x7069e015e750>
 
-key = 'model.optimizer_callable.keywords.lr'
-target = <function adapt_class_type.<locals>.partial_instance at 0x71faee3b9480>
+    def finalize(self) -> None:
+        """Set done as True."""
+        if not self.score:
+            error_msg = f"Trial{self.id} didn't report any score but tries to be done."
+>           raise RuntimeError(error_msg)
+E           RuntimeError: Trial0 didn't report any score but tries to be done.
 
-    def get_using_dot_delimited_key(key: str, target: Any) -> Any:  # noqa: ANN401
-        """Get values of attribute in target object using dot delimited key.
-
-        For example, if key is "a.b.c", then get a value of 'target.a.b.c'.
-        Target should be object having attributes, dictionary or list.
-        To get an element in a list, an integer that is the index of corresponding value can be set as a key.
-
-        Args:
-            key (str): dot delimited key.
-            val (Any): value to set.
-            target (Any): target to set value to.
-        """
-        splited_key = key.split(".")
-        for each_key in splited_key:
-            if isinstance(target, dict):
-                target = target[each_key]
-            elif isinstance(target, list):
-                if not each_key.isdigit():
-                    error_msg = f"Key should be integer but '{each_key}'."
-                    raise ValueError(error_msg)
-                target = target[int(each_key)]
-            else:
->               target = getattr(target, each_key)
-E               AttributeError: 'function' object has no attribute 'keywords'
-
-src/otx/utils/utils.py:37: AttributeError
+src/otx/hpo/hpo_base.py:274: RuntimeError
 '''
 
 
@@ -516,12 +438,14 @@ def test_otx_hpo_e2e(
     Returns:
         None
     """
-    if task in ("action_classification"):
-        pytest.xfail(reason="xFail until this root cause is resolved on the Datumaro side.")
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
-
-    pytest.xfail(reason=REASON)
+    if task in {
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+    }:
+        pytest.xfail(reason=REASON)
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"

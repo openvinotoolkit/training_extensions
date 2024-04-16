@@ -36,29 +36,7 @@ environment:
 Dataset preparation
 ***************************
 
-Download and prepare `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ with the following command:
-
-.. code-block::
-
-  cd data
-  wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
-  tar -xvf VOCtrainval_11-May-2012.tar
-  cd ..
-
-.. image:: ../../../../../utils/images/voc_example.png
-  :width: 600
-
-The dataset contains a set of RGB images with 20 semantic labels such as aeroplane, bicycle, bird, car, person, etc. The images are stored in the following format:
-
-.. code-block::
-
-  VOC2012
-  ├── Annotations
-  ├── ImageSets
-  ├── JPEGImages
-  ├── SegmentationClass
-  ├── SegmentationObject
-
+For the semnatic segmentation, we'll use the common_semantic_segmentation_dataset/supervised located at the tests/assets
 
 
 *********
@@ -66,141 +44,284 @@ Training
 *********
 
 1. First of all, you need to choose which semantic segmentation model you want to train.
-The list of supported templates for semantic segmentation is available with the command line below.
+The list of supported recipes for semantic segmentation is available with the command line below.
 
 .. note::
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
-  We also can modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
+.. tab-set::
 
-.. code-block::
+    .. tab-item:: CLI
 
-  (otx) ...$ otx find --task segmentation
+        .. code-block:: shell
 
-  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
-  |     TASK     |                          ID                         |        NAME        |                                  BASE PATH                                   |
-  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
-  | SEGMENTATION |    Custom_Semantic_Segmentation_Lite-HRNet-18_OCR   |   Lite-HRNet-18    |   src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml    |
-  | SEGMENTATION | Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml  |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
-  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
+          (otx) ...$ otx find --task SEMANTIC_SEGMENTATION
 
-.. note::
+          ┏━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+          ┃ Task                  ┃ Model Name                    ┃ Recipe Path                                                                        ┃
+          ┡━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+          │ SEMANTIC_SEGMENTATION │ openvino_model                │ src/otx/recipe/semantic_segmentation/openvino_model.yaml                           │
+          │ SEMANTIC_SEGMENTATION │ segnext_t                     │ src/otx/recipe/semantic_segmentation/segnext_t.yaml                             │
+          │ SEMANTIC_SEGMENTATION │ segnext_b                     │ src/otx/recipe/semantic_segmentation/segnext_b.yaml                        │
+          │ SEMANTIC_SEGMENTATION │ dino_v2                       │ src/otx/recipe/semantic_segmentation/dino_v2.yaml                           │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_18                  │ src/otx/recipe/semantic_segmentation/litehrnet_18.yaml                 │
+          │ SEMANTIC_SEGMENTATION │ segnext_s                     │ src/otx/recipe/semantic_segmentation/segnext_s.yaml                         │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_x                   │ src/otx/recipe/semantic_segmentation/litehrnet_x.yaml                         │
+          │ SEMANTIC_SEGMENTATION │ litehrnet_s                   │ src/otx/recipe/semantic_segmentation/litehrnet_s.yaml                         │
+          └───────────────────────┴───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
 
-  We do not attach an OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
+    .. tab-item:: API
 
-To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+        .. code-block:: python
 
+          from otx.engine.utils.api import list_models
 
-2.  Next, we need to create train/validation sets.
-OpenVINO™ Training Extensions supports auto-split functionality for semantic segmentation.
+          model_lists = list_models(task="SEMANTIC_SEGMENTATION")
+          print(model_lists)
+          '''
+          [
+            'openvino_model',
+            'dino_v2',
+            'litehrnet_x',
+            'litehrnet_18',
+            'segnext_s',
+            'segnext_b',
+            'segnext_t',
+            'litehrnet_s',
+          ]
+          '''
 
-.. note::
+1.  On this step we will configure configuration
+with:
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in the argument ``--val-data-roots`` when using other supported segmentation dataset. To learn about dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
+- all necessary configs for litehrnet_18
+- train/validation sets, based on provided annotation.
 
 Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:
 
-.. code-block::
+.. code-block:: shell
 
-  (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012 --model Lite-HRNet-18-mod2
-
-  [*] Load Model Template ID: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
-  [*] Load Model Name: Lite-HRNet-18-mod2
+  # or its config path
+  (otx) ...$ otx train --config src/otx/recipe/semantic_segmentation/litehrnet_18.yaml --data_root tests/assets/common_semantic_segmentation_dataset/supervised --print_config
 
   ...
+  data_root: data/common_semantic_segmentation_dataset/supervised
+  work_dir: otx-workspace
+  callback_monitor: val/Dice
+  disable_infer_num_classes: false
+  engine:
+    task: SEMANTIC_SEGMENTATION
+    device: auto
+  data:
+  ...
 
-  [*] Update data configuration file to: otx-workspace-SEGMENTATION/data.yaml
+.. note::
 
-  (otx) ...$ cd ./otx-workspace-SEGMENTATION
+  If you want to get configuration as yaml file, please use ``--print_config`` parameter and ``> configs.yaml``.
 
-It will create **otx-workspace-SEGMENTATION** with all necessary configs for Lite-HRNet-18-mod2, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+  .. code-block:: shell
+
+    (otx) ...$ otx train --config src/otx/recipe/semantic_segmentation/litehrnet_18.yaml --data_root data/common_semantic_segmentation_dataset/supervised --print_config > configs.yaml
+    # Update configs.yaml & Train configs.yaml
+    (otx) ...$ otx train --config configs.yaml
 
 3. To start training we need to call ``otx train``
-command in our workspace:
+
+Here are the main outputs can expect with CLI:
+- ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt`` - a model checkpoint file.
+- ``{work_dir}/{timestamp}/configs.yaml`` - The configuration file used in the training can be reused to reproduce the training.
+- ``{work_dir}/.latest`` - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.
+
+.. tab-set::
+
+    .. tab-item:: CLI (auto-config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --data_root data/common_semantic_segmentation_dataset/supervised --task SEMANTIC_SEGMENTATION
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train --config src/otx/recipe/semantic_segmentation/litehrnet_18.yaml --data_root data/common_semantic_segmentation_dataset/supervised
+
+    .. tab-item:: API (from_config)
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "data/common_semantic_segmentation_dataset/supervised"
+            recipe = "src/otx/recipe/semantic_segmentation/litehrnet_18.yaml"
+
+            engine = Engine.from_config(
+                      config_path=recipe,
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.engine import Engine
+
+            data_root = "data/common_semantic_segmentation_dataset/supervised"
+
+            engine = Engine(
+                      model="litehrnet_18",
+                      task="SEMANTIC_SEGMENTATION",
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
+
+            engine.train(...)
+
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 18 seconds with full dataset.
+
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about recipe-specific parameters using ``otx train params --help``.
+
+It can be done by manually updating parameters in the ``configs.yaml`` file in your workplace or via the command line.
+
+For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
+                                     --max_epochs 100
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
+            datamodule = OTXDataModule(..., config=data_config)
+
+            engine = Engine(..., datamodule=datamodule)
+
+            engine.train(max_epochs=100)
+
+
+5. The training result ``checkpoints/*.ckpt`` file is located in ``{work_dir}`` folder,
+while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
+
+.. note::
+  We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
 .. code-block::
 
-  (otx) ...$ otx train
+  otx-workspace
+    ├── 20240403_134256/
+    |   ├── csv/
+    |   ├── checkpoints/
+    |   |   └── epoch_*.pth
+    |   ├── tensorboard/
+    |   └── configs.yaml
+    └── .latest
+        └── train/
+  ...
 
-That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
-
-After that, we have the PyTorch model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
+After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
 ***********
 
-1. ``otx eval`` runs evaluation of a trained
+1. ``otx test`` runs evaluation of a trained
 model on a specific dataset.
-The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
-``otx eval`` will output a ``mDice`` score for semantic segmentation.
+The test function receives test annotation information and model snapshot, trained in the previous step.
 
-2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument ``--test-data-roots``.
-By running this example command, the performance results evaluated by our splitted validation dataset are saved in ``performance.json`` file:
+``otx test`` will output a Dice for semantic segmentation.
 
-.. code-block::
+2. The command below will run validation on our dataset
+and save performance results in ``otx-workspace``:
 
-  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights models/weights.pth \
-                      --output outputs
+.. tab-set::
 
-Finally, we get the validation output:
+    .. tab-item:: CLI (with work_dir)
 
-.. code-block::
+        .. code-block:: shell
 
-  ...
+            (otx) ...$ otx test --work_dir otx-workspace
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/Dice            │   0.1556396484375         │
+            └───────────────────────────┴───────────────────────────┘
 
-  2023-02-21 18:09:56,134 | INFO : run task done.
-  2023-02-21 18:09:57,807 | INFO : called evaluate()
-  2023-02-21 18:09:57,807 | INFO : Computing mDice
-  2023-02-21 18:09:58,508 | INFO : mDice after evaluation: 0.9659400544959128
-  Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
+    .. tab-item:: CLI (with config)
 
-In ``outputs/performance.json`` file, the validation output score is saved as:
+        .. code-block:: shell
 
-.. code-block::
+            (otx) ...$ otx test --config  src/otx/recipe/semantic_segmentation/maskrcnn_r50.yaml \
+                                --data_root tests/assets/common_semantic_segmentation_dataset/supervised \
+                                --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_059.ckpt
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │      test/Dice            │   0.1556396484375         │
+            └───────────────────────────┴───────────────────────────┘
 
-  {"Dice Average": 0.9659400544959128}
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.test()
+
+
+3. The output of ``{work_dir}/{timestamp}/csv/version_0/metrics.csv`` consists of
+a dict with target metric name and its value.
 
 
 *********
 Export
 *********
 
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+1. ``otx export`` exports a trained Pytorch `.pth` model to the
+OpenVINO™ Intermediate Representation (IR) format.
+
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of 2 files: ``exported_model.xml`` for weights and ``exported_model.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``openvino_model`` folder.
+and save the exported model to the ``{work_dir}/{timestamp}/`` folder.
 
-.. code-block::
+.. tab-set::
 
-  (otx) ...$ otx export --load-weights models/weights.pth \
-                        --output openvino_model
+    .. tab-item:: CLI (with work_dir)
 
-  ...
+        .. code-block:: shell
 
-  2023-02-02 03:23:03,057 | INFO : run task done.
-  2023-02-02 03:23:03,064 | INFO : Exporting completed
+            (otx) ...$ otx export --work_dir otx-workspace
+            ...
+            Elapsed time: 0:00:06.588245
 
+    .. tab-item:: CLI (with config)
 
-3. We can check the ``mDice`` score of the IR model and the consistency between the exported model and the PyTorch model,
-using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
+        .. code-block:: shell
 
-.. code-block::
+            (otx) ...$ otx export ... --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
+            ...
+            Elapsed time: 0:00:06.588245
 
-  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights openvino_model/openvino.xml \
-                      --output openvino_model
+    .. tab-item:: API
 
-  ...
+        .. code-block:: python
 
-  Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
+            engine.export()
 
 
 *************
@@ -212,40 +333,63 @@ It uses NNCF or PTQ depending on the model and transforms it to ``INT8`` format.
 
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
-2. Command example for optimizing
-a PyTorch model (`.pth`) with OpenVINO™ NNCF.
-
-.. code-block::
-
-  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
-
-  ...
-
-  INFO:nncf:Loaded 5286/5286 parameters
-  2023-02-21 18:09:56,134 | INFO : run task done.
-  2023-02-21 18:09:57,807 | INFO : called evaluate()
-  2023-02-21 18:09:57,807 | INFO : Computing mDice
-  2023-02-21 18:09:58,508 | INFO : mDice after evaluation: 0.9659400544959128
-  Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
-
-The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 15 minutes.
-
-3.  Command example for optimizing
+2.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
-.. code-block::
+.. tab-set::
 
-  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --output ptq_model
+    .. tab-item:: CLI
 
-  ...
+        .. code-block:: shell
 
-  Performance(score: 0.9577656675749319, dashboard: (1 metric groups))
+            (otx) ...$ otx optimize  --work_dir otx-workspace \
+                                     --checkpoint otx-workspace/20240312_052847/exported_model.xml
+
+            ...
+            Statistics collection ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 30/30 • 0:00:14 • 0:00:00
+            Applying Fast Bias correction ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 58/58 • 0:00:02 • 0:00:00
+            Elapsed time: 0:00:24.958733
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240312_052847/exported_model.xml"
+            engine.optimize(checkpoint=ckpt_path)
 
 Please note, that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-4. Now we have fully trained, optimized and exported an
-efficient model representation ready-to-use semantic segmentation model.
+.. note::
 
-The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
-The examples are provided with an object detection model, but it is easy to apply them for semantic segmentation by substituting the object detection model with segmentation one.
+    You can also pass ``export_demo_package=True`` parameter to obtain ``exportable_code.zip`` archive with packed optimized model and demo package. Please refer to :doc:`export tutorial <../export>`.
+
+3. Finally, we can also evaluate the optimized model by passing
+it to the ``otx test`` function.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace \
+                                --checkpoint otx-workspace/20240312_055042/optimized_model.xml \
+                                --engine.device cpu
+
+            ...
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃        Test metric        ┃       DataLoader 0        ┃
+            ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+            │       test/map_50         │    0.5482384562492371     │
+            └───────────────────────────┴───────────────────────────┘
+            Elapsed time: 0:00:10.260521
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            ckpt_path = "otx-workspace/20240312_055042/optimized_model.xml"
+            engine.test(checkpoint=ckpt_path)
+
+3. Now we have fully trained, optimized and exported an
+efficient model representation ready-to-use semantic segmentation model.

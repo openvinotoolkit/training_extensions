@@ -3,7 +3,6 @@ Advanced Tutorials
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
 
    configuration
 

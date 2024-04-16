@@ -44,14 +44,12 @@ data_preprocessor:
   pad_size_divisor: 32
   non_blocking: true
 bbox_head:
-  type: CustomSSDHead
+  type: SSDHead
   num_classes: 80
   in_channels:
     - 96
     - 320
   use_depthwise: true
-  norm_cfg:
-    type: BN
   act_cfg:
     type: ReLU
   init_cfg:

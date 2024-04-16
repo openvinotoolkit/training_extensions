@@ -5,20 +5,13 @@
 
 from __future__ import annotations
 
-import json
-import types
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
 from torchmetrics import Accuracy
 
-from otx.algo.hooks.recording_forward_hook import feature_vector_fn
-from otx.core.data.entity.base import (
-    OTXBatchLossEntity,
-    T_OTXBatchDataEntity,
-    T_OTXBatchPredEntity,
-)
+from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import (
     HlabelClsBatchDataEntity,
     HlabelClsBatchPredEntity,
@@ -38,15 +31,14 @@ from otx.core.metrics.accuracy import (
 )
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import HLabelInfo
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from mmpretrain.models import ImageClassifier
     from mmpretrain.models.utils import ClsDataPreprocessor
-    from mmpretrain.structures import DataSample
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
     from torch import nn
@@ -54,127 +46,8 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class ExplainableOTXClsModel(
-    OTXModel[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity],
-):
-    """OTX classification model which can attach a XAI hook."""
-
-    @property
-    def has_gap(self) -> bool:
-        """Defines if GAP is used right after backbone. Can be redefined at the model's level."""
-        return True
-
-    @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params["output_names"] = ["logits", "feature_vector", "saliency_map"] if self.explain_mode else None
-        return export_params
-
-    @torch.no_grad()
-    def head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
-        """Performs model's neck and head forward. Can be redefined at the model's level."""
-        if (neck := getattr(self.model, "neck", None)) is None:
-            raise ValueError
-        if (head := getattr(self.model, "head", None)) is None:
-            raise ValueError
-
-        output = neck(x)
-        return head([output])
-
-    def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
-        """Model forward function."""
-        self.model.feature_vector_fn = feature_vector_fn
-        self.model.explain_fn = self.get_explain_fn()
-
-        # If customize_inputs is overridden
-        outputs = (
-            self._forward_explain_image_classifier(self.model, **self._customize_inputs(inputs))
-            if self._customize_inputs != ExplainableOTXClsModel._customize_inputs
-            else self._forward_explain_image_classifier(self.model, inputs)
-        )
-
-        return (
-            self._customize_outputs(outputs, inputs)
-            if self._customize_outputs != ExplainableOTXClsModel._customize_outputs
-            else outputs["predictions"]
-        )
-
-    @staticmethod
-    def _forward_explain_image_classifier(
-        self: ImageClassifier,
-        inputs: torch.Tensor,
-        data_samples: list[DataSample] | None = None,
-        mode: str = "tensor",
-    ) -> dict[str, torch.Tensor]:
-        """Forward func of the ImageClassifier instance, which located in ExplainableOTXClsModel().model."""
-        x = self.backbone(inputs)
-        backbone_feat = x
-
-        feature_vector = self.feature_vector_fn(backbone_feat)
-        saliency_map = self.explain_fn(backbone_feat)
-
-        if self.with_neck:
-            x = self.neck(x)
-
-        if mode == "tensor":
-            logits = self.head(x) if self.with_head else x
-        elif mode == "predict":
-            logits = self.head.predict(x, data_samples)
-        else:
-            msg = f'Invalid mode "{mode}".'
-            raise RuntimeError(msg)
-
-        return {
-            "logits": logits,
-            "feature_vector": feature_vector,
-            "saliency_map": saliency_map,
-        }
-
-    def get_explain_fn(self) -> Callable:
-        """Returns explain function."""
-        from otx.algo.hooks.recording_forward_hook import ReciproCAMHook
-
-        explainer = ReciproCAMHook(
-            self.head_forward_fn,
-            num_classes=self.num_classes,
-            optimize_gap=self.has_gap,
-        )
-        return explainer.func
-
-    def _reset_model_forward(self) -> None:
-        if not self.explain_mode:
-            return
-
-        self.model.feature_vector_fn = feature_vector_fn
-        self.model.explain_fn = self.get_explain_fn()
-        forward_with_explain = self._forward_explain_image_classifier
-
-        self.original_model_forward = self.model.forward
-
-        func_type = types.MethodType
-        self.model.forward = func_type(forward_with_explain, self.model)
-
-    def _restore_model_forward(self) -> None:
-        if not self.explain_mode:
-            return
-
-        if not self.original_model_forward:
-            msg = "Original model forward was not saved."
-            raise RuntimeError(msg)
-
-        func_type = types.MethodType
-        self.model.forward = func_type(self.original_model_forward, self.model)
-        self.original_model_forward = None
-
-    @property
-    def _exporter(self) -> OTXModelExporter:
-        """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
-
-
 class OTXMulticlassClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         MulticlassClsBatchDataEntity,
         MulticlassClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -199,18 +72,14 @@ class OTXMulticlassClsModel(
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Classification",
-                ("model_info", "task_type"): "classification",
-                ("model_info", "multilabel"): str(False),
-                ("model_info", "hierarchical"): str(False),
-            },
+        return super()._export_parameters.wrap(
+            model_type="Classification",
+            task_type="classification",
+            multilabel=False,
+            hierarchical=False,
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -329,8 +198,8 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return MulticlassClsBatchPredEntity(
                 batch_size=len(predictions),
@@ -338,8 +207,8 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return MulticlassClsBatchPredEntity(
@@ -351,18 +220,21 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        mean, std = get_mean_std_from_data_processing(self.config)
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
@@ -370,7 +242,7 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
 
 
 class OTXMultilabelClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         MultilabelClsBatchDataEntity,
         MultilabelClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -395,19 +267,15 @@ class OTXMultilabelClsModel(
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Classification",
-                ("model_info", "task_type"): "classification",
-                ("model_info", "multilabel"): str(True),
-                ("model_info", "hierarchical"): str(False),
-                ("model_info", "confidence_threshold"): str(0.5),
-            },
+        return super()._export_parameters.wrap(
+            model_type="Classification",
+            task_type="classification",
+            multilabel=True,
+            hierarchical=False,
+            confidence_threshold=0.5,
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -526,8 +394,8 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return MultilabelClsBatchPredEntity(
                 batch_size=len(predictions),
@@ -535,8 +403,8 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return MultilabelClsBatchPredEntity(
@@ -548,22 +416,25 @@ class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        mean, std = get_mean_std_from_data_processing(self.config)
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
 
 class OTXHlabelClsModel(
-    ExplainableOTXClsModel[
+    OTXModel[
         HlabelClsBatchDataEntity,
         HlabelClsBatchPredEntity,
         T_OTXTileBatchDataEntity,
@@ -590,29 +461,15 @@ class OTXHlabelClsModel(
         self._label_info = hlabel_info
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        hierarchical_config: dict = {}
-
-        label_info: HLabelInfo = self.label_info  # type: ignore[assignment]
-        hierarchical_config["cls_heads_info"] = label_info.as_dict()
-        hierarchical_config["label_tree_edges"] = label_info.label_tree_edges
-
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Classification",
-                ("model_info", "task_type"): "classification",
-                ("model_info", "multilabel"): str(False),
-                ("model_info", "hierarchical"): str(True),
-                ("model_info", "confidence_threshold"): str(0.5),
-                ("model_info", "hierarchical_config"): json.dumps(hierarchical_config),
-                # NOTE: There is currently too many channels for label related metadata.
-                # This should be clean up afterwards in ModelAPI side.
-                ("model_info", "label_info"): json.dumps(label_info.as_dict()),
-            },
+        return super()._export_parameters.wrap(
+            model_type="Classification",
+            task_type="classification",
+            multilabel=False,
+            hierarchical=True,
+            confidence_threshold=0.5,
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -746,8 +603,8 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 msg = "No saliency maps in the model output."
                 raise ValueError(msg)
 
-            feature_vectors = outputs["feature_vector"].detach().cpu().numpy()
-            saliency_maps = outputs["saliency_map"].detach().cpu().numpy()
+            feature_vector = outputs["feature_vector"].detach()
+            saliency_map = outputs["saliency_map"].detach()
 
             return HlabelClsBatchPredEntity(
                 batch_size=len(outputs),
@@ -755,8 +612,8 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
                 imgs_info=inputs.imgs_info,
                 scores=scores,
                 labels=labels,
-                feature_vectors=list(feature_vectors),
-                saliency_maps=list(saliency_maps),
+                feature_vector=list(feature_vector),
+                saliency_map=list(saliency_map),
             )
 
         return HlabelClsBatchPredEntity(
@@ -768,18 +625,21 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
+    def _exporter(self) -> OTXModelExporter:
+        """Creates OTXModelExporter object that can export the model."""
+        mean, std = get_mean_std_from_data_processing(self.config)
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
 
 
 class OVMulticlassClassificationModel(
@@ -832,8 +692,8 @@ class OVMulticlassClassificationModel(
                 imgs_info=inputs.imgs_info,
                 scores=pred_scores,
                 labels=pred_labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return MulticlassClsBatchPredEntity(
@@ -906,8 +766,8 @@ class OVMultilabelClassificationModel(OVModel[MultilabelClsBatchDataEntity, Mult
                 imgs_info=inputs.imgs_info,
                 scores=pred_scores,
                 labels=[],
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return MultilabelClsBatchPredEntity(
@@ -1004,8 +864,8 @@ class OVHlabelClassificationModel(OVModel[HlabelClsBatchDataEntity, HlabelClsBat
                 imgs_info=inputs.imgs_info,
                 scores=all_pred_scores,
                 labels=all_pred_labels,
-                saliency_maps=predicted_s_maps,
-                feature_vectors=predicted_f_vectors,
+                saliency_map=predicted_s_maps,
+                feature_vector=predicted_f_vectors,
             )
 
         return HlabelClsBatchPredEntity(

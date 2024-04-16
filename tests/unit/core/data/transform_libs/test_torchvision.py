@@ -4,19 +4,81 @@
 
 from __future__ import annotations
 
-import pytest
 from copy import deepcopy
+
+import numpy as np
+import pytest
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug, CachedMosaic, CachedMixUp, Pad
-from otx.core.data.transform_libs.utils import overlap_bboxes
-from otx.core.data.entity.detection import DetDataEntity
-from otx.core.data.entity.base import ImageInfo
 from torch import LongTensor, Tensor
 from torchvision import tv_tensors
 
+from otx.core.data.entity.action_classification import ActionClsDataEntity
+from otx.core.data.entity.base import ImageInfo
+from otx.core.data.entity.detection import DetDataEntity
+from otx.core.data.transform_libs.torchvision import (CachedMixUp,
+                                                      CachedMosaic,
+                                                      DecodeVideo,
+                                                      MinIoURandomCrop,
+                                                      PackVideo, Pad,
+                                                      PhotoMetricDistortion,
+                                                      RandomAffine, RandomFlip,
+                                                      Resize,
+                                                      YOLOXHSVRandomAug)
+from otx.core.data.transform_libs.utils import overlap_bboxes
+
+
+class MockFrame:
+    data = np.ndarray([3, 10, 10])
+
+
+class MockVideo:
+    data = [MockFrame()] * 10
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+    def close(self):
+        return
+
+
+class TestDecodeVideo:
+    def test_train_case(self):
+        transform = DecodeVideo(test_mode=False)
+        video = MockVideo()
+        assert len(transform._transform(video, {})) == 8
+
+        transform = DecodeVideo(test_mode=False, out_of_bound_opt="repeat_last")
+        assert len(transform._transform(video, {})) == 8
+
+    def test_eval_case(self):
+        transform = DecodeVideo(test_mode=True)
+        video = MockVideo()
+        assert len(transform._transform(video, {})) == 8
+
+        transform = DecodeVideo(test_mode=True, out_of_bound_opt="repeat_last")
+        assert len(transform._transform(video, {})) == 8
+
+
+class TestPackVideo:
+    def test_forward(self):
+        entity = ActionClsDataEntity(
+            video=MockVideo(),
+            image=[],
+            img_info=ImageInfo(
+                img_idx=0,
+                img_shape=(0, 0),
+                ori_shape=(0, 0),
+                image_color_channel=None,
+            ),
+            labels=torch.LongTensor([0]),
+        )
+        transform = PackVideo()
+        out = transform(entity)
+        assert out.image == entity.video
+
 
 @pytest.fixture()
-def data_entity() -> DetDataEntity:
+def det_data_entity() -> DetDataEntity:
     return DetDataEntity(
         image=tv_tensors.Image(torch.randint(low=0, high=256, size=(3, 112, 224), dtype=torch.uint8)),
         img_info=ImageInfo(img_idx=0, img_shape=(112, 224), ori_shape=(112, 224)),
@@ -30,12 +92,12 @@ class TestMinIoURandomCrop:
     def min_iou_random_crop(self) -> MinIoURandomCrop:
         return MinIoURandomCrop()
 
-    def test_forward(self, min_iou_random_crop, data_entity) -> None:
+    def test_forward(self, min_iou_random_crop, det_data_entity) -> None:
         """Test forward."""
-        results = min_iou_random_crop(deepcopy(data_entity))
+        results = min_iou_random_crop(deepcopy(det_data_entity))
 
         if (mode := min_iou_random_crop.mode) == 1:
-            assert torch.equal(results.bboxes, data_entity.bboxes)
+            assert torch.equal(results.bboxes, det_data_entity.bboxes)
         else:
             patch = tv_tensors.wrap(
                 torch.tensor([[0, 0, *results.img_info.img_shape]]),
@@ -58,12 +120,12 @@ class TestResize:
             (False, torch.tensor([[0., 0., 100., 200.]]))
         ]
     )
-    def test_forward(self, resize, data_entity, keep_ratio: bool, expected: Tensor) -> None:
+    def test_forward(self, resize, det_data_entity, keep_ratio: bool, expected: Tensor) -> None:
         """Test forward."""
         resize.keep_ratio = keep_ratio
-        data_entity.img_info.img_shape = resize.scale
+        det_data_entity.img_info.img_shape = resize.scale
 
-        results = resize(deepcopy(data_entity))
+        results = resize(deepcopy(det_data_entity))
 
         assert results.img_info.ori_shape == (112, 224)
         if keep_ratio:
@@ -83,16 +145,16 @@ class TestRandomFlip:
     def random_flip(self) -> RandomFlip:
         return RandomFlip(prob=1.)
 
-    def test_forward(self, random_flip, data_entity) -> None:
+    def test_forward(self, random_flip, det_data_entity) -> None:
         """Test forward."""
-        results = random_flip.forward(deepcopy(data_entity))
+        results = random_flip.forward(deepcopy(det_data_entity))
 
-        assert torch.all(results.image.flip(-1) == data_entity.image)
+        assert torch.all(results.image.flip(-1) == det_data_entity.image)
 
         bboxes_results = results.bboxes.clone()
         bboxes_results[..., 0] = results.img_info.img_shape[1] - results.bboxes[..., 2]
         bboxes_results[..., 2] = results.img_info.img_shape[1] - results.bboxes[..., 0]
-        assert torch.all(bboxes_results == data_entity.bboxes)
+        assert torch.all(bboxes_results == det_data_entity.bboxes)
 
 
 class TestPhotoMetricDistortion:
@@ -100,9 +162,9 @@ class TestPhotoMetricDistortion:
     def photo_metric_distortion(self) -> PhotoMetricDistortion:
         return PhotoMetricDistortion()
 
-    def test_forward(self, photo_metric_distortion, data_entity) -> None:
+    def test_forward(self, photo_metric_distortion, det_data_entity) -> None:
         """Test forward."""
-        results = photo_metric_distortion(deepcopy(data_entity))
+        results = photo_metric_distortion(deepcopy(det_data_entity))
 
         assert results.image.dtype == torch.float32
 
@@ -124,9 +186,9 @@ class TestRandomAffine:
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
         transform = RandomAffine(scaling_ratio_range=(0, 0.5))
 
-    def test_forward(self, random_affine, data_entity) -> None:
+    def test_forward(self, random_affine, det_data_entity) -> None:
         """Test forward."""
-        results = random_affine(deepcopy(data_entity))
+        results = random_affine(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
@@ -148,11 +210,11 @@ class TestCachedMosaic:
     def test_init_invalid_probability(self) -> None:
         transform = CachedMosaic(prob=1.5)
 
-    def test_forward(self, cached_mosaic, data_entity) -> None:
+    def test_forward(self, cached_mosaic, det_data_entity) -> None:
         """Test forward."""
-        cached_mosaic.mix_results = [deepcopy(data_entity)] * 3
+        cached_mosaic.mix_results = [deepcopy(det_data_entity)] * 3
 
-        results = cached_mosaic(deepcopy(data_entity))
+        results = cached_mosaic(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
@@ -174,11 +236,11 @@ class TestCachedMixUp:
     def test_init_invalid_probability(self) -> None:
         transform = CachedMosaic(prob=1.5)
 
-    def test_forward(self, cached_mixup, data_entity) -> None:
+    def test_forward(self, cached_mixup, det_data_entity) -> None:
         """Test forward."""
-        cached_mixup.mix_results = [deepcopy(data_entity)]
+        cached_mixup.mix_results = [deepcopy(det_data_entity)]
 
-        results = cached_mixup(deepcopy(data_entity))
+        results = cached_mixup(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
@@ -192,9 +254,9 @@ class TestYOLOXHSVRandomAug:
     def yolox_hsv_random_aug(self) -> YOLOXHSVRandomAug:
         return YOLOXHSVRandomAug()
 
-    def test_forward(self, yolox_hsv_random_aug, data_entity) -> None:
+    def test_forward(self, yolox_hsv_random_aug, det_data_entity) -> None:
         """Test forward."""
-        results = yolox_hsv_random_aug(deepcopy(data_entity))
+        results = yolox_hsv_random_aug(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (112, 224)
         assert results.labels.shape[0] == results.bboxes.shape[0]
@@ -203,11 +265,11 @@ class TestYOLOXHSVRandomAug:
 
 
 class TestPad:
-    def test_forward(self, data_entity) -> None:
+    def test_forward(self, det_data_entity) -> None:
         # test pad img/gt_masks with size
         transform = Pad(size=(200, 250))
 
-        results = transform(deepcopy(data_entity))
+        results = transform(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (200, 250)
 
@@ -215,7 +277,7 @@ class TestPad:
         # test pad img/gt_masks with size_divisor
         transform = Pad(size_divisor=11)
 
-        results = transform(deepcopy(data_entity))
+        results = transform(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (121, 231)
 
@@ -223,7 +285,7 @@ class TestPad:
         # test pad img/gt_masks with pad_to_square
         transform = Pad(pad_to_square=True)
 
-        results = transform(deepcopy(data_entity))
+        results = transform(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (224, 224)
 
@@ -231,6 +293,6 @@ class TestPad:
         # test pad img/gt_masks with pad_to_square and size_divisor
         transform = Pad(pad_to_square=True, size_divisor=11)
 
-        results = transform(deepcopy(data_entity))
+        results = transform(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (231, 231)

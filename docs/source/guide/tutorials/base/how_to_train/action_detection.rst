@@ -36,7 +36,8 @@ environment:
 Dataset preparation
 ***************************
 
-Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
+For action detection task, you need to prepare dataset whose format is `AVA <https://github.com/open-mmlab/mmaction2/blob/main/tools/data/ava/README.md>`_ dataset. 
+For easy beginning, we provide `sample dataset <https://drive.google.com/file/d/1758dyPeFv4wS0gqL42sSXZSHWysL0Xr8/view?usp=drive_link>`_
 
 If you download data from link and extract to ``training_extensions/data`` folder(you should make data folder at first), you can see the structure below:
 
@@ -44,19 +45,22 @@ If you download data from link and extract to ``training_extensions/data`` folde
 
     training_extensions
     └── data
-        └── JHMDB_5%
-            ├── train
-            │    └── brush_hair_Brushing_Hair_with_Beth_brush_hair_h_nm_np1_le_goo_0
-            │        ├── annotations.xml
-            │        └── images [40 frames]
+        └── JHMDB_10%
+            ├── annotations
+            │    └── ava_action_list_v2.2.pbtxt
+            │    └── ava_test.csv
+            │    └── ava_train.csv
+            │    └── ava_val.csv
+            │    └── test.pkl
+            │    └── train.pkl
+            │    └── val.pkl
             │
-            │── test
-            │    └── brush_hair_Aussie_Brunette_Brushing_Long_Hair_brush_hair_u_nm_np1_fr_med_0
-            │        ├── annotations.xml
-            │        └── images [40 frames]
-            │
-            │── train.pkl
-            └── test.pkl
+            └── frames
+                │── train_video001
+                │   └── train_video001_0001.jpg
+                └── test_video001
+                    └── test_video001_0001.jpg
+
 
 
 *********
@@ -64,7 +68,7 @@ Training
 *********
 
 1. First of all, you need to choose which action detection model you want to train.
-The list of supported templates for action detection is available with the command line below:
+The list of supported recipes for action detection is available with the command line below:
 
 .. note::
 
@@ -72,154 +76,201 @@ The list of supported templates for action detection is available with the comma
 
 .. code-block::
 
-  (otx) ...$ otx find --task action_detection
+  (otx) ...$ otx find --task ACTION_DETECTION
 
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
-  |       TASK       |                   ID                  |      NAME     |                                BASE PATH                                |
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
-  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
-  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  |          TASK         |                  Model Name          |                                         Recipe PATH                             |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
+  | ACTION_DETECTION      | x3d_fast_rcnn                        | ../otx/recipe/action/action_detection/x3d_fast_rcnn.yaml                        |
+  +-----------------------+--------------------------------------+---------------------------------------------------------------------------------+
 
 To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2. Next, we need to create workspace
-for various tasks we provide.
+2. ``otx train`` trains a model (a particular model template)
+on a dataset and results:
 
-Let's prepare an OpenVINO™ Training Extensions action detection workspace running the following command:
+Here are the main outputs can expect with CLI:
+- ``{work_dir}/{timestamp}/checkpoints/epoch_*.ckpt`` - a model checkpoint file.
+- ``{work_dir}/{timestamp}/configs.yaml`` - The configuration file used in the training can be reused to reproduce the training.
+- ``{work_dir}/.latest`` - The results of each of the most recently executed subcommands are soft-linked. This allows you to skip checkpoints and config file entry as a workspace.
 
-.. code-block::
+.. tab-set::
 
-  (otx) ...$ otx build x3d_fast_rcnn --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test
+    .. tab-item:: CLI (auto-config)
 
-  [*] Workspace Path: otx-workspace-ACTION_DETECTION
-  [*] Load Model Template ID: Custom_Action_Detection_X3D_FAST_RCNN
-  [*] Load Model Name: X3D_FAST_RCNN
-  [*]     - Updated: otx-workspace-ACTION_DETECTION/model.py
-  [*]     - Updated: otx-workspace-ACTION_DETECTION/data_pipeline.py
-  [*] Update data configuration file to: otx-workspace-ACTION_DETECTION/data.yaml
+        .. code-block:: shell
 
-  (otx) ...$ cd ./otx-workspace-ACTION_DETECTION
+            (otx) ...$ otx train --data_root data/JHMDB_10%
 
-It will create **otx-workspace-ACTION_DETECTION** with all necessary configs for X3D_FAST_RCNN, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+    .. tab-item:: CLI (with config)
 
-3. To start training we need to call ``otx train``
-command in our workspace:
+        .. code-block:: shell
 
-.. code-block::
+            (otx) ...$ otx train --config src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml --data_root data/JHMDB_10%
 
-  (otx) ...$ otx train
+    .. tab-item:: API (from_config)
 
-That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
+        .. code-block:: python
 
-The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 70 minutes.
+            from otx.engine import Engine
 
-After that, we have the PyTorch action detection model trained with OpenVINO™ Training Extensions.
+            data_root = "data/JHMDB_10%"
+            recipe = "src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml"
 
-***********
-Validation
-***********
+            engine = Engine.from_config(
+                      config_path=recipe,
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
 
-1. ``otx eval`` runs evaluation of a trained
-model on a specific dataset.
+            engine.train(...)
 
-The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
+    .. tab-item:: API
 
-``otx eval`` will output a mAP score for spatio-temporal action detection.
+        .. code-block:: python
 
-2. The command below will run validation on our dataset
-and save performance results in ``outputs/performance.json`` file:
+            from otx.engine import Engine
 
-.. code-block::
+            data_root = "data/JHMDB_10%"
 
-  (otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
-                      --load-weights models/weights.pth \
-                      --output outputs
+            engine = Engine(
+                      model="x3d",
+                      data_root=data_root,
+                      work_dir="otx-workspace",
+                    )
 
-We will get a similar to this validation output after some validation time (about 2 minutes):
+            engine.train(...)
 
-.. code-block::
 
-  2023-02-21 22:42:14,540 - mmaction - INFO - Loaded model weights from Task Environment
-  2023-02-21 22:42:14,540 - mmaction - INFO - Model architecture: X3D_FAST_RCNN
-  2023-02-21 22:42:14,739 - mmaction - INFO - Patching pre proposals...
-  2023-02-21 22:42:14,749 - mmaction - INFO - Done.
-  2023-02-21 22:44:24,345 - mmaction - INFO - Inference completed
-  2023-02-21 22:44:24,347 - mmaction - INFO - called evaluate()
-  2023-02-21 22:44:26,349 - mmaction - INFO - Final model performance: Performance(score: 0.5086285195277019, dashboard: (1 metric groups))
-  2023-02-21 22:44:26,349 - mmaction - INFO - Evaluation completed
-  Performance(score: 0.5086285195277019, dashboard: (1 metric groups))
+3. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about specific parameters using ``otx train --help -v`` or ``otx train --help -vv``.
+
+For example, to decrease the batch size to 4, fix the number of epochs to 100, extend the command line above with the following line.
+
+.. tab-set::
+
+    .. tab-item:: CLI
+
+        .. code-block:: shell
+
+            (otx) ...$ otx train ... --data.config.train_subset.batch_size 4 \
+                                     --max_epochs 100
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            from otx.core.config.data import DataModuleConfig, SubsetConfig
+            from otx.core.data.module import OTXDataModule
+            from otx.engine import Engine
+
+            data_config = DataModuleConfig(..., train_subset=SubsetConfig(..., batch_size=4))
+            datamodule = OTXDataModule(..., config=data_config)
+
+            engine = Engine(..., datamodule=datamodule)
+
+            engine.train(max_epochs=100)
+
+
+4. The training result ``checkpoints/*.ckpt`` file is located in ``{work_dir}`` folder,
+while training logs can be found in the ``{work_dir}/{timestamp}`` dir.
 
 .. note::
-
-  Currently we don't support export and optimize task in action detection. We will support these features very near future.
-
-
-*********
-Export
-*********
-
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
-
-2. Run the command line below to export the trained model
-and save the exported model to the ``openvino`` folder.
+    We also can visualize the training using ``Tensorboard`` as these logs are located in ``{work_dir}/{timestamp}/tensorboard``.
 
 .. code-block::
 
-  (otx) ...$ otx export
+    otx-workspace
+    ├── 20240403_134256/
+        ├── csv/
+        ├── checkpoints/
+        |   └── epoch_*.pth
+        ├── tensorboard/
+        └── configs.yaml
+    └── .latest
+        └── train/
+    ...
 
-  2023-03-24 15:03:35,993 - mmdeploy - INFO - Export PyTorch model to ONNX: /tmp/OTX-task-ffw8llin/openvino.onnx.
-  2023-03-24 15:03:44,450 - mmdeploy - INFO - Args for Model Optimizer: mo --input_model="/tmp/OTX-task-ffw8llin/openvino.onnx" --output_dir="/tmp/OTX-task-ffw8llin/" --output="bboxes,labels" --input="input" --input_shape="[1, 3, 32, 256, 256]" --mean_values="[123.675, 116.28, 103.53]" --scale_values="[58.395, 57.12, 57.375]" --source_layout=bctwh
-  2023-03-24 15:03:46,707 - mmdeploy - INFO - [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
-  Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html
-  [ SUCCESS ] Generated IR version 11 model.
-  [ SUCCESS ] XML file: /tmp/OTX-task-ffw8llin/openvino.xml
-  [ SUCCESS ] BIN file: /tmp/OTX-task-ffw8llin/openvino.bin
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 3 minutes.
 
-2023-03-24 15:03:46,707 - mmdeploy - INFO - Successfully exported OpenVINO model: /tmp/OTX-task-ffw8llin/openvino.xml
-2023-03-24 15:03:46,756 - mmaction - INFO - Exporting completed
+After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
+
+***********
+Evaluation
+***********
+
+1. ``otx test`` runs evaluation of a
+trained model on a particular dataset.
+
+Test function receives test annotation information and model snapshot, trained in previous step.
+
+The default metric is mAP_50 measure.
+
+2. That's how we can evaluate the snapshot in ``otx-workspace``
+folder on JHMDB_10% dataset and save results to ``otx-workspace``:
+
+.. tab-set::
+
+    .. tab-item:: CLI (with work_dir)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --work_dir otx-workspace
+              ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+              ┃        Test metric        ┃       DataLoader 0        ┃
+              ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+              │      test/data_time       │   0.006367621477693319    │
+              │      test/iter_time       │    0.02698644995689392    │
+              │         test/map          │    0.10247182101011276    │
+              │        test/map_50        │    0.3779516816139221     │
+              │        test/map_75        │    0.03639398142695427    │
+              │      test/map_large       │    0.11831618845462799    │
+              │      test/map_medium      │    0.02958027645945549    │
+              │    test/map_per_class     │           -1.0            │
+              │      test/map_small       │            0.0            │
+              │        test/mar_1         │    0.12753313779830933    │
+              │        test/mar_10        │    0.1305265873670578     │
+              │       test/mar_100        │    0.1305265873670578     │
+              │  test/mar_100_per_class   │           -1.0            │
+              │      test/mar_large       │    0.14978596568107605    │
+              │      test/mar_medium      │    0.06217033043503761    │
+              │      test/mar_small       │            0.0            │
+              └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: CLI (with config)
+
+        .. code-block:: shell
+
+            (otx) ...$ otx test --config  src/otx/recipe/action/action_detection/x3d_fast_rcnn.yaml \
+                                --data_root data/JHMDB_10% \
+                                --checkpoint otx-workspace/20240312_051135/checkpoints/epoch_033.ckpt
+              ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+              ┃        Test metric        ┃       DataLoader 0        ┃
+              ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+              │      test/data_time       │   0.006367621477693319    │
+              │      test/iter_time       │    0.02698644995689392    │
+              │         test/map          │    0.10247182101011276    │
+              │        test/map_50        │    0.3779516816139221     │
+              │        test/map_75        │    0.03639398142695427    │
+              │      test/map_large       │    0.11831618845462799    │
+              │      test/map_medium      │    0.02958027645945549    │
+              │    test/map_per_class     │           -1.0            │
+              │      test/map_small       │            0.0            │
+              │        test/mar_1         │    0.12753313779830933    │
+              │        test/mar_10        │    0.1305265873670578     │
+              │       test/mar_100        │    0.1305265873670578     │
+              │  test/mar_100_per_class   │           -1.0            │
+              │      test/mar_large       │    0.14978596568107605    │
+              │      test/mar_medium      │    0.06217033043503761    │
+              │      test/mar_small       │            0.0            │
+              └───────────────────────────┴───────────────────────────┘
+
+    .. tab-item:: API
+
+        .. code-block:: python
+
+            engine.test()
 
 
-3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
-using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
-
-.. code-block::
-
-  (otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
-                      --load-weights model-exported/openvino.xml \
-                      --save-performance model-exported/performance.json
-
-  ...
-
-  Performance(score: 0.47351524879614754, dashboard: (3 metric groups))
-
-
-*************
-Optimization
-*************
-
-1. You can further optimize the model with ``otx optimize``.
-Currently, only PTQ is supported for action detection. NNCF will be supported in near future.
-
-The optimized model will be quantized to ``INT8`` format.
-Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
-
-2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ PTQ.
-
-.. code-block::
-
-  (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
-                          --save-model-to ptq_model
-
-  ...
-
-  [*] Update data configuration file to: data.yaml
-  Statistics collection: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [04:16<00:00,  1.17it/s]Biases correction: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 168/168 [00:15<00:00, 10.63it/s][>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 1572/1572, 7.3 task/s, elapsed: 216s, ETA:     0s
-  Performance(score: 0.4621155288822204, dashboard: (1 metric groups))
-
-Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
-
-3. Now, you have fully trained, optimized and exported an
-efficient model representation ready-to-use action detection model.
+3. The output of ``{work_dir}/{timestamp}/csv/version_0/metrics.csv`` consists of
+a dict with target metric name and its value.

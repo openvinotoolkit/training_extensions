@@ -12,23 +12,6 @@ from mmengine.config import Config as MMConfig
 from otx.core.types.task import OTXTaskType
 
 
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--open-subprocess",
-        action="store_true",
-        help="Open subprocess for each CLI integration test case. "
-        "This option can be used for easy memory management "
-        "while running consecutive multiple tests (default: false).",
-    )
-    parser.addoption(
-        "--task",
-        action="store",
-        default="all",
-        type=str,
-        help="Task type of OTX to use integration test.",
-    )
-
-
 @pytest.fixture(scope="module", autouse=True)
 def fxt_open_subprocess(request: pytest.FixtureRequest) -> bool:
     """Open subprocess for each CLI integration test case.
@@ -120,7 +103,7 @@ def fxt_rtmdet_tiny_config(fxt_asset_dir: Path) -> MMConfig:
 
 
 # [TODO]: This is a temporary approach.
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def fxt_target_dataset_per_task() -> dict:
     return {
         "multi_class_cls": "tests/assets/classification_dataset",
@@ -140,7 +123,7 @@ def fxt_target_dataset_per_task() -> dict:
     }
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def fxt_cli_override_command_per_task() -> dict:
     return {
         "multi_class_cls": [],
