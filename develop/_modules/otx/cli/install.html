@@ -303,13 +303,18 @@
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Do not install PyTorch. Choose this option if you already install PyTorch.&quot;</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
     <span class="p">)</span>
+
     <span class="n">subcommands_action</span><span class="o">.</span><span class="n">add_subcommand</span><span class="p">(</span><span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Install OTX requirements.&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="otx_install">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.cli.install.html#otx.cli.install.otx_install">[docs]</a>
-<span class="k">def</span> <span class="nf">otx_install</span><span class="p">(</span><span class="n">option</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">do_not_install_torch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">otx_install</span><span class="p">(</span>
+    <span class="n">option</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">do_not_install_torch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Install OTX requirements.</span>
 
 <span class="sd">    Args:</span>
