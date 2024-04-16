@@ -201,6 +201,7 @@ def load(root_dir: Path, need_normalize: bool = False, pattern="*raw*.csv") -> p
     # Load csv files in the directory
     csv_files = root_dir.rglob(pattern)
     for csv_file in csv_files:
+        print(f"Loading {csv_file}")
         data = pd.read_csv(csv_file)
         if need_normalize:
             data = normalize(data)
@@ -208,9 +209,11 @@ def load(root_dir: Path, need_normalize: bool = False, pattern="*raw*.csv") -> p
     # Load csv files in zip files
     zip_files = Path(root_dir).rglob("*.zip")
     for zip_file in zip_files:
+        print(f"Loading {zip_file}")
         with ZipFile(zip_file) as zf:
             csv_files = fnmatch.filter(zf.namelist(), pattern)
             for csv_file in csv_files:
+                print(f"Loading {csv_file} in {zip_file}")
                 csv_bytes = io.BytesIO(zf.read(csv_file))
                 data = pd.read_csv(csv_bytes)
                 if need_normalize:
