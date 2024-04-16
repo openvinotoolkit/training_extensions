@@ -227,6 +227,15 @@ def adapt_batch_size(
 
     _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
 
+    import pickle
+    print("*"*100, type(datasets[0].otx_dataset._items[0]))
+    for key, val in datasets[0].otx_dataset._items[0].__dict__.items():
+        try:
+            pickle.dumps(val)
+            print("*"*100, f"{key} pickle success => {type(val)}")
+        except Exception:
+            print("*"*100, f"{key} pickle fail => {type(val)}")
+
     max_bs = len(datasets[0])
     dill.detect.trace(False)
     datasets[0].otx_dataset = dill.dumps(datasets[0].otx_dataset)
