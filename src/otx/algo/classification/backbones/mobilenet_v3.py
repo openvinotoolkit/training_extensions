@@ -334,7 +334,7 @@ class MobileNetV3(MobileNetV3Base):
 class OTXMobileNetV3(MobileNetV3):
     """MobileNetV3 model for OTX."""
 
-    mv_cfgs = dict(
+    backbone_configs = dict(
         small=[
             # k, t, c, SE, HS, s
             [3, 1, 16, 1, 0, 2],
@@ -370,7 +370,7 @@ class OTXMobileNetV3(MobileNetV3):
     )
 
     def __init__(self, mode: str = "large", width_mult: float = 1.0, **kwargs):
-        super().__init__(self.mv_cfgs[mode], mode=mode, width_mult=width_mult, **kwargs)
+        super().__init__(self.backbone_configs[mode], mode=mode, width_mult=width_mult, **kwargs)
         self.key = "mobilenetv3_" + mode
         if width_mult != 1.0:
             self.key = self.key + f"_{int(width_mult * 100):03d}"  # pylint: disable=consider-using-f-string
