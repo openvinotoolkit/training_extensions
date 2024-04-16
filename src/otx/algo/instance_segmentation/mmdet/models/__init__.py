@@ -1,6 +1,10 @@
-"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# This class and its supporting functions are adapted from the mmdet.
+# Please refer to https://github.com/open-mmlab/mmdetection/
 
-# Copyright (c) OpenMMLab. All rights reserved.
+""""MMDet model files."""
 from .assigners import *  # noqa: F403
 from .backbones import *  # noqa: F403
 from .coders import *  # noqa: F403

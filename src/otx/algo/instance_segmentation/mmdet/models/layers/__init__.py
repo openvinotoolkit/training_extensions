@@ -1,9 +1,13 @@
-"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
-# Copyright (c) OpenMMLab. All rights reserved.
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# This class and its supporting functions are adapted from the mmdet.
+# Please refer to https://github.com/open-mmlab/mmdetection/
+
+"""MMDet Layers."""
+
 from .bbox_nms import multiclass_nms
 from .res_layer import ResLayer
-
-# yapf: enable
 
 __all__ = [
     "multiclass_nms",
