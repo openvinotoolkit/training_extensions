@@ -201,7 +201,6 @@ def load(root_dir: Path, need_normalize: bool = False, pattern="*raw*.csv") -> p
     # Load csv files in the directory
     csv_files = root_dir.rglob(pattern)
     for csv_file in csv_files:
-        print(f"Loading {csv_file}")
         data = pd.read_csv(csv_file)
         if need_normalize:
             data = normalize(data)
@@ -209,11 +208,9 @@ def load(root_dir: Path, need_normalize: bool = False, pattern="*raw*.csv") -> p
     # Load csv files in zip files
     zip_files = Path(root_dir).rglob("*.zip")
     for zip_file in zip_files:
-        print(f"Loading {zip_file}")
         with ZipFile(zip_file) as zf:
             csv_files = fnmatch.filter(zf.namelist(), pattern)
             for csv_file in csv_files:
-                print(f"Loading {csv_file} in {zip_file}")
                 csv_bytes = io.BytesIO(zf.read(csv_file))
                 data = pd.read_csv(csv_bytes)
                 if need_normalize:
@@ -242,19 +239,26 @@ def normalize(data: pd.DataFrame) -> pd.DataFrame:
     data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
     data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
     # Map anomaly metrics
+    anomaly_indices = data["task"] == "anomaly_classification"
     if "test/image_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_classification"
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+    if "export/image_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+    if "optimize/image_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
-        anomaly_indices = data["task"] == "anomaly_detection"
+    anomaly_indices = data["task"] == "anomaly_detection"
+    if "test/image_F1Score" in data:
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+    if "export/image_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+    if "optimize/image_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+    anomaly_indices = data["task"] == "anomaly_segmentation"
     if "test/pixel_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_segmentation"
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/pixel_F1Score"]
+    if "export/pixel_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/pixel_F1Score"]
+    if "optimize/pixel_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/pixel_F1Score"]
     # Map other names
     data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
