@@ -5,11 +5,20 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """"MMDet model files."""
-from .assigners import *  # noqa: F403
-from .backbones import *  # noqa: F403
-from .coders import *  # noqa: F403
-from .dense_heads import *  # noqa: F403
-from .detectors import *  # noqa: F403
-from .layers import *  # noqa: F403
-from .necks import *  # noqa: F403
-from .prior_generators import *  # noqa: F403
+from .assigners import AssignResult, BboxOverlaps2D, MaxIoUAssigner
+from .backbones import ResNet
+from .coders import DeltaXYWHBBoxCoder
+from .dense_heads import RPNHead
+from .detectors import MaskRCNN
+from .prior_generators import AnchorGenerator
+
+__all__ = [
+    "AssignResult",
+    "MaxIoUAssigner",
+    "BboxOverlaps2D",
+    "ResNet",
+    "DeltaXYWHBBoxCoder",
+    "RPNHead",
+    "MaskRCNN",
+    "AnchorGenerator",
+]

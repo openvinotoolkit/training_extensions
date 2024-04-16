@@ -58,7 +58,6 @@ def anchor_inside_flags(
     return inside_flags
 
 
-@MODELS.register_module()
 class AnchorHead(BaseDenseHead):
     """Anchor-based head (RPN, RetinaNet, SSD, etc.).
 
