@@ -69,6 +69,7 @@ overrides:
                 - 992
                 - 736
               keep_ratio: false
+              transform_bbox: false
       test_subset:
         batch_size: 8
         transforms:
@@ -78,3 +79,4 @@ overrides:
                 - 992
                 - 736
               keep_ratio: false
+              transform_bbox: false

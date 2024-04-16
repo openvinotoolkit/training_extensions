@@ -97,6 +97,7 @@ overrides:
                 - 640
                 - 640
               keep_ratio: true
+              transform_bbox: false
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
               pad_to_square: true
@@ -110,6 +111,7 @@ overrides:
                 - 640
                 - 640
               keep_ratio: true
+              transform_bbox: false
           - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
               pad_to_square: true

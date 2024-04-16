@@ -139,6 +139,20 @@ class TestResize:
 
         assert torch.all(results.bboxes.data == expected)
 
+    def test_forward_without_bboxes(self, resize, det_data_entity) -> None:
+        """Test forward."""
+        resize.keep_ratio = True
+        resize.transform_bbox = False # set `transform_bbox` to False
+        det_data_entity.img_info.img_shape = resize.scale
+
+        results = resize(deepcopy(det_data_entity))
+
+        assert results.img_info.ori_shape == (112, 224)
+        assert results.image.shape == (3, 224, 448)
+        assert results.img_info.img_shape == (224, 448)
+        assert results.img_info.scale_factor == (2., 2.)
+        assert torch.all(results.bboxes.data == det_data_entity.bboxes.data)
+
 
 class TestRandomFlip:
     @pytest.fixture()

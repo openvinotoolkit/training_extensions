@@ -435,7 +435,9 @@ class Resize(tvt_v2.Transform):
                  scale_factor: float | tuple[float, float] = None,
                  keep_ratio: bool = False,
                  clip_object_border: bool = True,
-                 interpolation: str = "bilinear") -> None:
+                 interpolation: str = "bilinear",
+                 transform_bbox: bool = True,
+                 ) -> None:
         super().__init__()
 
         assert scale is not None or scale_factor is not None, (
@@ -449,6 +451,7 @@ class Resize(tvt_v2.Transform):
             else:
                 self.scale = tuple(scale)
 
+        self.transform_bbox = transform_bbox
         self.interpolation = interpolation
         self.keep_ratio = keep_ratio
         self.clip_object_border = clip_object_border
@@ -510,7 +513,8 @@ class Resize(tvt_v2.Transform):
         inputs = inputs[0]
 
         inputs, scale_factor = self._resize_img(inputs)
-        inputs = self._resize_bboxes(inputs, scale_factor)
+        if self.transform_bbox:
+            inputs = self._resize_bboxes(inputs, scale_factor)
 
         return inputs
 
