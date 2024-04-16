@@ -257,7 +257,6 @@
     <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span>
     <span class="n">MultilabelClsBatchPredEntity</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">T_OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
@@ -285,13 +284,7 @@
 
 <div class="viewcode-block" id="OTXMulticlassClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMulticlassClsModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXMulticlassClsModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span>
-        <span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span>
-        <span class="n">MulticlassClsBatchPredEntity</span><span class="p">,</span>
-        <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
-    <span class="p">],</span>
-<span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXMulticlassClsModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">MulticlassClsBatchDataEntity</span><span class="p">,</span> <span class="n">MulticlassClsBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the classification models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -486,13 +479,7 @@
 
 <div class="viewcode-block" id="OTXMultilabelClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXMultilabelClsModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXMultilabelClsModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span>
-        <span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span>
-        <span class="n">MultilabelClsBatchPredEntity</span><span class="p">,</span>
-        <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
-    <span class="p">],</span>
-<span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXMultilabelClsModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">MultilabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">MultilabelClsBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Multi-label classification models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -684,13 +671,7 @@
 
 <div class="viewcode-block" id="OTXHlabelClsModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.classification.html#otx.core.model.classification.OTXHlabelClsModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXHlabelClsModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span>
-        <span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span>
-        <span class="n">HlabelClsBatchPredEntity</span><span class="p">,</span>
-        <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
-    <span class="p">],</span>
-<span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXHlabelClsModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">HlabelClsBatchDataEntity</span><span class="p">,</span> <span class="n">HlabelClsBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;H-label classification models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>

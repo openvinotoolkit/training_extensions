@@ -271,7 +271,7 @@
     <span class="n">T_OTXBatchDataEntity</span><span class="p">,</span>
     <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.base</span> <span class="kn">import</span> <span class="n">OTXModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span><span class="p">,</span> <span class="n">NullMetricCallable</span>
@@ -320,7 +320,7 @@
 
 <div class="viewcode-block" id="OTXModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">,</span> <span class="n">T_OTXTileBatchDataEntity</span><span class="p">]):</span>
+<span class="k">class</span> <span class="nc">OTXModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">,</span> <span class="n">T_OTXBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the models used in OTX.</span>
 
 <span class="sd">    Args:</span>
@@ -819,7 +819,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.base.html#otx.core.model.base.OTXModel.forward_tiles">[docs]</a>
     <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">[</span><span class="n">T_OTXBatchDataEntity</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_OTXBatchPredEntity</span> <span class="o">|</span> <span class="n">OTXBatchLossEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function for tile task.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>

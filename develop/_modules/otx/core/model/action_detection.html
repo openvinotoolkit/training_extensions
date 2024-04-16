@@ -248,7 +248,6 @@
 
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.action_detection</span> <span class="kn">import</span> <span class="n">ActionDetBatchDataEntity</span><span class="p">,</span> <span class="n">ActionDetBatchPredEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">T_OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.mean_ap</span> <span class="kn">import</span> <span class="n">MeanAPCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span>
@@ -265,13 +264,7 @@
 
 <div class="viewcode-block" id="OTXActionDetModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.action_detection.html#otx.core.model.action_detection.OTXActionDetModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXActionDetModel</span><span class="p">(</span>
-    <span class="n">OTXModel</span><span class="p">[</span>
-        <span class="n">ActionDetBatchDataEntity</span><span class="p">,</span>
-        <span class="n">ActionDetBatchPredEntity</span><span class="p">,</span>
-        <span class="n">T_OTXTileBatchDataEntity</span><span class="p">,</span>
-    <span class="p">],</span>
-<span class="p">):</span>
+<span class="k">class</span> <span class="nc">OTXActionDetModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">ActionDetBatchDataEntity</span><span class="p">,</span> <span class="n">ActionDetBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the action detection models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>

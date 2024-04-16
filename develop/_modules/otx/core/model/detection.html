@@ -254,7 +254,7 @@
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.detection</span> <span class="kn">import</span> <span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span>
-<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">,</span> <span class="n">TileBatchDetDataEntity</span>
+<span class="kn">from</span> <span class="nn">otx.core.data.entity.tile</span> <span class="kn">import</span> <span class="n">OTXTileBatchDataEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics</span> <span class="kn">import</span> <span class="n">MetricCallable</span><span class="p">,</span> <span class="n">MetricInput</span>
 <span class="kn">from</span> <span class="nn">otx.core.metrics.mean_ap</span> <span class="kn">import</span> <span class="n">MeanAPCallable</span>
 <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">DefaultOptimizerCallable</span><span class="p">,</span> <span class="n">DefaultSchedulerCallable</span><span class="p">,</span> <span class="n">OTXModel</span><span class="p">,</span> <span class="n">OVModel</span>
@@ -276,7 +276,7 @@
 
 <div class="viewcode-block" id="OTXDetectionModel">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel">[docs]</a>
-<span class="k">class</span> <span class="nc">OTXDetectionModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">,</span> <span class="n">TileBatchDetDataEntity</span><span class="p">]):</span>
+<span class="k">class</span> <span class="nc">OTXDetectionModel</span><span class="p">(</span><span class="n">OTXModel</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">,</span> <span class="n">DetBatchPredEntity</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the detection models used in OTX.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -298,7 +298,7 @@
 
 <div class="viewcode-block" id="OTXDetectionModel.forward_tiles">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.OTXDetectionModel.forward_tiles">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TileBatchDetDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward_tiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">[</span><span class="n">DetBatchDataEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unpack detection tiles.</span>
 
 <span class="sd">        Args:</span>
@@ -443,10 +443,7 @@
 
 <div class="viewcode-block" id="ExplainableOTXDetModel.forward_explain">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.forward_explain">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span> <span class="o">|</span> <span class="n">TileBatchDetDataEntity</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
 
