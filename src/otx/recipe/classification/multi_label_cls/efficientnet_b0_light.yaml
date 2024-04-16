@@ -49,9 +49,6 @@ overrides:
           - backend: cv2
             scale: 224
             type: RandomResizedCrop
-          # - backend: cv2
-          #   scale: 224
-          #   type: Resize
           - type: PackInputs
       val_subset:
         transforms:

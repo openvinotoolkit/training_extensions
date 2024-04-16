@@ -47,9 +47,6 @@ overrides:
       train_subset:
         transforms:
           - type: LoadImageFromFile
-          # - backend: cv2
-          #   scale: 224
-          #   type: Resize
           - backend: cv2
             scale: 224
             type: RandomResizedCrop
