@@ -33,7 +33,7 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors.base import TwoStageDetector
+    from mmdet.models.detectors.two_stage import TwoStageDetector
     from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
@@ -229,10 +229,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
-    def forward_explain(
-        self,
-        inputs: InstanceSegBatchDataEntity | TileBatchInstSegDataEntity,
-    ) -> InstanceSegBatchPredEntity:
+    def forward_explain(self, inputs: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
         """Model forward function."""
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)

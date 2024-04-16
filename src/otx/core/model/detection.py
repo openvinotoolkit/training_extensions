@@ -193,10 +193,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
-    def forward_explain(
-        self,
-        inputs: DetBatchDataEntity | TileBatchDetDataEntity,
-    ) -> DetBatchPredEntity:
+    def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
         from otx.algo.explain.explain_algo import get_feature_vector
 
