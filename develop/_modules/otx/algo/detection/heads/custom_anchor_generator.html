@@ -247,7 +247,6 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">mmdet.registry</span> <span class="kn">import</span> <span class="n">TASK_UTILS</span>
-<span class="kn">from</span> <span class="nn">mmdet.structures.bbox</span> <span class="kn">import</span> <span class="n">HorizontalBoxes</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
 
 
@@ -281,8 +280,6 @@
 <span class="sd">            float is given, they will be used to shift the centers of anchors.</span>
 <span class="sd">        center_offset (float): The offset of center in proportion to anchors&#39;</span>
 <span class="sd">            width and height. By default it is 0 in V2.0.</span>
-<span class="sd">        use_box_type (bool): Whether to warp anchors with the box type data</span>
-<span class="sd">            structure. Defaults to False.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; from mmdet.models.task_modules.</span>
@@ -315,7 +312,6 @@
         <span class="n">scales_per_octave</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">centers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">center_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">use_box_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># check center and center_offset</span>
         <span class="k">if</span> <span class="n">center_offset</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">centers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -349,7 +345,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">centers</span> <span class="o">=</span> <span class="n">centers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">=</span> <span class="n">center_offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">base_anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_box_type</span> <span class="o">=</span> <span class="n">use_box_type</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_base_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
@@ -515,12 +510,9 @@
         <span class="c1"># shifted anchors (K, A, 4), reshape to (K*A, 4)</span>
 
         <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">base_anchors</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">shifts</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">all_anchors</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
         <span class="c1"># first A rows correspond to A anchors of (0, 0) in feature map,</span>
         <span class="c1"># then (0, 1), (0, 2), ...</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_box_type</span><span class="p">:</span>
-            <span class="n">all_anchors</span> <span class="o">=</span> <span class="n">HorizontalBoxes</span><span class="p">(</span><span class="n">all_anchors</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">all_anchors</span>
+        <span class="k">return</span> <span class="n">all_anchors</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">sparse_priors</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -745,7 +737,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">center_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gen_base_anchors</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">use_box_type</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="SSDAnchorGeneratorClustered.gen_base_anchors">
 <a class="viewcode-back" href="../../../../../guide/reference/_autosummary/otx.algo.detection.heads.html#otx.algo.detection.heads.SSDAnchorGeneratorClustered.gen_base_anchors">[docs]</a>

@@ -268,8 +268,8 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">torch</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">OptimizerCallable</span>
-    <span class="kn">from</span> <span class="nn">mmdet.structures</span> <span class="kn">import</span> <span class="n">DetDataSample</span><span class="p">,</span> <span class="n">OptSampleList</span><span class="p">,</span> <span class="n">SampleList</span>
-    <span class="kn">from</span> <span class="nn">mmdet.utils</span> <span class="kn">import</span> <span class="n">ConfigType</span><span class="p">,</span> <span class="n">InstanceList</span><span class="p">,</span> <span class="n">OptConfigType</span><span class="p">,</span> <span class="n">OptMultiConfig</span>
+    <span class="kn">from</span> <span class="nn">mmengine</span> <span class="kn">import</span> <span class="n">ConfigDict</span>
+    <span class="kn">from</span> <span class="nn">mmengine.structures</span> <span class="kn">import</span> <span class="n">InstanceData</span>
     <span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span>
     <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">device</span>
 
@@ -288,12 +288,12 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">backbone</span><span class="p">:</span> <span class="n">ConfigType</span><span class="p">,</span>
-        <span class="n">bbox_head</span><span class="p">:</span> <span class="n">OptConfigType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">OptConfigType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">OptConfigType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">data_preprocessor</span><span class="p">:</span> <span class="n">OptConfigType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">OptMultiConfig</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">backbone</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">bbox_head</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">train_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">data_preprocessor</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">init_cfg</span><span class="p">:</span> <span class="n">ConfigDict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ConfigDict</span><span class="p">]</span> <span class="o">|</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_init</span> <span class="o">=</span> <span class="kc">False</span>
@@ -393,9 +393,9 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tensor&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">DetDataSample</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The unified entry for a forward process in both training and test.</span>
 
 <span class="sd">        The method should accept three modes: &quot;tensor&quot;, &quot;predict&quot; and &quot;loss&quot;:</span>
@@ -403,7 +403,7 @@
 <span class="sd">        - &quot;tensor&quot;: Forward the whole network and return tensor or tuple of</span>
 <span class="sd">        tensor without any post-processing, same as a common nn.Module.</span>
 <span class="sd">        - &quot;predict&quot;: Forward and return the predictions, which are fully</span>
-<span class="sd">        processed to a list of :obj:`DetDataSample`.</span>
+<span class="sd">        processed to a list of :obj:`InstanceData`.</span>
 <span class="sd">        - &quot;loss&quot;: Forward and return a dict of losses according to the given</span>
 <span class="sd">        inputs and data samples.</span>
 
@@ -413,7 +413,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (torch.Tensor): The input tensor with shape</span>
 <span class="sd">                (N, C, ...) in general.</span>
-<span class="sd">            data_samples (list[:obj:`DetDataSample`], optional): A batch of</span>
+<span class="sd">            data_samples (list[:obj:`InstanceData`], optional): A batch of</span>
 <span class="sd">                data samples that contain annotations and predictions.</span>
 <span class="sd">                Defaults to None.</span>
 <span class="sd">            mode (str): Return what kind of value. Defaults to &#39;tensor&#39;.</span>
@@ -422,7 +422,7 @@
 <span class="sd">            The return type depends on ``mode``.</span>
 
 <span class="sd">            - If ``mode=&quot;tensor&quot;``, return a tensor or a tuple of tensor.</span>
-<span class="sd">            - If ``mode=&quot;predict&quot;``, return a list of :obj:`DetDataSample`.</span>
+<span class="sd">            - If ``mode=&quot;predict&quot;``, return a list of :obj:`InstanceData`.</span>
 <span class="sd">            - If ``mode=&quot;loss&quot;``, return a dict of tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span>
@@ -438,14 +438,14 @@
     <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="n">SampleList</span><span class="p">,</span>
+        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate losses from a batch of inputs and data samples.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_inputs (Tensor): Input images of shape (N, C, H, W).</span>
 <span class="sd">                These should usually be mean centered and std scaled.</span>
-<span class="sd">            batch_data_samples (list[:obj:`DetDataSample`]): The batch</span>
+<span class="sd">            batch_data_samples (list[:obj:`InstanceData`]): The batch</span>
 <span class="sd">                data samples. It usually includes information such</span>
 <span class="sd">                as `gt_instance` or `gt_panoptic_seg` or `gt_sem_seg`.</span>
 
@@ -455,20 +455,25 @@
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_feat</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_head</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_data_samples</span><span class="p">:</span> <span class="n">SampleList</span><span class="p">,</span> <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleList</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">rescale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict results from a batch of inputs and data samples with post-processing.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_inputs (Tensor): Inputs with shape (N, C, H, W).</span>
-<span class="sd">            batch_data_samples (List[:obj:`DetDataSample`]): The Data</span>
+<span class="sd">            batch_data_samples (List[:obj:`InstanceData`]): The Data</span>
 <span class="sd">                Samples. It usually includes information such as</span>
 <span class="sd">                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.</span>
 <span class="sd">            rescale (bool): Whether to rescale the results.</span>
 <span class="sd">                Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[:obj:`DetDataSample`]: Detection results of the</span>
-<span class="sd">            input images. Each DetDataSample usually contain</span>
+<span class="sd">            list[:obj:`InstanceData`]: Detection results of the</span>
+<span class="sd">            input images. Each InstanceData usually contain</span>
 <span class="sd">            &#39;pred_instances&#39;. And the ``pred_instances`` usually</span>
 <span class="sd">            contains following keys.</span>
 
@@ -486,13 +491,13 @@
     <span class="k">def</span> <span class="nf">_forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_inputs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="n">OptSampleList</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Network forward process.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_inputs (Tensor): Inputs with shape (N, C, H, W).</span>
-<span class="sd">            batch_data_samples (list[:obj:`DetDataSample`]): Each item contains</span>
+<span class="sd">            batch_data_samples (list[:obj:`InstanceData`]): Each item contains</span>
 <span class="sd">                the meta information of each image and corresponding</span>
 <span class="sd">                annotations.</span>
 
@@ -517,18 +522,22 @@
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
 
-    <span class="k">def</span> <span class="nf">add_pred_to_datasample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_samples</span><span class="p">:</span> <span class="n">SampleList</span><span class="p">,</span> <span class="n">results_list</span><span class="p">:</span> <span class="n">InstanceList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SampleList</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add predictions to `DetDataSample`.</span>
+    <span class="k">def</span> <span class="nf">add_pred_to_datasample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_samples</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+        <span class="n">results_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">InstanceData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add predictions to `InstanceData`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data_samples (list[:obj:`DetDataSample`], optional): A batch of</span>
+<span class="sd">            data_samples (list[:obj:`InstanceData`], optional): A batch of</span>
 <span class="sd">                data samples that contain annotations and predictions.</span>
 <span class="sd">            results_list (list[:obj:`InstanceData`]): Detection results of</span>
 <span class="sd">                each image.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list[:obj:`DetDataSample`]: Detection results of the</span>
-<span class="sd">            input images. Each DetDataSample usually contain</span>
+<span class="sd">            list[:obj:`InstanceData`]: Detection results of the</span>
+<span class="sd">            input images. Each InstanceData usually contain</span>
 <span class="sd">            &#39;pred_instances&#39;. And the ``pred_instances`` usually</span>
 <span class="sd">            contains following keys.</span>
 
