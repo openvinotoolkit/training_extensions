@@ -10,7 +10,6 @@ import warnings
 import numpy as np
 import torch
 from mmdet.registry import TASK_UTILS
-from mmdet.structures.bbox import HorizontalBoxes
 from torch.nn.modules.utils import _pair
 
 
@@ -44,8 +43,6 @@ class AnchorGenerator:
             float is given, they will be used to shift the centers of anchors.
         center_offset (float): The offset of center in proportion to anchors'
             width and height. By default it is 0 in V2.0.
-        use_box_type (bool): Whether to warp anchors with the box type data
-            structure. Defaults to False.
 
     Examples:
         >>> from mmdet.models.task_modules.
@@ -78,7 +75,6 @@ class AnchorGenerator:
         scales_per_octave: int | None = None,
         centers: list[tuple[float, float]] | None = None,
         center_offset: float = 0.0,
-        use_box_type: bool = False,
     ) -> None:
         # check center and center_offset
         if center_offset != 0 and centers is None:
@@ -112,7 +108,6 @@ class AnchorGenerator:
         self.centers = centers
         self.center_offset = center_offset
         self.base_anchors = self.gen_base_anchors()
-        self.use_box_type = use_box_type
 
     @property
     def num_base_anchors(self) -> list[int]:
@@ -278,12 +273,9 @@ class AnchorGenerator:
         # shifted anchors (K, A, 4), reshape to (K*A, 4)
 
         all_anchors = base_anchors[None, :, :] + shifts[:, None, :]
-        all_anchors = all_anchors.view(-1, 4)
         # first A rows correspond to A anchors of (0, 0) in feature map,
         # then (0, 1), (0, 2), ...
-        if self.use_box_type:
-            all_anchors = HorizontalBoxes(all_anchors)
-        return all_anchors
+        return all_anchors.view(-1, 4)
 
     def sparse_priors(
         self,
@@ -506,7 +498,6 @@ class SSDAnchorGeneratorClustered(AnchorGenerator):
 
         self.center_offset = 0
         self.gen_base_anchors()
-        self.use_box_type = False
 
     def gen_base_anchors(self) -> None:  # type: ignore[override]
         """Generate base anchor for SSD."""

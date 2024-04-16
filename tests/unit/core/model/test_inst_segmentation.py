@@ -8,6 +8,7 @@ import torch
 from otx.algo.explain.explain_algo import get_feature_vector
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
+from otx.core.types.export import TaskLevelExportParameters
 
 
 class TestOTXInstanceSegModel:
@@ -63,3 +64,8 @@ class TestOTXInstanceSegModel:
         otx_model._restore_model_forward()
         assert otx_model.original_model_forward is None
         assert str(otx_model.model.forward) == str(initial_model_forward)
+
+    def test_export_parameters(self, otx_model):
+        parameters = otx_model._export_parameters
+        assert isinstance(parameters, TaskLevelExportParameters)
+        assert parameters.task_type == "instance_segmentation"
