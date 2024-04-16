@@ -24,7 +24,7 @@ from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import (Points, _crop_image_info,
+from otx.core.data.entity.base import (Points, _crop_image_info, _pad_image_info,
                                        _resize_image_info, _resized_crop_image_info)
 from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness, flip_image,
                                                 centers_bboxes, clip_bboxes,
@@ -1379,7 +1379,7 @@ class CachedMixUp(tvt_v2.Transform):
 
 
 class YOLOXHSVRandomAug(tvt_v2.Transform):
-    """YOLOXHSVRandomAug converted from mmdet.datasets.transforms.YOLOXHSVRandomAug.
+    """Implementation of mmdet.datasets.transforms.YOLOXHSVRandomAug with torchvision format.
     
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2905-L2961
 
@@ -1436,6 +1436,128 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         repr_str += f'saturation_delta={self.saturation_delta}, '
         repr_str += f'value_delta={self.value_delta})'
         return repr_str
+
+
+class Pad(tvt_v2.Transform):
+    """Implementation of mmdet.datasets.transforms.Pad with torchvision format.
+    
+    Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L705-L784
+
+    TODO : update masks for instance segmentation
+    TODO : optimize logic to torcivision pipeline
+
+    Args:
+        size (tuple, optional): Fixed padding size.
+            Expected padding shape (width, height). Defaults to None.
+        size_divisor (int, optional): The divisor of padded size. Defaults to
+            None.
+        pad_to_square (bool): Whether to pad the image into a square.
+            Currently only used for YOLOX. Defaults to False.
+        pad_val (Number | dict[str, Number], optional) - Padding value for if
+            the pad_mode is "constant".  If it is a single number, the value
+            to pad the image is the number and to pad the semantic
+            segmentation map is 255. If it is a dict, it should have the
+            following keys:
+
+            - img: The value to pad the image.
+            - seg: The value to pad the semantic segmentation map.
+            Defaults to dict(img=0, seg=255).
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Defaults to 'constant'.
+
+            - constant: pads with a constant value, this value is specified
+              with pad_val.
+            - edge: pads with the last value at the edge of the image.
+            - reflect: pads with reflection of image without repeating the last
+              value on the edge. For example, padding [1, 2, 3, 4] with 2
+              elements on both sides in reflect mode will result in
+              [3, 2, 1, 2, 3, 4, 3, 2].
+            - symmetric: pads with reflection of image repeating the last value
+              on the edge. For example, padding [1, 2, 3, 4] with 2 elements on
+              both sides in symmetric mode will result in
+              [2, 1, 1, 2, 3, 4, 4, 3]
+    """
+
+    border_type = {
+        'constant': cv2.BORDER_CONSTANT,
+        'edge': cv2.BORDER_REPLICATE,
+        'reflect': cv2.BORDER_REFLECT_101,
+        'symmetric': cv2.BORDER_REFLECT
+    }
+
+    def __init__(self,
+                 size: tuple[int, int] | None = None, # (H, W)
+                 size_divisor: int | None = None,
+                 pad_to_square: bool = False,
+                 pad_val: int | float | dict = dict(img=0, seg=255),
+                 padding_mode: str = 'constant') -> None:
+        super().__init__()
+
+        self.size = size
+        self.size_divisor = size_divisor
+        if isinstance(pad_val, int):
+            pad_val = dict(img=pad_val, seg=255)
+        assert isinstance(pad_val, dict), 'pad_val '
+        self.pad_val = pad_val
+        self.pad_to_square = pad_to_square
+
+        if pad_to_square:
+            assert size is None, \
+                'The size and size_divisor must be None ' \
+                'when pad2square is True'
+        else:
+            assert size is not None or size_divisor is not None, \
+                'only one of size and size_divisor should be valid'
+            assert size is None or size_divisor is None
+        assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+        self.padding_mode = padding_mode
+
+    def _pad_img(self, inputs: DetDataEntity) -> DetDataEntity:
+        """Pad images according to ``self.size``."""
+        img = to_np_image(inputs.image)
+        pad_val = self.pad_val.get('img', 0)
+
+        size = None
+        if self.pad_to_square:
+            max_size = max(img.shape[:2])
+            size = (max_size, max_size)
+        if self.size_divisor is not None:
+            if size is None:
+                size = (img.shape[0], img.shape[1])
+            pad_h = int(np.ceil(
+                size[0] / self.size_divisor)) * self.size_divisor
+            pad_w = int(np.ceil(
+                size[1] / self.size_divisor)) * self.size_divisor
+            size = (pad_h, pad_w)
+        elif self.size is not None:
+            size = self.size
+        if isinstance(pad_val, int) and img.ndim == 3:
+            pad_val = tuple(pad_val for _ in range(img.shape[2]))
+
+        width = max(size[1] - img.shape[1], 0)
+        height = max(size[0] - img.shape[0], 0)
+        padding = [0, 0, width, height]
+
+        padded_img = img = cv2.copyMakeBorder(
+            img,
+            padding[1],
+            padding[3],
+            padding[0],
+            padding[2],
+            self.border_type[self.padding_mode],
+            value=pad_val)
+
+        inputs.image = F.to_image(padded_img)
+        inputs.img_info = _pad_image_info(inputs.img_info, padding)
+        return inputs
+
+    def forward(self, *inputs: Any) -> Any:
+        """Call function to pad images."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        inputs = inputs[0]
+
+        inputs = self._pad_img(inputs)
+        return inputs
     
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes

@@ -74,8 +74,9 @@ overrides:
           - class_path: otx.core.data.transform_libs.torchvision.RandomFlip
             init_args:
               prob: 0.5
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               pad_val: 114
         sampler:
           class_path: otx.algo.samplers.balanced_sampler.BalancedSampler
@@ -88,8 +89,9 @@ overrides:
                 - 416
                 - 416
               keep_ratio: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               pad_val: 114
       test_subset:
         batch_size: 8
@@ -100,6 +102,7 @@ overrides:
                 - 416
                 - 416
               keep_ratio: True
-          - class_path: otx.core.data.transform_libs.torchvision.PadtoSquare
+          - class_path: otx.core.data.transform_libs.torchvision.Pad
             init_args:
+              pad_to_square: true
               pad_val: 114

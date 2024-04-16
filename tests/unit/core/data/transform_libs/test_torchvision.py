@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from copy import deepcopy
 import torch
-from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug, CachedMosaic, CachedMixUp
+from otx.core.data.transform_libs.torchvision import MinIoURandomCrop, Resize, RandomFlip, PhotoMetricDistortion, RandomAffine, YOLOXHSVRandomAug, CachedMosaic, CachedMixUp, Pad
 from otx.core.data.transform_libs.utils import overlap_bboxes
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.base import ImageInfo
@@ -200,3 +200,37 @@ class TestYOLOXHSVRandomAug:
         assert results.labels.shape[0] == results.bboxes.shape[0]
         assert results.labels.dtype == torch.int64
         assert results.bboxes.dtype == torch.float32
+
+
+class TestPad:
+    def test_forward(self, data_entity) -> None:
+        # test pad img/gt_masks with size
+        transform = Pad(size=(200, 250))
+
+        results = transform(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (200, 250)
+
+
+        # test pad img/gt_masks with size_divisor
+        transform = Pad(size_divisor=11)
+
+        results = transform(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (121, 231)
+
+
+        # test pad img/gt_masks with pad_to_square
+        transform = Pad(pad_to_square=True)
+
+        results = transform(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (224, 224)
+
+
+        # test pad img/gt_masks with pad_to_square and size_divisor
+        transform = Pad(pad_to_square=True, size_divisor=11)
+
+        results = transform(deepcopy(data_entity))
+
+        assert results.image.shape[-2:] == (231, 231)
