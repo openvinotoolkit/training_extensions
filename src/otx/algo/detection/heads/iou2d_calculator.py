@@ -5,7 +5,8 @@
 from __future__ import annotations
 
 import torch
-from mmdet.structures.bbox import BaseBoxes, bbox_overlaps, get_box_tensor
+
+from otx.algo.detection.utils.bbox_overlaps import bbox_overlaps
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BboxOverlaps2D available at:
@@ -19,18 +20,18 @@ class BboxOverlaps2D:
 
     def __call__(
         self,
-        bboxes1: torch.Tensor | BaseBoxes,
-        bboxes2: torch.Tensor | BaseBoxes,
+        bboxes1: torch.Tensor,
+        bboxes2: torch.Tensor,
         mode: str = "iou",
         is_aligned: bool = False,
     ) -> torch.Tensor:
         """Calculate IoU between 2D bboxes.
 
         Args:
-            bboxes1 (Tensor or :obj:`BaseBoxes`): bboxes have shape (m, 4)
+            bboxes1 (Tensor): bboxes have shape (m, 4)
                 in <x1, y1, x2, y2> format, or shape (m, 5) in <x1, y1, x2,
                 y2, score> format.
-            bboxes2 (Tensor or :obj:`BaseBoxes`): bboxes have shape (m, 4)
+            bboxes2 (Tensor): bboxes have shape (m, 4)
                 in <x1, y1, x2, y2> format, shape (m, 5) in <x1, y1, x2, y2,
                 score> format, or be empty. If ``is_aligned `` is ``True``,
                 then m and n must be equal.
@@ -43,8 +44,6 @@ class BboxOverlaps2D:
         Returns:
             Tensor: shape (m, n) if ``is_aligned `` is False else shape (m,)
         """
-        bboxes1 = get_box_tensor(bboxes1)
-        bboxes2 = get_box_tensor(bboxes2)
         if bboxes2.size(-1) == 5:
             bboxes2 = bboxes2[..., :4]
         if bboxes1.size(-1) == 5:

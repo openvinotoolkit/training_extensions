@@ -16,6 +16,7 @@ from warnings import warn
 import torch
 from lightning import Trainer, seed_everything
 
+from otx.algo.plugins import MixedPrecisionXPUPlugin
 from otx.core.config.device import DeviceConfig
 from otx.core.config.explain import ExplainConfig
 from otx.core.config.hpo import HpoConfig
@@ -27,6 +28,7 @@ from otx.core.types.export import OTXExportFormatType
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.cache import TrainerArgumentsCache
+from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
@@ -179,7 +181,8 @@ class Engine:
         resume: bool = False,
         metric: MetricCallable | None = None,
         run_hpo: bool = False,
-        hpo_config: HpoConfig | None = None,
+        hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
+        checkpoint: PathLike | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -199,6 +202,7 @@ class Engine:
                 metric callable. It will temporarilly change the evaluation metric for the validation and test.
             run_hpo (bool, optional): If True, optimizer hyper parameters before training a model.
             hpo_config (HpoConfig | None, optional): Configuration for HPO.
+            checkpoint (PathLike | None, optional): Path to the checkpoint file. Defaults to None.
             **kwargs: Additional keyword arguments for pl.Trainer configuration.
 
         Returns:
@@ -234,14 +238,14 @@ class Engine:
                 otx train --data_root <DATASET_PATH> --config <CONFIG_PATH, str>
                 ```
         """
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+
         if run_hpo:
-            if hpo_config is None:
-                hpo_config = HpoConfig()
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)
             if best_trial_weight is not None:
-                self.checkpoint = best_trial_weight
+                checkpoint = best_trial_weight
                 resume = True
 
         if seed is not None:
@@ -258,7 +262,7 @@ class Engine:
         )
         fit_kwargs: dict[str, Any] = {}
 
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
+        # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
             # TODO (vinnamki): Revisit label_info logic to make it cleaner
@@ -269,12 +273,17 @@ class Engine:
             logging.warning(msg)
             self.model.label_info = self.datamodule.label_info
 
-        if resume:
-            fit_kwargs["ckpt_path"] = self.checkpoint
-        elif self.checkpoint is not None:
-            loaded_checkpoint = torch.load(self.checkpoint)
-            # loaded checkpoint have keys (OTX1.5): model, config, labels, input_size, VERSION
-            self.model.load_state_dict(loaded_checkpoint)
+        if resume and checkpoint:
+            # NOTE: If both `resume` and `checkpoint` are provided,
+            # load the entire model state from the checkpoint using the pl.Trainer's API.
+            fit_kwargs["ckpt_path"] = checkpoint
+        elif not resume and checkpoint:
+            # NOTE: If `resume` is not enabled but `checkpoint` is provided,
+            # load the model state from the checkpoint incrementally.
+            # This means only the model weights are loaded. If there is a mismatch in label_info,
+            # perform incremental weight loading for the model's classification layer.
+            ckpt = torch.load(checkpoint)
+            self.model.load_state_dict_incrementally(ckpt)
 
         with override_metric_callable(model=self.model, new_metric_callable=metric) as model:
             self.trainer.fit(
@@ -333,20 +342,6 @@ class Engine:
                 otx test --config <CONFIG_PATH, str> --checkpoint <CKPT_PATH, str>
                 ```
         """
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
-        # This is due to smart weight loading check label name as well as number of classes.
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
-
         model = self.model
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
         datamodule = datamodule if datamodule is not None else self.datamodule
@@ -366,8 +361,18 @@ class Engine:
         # NOTE, trainer.test takes only lightning based checkpoint.
         # So, it can't take the OTX1.x checkpoint.
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = self.model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a test pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         self._build_trainer(**kwargs)
 
@@ -423,20 +428,6 @@ class Engine:
         """
         from otx.algo.utils.xai_utils import process_saliency_maps_in_pred_entity
 
-        # NOTE Model's label info should be converted datamodule's label info before ckpt loading
-        # This is due to smart weight loading check label name as well as number of classes.
-        if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
-            msg = (
-                "Model label_info is not equal to the Datamodule label_info. "
-                f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"
-            )
-            logging.warning(msg)
-            self.model.label_info = self.datamodule.label_info
-
-            # TODO (vinnamki): This should be changed to raise an error if not equivalent in case of test
-            # raise ValueError()
-
         model = self.model
 
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
@@ -451,8 +442,18 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
 
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = self.model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a predict pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         self._build_trainer(**kwargs)
 
@@ -516,11 +517,12 @@ class Engine:
                     --checkpoint <CKPT_PATH, str> --export_precision FP16 --export_format ONNX
                 ```
         """
-        ckpt_path = str(checkpoint) if checkpoint is not None else self.checkpoint
-        if ckpt_path is None:
+        checkpoint = checkpoint if checkpoint is not None else self.checkpoint
+
+        if checkpoint is None:
             msg = "To make export, checkpoint must be specified."
             raise RuntimeError(msg)
-        is_ir_ckpt = Path(ckpt_path).suffix in [".xml"]
+        is_ir_ckpt = Path(checkpoint).suffix in [".xml"]
 
         if is_ir_ckpt and export_format != OTXExportFormatType.EXPORTABLE_CODE:
             msg = (
@@ -538,10 +540,9 @@ class Engine:
             )
 
         if not is_ir_ckpt:
+            model_cls = self.model.__class__
+            self.model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint, map_location="cpu")
             self.model.eval()
-            loaded_checkpoint = torch.load(ckpt_path)
-            self.model.label_info = loaded_checkpoint["state_dict"]["label_info"]
-            self.model.load_state_dict(loaded_checkpoint)
 
         self.model.explain_mode = explain
         exported_model_path = self.model.export(
@@ -679,11 +680,19 @@ class Engine:
             datamodule = self._auto_configurator.update_ov_subset_pipeline(datamodule=datamodule, subset="test")
             model = self._auto_configurator.get_ov_model(model_name=str(checkpoint), label_info=datamodule.label_info)
 
-        model.label_info = datamodule.label_info
-
         if checkpoint is not None and not is_ir_ckpt:
-            loaded_checkpoint = torch.load(checkpoint)
-            model.load_state_dict(loaded_checkpoint)
+            model_cls = model.__class__
+            model = model_cls.load_from_checkpoint(checkpoint_path=checkpoint)
+
+        if model.label_info != self.datamodule.label_info:
+            msg = (
+                "To launch a explain pipeline, the label information should be same "
+                "between the training and testing datasets. "
+                "Please check whether you use the same dataset: "
+                f"model.label_info={model.label_info}, "
+                f"datamodule.label_info={self.datamodule.label_info}"
+            )
+            raise ValueError(msg)
 
         model.explain_mode = True
 
@@ -726,7 +735,7 @@ class Engine:
                 Defaults to None. If work_dir is None, use the work_dir from the configuration file.
             kwargs: Arguments that can override the engine's arguments.
 
-        Returns:s
+        Returns:
             Engine: An instance of the Engine class.
 
         Example:
@@ -765,10 +774,24 @@ class Engine:
             )
             warn(msg, stacklevel=1)
 
+        if (datamodule := instantiated_config.get("data")) is None:
+            msg = "Cannot instantiate datamodule from config."
+            raise ValueError(msg)
+        if not isinstance(datamodule, OTXDataModule):
+            raise TypeError(datamodule)
+
+        if (model := instantiated_config.get("model")) is None:
+            msg = "Cannot instantiate model from config."
+            raise ValueError(msg)
+        if not isinstance(model, OTXModel):
+            raise TypeError(model)
+
+        model.label_info = datamodule.label_info
+
         return cls(
             work_dir=instantiated_config.get("work_dir", work_dir),
-            datamodule=instantiated_config.get("data"),
-            model=instantiated_config.get("model"),
+            datamodule=datamodule,
+            model=model,
             **engine_kwargs,
         )
 
@@ -856,6 +879,8 @@ class Engine:
 
     @device.setter
     def device(self, device: DeviceType) -> None:
+        if is_xpu_available() and device == DeviceType.auto:
+            device = DeviceType.xpu
         self._device = DeviceConfig(accelerator=device)
         self._cache.update(accelerator=self._device.accelerator, devices=self._device.devices)
         self._cache.is_trainer_args_identical = False
@@ -878,6 +903,14 @@ class Engine:
         """Instantiate the trainer based on the model parameters."""
         if self._cache.requires_update(**kwargs) or self._trainer is None:
             self._cache.update(**kwargs)
+            # set up xpu device
+            if self._device.accelerator == DeviceType.xpu:
+                self._cache.update(strategy="xpu_single")
+                # add plugin for Automatic Mixed Precision on XPU
+                if self._cache.args.get("precision", 32) == 16:
+                    self._cache.update(plugins=[MixedPrecisionXPUPlugin()])
+                    self._cache.args["precision"] = None
+
             kwargs = self._cache.args
             self._trainer = Trainer(**kwargs)
             self._cache.is_trainer_args_identical = True

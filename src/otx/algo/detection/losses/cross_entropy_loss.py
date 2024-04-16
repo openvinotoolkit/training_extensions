@@ -1,26 +1,26 @@
-"""The original source code is from mmdet.mask.structures. Please refer to https://github.com/open-mmlab/mmdetection/."""
+# Copyright (C) 2024 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+"""Base Cross Entropy Loss implementation from mmdet."""
 
-# Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-import warnings
-
 import torch
-import torch.nn.functional as F  # noqa: N812
-from mmengine.registry import MODELS
 from torch import nn
 
-from .utils import weight_reduce_loss
+from otx.algo.detection.losses.weighted_loss import weight_reduce_loss
 
 
+# All of the methods and classes below come from mmdet, and are slightly modified.
+# https://github.com/open-mmlab/mmdetection/blob/ecac3a77becc63f23d9f6980b2a36f86acd00a8a/mmdet/models/losses/cross_entropy_loss.py
 def cross_entropy(
     pred: torch.Tensor,
-    target: torch.Tensor,
+    label: torch.Tensor,
     weight: torch.Tensor | None = None,
     reduction: str = "mean",
     avg_factor: int | None = None,
     class_weight: list[float] | None = None,
-    ignore_index: int | None = None,
+    ignore_index: int = -100,
+    avg_non_ignore: bool = False,
 ) -> torch.Tensor:
     """Calculate the CrossEntropy loss.
 
@@ -29,20 +29,25 @@ def cross_entropy(
             of classes.
         label (torch.Tensor): The learning label of the prediction.
         weight (torch.Tensor, optional): Sample-wise loss weight.
-        reduction (str, optional): The method used to reduce the loss.
+        reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
         class_weight (list[float], optional): The weight for each class.
-        ignore_index (int | None): The label index to be ignored.
-            If None, it will be set to default value. Default: -100.
+        ignore_index (int): The label index to be ignored.
+            Default: -100.
+        avg_non_ignore (bool): The flag decides to whether the loss is
+            only averaged over non-ignored targets. Default: False.
 
     Returns:
         torch.Tensor: The calculated loss
     """
-    # The default value of ignore_index is the same as F.cross_entropy
-    ignore_index = -100 if ignore_index is None else ignore_index
-    # element-wise losses
-    loss = F.cross_entropy(pred, target, weight=class_weight, reduction="none", ignore_index=ignore_index)
+    loss = nn.functional.cross_entropy(pred, label, weight=class_weight, reduction="none", ignore_index=ignore_index)
+
+    # average loss over non-ignored elements
+    # pytorch's official cross_entropy average loss over non-ignored elements
+    # refer to https://github.com/pytorch/pytorch/blob/56b43f4fec1f76953f15a627694d4bba34588969/torch/nn/functional.py#L2660
+    if (avg_factor is None) and avg_non_ignore and reduction == "mean":
+        avg_factor = label.numel() - (label == ignore_index).sum().item()
 
     # apply weights and do the reduction
     if weight is not None:
@@ -53,9 +58,9 @@ def cross_entropy(
 def _expand_onehot_labels(
     labels: torch.Tensor,
     label_weights: torch.Tensor,
-    label_channels: torch.Tensor,
+    label_channels: int,
     ignore_index: int,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, ...]:
     """Expand onehot labels to match the size of prediction."""
     bin_labels = labels.new_full((labels.size(0), label_channels), 0)
     valid_mask = (labels >= 0) & (labels != ignore_index)
@@ -65,23 +70,21 @@ def _expand_onehot_labels(
         bin_labels[inds, labels[inds]] = 1
 
     valid_mask = valid_mask.view(-1, 1).expand(labels.size(0), label_channels).float()
-    if label_weights is None:
-        bin_label_weights = valid_mask
-    else:
-        bin_label_weights = label_weights.view(-1, 1).repeat(1, label_channels)
-        bin_label_weights *= valid_mask
+    bin_label_weights = label_weights.view(-1, 1).repeat(1, label_channels)
+    bin_label_weights *= valid_mask
 
     return bin_labels, bin_label_weights, valid_mask
 
 
 def binary_cross_entropy(
     pred: torch.Tensor,
-    target: torch.Tensor,
+    label: torch.Tensor,
     weight: torch.Tensor | None = None,
     reduction: str = "mean",
     avg_factor: int | None = None,
     class_weight: list[float] | None = None,
-    ignore_index: int | None = None,
+    ignore_index: int = -100,
+    avg_non_ignore: bool = False,
 ) -> torch.Tensor:
     """Calculate the binary CrossEntropy loss.
 
@@ -92,35 +95,42 @@ def binary_cross_entropy(
             will not be expanded to one-hot format.
         label (torch.Tensor): The learning label of the prediction,
             with shape (N, ).
-        weight (torch.Tensor, optional): Sample-wise loss weight.
-        reduction (str, optional): The method used to reduce the loss.
+        weight (torch.Tensor, None): Sample-wise loss weight.
+        reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum".
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
         class_weight (list[float], optional): The weight for each class.
-        ignore_index (int | None): The label index to be ignored.
-            If None, it will be set to default value. Default: -100.
+        ignore_index (int): The label index to be ignored.
+            Default: -100.
+        avg_non_ignore (bool): The flag decides to whether the loss is
+            only averaged over non-ignored targets. Default: False.
 
     Returns:
         torch.Tensor: The calculated loss.
     """
-    # The default value of ignore_index is the same as F.cross_entropy
-    ignore_index = -100 if ignore_index is None else ignore_index
-
-    if pred.dim() != target.dim():
-        target, weight, valid_mask = _expand_onehot_labels(target, weight, pred.size(-1), ignore_index)
+    if pred.dim() != label.dim():
+        label, weight, valid_mask = _expand_onehot_labels(label, weight, pred.size(-1), ignore_index)
     else:
         # should mask out the ignored elements
-        valid_mask = ((target >= 0) & (target != ignore_index)).float()
-
+        valid_mask = ((label >= 0) & (label != ignore_index)).float()
         # The inplace writing method will have a mismatched broadcast
         # shape error if the weight and valid_mask dimensions
         # are inconsistent such as (B,N,1) and (B,N,C).
         weight = weight * valid_mask if weight is not None else valid_mask
 
+    # average loss over non-ignored elements
+    if (avg_factor is None) and avg_non_ignore and reduction == "mean":
+        avg_factor = valid_mask.sum().item()
+
     # weighted element-wise losses
     weight = weight.float()
-    loss = F.binary_cross_entropy_with_logits(pred, target.float(), pos_weight=class_weight, reduction="none")
+    loss = nn.functional.binary_cross_entropy_with_logits(
+        pred,
+        label.float(),
+        pos_weight=class_weight,
+        reduction="none",
+    )
     # do the reduction for the weighted loss
     return weight_reduce_loss(loss, weight, reduction=reduction, avg_factor=avg_factor)
 
@@ -128,11 +138,9 @@ def binary_cross_entropy(
 def mask_cross_entropy(
     pred: torch.Tensor,
     target: torch.Tensor,
-    weight: torch.Tensor | None = None,
-    reduction: str = "mean",
-    avg_factor: int | None = None,
+    label: torch.Tensor,
     class_weight: list[float] | None = None,
-    ignore_index: int | None = None,
+    **kwargs,  # noqa: ARG001
 ) -> torch.Tensor:
     """Calculate the CrossEntropy loss for masks.
 
@@ -140,17 +148,11 @@ def mask_cross_entropy(
         pred (torch.Tensor): The prediction with shape (N, C, *), C is the
             number of classes. The trailing * indicates arbitrary shape.
         target (torch.Tensor): The learning label of the prediction.
-        weight (torch.Tensor): ``label`` indicates the class label of the mask
+        label (torch.Tensor): ``label`` indicates the class label of the mask
             corresponding object. This will be used to select the mask in the
             of the class which the object belongs to when the mask prediction
             if not class-agnostic.
-        reduction (str, optional): The method used to reduce the loss.
-            Options are "none", "mean" and "sum".
-        avg_factor (int, optional): Average factor that is used to average
-            the loss. Defaults to None.
-        class_weight (list[float], optional): The weight for each class.
-        ignore_index (None): Placeholder, to be consistent with other loss.
-            Default: None.
+        class_weight (list[float], None): The weight for each class.
 
     Returns:
         torch.Tensor: The calculated loss
@@ -168,21 +170,19 @@ def mask_cross_entropy(
         >>>                           avg_factor, class_weights)
         >>> assert loss.shape == (1,)
     """
-    if ignore_index is not None:
-        msg = "ignore_index is not supported in mask cross entropy loss"
-        raise ValueError(msg)
-    if reduction != "mean" or avg_factor is not None:
-        msg = "avg_factor is not supported in mask cross entropy loss"
-        raise ValueError(msg)
     num_rois = pred.size()[0]
     inds = torch.arange(0, num_rois, dtype=torch.long, device=pred.device)
-    pred_slice = pred[inds, weight].squeeze(1)
-    return F.binary_cross_entropy_with_logits(pred_slice, target, weight=class_weight, reduction="mean")[None]
+    pred_slice = pred[inds, label].squeeze(1)
+    return nn.functional.binary_cross_entropy_with_logits(
+        pred_slice,
+        target,
+        weight=class_weight,
+        reduction="mean",
+    )[None]
 
 
-@MODELS.register_module()
 class CrossEntropyLoss(nn.Module):
-    """CrossEntropyLoss."""
+    """Base Cross Entropy Loss implementation from mmdet."""
 
     def __init__(
         self,
@@ -190,52 +190,36 @@ class CrossEntropyLoss(nn.Module):
         use_mask: bool = False,
         reduction: str = "mean",
         class_weight: list[float] | None = None,
-        ignore_index: int | None = None,
         loss_weight: float = 1.0,
         avg_non_ignore: bool = False,
     ):
         """CrossEntropyLoss.
 
         Args:
-            use_sigmoid (bool, optional): Whether the prediction uses sigmoid
+            use_sigmoid (bool): Whether the prediction uses sigmoid
                 of softmax. Defaults to False.
-            use_mask (bool, optional): Whether to use mask cross entropy loss.
+            use_mask (bool): Whether to use mask cross entropy loss.
                 Defaults to False.
-            reduction (str, optional): . Defaults to 'mean'.
+            reduction (str): . Defaults to 'mean'.
                 Options are "none", "mean" and "sum".
             class_weight (list[float], optional): Weight of each class.
                 Defaults to None.
-            ignore_index (int | None): The label index to be ignored.
-                Defaults to None.
-            loss_weight (float, optional): Weight of the loss. Defaults to 1.0.
+            loss_weight (float): Weight of the loss. Defaults to 1.0.
             avg_non_ignore (bool): The flag decides to whether the loss is
                 only averaged over non-ignored targets. Default: False.
         """
         super().__init__()
-        if use_sigmoid and use_mask:
-            msg = "``use_sigmoid`` and ``use_mask`` cannot be True at the same time"
-            raise ValueError(msg)
-
         self.use_sigmoid = use_sigmoid
         self.use_mask = use_mask
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.class_weight = class_weight
-        self.ignore_index = ignore_index
         self.avg_non_ignore = avg_non_ignore
-        if (ignore_index is not None) and not self.avg_non_ignore and self.reduction == "mean":
-            warnings.warn(
-                "Default ``avg_non_ignore`` is False, if you would like to "
-                "ignore the certain label and average loss over non-ignore "
-                "labels, which is the same with PyTorch official "
-                "cross_entropy, set ``avg_non_ignore=True``.",
-                stacklevel=2,
-            )
 
         if self.use_sigmoid:
             self.cls_criterion = binary_cross_entropy
         elif self.use_mask:
-            self.cls_criterion = mask_cross_entropy
+            self.cls_criterion = mask_cross_entropy  # type: ignore[assignment]
         else:
             self.cls_criterion = cross_entropy
 
@@ -250,30 +234,26 @@ class CrossEntropyLoss(nn.Module):
         weight: torch.Tensor | None = None,
         avg_factor: int | None = None,
         reduction_override: str | None = None,
-        ignore_index: int | None = None,
+        ignore_index: int = -100,
+        **kwargs,
     ) -> torch.Tensor:
         """Forward function.
 
         Args:
             cls_score (torch.Tensor): The prediction.
             label (torch.Tensor): The learning label of the prediction.
-            weight (torch.Tensor, optional): Sample-wise loss weight.
-            avg_factor (int, optional): Average factor that is used to average
+            weight (torch.Tensor, None): Sample-wise loss weight.
+            avg_factor (int, None): Average factor that is used to average
                 the loss. Defaults to None.
-            reduction_override (str, optional): The method used to reduce the
+            reduction_override (str, None): The method used to reduce the
                 loss. Options are "none", "mean" and "sum".
-            ignore_index (int | None): The label index to be ignored.
-                If not None, it will override the default value. Default: None.
+            ignore_index (int): The label index to be ignored.
+                Default: -100.
 
         Returns:
             torch.Tensor: The calculated loss.
         """
-        if reduction_override not in (None, "none", "mean", "sum"):
-            msg = f"Invalid value for reduction_override: {reduction_override}"
-            raise ValueError(msg)
         reduction = reduction_override if reduction_override else self.reduction
-        if ignore_index is None:
-            ignore_index = self.ignore_index
 
         if self.class_weight is not None:
             class_weight = cls_score.new_tensor(self.class_weight, device=cls_score.device)
@@ -287,4 +267,6 @@ class CrossEntropyLoss(nn.Module):
             reduction=reduction,
             avg_factor=avg_factor,
             ignore_index=ignore_index,
+            avg_non_ignore=self.avg_non_ignore,
+            **kwargs,
         )

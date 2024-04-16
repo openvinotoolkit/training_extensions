@@ -115,6 +115,122 @@ class TestOTXTiling:
             vpm_config=VisualPromptingConfig(),
         )
 
+    def det_dummy_forward(self, x: DetBatchDataEntity) -> DetBatchPredEntity:
+        """Dummy detection forward function for testing.
+
+        This function creates random bounding boxes for each image in the batch.
+        Args:
+            x (DetBatchDataEntity): Input batch data entity.
+
+        Returns:
+            DetBatchPredEntity: Output batch prediction entity.
+        """
+        bboxes = []
+        labels = []
+        scores = []
+        saliency_maps = []
+        feature_vectors = []
+        for img_info in x.imgs_info:
+            img_h, img_w = img_info.ori_shape
+            img_bboxes = generate_random_bboxes(
+                image_width=img_w,
+                image_height=img_h,
+                num_boxes=100,
+            )
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    img_bboxes,
+                    canvas_size=img_info.ori_shape,
+                    format=tv_tensors.BoundingBoxFormat.XYXY,
+                    dtype=torch.float64,
+                ),
+            )
+            labels.append(
+                torch.LongTensor(len(img_bboxes)).random_(3),
+            )
+            scores.append(
+                torch.rand(len(img_bboxes), dtype=torch.float64),
+            )
+            if self.explain_mode:
+                saliency_maps.append(np.zeros((3, 7, 7)))
+                feature_vectors.append(np.zeros((1, 32)))
+
+        pred_entity = DetBatchPredEntity(
+            batch_size=x.batch_size,
+            images=x.images,
+            imgs_info=x.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = saliency_maps
+            pred_entity.feature_vector = feature_vectors
+
+        return pred_entity
+
+    def inst_seg_dummy_forward(self, x: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
+        """Dummy instance segmantation forward function for testing.
+
+        This function creates random bounding boxes/masks for each image in the batch.
+        Args:
+            x (InstanceSegBatchDataEntity): Input batch data entity.
+
+        Returns:
+            InstanceSegBatchPredEntity: Output batch prediction entity.
+        """
+        bboxes = []
+        labels = []
+        scores = []
+        masks = []
+        feature_vectors = []
+
+        for img_info in x.imgs_info:
+            img_h, img_w = img_info.ori_shape
+            img_bboxes = generate_random_bboxes(
+                image_width=img_w,
+                image_height=img_h,
+                num_boxes=100,
+            )
+            bboxes.append(
+                tv_tensors.BoundingBoxes(
+                    img_bboxes,
+                    canvas_size=img_info.ori_shape,
+                    format=tv_tensors.BoundingBoxFormat.XYXY,
+                    dtype=torch.float64,
+                ),
+            )
+            labels.append(
+                torch.LongTensor(len(img_bboxes)).random_(3),
+            )
+            scores.append(
+                torch.rand(len(img_bboxes), dtype=torch.float64),
+            )
+            masks.append(
+                tv_tensors.Mask(
+                    torch.randint(0, 2, (len(img_bboxes), img_h, img_w)),
+                    dtype=torch.bool,
+                ),
+            )
+            if self.explain_mode:
+                feature_vectors.append(np.zeros((1, 32)))
+
+        pred_entity = InstanceSegBatchPredEntity(
+            batch_size=x.batch_size,
+            images=x.images,
+            imgs_info=x.imgs_info,
+            scores=scores,
+            bboxes=bboxes,
+            labels=labels,
+            masks=masks,
+            polygons=x.polygons,
+        )
+        if self.explain_mode:
+            pred_entity.saliency_map = []
+            pred_entity.feature_vector = feature_vectors
+
+        return pred_entity
+
     def test_tile_transform(self):
         dataset = DmDataset.import_from("tests/assets/car_tree_bug", format="coco_instances")
         first_item = next(iter(dataset), None)
@@ -216,124 +332,71 @@ class TestOTXTiling:
             assert isinstance(batch, TileBatchDetDataEntity)
 
     def test_det_tile_merge(self, fxt_det_data_config):
-        def dummy_forward(x: DetBatchDataEntity) -> DetBatchPredEntity:
-            """Dummy forward function for testing.
-
-            This function creates random bounding boxes for each image in the batch.
-            Args:
-                x (DetBatchDataEntity): Input batch data entity.
-
-            Returns:
-                DetBatchPredEntity: Output batch prediction entity.
-            """
-            bboxes = []
-            labels = []
-            scores = []
-            for img_info in x.imgs_info:
-                img_h, img_w = img_info.ori_shape
-                img_bboxes = generate_random_bboxes(
-                    image_width=img_w,
-                    image_height=img_h,
-                    num_boxes=100,
-                )
-                bboxes.append(
-                    tv_tensors.BoundingBoxes(
-                        img_bboxes,
-                        canvas_size=img_info.ori_shape,
-                        format=tv_tensors.BoundingBoxFormat.XYXY,
-                        dtype=torch.float64,
-                    ),
-                )
-                labels.append(
-                    torch.LongTensor(len(img_bboxes)).random_(3),
-                )
-                scores.append(
-                    torch.rand(len(img_bboxes), dtype=torch.float64),
-                )
-
-            return DetBatchPredEntity(
-                batch_size=x.batch_size,
-                images=x.images,
-                imgs_info=x.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                labels=labels,
-            )
-
         model = OTXDetectionModel(num_classes=3)
+        # Enable tile adapter
         fxt_det_data_config.tile_config.enable_tiler = True
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.DETECTION,
             config=fxt_det_data_config,
         )
-        model.forward = dummy_forward
+
+        self.explain_mode = False
+        model.forward = self.det_dummy_forward
 
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
 
+    def test_explain_det_tile_merge(self, fxt_det_data_config):
+        model = OTXDetectionModel(num_classes=3)
+        # Enable tile adapter
+        fxt_det_data_config.tile_config.enable_tiler = True
+        fxt_det_data_config.tile_config.enable_adaptive_tiling = False
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.DETECTION,
+            config=fxt_det_data_config,
+        )
+
+        self.explain_mode = model.explain_mode = True
+        model.forward_explain = self.det_dummy_forward
+
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            prediction = model.forward_tiles(batch)
+            assert prediction.saliency_map[0].ndim == 3
+        self.explain_mode = False
+
     def test_instseg_tile_merge(self, fxt_instseg_data_config):
-        def dummy_forward(x: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
-            """Dummy forward function for testing.
-
-            This function creates random bounding boxes/masks for each image in the batch.
-            Args:
-                x (InstanceSegBatchDataEntity): Input batch data entity.
-
-            Returns:
-                InstanceSegBatchPredEntity: Output batch prediction entity.
-            """
-            bboxes = []
-            labels = []
-            scores = []
-            masks = []
-            for img_info in x.imgs_info:
-                img_h, img_w = img_info.ori_shape
-                img_bboxes = generate_random_bboxes(
-                    image_width=img_w,
-                    image_height=img_h,
-                    num_boxes=100,
-                )
-                bboxes.append(
-                    tv_tensors.BoundingBoxes(
-                        img_bboxes,
-                        canvas_size=img_info.ori_shape,
-                        format=tv_tensors.BoundingBoxFormat.XYXY,
-                        dtype=torch.float64,
-                    ),
-                )
-                labels.append(
-                    torch.LongTensor(len(img_bboxes)).random_(3),
-                )
-                scores.append(
-                    torch.rand(len(img_bboxes), dtype=torch.float64),
-                )
-                masks.append(
-                    tv_tensors.Mask(
-                        torch.randint(0, 2, (len(img_bboxes), img_h, img_w)),
-                        dtype=torch.bool,
-                    ),
-                )
-
-            return InstanceSegBatchPredEntity(
-                batch_size=x.batch_size,
-                images=x.images,
-                imgs_info=x.imgs_info,
-                scores=scores,
-                bboxes=bboxes,
-                masks=masks,
-                labels=labels,
-                polygons=x.polygons,
-            )
-
         model = OTXInstanceSegModel(num_classes=3)
+        # Enable tile adapter
         fxt_instseg_data_config.tile_config.enable_tiler = True
         tile_datamodule = OTXDataModule(
             task=OTXTaskType.INSTANCE_SEGMENTATION,
             config=fxt_instseg_data_config,
         )
-        model.forward = dummy_forward
+
+        self.explain_mode = False
+        model.forward = self.inst_seg_dummy_forward
 
         tile_datamodule.prepare_data()
         for batch in tile_datamodule.val_dataloader():
             model.forward_tiles(batch)
+
+    def test_explain_instseg_tile_merge(self, fxt_instseg_data_config):
+        model = OTXInstanceSegModel(num_classes=3)
+        # Enable tile adapter
+        fxt_instseg_data_config.tile_config.enable_tiler = True
+        fxt_instseg_data_config.tile_config.enable_adaptive_tiling = False
+        tile_datamodule = OTXDataModule(
+            task=OTXTaskType.INSTANCE_SEGMENTATION,
+            config=fxt_instseg_data_config,
+        )
+
+        self.explain_mode = model.explain_mode = True
+        model.forward_explain = self.inst_seg_dummy_forward
+
+        tile_datamodule.prepare_data()
+        for batch in tile_datamodule.val_dataloader():
+            prediction = model.forward_tiles(batch)
+            assert prediction.saliency_map[0].ndim == 3
+        self.explain_mode = False

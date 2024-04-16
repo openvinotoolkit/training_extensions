@@ -675,11 +675,6 @@ class TestHyperBand:
         best_config = hyper_band.get_best_config()
         assert best_config is None
 
-    def test_train_option_exists(self, hyper_band):
-        trial = hyper_band.get_next_sample()
-        train_config = trial.get_train_configuration()
-        assert "subset_ratio" in train_config["train_environment"]
-
     def test_prior_hyper_parameters(self, good_hyperband_args):
         prior1 = {"hp1": 1, "hp2": 2}
         prior2 = {"hp1": 100, "hp2": 200}

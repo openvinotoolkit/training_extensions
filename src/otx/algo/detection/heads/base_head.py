@@ -11,16 +11,14 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmcv.ops import batched_nms
-from mmdet.models.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
-from mmdet.structures.bbox import cat_boxes, get_box_tensor, get_box_wh, scale_boxes
 from mmengine.model import constant_init
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
+
 if TYPE_CHECKING:
-    from mmdet.structures import SampleList
-    from mmdet.utils import InstanceList, OptInstanceList, OptMultiConfig
-    from mmengine.config import ConfigDict
+    from mmengine import ConfigDict
 
 
 # This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
@@ -62,7 +60,7 @@ class BaseDenseHead(nn.Module):
     loss_and_predict(): forward() -> loss_by_feat() -> predict_by_feat()
     """
 
-    def __init__(self, init_cfg: OptMultiConfig = None) -> None:
+    def __init__(self, init_cfg: ConfigDict | list[ConfigDict] | dict | list[dict] | None = None) -> None:
         super().__init__()
 
         self._is_init = False
@@ -82,7 +80,7 @@ class BaseDenseHead(nn.Module):
             if hasattr(m, "conv_offset"):
                 constant_init(m.conv_offset, 0)
 
-    def get_positive_infos(self) -> InstanceList:
+    def get_positive_infos(self) -> list[InstanceData] | None:
         """Get positive information from sampling results.
 
         Returns:
@@ -105,7 +103,7 @@ class BaseDenseHead(nn.Module):
             positive_infos.append(pos_info)
         return positive_infos
 
-    def loss(self, x: tuple[Tensor], batch_data_samples: SampleList) -> dict:
+    def loss(self, x: tuple[Tensor], batch_data_samples: list[InstanceData]) -> dict:
         """Perform forward propagation and loss calculation of the detection head.
 
         Args:
@@ -131,18 +129,18 @@ class BaseDenseHead(nn.Module):
         self,
         cls_scores: list[Tensor],
         bbox_preds: list[Tensor],
-        batch_gt_instances: InstanceList,
+        batch_gt_instances: list[InstanceData],
         batch_img_metas: list[dict],
-        batch_gt_instances_ignore: OptInstanceList = None,
+        batch_gt_instances_ignore: list[InstanceData] | None = None,
     ) -> dict:
         """Calculate the loss based on the features extracted by the detection head."""
 
     def loss_and_predict(
         self,
         x: tuple[Tensor],
-        batch_data_samples: SampleList,
+        batch_data_samples: list[InstanceData],
         proposal_cfg: ConfigDict | None = None,
-    ) -> tuple[dict, InstanceList]:
+    ) -> tuple[dict, list[InstanceData]]:
         """Perform forward propagation of the head, then calculate loss and predictions.
 
         Args:
@@ -172,7 +170,12 @@ class BaseDenseHead(nn.Module):
         predictions = self.predict_by_feat(cls_scores, bbox_preds, batch_img_metas=batch_img_metas, cfg=proposal_cfg)
         return losses, predictions
 
-    def predict(self, x: tuple[Tensor], batch_data_samples: SampleList, rescale: bool = False) -> InstanceList:
+    def predict(
+        self,
+        x: tuple[Tensor],
+        batch_data_samples: list[InstanceData],
+        rescale: bool = False,
+    ) -> list[InstanceData]:
         """Perform forward propagation of the detection head and predict detection results.
 
         Args:
@@ -203,7 +206,7 @@ class BaseDenseHead(nn.Module):
         cfg: ConfigDict | None = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> InstanceList:
+    ) -> list[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
 
         Note: When score_factors is not None, the cls_scores are
@@ -241,8 +244,6 @@ class BaseDenseHead(nn.Module):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        with_score_factors = score_factors is not None
-
         num_levels = len(cls_scores)
 
         featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
@@ -258,7 +259,7 @@ class BaseDenseHead(nn.Module):
             img_meta = batch_img_metas[img_id]
             cls_score_list = select_single_mlvl(cls_scores, img_id, detach=True)
             bbox_pred_list = select_single_mlvl(bbox_preds, img_id, detach=True)
-            if with_score_factors:
+            if score_factors is not None:
                 score_factor_list = select_single_mlvl(score_factors, img_id, detach=True)
             else:
                 score_factor_list = [None for _ in range(num_levels)]
@@ -369,8 +370,13 @@ class BaseDenseHead(nn.Module):
             # `nms_pre` than before.
             score_thr = cfg.get("score_thr", 0)
 
-            results = filter_scores_and_topk(scores, score_thr, nms_pre, {"bbox_pred": bbox_pred, "priors": priors})
-            scores, labels, keep_idxs, filtered_results = results
+            filtered_results: dict
+            scores, labels, keep_idxs, filtered_results = filter_scores_and_topk(  # type: ignore[assignment]
+                scores,
+                score_thr,
+                nms_pre,
+                {"bbox_pred": bbox_pred, "priors": priors},
+            )
 
             bbox_pred = filtered_results["bbox_pred"]  # noqa: PLW2901
             priors = filtered_results["priors"]  # noqa: PLW2901
@@ -387,7 +393,7 @@ class BaseDenseHead(nn.Module):
                 mlvl_score_factors.append(score_factor)
 
         bbox_pred = torch.cat(mlvl_bbox_preds)
-        priors = cat_boxes(mlvl_valid_priors)
+        priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors, bbox_pred, max_shape=img_shape)
 
         results = InstanceData()
@@ -437,7 +443,9 @@ class BaseDenseHead(nn.Module):
         """
         if rescale:
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            results.bboxes = scale_boxes(results.bboxes, scale_factor)
+            results.bboxes = results.bboxes * results.bboxes.new_tensor(scale_factor).repeat(
+                (1, int(results.bboxes.size(-1) / 2)),
+            )
 
         if hasattr(results, "score_factors"):
             score_factors = results.pop("score_factors")
@@ -445,13 +453,14 @@ class BaseDenseHead(nn.Module):
 
         # filter small size bboxes
         if cfg.get("min_bbox_size", -1) >= 0:
-            w, h = get_box_wh(results.bboxes)
+            w = results.bboxes[:, 2] - results.bboxes[:, 0]
+            h = results.bboxes[:, 3] - results.bboxes[:, 1]
             valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
             if not valid_mask.all():
                 results = results[valid_mask]
 
         if with_nms and results.bboxes.numel() > 0:
-            bboxes = get_box_tensor(results.bboxes)
+            bboxes = results.bboxes
             det_bboxes, keep_idxs = batched_nms(bboxes, results.scores, results.labels, cfg.nms)
             results = results[keep_idxs]
             # some nms would reweight the score, such as softnms

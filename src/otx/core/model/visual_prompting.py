@@ -26,7 +26,6 @@ from torch import Tensor
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -39,6 +38,7 @@ from otx.core.metrics import MetricInput
 from otx.core.metrics.visual_prompting import VisualPromptingMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.utils.mask_util import polygon_to_bitmap
 
@@ -168,9 +168,7 @@ def _inference_step_for_zero_shot(
                 )
 
 
-class OTXVisualPromptingModel(
-    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
-):
+class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]):
     """Base class for the visual prompting models used in OTX."""
 
     def __init__(
@@ -188,27 +186,27 @@ class OTXVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
+        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXVisualPromptingModelExporter(via_onnx=True, **self._export_parameters)
+        return OTXVisualPromptingModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, self.model.image_size, self.model.image_size),
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="fit_to_window",
+            via_onnx=True,
+        )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params["metadata"].update(
-            {
-                ("model_info", "model_type"): "Visual_Prompting",
-                ("model_info", "task_type"): "visual_prompting",
-            },
+        return super()._export_parameters.wrap(
+            model_type="Visual_Prompting",
+            task_type="visual_prompting",
         )
-        export_params["input_size"] = (1, 3, self.model.image_size, self.model.image_size)
-        export_params["resize_mode"] = "fit_to_window"
-        export_params["mean"] = (123.675, 116.28, 103.53)
-        export_params["std"] = (58.395, 57.12, 57.375)
-        return export_params
 
     @property
     def _optimization_config(self) -> dict[str, Any]:
@@ -275,11 +273,7 @@ class OTXVisualPromptingModel(
 
 
 class OTXZeroShotVisualPromptingModel(
-    OTXModel[
-        ZeroShotVisualPromptingBatchDataEntity,
-        ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXTileBatchDataEntity,
-    ],
+    OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
 
@@ -298,27 +292,27 @@ class OTXZeroShotVisualPromptingModel(
             metric=metric,
             torch_compile=torch_compile,
         )
+        self._label_info = NullLabelInfo()
 
     @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXVisualPromptingModelExporter(via_onnx=True, **self._export_parameters)
+        return OTXVisualPromptingModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=(1, 3, self.model.image_size, self.model.image_size),
+            mean=(123.675, 116.28, 103.53),
+            std=(58.395, 57.12, 57.375),
+            resize_mode="fit_to_window",
+            via_onnx=True,
+        )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params["metadata"].update(
-            {
-                ("model_info", "model_type"): "Visual_Prompting",
-                ("model_info", "task_type"): "visual_prompting",
-            },
+        return super()._export_parameters.wrap(
+            model_type="Visual_Prompting",
+            task_type="visual_prompting",
         )
-        export_params["input_size"] = (1, 3, self.model.image_size, self.model.image_size)
-        export_params["resize_mode"] = "fit_to_window"
-        export_params["mean"] = (123.675, 116.28, 103.53)
-        export_params["std"] = (58.395, 57.12, 57.375)
-        return export_params
 
     @property
     def _optimization_config(self) -> dict[str, Any]:

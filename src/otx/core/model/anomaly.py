@@ -27,14 +27,12 @@ from otx.core.data.entity.anomaly import (
     AnomalySegmentationDataBatch,
 )
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.types.export import OTXExportFormatType
-from otx.core.types.label import LabelInfo
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
+from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
 from otx.core.types.task import OTXTaskType
 
 if TYPE_CHECKING:
-    from collections import OrderedDict
-
     from anomalib.metrics import AnomalibMetricCollection
     from anomalib.metrics.threshold import BaseThreshold
     from lightning.pytorch import Trainer
@@ -65,24 +63,37 @@ class _AnomalyModelExporter(OTXModelExporter):
         normalization_scale: float = 1.0,
     ) -> None:
         self.orig_height, self.orig_width = image_shape
-        metadata = {
-            ("model_info", "image_threshold"): image_threshold,
-            ("model_info", "pixel_threshold"): pixel_threshold,
-            ("model_info", "normalization_scale"): normalization_scale,
-            ("model_info", "orig_height"): image_shape[0],
-            ("model_info", "orig_width"): image_shape[1],
-            ("model_info", "image_shape"): image_shape,
-            ("model_info", "labels"): "Normal Anomaly",
-            ("model_info", "model_type"): "AnomalyDetection",
-            ("model_info", "task"): task.value,
-        }
+        self.image_threshold = image_threshold
+        self.pixel_threshold = pixel_threshold
+        self.task = task
+        self.normalization_scale = normalization_scale
+
         super().__init__(
+            task_level_export_parameters=TaskLevelExportParameters(
+                model_type="anomaly",
+                task_type="anomaly",
+                label_info=NullLabelInfo(),
+                optimization_config={},
+            ),
             input_size=(1, 3, *image_shape),
             mean=mean_values,
             std=scale_values,
             swap_rgb=False,  # default value. Ideally, modelAPI should pass RGB inputs after the pre-processing step
-            metadata=metadata,
         )
+
+    @property
+    def metadata(self) -> dict[tuple[str, str], str | float | int | tuple[int, int]]:  # type: ignore[override]
+        return {
+            ("model_info", "image_threshold"): self.image_threshold,
+            ("model_info", "pixel_threshold"): self.pixel_threshold,
+            ("model_info", "normalization_scale"): self.normalization_scale,
+            ("model_info", "orig_height"): self.orig_height,
+            ("model_info", "orig_width"): self.orig_width,
+            ("model_info", "image_shape"): (self.orig_height, self.orig_width),
+            ("model_info", "labels"): "Normal Anomaly",
+            ("model_info", "model_type"): "AnomalyDetection",
+            ("model_info", "task"): self.task.value,
+        }
 
     def to_openvino(
         self,
@@ -145,6 +156,22 @@ class OTXAnomaly:
 
         self.image_metrics: AnomalibMetricCollection
         self.pixel_metrics: AnomalibMetricCollection
+
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on saving checkpoint."""
+        super().on_save_checkpoint(checkpoint)  # type: ignore[misc]
+
+        attrs = ["_task_type", "_input_size", "mean_values", "scale_values", "image_threshold", "pixel_threshold"]
+
+        checkpoint["anomaly"] = {key: getattr(self, key, None) for key in attrs}
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Callback on loading checkpoint."""
+        super().on_load_checkpoint(checkpoint)  # type: ignore[misc]
+
+        if anomaly_attrs := checkpoint.get("anomaly", None):
+            for key, value in anomaly_attrs.items():
+                setattr(self, key, value)
 
     @property
     def input_size(self) -> tuple[int, int]:
@@ -225,7 +252,7 @@ class OTXAnomaly:
     def setup(self, stage: str | None = None) -> None:
         """Setup the model."""
         super().setup(stage)  # type: ignore[misc]
-        if hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
+        if stage == "fit" and hasattr(self.trainer, "datamodule") and hasattr(self.trainer.datamodule, "config"):
             if hasattr(self.trainer.datamodule.config, "test_subset"):
                 self._extract_mean_scale_from_transforms(self.trainer.datamodule.config.test_subset.transforms)
             elif hasattr(self.trainer.datamodule.config, "val_subset"):
@@ -313,24 +340,6 @@ class OTXAnomaly:
             params = getattr(self.model, self.trainable_model).parameters()
             return optimizer(params=params)
         return super().configure_optimizers()  # type: ignore[misc]
-
-    def state_dict(self) -> dict[str, Any]:
-        """Return state dictionary of model entity with meta information.
-
-        Returns:
-            A dictionary containing datamodule state.
-
-        """
-        state_dict = super().state_dict()  # type: ignore[misc]
-        # This is defined in OTXModel
-        state_dict["label_info"] = self.label_info  # type: ignore[attr-defined]
-        return state_dict
-
-    def load_state_dict(self, ckpt: OrderedDict[str, Any], *args, **kwargs) -> None:
-        """Pass the checkpoint to the anomaly model."""
-        ckpt = ckpt.get("state_dict", ckpt)
-        ckpt.pop("label_info", None)  # [TODO](ashwinvaidya17): Revisit this method when OTXModel is the lightning model
-        return super().load_state_dict(ckpt, *args, **kwargs)  # type: ignore[misc]
 
     def forward(
         self,
