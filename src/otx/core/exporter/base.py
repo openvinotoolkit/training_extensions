@@ -206,7 +206,6 @@ class OTXModelExporter:
 
             arch.write(str(path_to_model), Path("model") / "model.xml")
             arch.write(path_to_model.with_suffix(".bin"), Path("model") / "model.bin")
-
             arch.writestr(
                 str(Path("model") / "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),

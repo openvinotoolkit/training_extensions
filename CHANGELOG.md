@@ -6,13 +6,137 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
-- Add zero-shot visual prompting (<https://github.com/openvinotoolkit/training_extensions/pull/2616>, <https://github.com/openvinotoolkit/training_extensions/pull/2706>, <https://github.com/openvinotoolkit/training_extensions/pull/2753>)
-- Add support for the training and validation on the XPU devices (https://github.com/openvinotoolkit/training_extensions/pull/3058)
+### Enhancements
+
+## \[1.6.0\]
+
+### New features
+
+- Changed supported Python version range (>=3.9, <=3.11)
+  (<https://github.com/openvinotoolkit/datumaro/pull/1269>)
+- Support MMDetection COCO format
+  (<https://github.com/openvinotoolkit/datumaro/pull/1213>)
+- Develop JsonSectionPageMapper in Rust API
+  (<https://github.com/openvinotoolkit/datumaro/pull/1224>)
+- Add Filtering via User-Provided Python Functions
+  (<https://github.com/openvinotoolkit/datumaro/pull/1230>, <https://github.com/openvinotoolkit/datumaro/pull/1233>)
+- Remove supporting MacOS platform
+  (<https://github.com/openvinotoolkit/datumaro/pull/1235>)
+- Support Kaggle image data (`KaggleImageCsvBase`, `KaggleImageTxtBase`, `KaggleImageMaskBase`, `KaggleVocBase`, `KaggleYoloBase`)
+  (<https://github.com/openvinotoolkit/datumaro/pull/1240>)
+- Add `__getitem__()` for random accessing with O(1) time complexity
+  (<https://github.com/openvinotoolkit/datumaro/pull/1247>)
+- Add Data-aware Anchor Generator
+  (<https://github.com/openvinotoolkit/datumaro/pull/1251>)
+- Support bounding box import within Kaggle extractors and add `KaggleCocoBase`
+  (<https://github.com/openvinotoolkit/datumaro/pull/1273>)
 
 ### Enhancements
 
-- Upgrade OpenVINO to 2023.3 (<https://github.com/openvinotoolkit/training_extensions/pull/2879>)
-- Automate performance benchmark (<https://github.com/openvinotoolkit/training_extensions/pull/2742>)
+- Optimize Python import to make CLI entrypoint faster
+  (<https://github.com/openvinotoolkit/datumaro/pull/1182>)
+- Add ImageColorScale context manager
+  (<https://github.com/openvinotoolkit/datumaro/pull/1194>)
+- Enhance visualizer to toggle plot title visibility
+  (<https://github.com/openvinotoolkit/datumaro/pull/1228>)
+- Enhance Datumaro data format detect() to be memory-bounded and performant
+  (<https://github.com/openvinotoolkit/datumaro/pull/1229>)
+- Change RoIImage and MosaicImage to have np.uint8 dtype as default
+  (<https://github.com/openvinotoolkit/datumaro/pull/1245>)
+- Enable image backend and color channel format to be selectable
+  (<https://github.com/openvinotoolkit/datumaro/pull/1246>)
+- Boost up `CityscapesBase` and `KaggleImageMaskBase` by dropping `np.unique`
+  (<https://github.com/openvinotoolkit/datumaro/pull/1261>)
+- Enhance RISE algortihm for explainable AI
+  (<https://github.com/openvinotoolkit/datumaro/pull/1263>)
+- Enhance explore unit test to use real dataset from ImageNet
+  (<https://github.com/openvinotoolkit/datumaro/pull/1266>)
+- Fix each method of the comparator to be used separately
+  (<https://github.com/openvinotoolkit/datumaro/pull/1290>)
+- Bump ONNX version to 1.16.0
+  (<https://github.com/openvinotoolkit/datumaro/pull/1376>)
+- Print the color channel format (RGB) for datum stats command
+  (<https://github.com/openvinotoolkit/datumaro/pull/1389>)
+- Add ignore_index argument to Mask.as_class_mask() and Mask.as_instance_mask()
+  (<https://github.com/openvinotoolkit/datumaro/pull/1409>)
+
+### Bug fixes
+
+- Fix wrong example of Datumaro dataset creation in document
+  (<https://github.com/openvinotoolkit/datumaro/pull/1195>)
+- Fix wrong command to install datumaro from github
+  (<https://github.com/openvinotoolkit/datumaro/pull/1202>, <https://github.com/openvinotoolkit/datumaro/pull/1207>)
+- Update document to correct wrong `datum project import` command and add filtering example to filter out items containing annotations.
+  (<https://github.com/openvinotoolkit/datumaro/pull/1210>)
+- Fix label compare of distance method
+  (<https://github.com/openvinotoolkit/datumaro/pull/1205>)
+- Fix Datumaro visualizer's import errors after introducing lazy import
+  (<https://github.com/openvinotoolkit/datumaro/pull/1220>)
+- Fix broken link to supported formats in readme
+  (<https://github.com/openvinotoolkit/datumaro/pull/1221>)
+- Fix Kinetics data format to have media data
+  (<https://github.com/openvinotoolkit/datumaro/pull/1223>)
+- Handling undefined labels at the annotation statistics
+  (<https://github.com/openvinotoolkit/datumaro/pull/1232>)
+- Add unit test for item rename
+  (<https://github.com/openvinotoolkit/datumaro/pull/1237>)
+- Fix a bug in the previous behavior when importing nested datasets in the project
+  (<https://github.com/openvinotoolkit/datumaro/pull/1243>)
+- Fix Kaggle importer when adding duplicated labels
+  (<https://github.com/openvinotoolkit/datumaro/pull/1244>)
+- Fix input tensor shape in model interpreter for OpenVINO 2023.3
+  (<https://github.com/openvinotoolkit/datumaro/pull/1251>)
+- Add default value for target in prune cli
+  (<https://github.com/openvinotoolkit/datumaro/pull/1253>)
+- Remove deprecated MediaManager
+  (<https://github.com/openvinotoolkit/datumaro/pull/1262>)
+- Fix explore command without project
+  (<https://github.com/openvinotoolkit/datumaro/pull/1271>)
+- Fix enable COCO to import only bboxes
+  (<https://github.com/openvinotoolkit/datumaro/pull/1360>)
+- Fix resize transform for RleMask annotation
+- (<https://github.com/openvinotoolkit/datumaro/pull/1361>)
+- Fix import YOLO variants from extractor when `urls` is not specified
+  (<https://github.com/openvinotoolkit/datumaro/pull/1362>)
+
+## \[1.5.2\]
+
+### Enhancements
+
+- Add memory bounded datumaro data format detect to release 1.5.1
+  (<https://github.com/openvinotoolkit/datumaro/pull/1241>)
+- Bump version string to 1.5.2
+  (<https://github.com/openvinotoolkit/datumaro/pull/1249>)
+- Remove Protobuf version limitation (<4)
+  (<https://github.com/openvinotoolkit/datumaro/pull/1248>)
+
+## \[1.5.1\]
+
+### Enhancements
+
+- Enhance Datumaro data format stream importer performance
+  (<https://github.com/openvinotoolkit/datumaro/pull/1153>)
+- Change image default dtype from float32 to uint8
+  (<https://github.com/openvinotoolkit/datumaro/pull/1175>)
+- Add comparison level-up doc
+  (<https://github.com/openvinotoolkit/datumaro/pull/1174>)
+- Add ImportError to catch GitPython import error
+  (<https://github.com/openvinotoolkit/datumaro/pull/1174>)
+
+### Bug fixes
+
+- Modify the draw function in the visualizer not to raise an error for unsupported annotation types.
+  (<https://github.com/openvinotoolkit/datumaro/pull/1180>)
+- Correct explore path in the related document.
+  (<https://github.com/openvinotoolkit/datumaro/pull/1176>)
+- Fix errata in the voc document. Color values in the labelmap.txt should be separated by commas, not colons.
+  (<https://github.com/openvinotoolkit/datumaro/pull/1162>)
+- Fix hyperlink errors in the document
+  (<https://github.com/openvinotoolkit/datumaro/pull/1159>, <https://github.com/openvinotoolkit/datumaro/pull/1161>)
+- Fix memory unbounded Arrow data format export/import
+  (<https://github.com/openvinotoolkit/datumaro/pull/1169>)
+- Update CVAT format doc to bypass warning
+  (<https://github.com/openvinotoolkit/datumaro/pull/1183>)
 
 ## \[v1.5.0\]
 

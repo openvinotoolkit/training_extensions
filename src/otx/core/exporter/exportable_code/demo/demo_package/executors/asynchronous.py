@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     import numpy as np
     from demo_package.model_wrapper import ModelWrapper
 
+
 from demo_package.streamer import get_streamer
 from demo_package.visualizers import BaseVisualizer, dump_frames
 

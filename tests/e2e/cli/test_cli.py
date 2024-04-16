@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.e2e.cli.utils import run_main
@@ -327,38 +328,38 @@ def test_otx_explain_e2e_cli(
     reference_sal_vals = {
         # Classification
         "multi_label_cls_efficientnet_v2_light": (
-            np.array([66, 97, 84, 33, 42, 79, 0], dtype=np.uint8),
-            "Slide6_class_0_saliency_map.png",
+            np.array([201, 209, 196, 158, 157, 119, 77], dtype=np.uint8),
+            "American_Crow_0031_25433_class_0_saliency_map.png",
         ),
         "h_label_cls_efficientnet_v2_light": (
-            np.array([152, 193, 144, 132, 149, 204, 217], dtype=np.uint8),
-            "092_class_5_saliency_map.png",
+            np.array([102, 141, 134, 79, 66, 92, 84], dtype=np.uint8),
+            "108_class_4_saliency_map.png",
         ),
         # Detection
         "detection_yolox_tiny": (
-            np.array([111, 163, 141, 141, 146, 147, 158, 169, 184, 193], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
+            np.array([182, 194, 187, 179, 188, 206, 215, 207, 177, 130], dtype=np.uint8),
+            "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_ssd_mobilenetv2": (
-            np.array([135, 80, 74, 34, 27, 32, 47, 42, 32, 34], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
+            np.array([118, 188, 241, 213, 160, 120, 86, 94, 111, 138], dtype=np.uint8),
+            "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         "detection_atss_mobilenetv2": (
-            np.array([22, 62, 64, 0, 27, 60, 59, 53, 37, 45], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
+            np.array([29, 39, 55, 69, 80, 88, 92, 86, 100, 88], dtype=np.uint8),
+            "img_371_jpg_rf_a893e0bdc6fda0ba1b2a7f07d56cec23_class_0_saliency_map.png",
         ),
         # Instance Segmentation
         "instance_segmentation_maskrcnn_efficientnetb2b": (
-            np.array([54, 54, 54, 54, 0, 0, 0, 54, 0, 0], dtype=np.uint8),
-            "Slide3_class_0_saliency_map.png",
+            np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5], dtype=np.uint8),
+            "CDY_2018_class_0_saliency_map.png",
         ),
     }
     test_case_name = task + "_" + model_name
     if test_case_name in reference_sal_vals:
         actual_sal_vals = cv2.imread(str(latest_dir / "saliency_maps" / reference_sal_vals[test_case_name][1]))
         if test_case_name == "instance_segmentation_maskrcnn_efficientnetb2b":
-            # Take corner values due to map sparsity of InstSeg
-            actual_sal_vals = (actual_sal_vals[-10:, -1, -1]).astype(np.uint16)
+            # Take lower corner values due to map sparsity of InstSeg
+            actual_sal_vals = (actual_sal_vals[-10:, -1, 0]).astype(np.uint16)
         else:
             actual_sal_vals = (actual_sal_vals[:10, 0, 0]).astype(np.uint16)
         ref_sal_vals = reference_sal_vals[test_case_name][0]
@@ -456,6 +457,17 @@ def test_otx_hpo_e2e_cli(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+        pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+
+    # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
+    model_cfg = []
+    if task in {
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+    }:
+        model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
@@ -464,6 +476,7 @@ def test_otx_hpo_e2e_cli(
     command_cfg = [
         "otx",
         "train",
+        *model_cfg,
         "--task",
         task.upper(),
         "--data_root",
@@ -484,10 +497,6 @@ def test_otx_hpo_e2e_cli(
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
-    if task in ("zero_shot_visual_prompting"):
-        return
 
     latest_dir = max(
         (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),

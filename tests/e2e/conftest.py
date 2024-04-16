@@ -16,7 +16,7 @@ from tests.test_helpers import find_folder
 
 @pytest.fixture(scope="session")
 def fxt_ci_data_root() -> Path:
-    data_root = Path(os.environ.get("CI_DATA_ROOT", "/home/validation/data/v2"))
+    data_root = Path(os.environ.get("CI_DATA_ROOT", "/home/validation/data"))
     if not Path.is_dir(data_root):
         msg = f"cannot find {data_root}"
         raise FileNotFoundError(msg)
@@ -87,22 +87,22 @@ def pytest_configure(config):
 @pytest.fixture()
 def fxt_target_dataset_per_task(fxt_ci_data_root) -> dict:
     return {
-        "multi_class_cls": Path(fxt_ci_data_root / "multiclass_classification/multiclass_CUB_small/1"),
-        "multi_label_cls": Path(fxt_ci_data_root / "multilabel_classification/multilabel_CUB_small/1"),
-        "h_label_cls": Path(fxt_ci_data_root / "hlabel_classification/hlabel_CUB_small/1"),
-        "detection": Path(fxt_ci_data_root / "detection/pothole_small/1"),
-        "rotated_detection": Path(fxt_ci_data_root / "detection/pothole_small/1"),
-        "instance_segmentation": Path(fxt_ci_data_root / "instance_seg/wgisd_small/1"),
-        "semantic_segmentation": Path(fxt_ci_data_root / "semantic_seg/kvasir_small/1"),
-        "action_classification": Path(fxt_ci_data_root / "action/action_classification/ucf_kinetics_5percent_small"),
-        "action_detection": Path(fxt_ci_data_root / "action/action_detection/UCF101_ava_5percent"),
-        "visual_prompting": Path(fxt_ci_data_root / "visual_prompting/wgisd_small/1"),
+        "multi_class_cls": Path(fxt_ci_data_root / "v2/multiclass_classification/multiclass_CUB_small/1"),
+        "multi_label_cls": Path(fxt_ci_data_root / "v2/multilabel_classification/multilabel_CUB_small/1"),
+        "h_label_cls": Path(fxt_ci_data_root / "v2/hlabel_classification/hlabel_CUB_small/1"),
+        "detection": Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
+        "rotated_detection": Path(fxt_ci_data_root / "v2/detection/pothole_small/1"),
+        "instance_segmentation": Path(fxt_ci_data_root / "v2/instance_seg/wgisd_small/1"),
+        "semantic_segmentation": Path(fxt_ci_data_root / "v2/semantic_seg/kvasir_small/1"),
+        "action_classification": Path(fxt_ci_data_root / "v2/action/action_classification/ucf_kinetics_5percent_small"),
+        "action_detection": Path(fxt_ci_data_root / "v2/action/action_detection/UCF101_ava_5percent"),
+        "visual_prompting": Path(fxt_ci_data_root / "v2/visual_prompting/wgisd_small/1"),
         "zero_shot_visual_prompting": Path(
-            fxt_ci_data_root / "zero_shot_visual_prompting/coco_car_person_medium_datumaro",
+            fxt_ci_data_root / "v2/zero_shot_visual_prompting/coco_car_person_medium",
         ),
-        "anomaly_classification": Path(fxt_ci_data_root / "anomaly/mvtec/bottle_small/1"),
-        "anomaly_detection": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
-        "anomaly_segmentation": Path(fxt_ci_data_root / "anomaly/mvtec/hazelnut_large"),
+        "anomaly_classification": Path(fxt_ci_data_root / "v2/anomaly/mvtec/bottle_small/1"),
+        "anomaly_detection": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
+        "anomaly_segmentation": Path(fxt_ci_data_root / "v2/anomaly/mvtec/hazelnut_large"),
     }
 
 
@@ -122,10 +122,7 @@ def fxt_cli_override_command_per_task() -> dict:
             "3",
         ],
         "visual_prompting": [],
-        "zero_shot_visual_prompting": [
-            "--data.config.data_format",
-            "datumaro",
-        ],
+        "zero_shot_visual_prompting": [],
         "anomaly_classification": [],
         "anomaly_detection": [],
         "anomaly_segmentation": [],

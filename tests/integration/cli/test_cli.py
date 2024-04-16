@@ -405,20 +405,6 @@ def test_otx_ov_test(
     assert len(metric_result) > 0
 
 
-REASON = '''
-self = <otx.hpo.hyperband.AshaTrial object at 0x7069e015e750>
-
-    def finalize(self) -> None:
-        """Set done as True."""
-        if not self.score:
-            error_msg = f"Trial{self.id} didn't report any score but tries to be done."
->           raise RuntimeError(error_msg)
-E           RuntimeError: Trial0 didn't report any score but tries to be done.
-
-src/otx/hpo/hpo_base.py:274: RuntimeError
-'''
-
-
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
 def test_otx_hpo_e2e(
     task: OTXTaskType,
@@ -440,12 +426,17 @@ def test_otx_hpo_e2e(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+        pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+
+    # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
+    model_cfg = []
     if task in {
         OTXTaskType.ANOMALY_CLASSIFICATION,
         OTXTaskType.ANOMALY_DETECTION,
         OTXTaskType.ANOMALY_SEGMENTATION,
     }:
-        pytest.xfail(reason=REASON)
+        model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
@@ -454,6 +445,7 @@ def test_otx_hpo_e2e(
     command_cfg = [
         "otx",
         "train",
+        *model_cfg,
         "--task",
         task.upper(),
         "--data_root",
@@ -463,19 +455,17 @@ def test_otx_hpo_e2e(
         "--engine.device",
         fxt_accelerator,
         "--max_epochs",
-        "1" if task in ("zero_shot_visual_prompting") else "2",
+        "1",
         "--run_hpo",
         "true",
         "--hpo_config.expected_time_ratio",
         "2",
+        "--hpo_config.num_workers",
+        "1",
         *fxt_cli_override_command_per_task[task],
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
-    if task in ("zero_shot_visual_prompting"):
-        return
 
     latest_dir = max(
         (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
