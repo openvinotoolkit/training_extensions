@@ -206,6 +206,39 @@ def adapt_batch_size(
             in the argument. It's required for nncf because nncf changes model , which prevent model from pickling.
     """
 
+    import pickle
+    print("*"*100, "cfg pickle start!")
+    for key, val in cfg.items():
+        try:
+            pickle.dumps(val)
+            print(f"{key} success")
+        except Exception:
+            print(f"{key} failed")
+    print("*"*100, "dataset pickle start!")
+    try:
+        pickle.dumps(datasets)
+        print("datasets success")
+    except Exception:
+        print("datasets failed")
+    print("*"*100, "datasets[0].otx_dataset pickle start!")
+    try:
+        pickle.dumps(datasets[0].otx_dataset)
+        print("dataset[0].otx_dataset success")
+    except Exception:
+        print("dataset[0].otx_dataset failed")
+    print("*"*100, "dataset[0].otx_dataset attr pickle start!")
+    for key, val in datasets[0].otx_dataset.__dict__.items():
+        try:
+            pickle.dumps(val)
+            print(f"{key} success")
+        except Exception:
+            print(f"{key} failed")
+
+    try:
+        breakpoint()
+    except Exception:
+        pass
+
     if not (cuda_available() or is_xpu_available()):
         logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA or XPU.")
         return
