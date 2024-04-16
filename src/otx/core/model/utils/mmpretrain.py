@@ -12,7 +12,7 @@ import torch
 from mmpretrain.models.utils import ClsDataPreprocessor as _ClsDataPreprocessor
 from mmpretrain.registry import MODELS
 
-from otx.algo.explain.explain_algo import ReciproCAM, get_feature_vector
+from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import T_OTXBatchDataEntity, T_OTXBatchPredEntity
 from otx.core.utils.build import build_mm_model, get_classification_layers
 
@@ -166,7 +166,7 @@ class ExplainableMixInMMPretrainModel(Generic[T_OTXBatchPredEntity, T_OTXBatchDa
         if not self.explain_mode:
             return
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
         forward_with_explain = self._forward_explain_image_classifier
 
