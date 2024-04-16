@@ -741,6 +741,24 @@
 <span class="sd">        https://arxiv.org/abs/1810.05934</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        search_space (dict[str, dict[str, Any]]): hyper parameter search space to find.</span>
+<span class="sd">        save_path (str | None, optional): path where result of HPO is saved.</span>
+<span class="sd">        mode (&quot;max&quot; | &quot;min&quot;, optional): One of {min, max}. Determines whether objective is</span>
+<span class="sd">                                        minimizing or maximizing the score.</span>
+<span class="sd">        num_trials (int | None, optional): How many training to conduct for HPO.</span>
+<span class="sd">        num_workers (int, optional): How many trains are executed in parallel.</span>
+<span class="sd">        num_full_iterations (int, optional): epoch for traninig after HPO.</span>
+<span class="sd">        full_dataset_size (int, optional): train dataset size</span>
+<span class="sd">        expected_time_ratio (int | float | None, optional): Time to use for HPO.</span>
+<span class="sd">                                                            If HPO is configured automatically,</span>
+<span class="sd">                                                            HPO use time about exepected_time_ratio *</span>
+<span class="sd">                                                            train time after HPO times.</span>
+<span class="sd">        maximum_resource (int | float | None, optional): Maximum resource to use for training each trial.</span>
+<span class="sd">        resume (bool, optional): resume flag decide to use previous HPO results.</span>
+<span class="sd">                                 If HPO completed, you can just use optimized hyper parameters.</span>
+<span class="sd">                                 If HPO stopped in middle, you can resume in middle.</span>
+<span class="sd">        prior_hyper_parameters (dict | list[dict] | None, optional) = Hyper parameters to try first.</span>
+<span class="sd">        acceptable_additional_time_ratio (float | int, optional) = Decide how much additional time can be acceptable.</span>
 <span class="sd">        minimum_resource (float | int | None, optional): Minimum resource to use for training a trial. Defaults to None.</span>
 <span class="sd">        reduction_factor (int, optional): Decicdes how many trials to promote to next rung.</span>
 <span class="sd">                                          Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.</span>
@@ -753,13 +771,37 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">search_space</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+        <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+        <span class="n">num_trials</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_full_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">full_dataset_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">expected_time_ratio</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">maximum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">prior_hyper_parameters</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">acceptable_additional_time_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">minimum_resource</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">reduction_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
         <span class="n">asynchronous_sha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">asynchronous_bracket</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">search_space</span><span class="p">,</span>
+            <span class="n">save_path</span><span class="p">,</span>
+            <span class="n">mode</span><span class="p">,</span>
+            <span class="n">num_trials</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">num_full_iterations</span><span class="p">,</span>
+            <span class="n">full_dataset_size</span><span class="p">,</span>
+            <span class="n">expected_time_ratio</span><span class="p">,</span>
+            <span class="n">maximum_resource</span><span class="p">,</span>
+            <span class="n">resume</span><span class="p">,</span>
+            <span class="n">prior_hyper_parameters</span><span class="p">,</span>
+            <span class="n">acceptable_additional_time_ratio</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">minimum_resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">check_positive</span><span class="p">(</span><span class="n">minimum_resource</span><span class="p">,</span> <span class="s2">&quot;minimum_resource&quot;</span><span class="p">)</span>
@@ -912,7 +954,7 @@
 
     <span class="k">def</span> <span class="nf">_make_trial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AshaTrial</span><span class="p">:</span>
         <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_trial_id</span><span class="p">()</span>
-        <span class="n">trial</span> <span class="o">=</span> <span class="n">AshaTrial</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_train_environment</span><span class="p">())</span>
+        <span class="n">trial</span> <span class="o">=</span> <span class="n">AshaTrial</span><span class="p">(</span><span class="n">trial_id</span><span class="p">,</span> <span class="n">hyper_parameter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trials</span><span class="p">[</span><span class="n">trial_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial</span>
         <span class="k">return</span> <span class="n">trial</span>
 
@@ -920,9 +962,6 @@
         <span class="n">trial_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_trial_id</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">trial_id</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_get_train_environment</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;subset_ratio&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_ratio</span><span class="p">}</span>
 
 <div class="viewcode-block" id="HyperBand.get_next_sample">
 <a class="viewcode-back" href="../../../guide/reference/_autosummary/otx.hpo.html#otx.hpo.HyperBand.get_next_sample">[docs]</a>
