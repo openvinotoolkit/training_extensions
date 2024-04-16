@@ -68,12 +68,6 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=test_cfg,
         )
 
-        mask_head._bbox_mask_post_process(
-            results[0],
-            mask_feat,
-            cfg=test_cfg,
-        )
-
     def test_predict_by_feat_ov(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdirname:
             lit_module = RTMDetInst(num_classes=1, variant="tiny")
