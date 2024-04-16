@@ -71,7 +71,7 @@ class TestCustomRTMDetInsSepBNHead:
         mask_head._bbox_mask_post_process(
             results[0],
             mask_feat,
-            cfg=None,
+            cfg=test_cfg,
         )
 
     def test_predict_by_feat_ov(self) -> None:
