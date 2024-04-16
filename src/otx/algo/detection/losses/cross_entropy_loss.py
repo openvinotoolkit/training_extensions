@@ -6,7 +6,7 @@ from __future__ import annotations
 import warnings
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from mmengine.registry import MODELS
 from torch import nn
 
@@ -168,8 +168,12 @@ def mask_cross_entropy(
         >>>                           avg_factor, class_weights)
         >>> assert loss.shape == (1,)
     """
-    assert ignore_index is None, "BCE loss does not support ignore_index"
-    assert reduction == "mean" and avg_factor is None
+    if ignore_index is not None:
+        msg = "ignore_index is not supported in mask cross entropy loss"
+        raise ValueError(msg)
+    if reduction != "mean" or avg_factor is not None:
+        msg = "avg_factor is not supported in mask cross entropy loss"
+        raise ValueError(msg)
     num_rois = pred.size()[0]
     inds = torch.arange(0, num_rois, dtype=torch.long, device=pred.device)
     pred_slice = pred[inds, weight].squeeze(1)
@@ -208,7 +212,10 @@ class CrossEntropyLoss(nn.Module):
                 only averaged over non-ignored targets. Default: False.
         """
         super().__init__()
-        assert (use_sigmoid is False) or (use_mask is False)
+        if use_sigmoid and use_mask:
+            msg = "``use_sigmoid`` and ``use_mask`` cannot be True at the same time"
+            raise ValueError(msg)
+
         self.use_sigmoid = use_sigmoid
         self.use_mask = use_mask
         self.reduction = reduction
@@ -222,6 +229,7 @@ class CrossEntropyLoss(nn.Module):
                 "ignore the certain label and average loss over non-ignore "
                 "labels, which is the same with PyTorch official "
                 "cross_entropy, set ``avg_non_ignore=True``.",
+                stacklevel=2,
             )
 
         if self.use_sigmoid:
@@ -260,7 +268,9 @@ class CrossEntropyLoss(nn.Module):
         Returns:
             torch.Tensor: The calculated loss.
         """
-        assert reduction_override in (None, "none", "mean", "sum")
+        if reduction_override not in (None, "none", "mean", "sum"):
+            msg = f"Invalid value for reduction_override: {reduction_override}"
+            raise ValueError(msg)
         reduction = reduction_override if reduction_override else self.reduction
         if ignore_index is None:
             ignore_index = self.ignore_index

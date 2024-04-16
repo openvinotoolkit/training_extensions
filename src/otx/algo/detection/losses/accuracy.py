@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from torch import nn
-
 if TYPE_CHECKING:
     from torch import Tensor
 
@@ -15,7 +13,7 @@ def accuracy(
     target: Tensor,
     topk: int | tuple[int] = 1,
     thresh: float | None = None,
-) -> list:
+) -> list[Tensor] | Tensor:
     """Calculate accuracy according to the prediction and target.
 
     Args:
@@ -34,7 +32,9 @@ def accuracy(
             function will return a tuple containing accuracies of
             each ``topk`` number.
     """
-    assert isinstance(topk, (int, tuple))
+    if not isinstance(topk, (int, tuple)):
+        msg = f"topk must be int or tuple of int, got {type(topk)}"
+        raise TypeError(msg)
     if isinstance(topk, int):
         topk = (topk,)
         return_single = True
@@ -45,9 +45,15 @@ def accuracy(
     if pred.size(0) == 0:
         accu = [pred.new_tensor(0.0) for i in range(len(topk))]
         return accu[0] if return_single else accu
-    assert pred.ndim == 2 and target.ndim == 1
-    assert pred.size(0) == target.size(0)
-    assert maxk <= pred.size(1), f"maxk {maxk} exceeds pred dimension {pred.size(1)}"
+    if pred.ndim != 2 or target.ndim != 1:
+        msg = "Input tensors must have 2 dims for pred and 1 dim for target"
+        raise ValueError(msg)
+    if pred.size(0) != target.size(0):
+        msg = "Input tensors must have the same size along the 0th dim"
+        raise ValueError(msg)
+    if maxk > pred.size(1):
+        msg = f"maxk {maxk} exceeds pred dimension {pred.size(1)}"
+        raise ValueError(msg)
     pred_value, pred_label = pred.topk(maxk, dim=1)
     pred_label = pred_label.t()  # transpose to shape (maxk, N)
     correct = pred_label.eq(target.view(1, -1).expand_as(pred_label))
@@ -59,32 +65,3 @@ def accuracy(
         correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
         res.append(correct_k.mul_(100.0 / pred.size(0)))
     return res[0] if return_single else res
-
-
-class Accuracy(nn.Module):
-    """Module to calculate the accuracy."""
-
-    def __init__(self, topk=(1,), thresh=None):
-        """Module to calculate the accuracy.
-
-        Args:
-            topk (tuple, optional): The criterion used to calculate the
-                accuracy. Defaults to (1,).
-            thresh (float, optional): If not None, predictions with scores
-                under this threshold are considered incorrect. Default to None.
-        """
-        super().__init__()
-        self.topk = topk
-        self.thresh = thresh
-
-    def forward(self, pred, target):
-        """Forward function to calculate accuracy.
-
-        Args:
-            pred (torch.Tensor): Prediction of models.
-            target (torch.Tensor): Target for each prediction.
-
-        Returns:
-            tuple[float]: The accuracies under different topk criterions.
-        """
-        return accuracy(pred, target, self.topk, self.thresh)
