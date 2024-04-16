@@ -15,7 +15,7 @@ build-backend = "setuptools.build_meta"
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # CIBUILDWHEEL CONFIGURATION.                                                 #
 [tool.cibuildwheel]
-build = "cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+build = "cp39-manylinux_x86_64 cp310-manylinux_x86_64"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -117,7 +117,7 @@ line-length = 120
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 # minimum target version
-target-version = "py38"
+target-version = "py39"
 
 format = "grouped"
 
