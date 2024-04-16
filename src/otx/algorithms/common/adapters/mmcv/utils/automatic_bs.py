@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import dill
 import inspect
 from copy import copy
 from importlib import import_module
@@ -75,6 +74,7 @@ def _train_func_single_iter(
     model: Optional[torch.nn.Module] = None,
     model_builder: Optional[Callable] = None,
 ) -> None:
+    import dill
     caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
     _set_max_epoch(cfg, 1)  # setup for training a single iter to save time
@@ -210,6 +210,7 @@ def adapt_batch_size(
             in the argument. It's required for nncf because nncf changes model , which prevent model from pickling.
     """
 
+    import dill
     if not (cuda_available() or is_xpu_available()):
         logger.warning("Skip Auto-adaptive batch size: Adaptive batch size supports CUDA or XPU.")
         return
