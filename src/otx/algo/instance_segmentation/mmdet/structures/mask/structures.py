@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import itertools
-from abc import ABCMeta
 from typing import Iterable, Sequence
 
 import cv2
@@ -13,7 +12,7 @@ import cv2
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 import mmcv
 import numpy as np
-import pycocotools.mask as maskUtils
+import pycocotools.mask as mask_utils
 import torch
 
 # TODO(Eugene): remove mmcv
@@ -22,11 +21,7 @@ from mmcv.ops.roi_align import roi_align
 from shapely import geometry
 
 
-class BaseInstanceMasks(metaclass=ABCMeta):
-    """Base class for instance masks."""
-
-
-class BitmapMasks(BaseInstanceMasks):
+class BitmapMasks:
     """This class represents masks in the form of bitmaps.
 
     Args:
@@ -174,15 +169,12 @@ class BitmapMasks(BaseInstanceMasks):
         if num_bbox > 0:
             gt_masks_th = torch.from_numpy(self.masks).to(device).index_select(0, inds).to(dtype=rois.dtype)
             targets = roi_align(gt_masks_th[:, None, :, :], rois, out_shape, 1.0, 0, "avg", True).squeeze(1)
-            if binarize:
-                resized_masks = (targets >= 0.5).cpu().numpy()
-            else:
-                resized_masks = targets.cpu().numpy()
+            resized_masks = (targets >= 0.5).cpu().numpy() if binarize else targets.cpu().numpy()
         else:
             resized_masks = []
         return BitmapMasks(resized_masks, *out_shape)
 
-    def expand(self, expanded_h, expanded_w, top, left):
+    def expand(self, expanded_h: int, expanded_w: int, top: int, left: int) -> BitmapMasks:
         """See :func:`BaseInstanceMasks.expand`."""
         if len(self.masks) == 0:
             expanded_mask = np.empty((0, expanded_h, expanded_w), dtype=np.uint8)
@@ -191,7 +183,14 @@ class BitmapMasks(BaseInstanceMasks):
             expanded_mask[:, top : top + self.height, left : left + self.width] = self.masks
         return BitmapMasks(expanded_mask, expanded_h, expanded_w)
 
-    def translate(self, out_shape, offset, direction="horizontal", border_value=0, interpolation="bilinear"):
+    def translate(
+        self,
+        out_shape: tuple[int, int],
+        offset: int,
+        direction: str = "horizontal",
+        border_value: int = 0,
+        interpolation: str = "bilinear",
+    ) -> BitmapMasks:
         """Translate the BitmapMasks.
 
         Args:
@@ -242,7 +241,14 @@ class BitmapMasks(BaseInstanceMasks):
             translated_masks = translated_masks.transpose((2, 0, 1)).astype(self.masks.dtype)
         return BitmapMasks(translated_masks, *out_shape)
 
-    def shear(self, out_shape, magnitude, direction="horizontal", border_value=0, interpolation="bilinear"):
+    def shear(
+        self,
+        out_shape: tuple[int, int],
+        magnitude: int | float,
+        direction: str = "horizontal",
+        border_value: int = 0,
+        interpolation: str = "bilinear",
+    ) -> BitmapMasks:
         """Shear the BitmapMasks.
 
         Args:
@@ -272,7 +278,15 @@ class BitmapMasks(BaseInstanceMasks):
             sheared_masks = sheared_masks.transpose((2, 0, 1)).astype(self.masks.dtype)
         return BitmapMasks(sheared_masks, *out_shape)
 
-    def rotate(self, out_shape, angle, center=None, scale=1.0, border_value=0, interpolation="bilinear"):
+    def rotate(
+        self,
+        out_shape: tuple[int, int],
+        angle: int | float,
+        center: tuple[float, float] | None = None,
+        scale: float = 1.0,
+        border_value: int = 0,
+        interpolation: str = "bilinear",
+    ) -> BitmapMasks:
         """Rotate the BitmapMasks.
 
         Args:
@@ -307,7 +321,7 @@ class BitmapMasks(BaseInstanceMasks):
         return BitmapMasks(rotated_masks, *out_shape)
 
     @property
-    def areas(self):
+    def areas(self) -> np.ndarray:
         """See :py:attr:`BaseInstanceMasks.areas`."""
         return self.masks.sum((1, 2))
 
@@ -718,6 +732,6 @@ def polygon_to_bitmap(polygons: list[np.ndarray], height: int, width: int) -> np
     Return:
         ndarray: the converted masks in bitmap representation
     """
-    rles = maskUtils.frPyObjects(polygons, height, width)
-    rle = maskUtils.merge(rles)
-    return maskUtils.decode(rle).astype(bool)
+    rles = mask_utils.frPyObjects(polygons, height, width)
+    rle = mask_utils.merge(rles)
+    return mask_utils.decode(rle).astype(bool)

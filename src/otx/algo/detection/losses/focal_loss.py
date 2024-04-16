@@ -173,7 +173,15 @@ def sigmoid_focal_loss(
 
 @MODELS.register_module()
 class FocalLoss(nn.Module):
-    def __init__(self, use_sigmoid=True, gamma=2.0, alpha=0.25, reduction="mean", loss_weight=1.0, activated=False):
+    def __init__(
+        self,
+        use_sigmoid: int = True,
+        gamma: float = 2.0,
+        alpha: float = 0.25,
+        reduction: str = "mean",
+        loss_weight: float = 1.0,
+        activated: bool = False,
+    ):
         """`Focal Loss <https://arxiv.org/abs/1708.02002>`.
 
         Args:
@@ -201,7 +209,14 @@ class FocalLoss(nn.Module):
         self.loss_weight = loss_weight
         self.activated = activated
 
-    def forward(self, pred, target, weight=None, avg_factor=None, reduction_override=None):
+    def forward(
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        weight: torch.Tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
+    ):
         """Forward function.
 
         Args:

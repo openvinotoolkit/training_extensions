@@ -2,11 +2,10 @@
 
 # Copyright (c) OpenMMLab. All rights reserved.
 from .mask_target import mask_target
-from .structures import BaseInstanceMasks, BitmapMasks, PolygonMasks, polygon_to_bitmap
+from .structures import BitmapMasks, PolygonMasks, polygon_to_bitmap
 
 __all__ = [
     "mask_target",
-    "BaseInstanceMasks",
     "BitmapMasks",
     "PolygonMasks",
     "polygon_to_bitmap",

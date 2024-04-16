@@ -1,3 +1,5 @@
+"""The original source code is from mmdet.mask.structures. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
@@ -176,6 +178,8 @@ def mask_cross_entropy(
 
 @MODELS.register_module()
 class CrossEntropyLoss(nn.Module):
+    """CrossEntropyLoss."""
+
     def __init__(
         self,
         use_sigmoid: bool = False,
