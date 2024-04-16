@@ -3,6 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import dill
 import inspect
 from copy import copy
 from importlib import import_module
@@ -77,6 +78,9 @@ def _train_func_single_iter(
     caching.MemCacheHandlerSingleton.create("null", 0)  # initialize mem cache
     _set_batch_size(cfg, batch_size)
     _set_max_epoch(cfg, 1)  # setup for training a single iter to save time
+    datasets[0].otx_dataset = dill.loads(datasets[0].otx_dataset)
+    for stage in ["train", "val"]:
+        cfg.data[stage].otx_dataset = dill.loads(cfg.data[stage].otx_dataset)
 
     new_dataset = [SubDataset(datasets[0], batch_size)]
 
@@ -223,6 +227,12 @@ def adapt_batch_size(
 
     _organize_custom_hooks(copied_cfg.custom_hooks, is_nncf)
 
+    max_bs = len(datasets[0])
+    dill.detect.trace(False)
+    datasets[0].otx_dataset = dill.dumps(datasets[0].otx_dataset)
+    for stage in ["train", "val"]:
+        copied_cfg.data[stage].otx_dataset = dill.dumps(copied_cfg.data[stage].otx_dataset)
+
     default_bs = _get_batch_size(cfg)
     if not distributed or (rank := dist.get_rank()) == 0:
         train_func_kwargs = {
@@ -241,7 +251,7 @@ def adapt_batch_size(
             train_func=_train_func_single_iter,
             train_func_kwargs=train_func_kwargs,
             default_bs=default_bs,
-            max_bs=len(datasets[0]),
+            max_bs=max_bs,
         )
         if not_increase:
             new_batch_size = bs_search_algo.auto_decrease_batch_size()
@@ -257,6 +267,10 @@ def adapt_batch_size(
         total_try_result = total_try_result.cuda() if torch.cuda.is_available() else total_try_result.xpu()
         dist.broadcast(total_try_result, src=0)
         new_batch_size = total_try_result[0].item()
+
+    datasets[0].otx_dataset = dill.loads(datasets[0].otx_dataset)
+    for stage in ["train", "val"]:
+        copied_cfg.data[stage].otx_dataset = dill.loads(copied_cfg.data[stage].otx_dataset)
 
     if default_bs != new_batch_size:
         _set_batch_size(cfg, new_batch_size)
