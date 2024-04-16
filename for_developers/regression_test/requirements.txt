@@ -545,9 +545,9 @@ matplotlib==3.8.3 \
     --hash=sha256:f386cf162b059809ecfac3bcc491a9ea17da69fa35c8ded8ad154cd4b933d5ec \
     --hash=sha256:fa93695d5c08544f4a0dfd0965f378e7afc410d8672816aff1e81be1f45dbf2e
     # via mlflow
-mlflow==2.11.1 \
-    --hash=sha256:4d62a0bd0da9f4b16256e686b06905a6f8533eb587cd8e2dc7ee8324cf94ab35 \
-    --hash=sha256:a2ec29ee862f19955208fb8e05e51e5e9d2edc7175e37cf136d943b981a824e9
+mlflow==2.11.3 \
+    --hash=sha256:621b7e311e890b79719c2e7777286d8e08d38dd04d5ab080966990bd4a55febb \
+    --hash=sha256:6af105162b6f7f2a69cace48c2af7adbecfada5e6386f1ce7d1bbbffd6e09953
     # via -r requirements.in
 numpy==1.26.4 \
     --hash=sha256:03a8c78d01d9781b28a6989f6fa1bb2c4f2d51201cf99d3dd875df6fbd96b23b \
