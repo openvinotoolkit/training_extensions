@@ -8,11 +8,11 @@ from . import (
     action_classification,
     classification,
     detection,
+    instance_segmentation,
     plugins,
     segmentation,
     strategies,
     visual_prompting,
-    instance_segmentation,
 )
 
 __all__ = [
