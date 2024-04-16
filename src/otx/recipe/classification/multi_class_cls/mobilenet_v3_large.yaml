@@ -49,6 +49,8 @@ overrides:
       train_subset:
         batch_size: 64
         transforms:
+          # TODO(harimkang): There is currently a slowdown issue with some transforms in torchvision.transforms.
+          # https://github.com/openvinotoolkit/training_extensions/pull/3253 -> A revisit is required after this PR is merged.
           - class_path: torchvision.transforms.v2.RandomResizedCrop
             init_args:
               size:
