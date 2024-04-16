@@ -125,113 +125,121 @@ class DetDataSample(BaseDataElement):
 
     @property
     def proposals(self) -> InstanceData:
+        """Getter method for the proposals attribute."""
         return self._proposals
 
     @proposals.setter
-    def proposals(self, value: InstanceData):
+    def proposals(self, value: InstanceData) -> None:
         self.set_field(value, "_proposals", dtype=InstanceData)
 
     @proposals.deleter
-    def proposals(self):
+    def proposals(self) -> None:
+        """Deleter method for the proposals attribute."""
         del self._proposals
 
     @property
     def gt_instances(self) -> InstanceData:
+        """Getter method for the gt_instances attribute."""
         return self._gt_instances
 
     @gt_instances.setter
-    def gt_instances(self, value: InstanceData):
+    def gt_instances(self, value: InstanceData) -> None:
+        """Setter method for the gt_instances attribute."""
         self.set_field(value, "_gt_instances", dtype=InstanceData)
 
     @gt_instances.deleter
-    def gt_instances(self):
+    def gt_instances(self) -> None:
+        """Deleter method for the gt_instances attribute."""
         del self._gt_instances
 
     @property
     def pred_instances(self) -> InstanceData:
+        """Getter method for the pred_instances attribute."""
         return self._pred_instances
 
     @pred_instances.setter
-    def pred_instances(self, value: InstanceData):
+    def pred_instances(self, value: InstanceData) -> None:
+        """Setter method for the pred_instances attribute."""
         self.set_field(value, "_pred_instances", dtype=InstanceData)
 
     @pred_instances.deleter
-    def pred_instances(self):
+    def pred_instances(self) -> None:
+        """Deleter method for the pred_instances attribute."""
         del self._pred_instances
-
-    # directly add ``pred_track_instances`` in ``DetDataSample``
-    # so that the ``TrackDataSample`` does not bother to access the
-    # instance-level information.
-    @property
-    def pred_track_instances(self) -> InstanceData:
-        return self._pred_track_instances
-
-    @pred_track_instances.setter
-    def pred_track_instances(self, value: InstanceData):
-        self.set_field(value, "_pred_track_instances", dtype=InstanceData)
-
-    @pred_track_instances.deleter
-    def pred_track_instances(self):
-        del self._pred_track_instances
 
     @property
     def ignored_instances(self) -> InstanceData:
+        """Getter method for the ignored_instances attribute."""
         return self._ignored_instances
 
     @ignored_instances.setter
-    def ignored_instances(self, value: InstanceData):
+    def ignored_instances(self, value: InstanceData) -> None:
+        """Setter method for the ignored_instances attribute."""
         self.set_field(value, "_ignored_instances", dtype=InstanceData)
 
     @ignored_instances.deleter
-    def ignored_instances(self):
+    def ignored_instances(self) -> None:
+        """Deleter method for the ignored_instances attribute."""
         del self._ignored_instances
 
     @property
     def gt_panoptic_seg(self) -> PixelData:
+        """Getter method for the gt_panoptic_seg attribute."""
         return self._gt_panoptic_seg
 
     @gt_panoptic_seg.setter
-    def gt_panoptic_seg(self, value: PixelData):
+    def gt_panoptic_seg(self, value: PixelData) -> None:
+        """Setter method for the gt_panoptic_seg attribute."""
         self.set_field(value, "_gt_panoptic_seg", dtype=PixelData)
 
     @gt_panoptic_seg.deleter
-    def gt_panoptic_seg(self):
+    def gt_panoptic_seg(self) -> None:
+        """Deleter method for the gt_panoptic_seg attribute."""
         del self._gt_panoptic_seg
 
     @property
     def pred_panoptic_seg(self) -> PixelData:
+        """Getter method for the pred_panoptic_seg attribute."""
         return self._pred_panoptic_seg
 
     @pred_panoptic_seg.setter
-    def pred_panoptic_seg(self, value: PixelData):
+    def pred_panoptic_seg(self, value: PixelData) -> None:
+        """Setter method for the pred_panoptic_seg attribute."""
         self.set_field(value, "_pred_panoptic_seg", dtype=PixelData)
 
     @pred_panoptic_seg.deleter
-    def pred_panoptic_seg(self):
+    def pred_panoptic_seg(self) -> None:
+        """Deleter method for the pred_panoptic_seg attribute."""
         del self._pred_panoptic_seg
 
     @property
     def gt_sem_seg(self) -> PixelData:
+        """Getter method for the gt_sem_seg attribute."""
         return self._gt_sem_seg
 
     @gt_sem_seg.setter
-    def gt_sem_seg(self, value: PixelData):
+    def gt_sem_seg(self, value: PixelData) -> None:
+        """Setter method for the gt_sem_seg attribute."""
         self.set_field(value, "_gt_sem_seg", dtype=PixelData)
 
     @gt_sem_seg.deleter
-    def gt_sem_seg(self):
+    def gt_sem_seg(self) -> None:
+        """Deleter method for the gt_sem_seg attribute."""
         del self._gt_sem_seg
 
     @property
     def pred_sem_seg(self) -> PixelData:
+        """Getter method for the pred_sem_seg attribute."""
         return self._pred_sem_seg
 
     @pred_sem_seg.setter
-    def pred_sem_seg(self, value: PixelData):
+    def pred_sem_seg(self, value: PixelData) -> None:
+        """Setter method for the pred_sem_seg attribute."""
         self.set_field(value, "_pred_sem_seg", dtype=PixelData)
 
     @pred_sem_seg.deleter
-    def pred_sem_seg(self):
+    def pred_sem_seg(self) -> None:
+        """Deleter method for the pred_sem_seg attribute."""
         del self._pred_sem_seg
 
 

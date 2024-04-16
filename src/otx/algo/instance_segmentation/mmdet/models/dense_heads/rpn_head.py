@@ -7,7 +7,7 @@ import copy
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 
 # TODO(Eugene): replace mmcv.ConvModule with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
@@ -30,7 +30,7 @@ from .anchor_head import AnchorHead
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
-    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, MultiConfig, OptInstanceList
+    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList, OptInstanceList
 
 
 @MODELS.register_module()
@@ -51,11 +51,14 @@ class RPNHead(AnchorHead):
         self,
         in_channels: int,
         num_classes: int = 1,
-        init_cfg: MultiConfig = dict(type="Normal", layer="Conv2d", std=0.01),
+        init_cfg: dict | None = None,
         num_convs: int = 1,
         **kwargs,
     ) -> None:
         self.num_convs = num_convs
+        if init_cfg is None:
+            init_cfg = {"type": "Normal", "layer": "Conv2d", "std": 0.01}
+
         if num_classes != 1:
             msg = "num_classes must be 1 for RPNHead"
             raise ValueError(msg)
@@ -130,7 +133,7 @@ class RPNHead(AnchorHead):
             batch_img_metas,
             batch_gt_instances_ignore=batch_gt_instances_ignore,
         )
-        return dict(loss_rpn_cls=losses["loss_cls"], loss_rpn_bbox=losses["loss_bbox"])
+        return {"loss_rpn_cls": losses["loss_cls"], "loss_rpn_bbox": losses["loss_bbox"]}
 
     def _predict_by_feat_single(
         self,
@@ -193,8 +196,8 @@ class RPNHead(AnchorHead):
                 raise RuntimeError(msg)
 
             reg_dim = self.bbox_coder.encode_size
-            bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)
-            cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
+            bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)  # noqa: PLW2901
+            cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
             scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             scores = torch.squeeze(scores)
@@ -204,8 +207,8 @@ class RPNHead(AnchorHead):
                 ranked_scores, rank_inds = scores.sort(descending=True)
                 topk_inds = rank_inds[:nms_pre]
                 scores = ranked_scores[:nms_pre]
-                bbox_pred = bbox_pred[topk_inds, :]
-                priors = priors[topk_inds]
+                bbox_pred = bbox_pred[topk_inds, :]  # noqa: PLW2901
+                priors = priors[topk_inds]  # noqa: PLW2901
 
             mlvl_bbox_preds.append(bbox_pred)
             mlvl_valid_priors.append(priors)

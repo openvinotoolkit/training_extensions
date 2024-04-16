@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from mmengine.config import ConfigDict
 from mmengine.registry import MODELS
 
 from .two_stage import TwoStageDetector
 
 if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+
     from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType, OptMultiConfig
 
 

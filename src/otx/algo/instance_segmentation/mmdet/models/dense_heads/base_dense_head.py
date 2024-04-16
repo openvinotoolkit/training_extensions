@@ -6,10 +6,7 @@ from __future__ import annotations
 from abc import ABCMeta
 from typing import TYPE_CHECKING
 
-# TODO(Eugene): replace mmcv.batched_nms with torchvision
-# https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmengine.model import BaseModule, constant_init
-from torch import Tensor
 
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
@@ -20,6 +17,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
+    from torch import Tensor
 
     from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
     from otx.algo.instance_segmentation.mmdet.structures import SampleList
@@ -83,7 +81,7 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
         batch_data_samples: SampleList,
         proposal_cfg: ConfigDict | None = None,
     ) -> tuple[dict, InstanceList]:
-        """Perform forward propagation of the head, then calculate loss and predictions from the features and data samples.
+        """Calculate loss and predictions from the features and data samples.
 
         Args:
             x (tuple[Tensor]): Features from FPN.
@@ -109,11 +107,11 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
         loss_inputs = (*outs, batch_gt_instances, batch_img_metas, batch_gt_instances_ignore)
         losses = self.loss_by_feat(*loss_inputs)
 
-        predictions = self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, cfg=proposal_cfg)  # type: ignore
+        predictions = self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, cfg=proposal_cfg)  # type: ignore [misc]
         return losses, predictions
 
     def predict(self, x: tuple[Tensor], batch_data_samples: SampleList, rescale: bool = False) -> InstanceList:
-        """Perform forward propagation of the detection head and predict detection results on the features of the upstream network.
+        """Forward detection head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Multi-level features from the
@@ -132,7 +130,7 @@ class BaseDenseHead(BaseModule, metaclass=ABCMeta):
 
         outs = self(x)
 
-        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore
+        return self.predict_by_feat(*outs, batch_img_metas=batch_img_metas, rescale=rescale)  # type: ignore [misc]
 
     def predict_by_feat(
         self,

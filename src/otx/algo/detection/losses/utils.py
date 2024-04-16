@@ -1,11 +1,13 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import functools
-from typing import Callable, Optional
+from typing import Callable
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import Tensor
 
 
@@ -19,21 +21,23 @@ def reduce_loss(loss: Tensor, reduction: str) -> Tensor:
     Return:
         Tensor: Reduced loss tensor.
     """
-    reduction_enum = F._Reduction.get_enum(reduction)
+    reduction_enum = F._Reduction.get_enum(reduction)  # noqa: SLF001
     # none: 0, elementwise_mean:1, sum: 2
     if reduction_enum == 0:
         return loss
-    elif reduction_enum == 1:
+    if reduction_enum == 1:
         return loss.mean()
-    elif reduction_enum == 2:
+    if reduction_enum == 2:
         return loss.sum()
+    msg = f"Unsupported reduction: {reduction}"
+    raise ValueError(msg)
 
 
 def weight_reduce_loss(
     loss: Tensor,
-    weight: Optional[Tensor] = None,
+    weight: Tensor | None = None,
     reduction: str = "mean",
-    avg_factor: Optional[float] = None,
+    avg_factor: float | None = None,
 ) -> Tensor:
     """Apply element-wise weight and reduce loss.
 
@@ -56,16 +60,15 @@ def weight_reduce_loss(
     # if avg_factor is not specified, just reduce the loss
     if avg_factor is None:
         loss = reduce_loss(loss, reduction)
-    else:
-        # if reduction is mean, then average the loss by avg_factor
-        if reduction == "mean":
-            # Avoid causing ZeroDivisionError when avg_factor is 0.0,
-            # i.e., all labels of an image belong to ignore index.
-            eps = torch.finfo(torch.float32).eps
-            loss = loss.sum() / (avg_factor + eps)
-        # if reduction is 'none', then do nothing, otherwise raise an error
-        elif reduction != "none":
-            raise ValueError('avg_factor can not be used with reduction="sum"')
+    elif reduction == "mean":
+        # Avoid causing ZeroDivisionError when avg_factor is 0.0,
+        # i.e., all labels of an image belong to ignore index.
+        eps = torch.finfo(torch.float32).eps
+        loss = loss.sum() / (avg_factor + eps)
+    # if reduction is 'none', then do nothing, otherwise raise an error
+    elif reduction != "none":
+        msg = 'avg_factor can not be used with reduction="sum"'
+        raise ValueError(msg)
     return loss
 
 
@@ -104,12 +107,14 @@ def weighted_loss(loss_func: Callable) -> Callable:
     def wrapper(
         pred: Tensor,
         target: Tensor,
-        weight: Optional[Tensor] = None,
+        weight: Tensor | None = None,
         reduction: str = "mean",
-        avg_factor: Optional[int] = None,
+        avg_factor: int | None = None,
         **kwargs,
     ) -> Tensor:
-        """Args:
+        """The decorated function.
+
+        Args:
             pred (Tensor): The prediction.
             target (Tensor): Target bboxes.
             weight (Optional[Tensor], optional): The weight of loss for each
@@ -124,7 +129,6 @@ def weighted_loss(loss_func: Callable) -> Callable:
         """
         # get element-wise loss
         loss = loss_func(pred, target, **kwargs)
-        loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
-        return loss
+        return weight_reduce_loss(loss, weight, reduction, avg_factor)
 
     return wrapper

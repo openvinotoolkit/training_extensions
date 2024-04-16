@@ -113,7 +113,7 @@ class AnchorHead(BaseDenseHead):
         self.test_cfg = test_cfg
         if self.train_cfg is not None:
             self.assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-            self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
+            self.sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
 
         self.fp16_enabled = False
 
@@ -142,7 +142,7 @@ class AnchorHead(BaseDenseHead):
                     scale levels, each is a 4D-tensor, the channels number \
                     is num_base_priors * 4.
         """
-        return multi_apply(self.forward_single, x)  # type: ignore
+        return multi_apply(self.forward_single, x)  # type: ignore [return-value]
 
     def get_anchors(
         self,
@@ -174,7 +174,7 @@ class AnchorHead(BaseDenseHead):
 
         # for each image, we compute valid flags of multi level anchors
         valid_flag_list = []
-        for img_id, img_meta in enumerate(batch_img_metas):
+        for img_meta in batch_img_metas:
             multi_level_flags = self.prior_generator.valid_flags(featmap_sizes, img_meta["pad_shape"], device)
             valid_flag_list.append(multi_level_flags)
 
@@ -507,4 +507,4 @@ class AnchorHead(BaseDenseHead):
             bbox_weights_list,
             avg_factor=avg_factor,
         )
-        return dict(loss_cls=losses_cls, loss_bbox=losses_bbox)
+        return {"loss_cls": losses_cls, "loss_bbox": losses_bbox}

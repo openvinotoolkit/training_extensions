@@ -88,7 +88,8 @@ def multiclass_nms(
 
     if bboxes.numel() == 0:
         if torch.onnx.is_in_onnx_export():
-            raise RuntimeError("[ONNX Error] Can not record NMS as it has not been executed this time")
+            msg = "[ONNX Error] Can not record NMS as it has not been executed this time"
+            raise RuntimeError(msg)
         dets = torch.cat([bboxes, scores[:, None]], -1)
         if return_inds:
             return dets, labels, inds

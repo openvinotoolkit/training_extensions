@@ -3,11 +3,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from mmengine.config import ConfigDict
+from typing import TYPE_CHECKING
+
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 
 from .bbox_head import BBoxHead
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 @MODELS.register_module()
@@ -37,14 +41,22 @@ class ConvFCBBoxHead(BBoxHead):
         *args,
         **kwargs,
     ) -> None:
-        super().__init__(*args, init_cfg=init_cfg, **kwargs)  # type: ignore
-        assert num_shared_convs + num_shared_fcs + num_cls_convs + num_cls_fcs + num_reg_convs + num_reg_fcs > 0
-        if num_cls_convs > 0 or num_reg_convs > 0:
-            assert num_shared_fcs == 0
-        if not self.with_cls:
-            assert num_cls_convs == 0 and num_cls_fcs == 0
-        if not self.with_reg:
-            assert num_reg_convs == 0 and num_reg_fcs == 0
+        super().__init__(*args, init_cfg=init_cfg, **kwargs)  # type: ignore [misc]
+        if num_shared_convs + num_shared_fcs + num_cls_convs + num_cls_fcs + num_reg_convs + num_reg_fcs <= 0:
+            msg = (
+                "Pls specify at least one of num_shared_convs, num_shared_fcs, num_cls_convs, num_cls_fcs, "
+                "num_reg_convs, num_reg_fcs"
+            )
+            raise ValueError(msg)
+        if (num_cls_convs > 0 or num_reg_convs > 0) and num_shared_fcs != 0:
+            msg = "Shared FC layers are mutually exclusive with cls/reg conv layers"
+            raise ValueError(msg)
+        if (not self.with_cls) and (num_cls_convs != 0 or num_cls_fcs != 0):
+            msg = "num_cls_convs and num_cls_fcs should be zero if without classification"
+            raise ValueError(msg)
+        if (not self.with_reg) and (num_reg_convs != 0 or num_reg_fcs != 0):
+            msg = "num_reg_convs and num_reg_fcs should be zero if without regression"
+            raise ValueError(msg)
         self.num_shared_convs = num_shared_convs
         self.num_shared_fcs = num_shared_fcs
         self.num_cls_convs = num_cls_convs
@@ -98,15 +110,15 @@ class ConvFCBBoxHead(BBoxHead):
             # we only need to append additional configuration
             # for `shared_fcs`, `cls_fcs` and `reg_fcs`
             self.init_cfg += [
-                dict(
-                    type="Xavier",
-                    distribution="uniform",
-                    override=[
-                        dict(name="shared_fcs"),
-                        dict(name="cls_fcs"),
-                        dict(name="reg_fcs"),
+                {
+                    "type": "Xavier",
+                    "distribution": "uniform",
+                    "override": [
+                        {"name": "shared_fcs"},
+                        {"name": "cls_fcs"},
+                        {"name": "reg_fcs"},
                     ],
-                ),
+                },
             ]
 
     def _add_conv_fc_branch(
@@ -171,8 +183,10 @@ class ConvFCBBoxHead(BBoxHead):
 
 @MODELS.register_module()
 class Shared2FCBBoxHead(ConvFCBBoxHead):
+    """Shared 2 FC BBox Head."""
+
     def __init__(self, fc_out_channels: int = 1024, *args, **kwargs) -> None:
-        super().__init__(  # type: ignore
+        super().__init__(  # type: ignore [misc]
             num_shared_convs=0,
             num_shared_fcs=2,
             num_cls_convs=0,
@@ -180,6 +194,6 @@ class Shared2FCBBoxHead(ConvFCBBoxHead):
             num_reg_convs=0,
             num_reg_fcs=0,
             fc_out_channels=fc_out_channels,
-            *args,
+            *args,  # noqa: B026
             **kwargs,
         )

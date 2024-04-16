@@ -1,7 +1,7 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from __future__ import annotations
 
 import torch
 from mmengine.registry import MODELS
@@ -24,9 +24,10 @@ def l1_loss(pred: Tensor, target: Tensor) -> Tensor:
     if target.numel() == 0:
         return pred.sum() * 0
 
-    assert pred.size() == target.size()
-    loss = torch.abs(pred - target)
-    return loss
+    if pred.size() != target.size():
+        msg = f"pred and target should be in the same size, but got {pred.size()} and {target.size()}"
+        raise ValueError(msg)
+    return torch.abs(pred - target)
 
 
 @MODELS.register_module()
@@ -48,9 +49,9 @@ class L1Loss(nn.Module):
         self,
         pred: Tensor,
         target: Tensor,
-        weight: Optional[Tensor] = None,
-        avg_factor: Optional[int] = None,
-        reduction_override: Optional[str] = None,
+        weight: Tensor | None = None,
+        avg_factor: int | None = None,
+        reduction_override: str | None = None,
     ) -> Tensor:
         """Forward function.
 
@@ -72,7 +73,8 @@ class L1Loss(nn.Module):
             if pred.dim() == weight.dim() + 1:
                 weight = weight.unsqueeze(1)
             return (pred * weight).sum()
-        assert reduction_override in (None, "none", "mean", "sum")
+        if reduction_override not in (None, "none", "mean", "sum"):
+            msg = f"Unsupported reduction method {reduction_override}"
+            raise NotImplementedError(msg)
         reduction = reduction_override if reduction_override else self.reduction
-        loss_bbox = self.loss_weight * l1_loss(pred, target, weight, reduction=reduction, avg_factor=avg_factor)
-        return loss_bbox
+        return self.loss_weight * l1_loss(pred, target, weight, reduction=reduction, avg_factor=avg_factor)

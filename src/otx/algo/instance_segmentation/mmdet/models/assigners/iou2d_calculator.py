@@ -51,8 +51,12 @@ class BboxOverlaps2D:
         Returns:
             Tensor: shape (m, n) if ``is_aligned `` is False else shape (m,)
         """
-        assert bboxes1.size(-1) in [0, 4, 5]
-        assert bboxes2.size(-1) in [0, 4, 5]
+        if bboxes1.size(-1) not in [0, 4, 5]:
+            msg = "The last dimension of bboxes must be 4 or 5."
+            raise ValueError(msg)
+        if bboxes2.size(-1) not in [0, 4, 5]:
+            msg = "The last dimension of bboxes must be 4 or 5."
+            raise ValueError(msg)
         if bboxes2.size(-1) == 5:
             bboxes2 = bboxes2[..., :4]
         if bboxes1.size(-1) == 5:

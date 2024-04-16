@@ -1,7 +1,9 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
-from typing import Optional, Sequence, Union
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -61,15 +63,22 @@ class DeltaXYWHBBoxCoder:
         Returns:
             torch.Tensor: Box transformation deltas
         """
-        assert bboxes.size(0) == gt_bboxes.size(0)
-        assert bboxes.size(-1) == gt_bboxes.size(-1) == 4
+        if bboxes.size(0) != gt_bboxes.size(0):
+            msg = (
+                f"The number of bboxes should be equal to the number of gt_bboxes, "
+                f"but they are {bboxes.size(0)} and {gt_bboxes.size(0)}"
+            )
+            raise ValueError(msg)
+        if bboxes.size(-1) != gt_bboxes.size(-1) != 4:
+            msg = "The last dimension of bboxes and gt_bboxes should be 4."
+            raise ValueError(msg)
         return bbox2delta(bboxes, gt_bboxes, self.means, self.stds)
 
     def decode(
         self,
         bboxes: Tensor,
         pred_bboxes: Tensor,
-        max_shape: Union[Sequence[int], Tensor, Sequence[Sequence[int]]] = None,
+        max_shape: Sequence[int] | Tensor | Sequence[Sequence[int]] | None = None,
         wh_ratio_clip: float = 16 / 1000,
     ) -> Tensor:
         """Apply transformation `pred_bboxes` to `boxes`.
@@ -92,13 +101,22 @@ class DeltaXYWHBBoxCoder:
         Returns:
             Union[torch.Tensor, :obj:`BaseBoxes`]: Decoded boxes.
         """
-        assert pred_bboxes.size(0) == bboxes.size(0)
-        if pred_bboxes.ndim == 3:
-            assert pred_bboxes.size(1) == bboxes.size(1)
+        if pred_bboxes.size(0) != bboxes.size(0):
+            msg = (
+                f"The number of pred_bboxes should be equal to the number of bboxes, "
+                f"but they are {pred_bboxes.size(0)} and {bboxes.size(0)}"
+            )
+            raise ValueError(msg)
+        if pred_bboxes.ndim == 3 and (pred_bboxes.size(1) != bboxes.size(1)):
+            msg = (
+                f"The number of pred_bboxes should be equal to the number of bboxes, "
+                f"but they are {pred_bboxes.size(1)} and {bboxes.size(1)}"
+            )
+            raise ValueError(msg)
 
         if pred_bboxes.ndim == 2 and not torch.onnx.is_in_onnx_export():
             # single image decode
-            decoded_bboxes = delta2bbox(
+            return delta2bbox(
                 bboxes,
                 pred_bboxes,
                 self.means,
@@ -109,19 +127,17 @@ class DeltaXYWHBBoxCoder:
                 self.add_ctr_clamp,
                 self.ctr_clamp,
             )
-        else:
-            decoded_bboxes = onnx_delta2bbox(
-                bboxes,
-                pred_bboxes,
-                self.means,
-                self.stds,
-                max_shape,
-                wh_ratio_clip,
-                self.clip_border,
-                self.add_ctr_clamp,
-                self.ctr_clamp,
-            )
-        return decoded_bboxes
+        return onnx_delta2bbox(
+            bboxes,
+            pred_bboxes,
+            self.means,
+            self.stds,
+            max_shape,
+            wh_ratio_clip,
+            self.clip_border,
+            self.add_ctr_clamp,
+            self.ctr_clamp,
+        )
 
 
 def bbox2delta(
@@ -147,7 +163,9 @@ def bbox2delta(
         Tensor: deltas with shape (N, 4), where columns represent dx, dy,
             dw, dh.
     """
-    assert proposals.size() == gt.size()
+    if proposals.size() != gt.size():
+        msg = f"The shapes of proposals and gt should be the same, but they are {proposals.size()} and {gt.size()}"
+        raise ValueError(msg)
 
     proposals = proposals.float()
     gt = gt.float()
@@ -177,7 +195,7 @@ def delta2bbox(
     deltas: Tensor,
     means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
     stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
-    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+    max_shape: Sequence[int] | Tensor | Sequence[Sequence[int]] | None = None,
     wh_ratio_clip: float = 16 / 1000,
     clip_border: bool = True,
     add_ctr_clamp: bool = False,
@@ -277,9 +295,9 @@ def onnx_delta2bbox(
     deltas: Tensor,
     means: Sequence[float] = (0.0, 0.0, 0.0, 0.0),
     stds: Sequence[float] = (1.0, 1.0, 1.0, 1.0),
-    max_shape: Optional[Union[Sequence[int], Tensor, Sequence[Sequence[int]]]] = None,
+    max_shape: Sequence[int] | Tensor | Sequence[Sequence[int]] | None = None,
     wh_ratio_clip: float = 16 / 1000,
-    clip_border: Optional[bool] = True,
+    clip_border: bool = True,
     add_ctr_clamp: bool = False,
     ctr_clamp: int = 32,
 ) -> Tensor:
@@ -382,18 +400,16 @@ def onnx_delta2bbox(
 
     if clip_border and max_shape is not None:
         # clip bboxes with dynamic `min` and `max` for onnx
-        if torch.onnx.is_in_onnx_export():
-            from mmdet.core.export import dynamic_clip_for_onnx
-
-            x1, y1, x2, y2 = dynamic_clip_for_onnx(x1, y1, x2, y2, max_shape)
-            bboxes = torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())
-            return bboxes
         if not isinstance(max_shape, torch.Tensor):
             max_shape = x1.new_tensor(max_shape)
         max_shape = max_shape[..., :2].type_as(x1)
         if max_shape.ndim == 2:
-            assert bboxes.ndim == 3
-            assert max_shape.size(0) == bboxes.size(0)
+            if bboxes.ndim != 3:
+                msg = "max_shape is a 2D tensor, bboxes should have 3 dimensions."
+                raise ValueError(msg)
+            if max_shape.size(0) != bboxes.size(0):
+                msg = "The number of max_shape should be equal to the number of bboxes."
+                raise ValueError(msg)
 
         min_xy = x1.new_tensor(0)
         max_xy = torch.cat([max_shape] * (deltas.size(-1) // 2), dim=-1).flip(-1).unsqueeze(-2)

@@ -78,21 +78,25 @@ class AnchorGenerator:
         use_box_type: bool = False,
     ) -> None:
         # check center and center_offset
-        if center_offset != 0:
-            assert centers is None, "center cannot be set when center_offset" f"!=0, {centers} is given."
+        if center_offset != 0 and centers is not None:
+            msg = "center_offset and centers cannot be set simultaneously."
+            raise ValueError(msg)
         if not (0 <= center_offset <= 1):
-            raise ValueError("center_offset should be in range [0, 1], " f"{center_offset} is given.")
-        if centers is not None:
-            assert len(centers) == len(strides), (
-                "The number of strides should be the same as centers, got " f"{strides} and {centers}"
-            )
+            msg = f"center_offset should be in range [0, 1], {center_offset} is given."
+            raise ValueError(msg)
+        if centers is not None and len(centers) != len(strides):
+            msg = f"The number of strides should be the same as centers, got {strides} and {centers}"
+            raise ValueError(msg)
 
         # calculate base sizes of anchors
         self.strides = [_pair(stride) for stride in strides]
         self.base_sizes = [min(stride) for stride in self.strides] if base_sizes is None else base_sizes
-        assert len(self.base_sizes) == len(self.strides), (
-            "The number of strides should be the same as base sizes, got " f"{self.strides} and {self.base_sizes}"
-        )
+        if len(self.base_sizes) != len(self.strides):
+            msg = (
+                f"The number of base_sizes should be the same as strides, "
+                f"got {len(self.base_sizes)} and {len(self.strides)}"
+            )
+            raise ValueError(msg)
 
         # calculate scales of anchors
         if scales is not None:
@@ -298,7 +302,9 @@ class AnchorGenerator:
         Return:
             list(torch.Tensor): Valid flags of anchors in multiple levels.
         """
-        assert self.num_levels == len(featmap_sizes)
+        if self.num_levels != len(featmap_sizes):
+            msg = f"The number of input feature levels should be equal to {self.num_levels}"
+            raise ValueError(msg)
         multi_level_flags = []
         for i in range(self.num_levels):
             anchor_stride = self.strides[i]
@@ -338,7 +344,9 @@ class AnchorGenerator:
         """
         feat_h, feat_w = featmap_size
         valid_h, valid_w = valid_size
-        assert valid_h <= feat_h and valid_w <= feat_w
+        if valid_h > feat_h or valid_w > feat_w:
+            msg = "valid_size should be smaller than featmap_size"
+            raise ValueError(msg)
         valid_x = torch.zeros(feat_w, dtype=torch.bool, device=device)
         valid_y = torch.zeros(feat_h, dtype=torch.bool, device=device)
         valid_x[:valid_w] = 1

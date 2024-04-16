@@ -27,7 +27,7 @@ def ensure_rng(rng: int | np.random.RandomState | None = None) -> np.random.Rand
         .. [1] https://gitlab.kitware.com/computer-vision/kwarray/blob/master/kwarray/util_random.py#L270  # noqa: E501
     """
     if rng is None:
-        return np.random.mtrand._rand
+        return np.random.mtrand._rand  # noqa: SLF001
     if isinstance(rng, int):
         return np.random.RandomState(rng)
     return rng

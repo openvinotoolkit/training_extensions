@@ -56,18 +56,29 @@ class BitmapMasks:
         if len(masks) == 0:
             self.masks = np.empty((0, self.height, self.width), dtype=np.uint8)
         else:
-            assert isinstance(masks, (list, np.ndarray))
+            if not isinstance(masks, (list, np.ndarray)):
+                msg = f"masks must be a list or ndarray, but got {type(masks)}"
+                raise TypeError(msg)
             if isinstance(masks, list):
-                assert isinstance(masks[0], np.ndarray)
-                assert masks[0].ndim == 2  # (H, W)
-            else:
-                assert masks.ndim == 3  # (N, H, W)
+                if not isinstance(masks[0], np.ndarray):
+                    msg = f"masks[0] must be a ndarray, but got {type(masks[0])}"
+                    raise TypeError(msg)
+                if masks[0].ndim != 2:
+                    msg = f"Each mask should be a 2D array, but got {masks[0].ndim}"
+                    raise ValueError(msg)
+            elif masks.ndim != 3:
+                msg = f"masks should be a 3D array, but got {masks.ndim}"
+                raise ValueError(msg)
 
             self.masks = np.stack(masks).reshape(-1, height, width)
-            assert self.masks.shape[1] == self.height
-            assert self.masks.shape[2] == self.width
+            if self.masks.shape[1] != self.height:
+                msg = f"height mismatch: {self.masks.shape[1]} vs {self.height}"
+                raise ValueError(msg)
+            if self.masks.shape[2] != self.width:
+                msg = f"width mismatch: {self.masks.shape[2]} vs {self.width}"
+                raise ValueError(msg)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int | np.ndarray) -> BitmapMasks:
         """Index the BitmapMask.
 
         Args:
@@ -79,21 +90,21 @@ class BitmapMasks:
         masks = self.masks[index].reshape(-1, self.height, self.width)
         return BitmapMasks(masks, self.height, self.width)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable:
         return iter(self.masks)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         s = self.__class__.__name__ + "("
         s += f"num_masks={len(self.masks)}, "
         s += f"height={self.height}, "
         s += f"width={self.width})"
         return s
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Number of masks."""
         return len(self.masks)
 
-    def rescale(self, scale, interpolation="nearest"):
+    def rescale(self, scale: float | int | tuple[int, int], interpolation: str = "nearest") -> BitmapMasks:
         """See :func:`BaseInstanceMasks.rescale`."""
         if len(self.masks) == 0:
             new_w, new_h = mmcv.rescale_size((self.width, self.height), scale)
@@ -103,7 +114,7 @@ class BitmapMasks:
         height, width = rescaled_masks.shape[1:]
         return BitmapMasks(rescaled_masks, height, width)
 
-    def resize(self, out_shape, interpolation="nearest"):
+    def resize(self, out_shape: tuple[int, int], interpolation: str = "nearest") -> BitmapMasks:
         """See :func:`BaseInstanceMasks.resize`."""
         if len(self.masks) == 0:
             resized_masks = np.empty((0, *out_shape), dtype=np.uint8)
@@ -113,9 +124,11 @@ class BitmapMasks:
             )
         return BitmapMasks(resized_masks, *out_shape)
 
-    def flip(self, flip_direction="horizontal"):
+    def flip(self, flip_direction: str = "horizontal") -> BitmapMasks:
         """See :func:`BaseInstanceMasks.flip`."""
-        assert flip_direction in ("horizontal", "vertical", "diagonal")
+        if flip_direction not in ("horizontal", "vertical", "diagonal"):
+            msg = f"Invalid flip_direction {flip_direction}"
+            raise ValueError(msg)
 
         if len(self.masks) == 0:
             flipped_masks = self.masks
@@ -123,7 +136,7 @@ class BitmapMasks:
             flipped_masks = np.stack([mmcv.imflip(mask, direction=flip_direction) for mask in self.masks])
         return BitmapMasks(flipped_masks, self.height, self.width)
 
-    def pad(self, out_shape, pad_val=0):
+    def pad(self, out_shape: tuple[int, int], pad_val: int = 0) -> BitmapMasks:
         """See :func:`BaseInstanceMasks.pad`."""
         if len(self.masks) == 0:
             padded_masks = np.empty((0, *out_shape), dtype=np.uint8)
@@ -131,10 +144,14 @@ class BitmapMasks:
             padded_masks = np.stack([mmcv.impad(mask, shape=out_shape, pad_val=pad_val) for mask in self.masks])
         return BitmapMasks(padded_masks, *out_shape)
 
-    def crop(self, bbox):
+    def crop(self, bbox: np.ndarray) -> BitmapMasks:
         """See :func:`BaseInstanceMasks.crop`."""
-        assert isinstance(bbox, np.ndarray)
-        assert bbox.ndim == 1
+        if not isinstance(bbox, np.ndarray):
+            msg = f"bbox must be a ndarray, but got {type(bbox)}"
+            raise TypeError(msg)
+        if bbox.ndim != 1:
+            msg = f"bbox must be 1D array, but got {bbox.ndim}D"
+            raise ValueError(msg)
 
         # clip the boundary
         bbox = bbox.copy()
@@ -150,7 +167,15 @@ class BitmapMasks:
             cropped_masks = self.masks[:, y1 : y1 + h, x1 : x1 + w]
         return BitmapMasks(cropped_masks, h, w)
 
-    def crop_and_resize(self, bboxes, out_shape, inds, device="cpu", interpolation="bilinear", binarize=True):
+    def crop_and_resize(
+        self,
+        bboxes: np.ndarray,
+        out_shape: tuple[int, int],
+        inds: np.ndarray,
+        device: str = "cpu",
+        interpolation: str = "bilinear",
+        binarize: bool = True,
+    ) -> BitmapMasks:
         """See :func:`BaseInstanceMasks.crop_and_resize`."""
         if len(self.masks) == 0:
             empty_masks = np.empty((0, *out_shape), dtype=np.uint8)
@@ -329,7 +354,7 @@ class BitmapMasks:
         """See :func:`BaseInstanceMasks.to_ndarray`."""
         return self.masks
 
-    def to_tensor(self, dtype, device) -> torch.Tensor:
+    def to_tensor(self, dtype: torch.dtype, device: torch.device) -> torch.Tensor:
         """See :func:`BaseInstanceMasks.to_tensor`."""
         return torch.tensor(self.masks, dtype=dtype, device=device)
 
@@ -343,10 +368,15 @@ class BitmapMasks:
         Returns:
             BitmapMasks: Concatenated mask instance.
         """
-        assert isinstance(masks, Sequence)
+        if not isinstance(masks, Sequence):
+            msg = f"masks must be a sequence, but got {type(masks)}"
+            raise TypeError(msg)
         if len(masks) == 0:
-            raise ValueError("masks should not be an empty list.")
-        assert all(isinstance(m, cls) for m in masks)
+            msg = "masks should not be an empty list."
+            raise ValueError(msg)
+        if not all(isinstance(m, cls) for m in masks):
+            msg = "All masks should be BitmapMasks instances."
+            raise TypeError(msg)
 
         mask_array = np.concatenate([m.masks for m in masks], axis=0)
         return cls(mask_array, *mask_array.shape[1:])
@@ -413,16 +443,23 @@ class PolygonMasks:
     def __iter__(self) -> Iterable:
         return iter(self.masks)
 
+    def __repr__(self):
+        s = self.__class__.__name__ + "("
+        s += f"num_masks={len(self.masks)}, "
+        s += f"height={self.height}, "
+        s += f"width={self.width})"
+        return s
+
     def __len__(self):
         """Number of masks."""
         return len(self.masks)
 
-    def rescale(self, scale: float | int | tuple[int, int], interpolation=None):
+    def rescale(self, scale: float | int | tuple[int, int], interpolation: str | None = None) -> PolygonMasks:
         """See :func:`BaseInstanceMasks.rescale`."""
         new_w, new_h = mmcv.rescale_size((self.width, self.height), scale)
         return PolygonMasks([], new_h, new_w) if len(self.masks) == 0 else self.resize((new_h, new_w))
 
-    def resize(self, out_shape: tuple[int, int], interpolation=None) -> PolygonMasks:
+    def resize(self, out_shape: tuple[int, int], interpolation: str | None = None) -> PolygonMasks:
         """See :func:`BaseInstanceMasks.resize`."""
         if len(self.masks) == 0:
             _resized_masks = PolygonMasks([], *out_shape)
@@ -433,7 +470,7 @@ class PolygonMasks:
             for poly_per_obj in self.masks:
                 resized_poly = []
                 for p in poly_per_obj:
-                    p = p.copy()
+                    p = p.copy()  # noqa: PLW2901
                     p[0::2] = p[0::2] * w_scale
                     p[1::2] = p[1::2] * h_scale
                     resized_poly.append(p)
@@ -441,9 +478,11 @@ class PolygonMasks:
             _resized_masks = PolygonMasks(resized_masks, *out_shape)
         return _resized_masks
 
-    def flip(self, flip_direction: str = "horizontal"):
+    def flip(self, flip_direction: str = "horizontal") -> PolygonMasks:
         """See :func:`BaseInstanceMasks.flip`."""
-        assert flip_direction in ("horizontal", "vertical", "diagonal")
+        if flip_direction not in ("horizontal", "vertical", "diagonal"):
+            msg = f"Invalid flip_direction {flip_direction}"
+            raise ValueError(msg)
         if len(self.masks) == 0:
             _flipped_masks = PolygonMasks([], self.height, self.width)
         else:
@@ -451,7 +490,7 @@ class PolygonMasks:
             for poly_per_obj in self.masks:
                 flipped_poly_per_obj = []
                 for p in poly_per_obj:
-                    p = p.copy()
+                    p = p.copy()  # noqa: PLW2901
                     if flip_direction == "horizontal":
                         p[0::2] = self.width - p[0::2]
                     elif flip_direction == "vertical":
@@ -464,10 +503,14 @@ class PolygonMasks:
             _flipped_masks = PolygonMasks(flipped_masks, self.height, self.width)
         return _flipped_masks
 
-    def crop(self, bbox):
-        """See :func:`BaseInstanceMasks.crop`"""
-        assert isinstance(bbox, np.ndarray)
-        assert bbox.ndim == 1
+    def crop(self, bbox: np.ndarray) -> PolygonMasks:
+        """See :func:`BaseInstanceMasks.crop`."""
+        if not isinstance(bbox, np.ndarray):
+            msg = f"bbox must be a ndarray, but got {type(bbox)}"
+            raise TypeError(msg)
+        if bbox.ndim != 1:
+            msg = f"bbox must be 1-dimensional, but got {bbox.ndim}"
+            raise ValueError(msg)
 
         # clip the boundary
         bbox = bbox.copy()
@@ -482,7 +525,7 @@ class PolygonMasks:
         else:
             # reference: https://github.com/facebookresearch/fvcore/blob/main/fvcore/transforms/transform.py
             crop_box = geometry.box(x1, y1, x2, y2).buffer(0.0)
-            cropped_masks = []
+            cropped_masks_list = []
             # suppress shapely warnings util it incorporates GEOS>=3.11.2
             # reference: https://github.com/shapely/shapely/issues/1345
             initial_settings = np.seterr()
@@ -490,8 +533,8 @@ class PolygonMasks:
             for poly_per_obj in self.masks:
                 cropped_poly_per_obj = []
                 for p in poly_per_obj:
-                    p = p.copy()
-                    p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)
+                    p = p.copy()  # noqa: PLW2901
+                    p = geometry.Polygon(p.reshape(-1, 2)).buffer(0.0)  # noqa: PLW2901
                     # polygon must be valid to perform intersection.
                     if not p.is_valid:
                         continue
@@ -516,19 +559,28 @@ class PolygonMasks:
                 # a dummy polygon to avoid misalignment between masks and boxes
                 if len(cropped_poly_per_obj) == 0:
                     cropped_poly_per_obj = [np.array([0, 0, 0, 0, 0, 0])]
-                cropped_masks.append(cropped_poly_per_obj)
+                cropped_masks_list.append(cropped_poly_per_obj)
             np.seterr(**initial_settings)
-            cropped_masks = PolygonMasks(cropped_masks, h, w)
+            cropped_masks = PolygonMasks(cropped_masks_list, h, w)
         return cropped_masks
 
-    def pad(self, out_shape, pad_val=0):
-        """Padding has no effect on polygons`"""
+    def pad(self, out_shape: tuple[int, int], pad_val: int = 0) -> PolygonMasks:
+        """Padding has no effect on polygons`."""
         return PolygonMasks(self.masks, *out_shape)
 
-    def expand(self, *args, **kwargs):
+    def expand(self, *args, **kwargs) -> PolygonMasks:
+        """Expanding has no effect on polygons."""
         raise NotImplementedError
 
-    def crop_and_resize(self, bboxes, out_shape, inds, device="cpu", interpolation="bilinear", binarize=True):
+    def crop_and_resize(
+        self,
+        bboxes: np.ndarray,
+        out_shape: tuple[int, int],
+        inds: np.ndarray,
+        device: str = "cpu",
+        interpolation: str = "bilinear",
+        binarize: bool = True,
+    ) -> PolygonMasks:
         """See :func:`BaseInstanceMasks.crop_and_resize`."""
         out_h, out_w = out_shape
         if len(self.masks) == 0:
@@ -550,7 +602,7 @@ class PolygonMasks:
 
             resized_mask = []
             for p in mask:
-                p = p.copy()
+                p = p.copy()  # noqa: PLW2901
                 # crop
                 # pycocotools will clip the boundary
                 p[0::2] = p[0::2] - bbox[0]
@@ -563,7 +615,14 @@ class PolygonMasks:
             resized_masks.append(resized_mask)
         return PolygonMasks(resized_masks, *out_shape)
 
-    def translate(self, out_shape, offset, direction="horizontal", border_value=None, interpolation=None):
+    def translate(
+        self,
+        out_shape: tuple[int, int],
+        offset: int,
+        direction: str = "horizontal",
+        border_value: int | None = None,
+        interpolation: str | None = None,
+    ) -> PolygonMasks:
         """Translate the PolygonMasks.
 
         Example:
@@ -573,32 +632,39 @@ class PolygonMasks:
             >>> assert np.all(new.masks[0][0][1::2] == self.masks[0][0][1::2])
             >>> assert np.all(new.masks[0][0][0::2] == self.masks[0][0][0::2] + 4)  # noqa: E501
         """
-        assert border_value is None or border_value == 0, (
-            "Here border_value is not " f"used, and defaultly should be None or 0. got {border_value}."
-        )
+        if border_value is not None and border_value != 0:
+            msg = "border_value is not supported for PolygonMasks"
+            raise NotImplementedError(msg)
         if len(self.masks) == 0:
             translated_masks = PolygonMasks([], *out_shape)
         else:
-            translated_masks = []
+            translated_masks_list = []
             for poly_per_obj in self.masks:
                 translated_poly_per_obj = []
                 for p in poly_per_obj:
-                    p = p.copy()
+                    p = p.copy()  # noqa: PLW2901
                     if direction == "horizontal":
                         p[0::2] = np.clip(p[0::2] + offset, 0, out_shape[1])
                     elif direction == "vertical":
                         p[1::2] = np.clip(p[1::2] + offset, 0, out_shape[0])
                     translated_poly_per_obj.append(p)
-                translated_masks.append(translated_poly_per_obj)
-            translated_masks = PolygonMasks(translated_masks, *out_shape)
+                translated_masks_list.append(translated_poly_per_obj)
+            translated_masks = PolygonMasks(translated_masks_list, *out_shape)
         return translated_masks
 
-    def shear(self, out_shape, magnitude, direction="horizontal", border_value=0, interpolation="bilinear"):
+    def shear(
+        self,
+        out_shape: tuple[int, int],
+        magnitude: int | float,
+        direction: str = "horizontal",
+        border_value: int = 0,
+        interpolation: str = "bilinear",
+    ) -> PolygonMasks:
         """See :func:`BaseInstanceMasks.shear`."""
         if len(self.masks) == 0:
             sheared_masks = PolygonMasks([], *out_shape)
         else:
-            sheared_masks = []
+            sheared_masks_list = []
             if direction == "horizontal":
                 shear_matrix = np.stack([[1, magnitude], [0, 1]]).astype(np.float32)
             elif direction == "vertical":
@@ -606,23 +672,23 @@ class PolygonMasks:
             for poly_per_obj in self.masks:
                 sheared_poly = []
                 for p in poly_per_obj:
-                    p = np.stack([p[0::2], p[1::2]], axis=0)  # [2, n]
+                    p = np.stack([p[0::2], p[1::2]], axis=0)  # noqa: PLW2901
                     new_coords = np.matmul(shear_matrix, p)  # [2, n]
                     new_coords[0, :] = np.clip(new_coords[0, :], 0, out_shape[1])
                     new_coords[1, :] = np.clip(new_coords[1, :], 0, out_shape[0])
                     sheared_poly.append(new_coords.transpose((1, 0)).reshape(-1))
-                sheared_masks.append(sheared_poly)
-            sheared_masks = PolygonMasks(sheared_masks, *out_shape)
+                sheared_masks_list.append(sheared_poly)
+            sheared_masks = PolygonMasks(sheared_masks_list, *out_shape)
         return sheared_masks
 
     def rotate(
         self,
         out_shape: tuple[int, int],
         angle: float,
-        center=None,
-        scale=1.0,
-        border_value=0,
-        interpolation="bilinear",
+        center: tuple[float, float] | None = None,
+        scale: float = 1.0,
+        border_value: int = 0,
+        interpolation: str = "bilinear",
     ) -> PolygonMasks:
         """See :func:`BaseInstanceMasks.rotate`."""
         if len(self.masks) == 0:
@@ -632,7 +698,7 @@ class PolygonMasks:
         for poly_per_obj in self.masks:
             rotated_poly = []
             for p in poly_per_obj:
-                p = p.copy()
+                p = p.copy()  # noqa: PLW2901
                 coords = np.stack([p[0::2], p[1::2]], axis=1)  # [n, 2]
                 # pad 1 to convert from format [x, y] to homogeneous
                 # coordinates format [x, y, 1]
@@ -647,7 +713,7 @@ class PolygonMasks:
             rotated_masks.append(rotated_poly)
         return PolygonMasks(rotated_masks, *out_shape)
 
-    def to_bitmap(self):
+    def to_bitmap(self) -> BitmapMasks:
         """Convert polygon masks to bitmap masks."""
         bitmap_masks = self.to_ndarray()
         return BitmapMasks(bitmap_masks, self.height, self.width)
@@ -690,12 +756,10 @@ class PolygonMasks:
         """Convert masks to the format of ndarray."""
         if len(self.masks) == 0:
             return np.empty((0, self.height, self.width), dtype=np.uint8)
-        bitmap_masks = []
-        for poly_per_obj in self.masks:
-            bitmap_masks.append(polygon_to_bitmap(poly_per_obj, self.height, self.width))
+        bitmap_masks = [polygon_to_bitmap(poly_per_obj, self.height, self.width) for poly_per_obj in self.masks]
         return np.stack(bitmap_masks)
 
-    def to_tensor(self, dtype, device) -> torch.Tensor:
+    def to_tensor(self, dtype: torch.dtype, device: torch.device) -> torch.Tensor:
         """See :func:`BaseInstanceMasks.to_tensor`."""
         if len(self.masks) == 0:
             return torch.empty((0, self.height, self.width), dtype=dtype, device=device)
@@ -712,10 +776,15 @@ class PolygonMasks:
         Returns:
             PolygonMasks: Concatenated mask instance.
         """
-        assert isinstance(masks, Sequence)
+        if not isinstance(masks, Sequence):
+            msg = f"masks must be a sequence, but got {type(masks)}"
+            raise TypeError(msg)
         if len(masks) == 0:
-            raise ValueError("masks should not be an empty list.")
-        assert all(isinstance(m, cls) for m in masks)
+            msg = "masks should not be an empty list."
+            raise ValueError(msg)
+        if not all(isinstance(m, cls) for m in masks):
+            msg = "All masks should be PolygonMasks instances."
+            raise TypeError(msg)
 
         mask_list = list(itertools.chain(*[m.masks for m in masks]))
         return cls(mask_list, masks[0].height, masks[0].width)

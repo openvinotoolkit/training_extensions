@@ -59,6 +59,7 @@ class TwoStageDetector(BaseDetector):
                 "The `num_classes` should be 1 in RPN, but get "
                 f"{rpn_head_num_classes}, please set "
                 "rpn_head.num_classes = 1 in your config file.",
+                stacklevel=2,
             )
             rpn_head_.update(num_classes=1)
         if rpn_head_["type"] != RPNHead.__name__:
@@ -94,9 +95,9 @@ class TwoStageDetector(BaseDetector):
     ) -> None:
         """Exchange bbox_head key to rpn_head key when loading single-stage weights into two-stage model."""
         bbox_head_prefix = prefix + ".bbox_head" if prefix else "bbox_head"
-        bbox_head_keys = [k for k in state_dict.keys() if k.startswith(bbox_head_prefix)]
+        bbox_head_keys = [k for k in state_dict if k.startswith(bbox_head_prefix)]
         rpn_head_prefix = prefix + ".rpn_head" if prefix else "rpn_head"
-        rpn_head_keys = [k for k in state_dict.keys() if k.startswith(rpn_head_prefix)]
+        rpn_head_keys = [k for k in state_dict if k.startswith(rpn_head_prefix)]
         if len(bbox_head_keys) != 0 and len(rpn_head_keys) == 0:
             for bbox_head_key in bbox_head_keys:
                 rpn_head_key = rpn_head_prefix + bbox_head_key[len(bbox_head_prefix) :]
@@ -194,7 +195,9 @@ class TwoStageDetector(BaseDetector):
                     rpn_losses[f"rpn_{key}"] = rpn_losses.pop(key)
             losses.update(rpn_losses)
         else:
-            assert batch_data_samples[0].get("proposals", None) is not None
+            if batch_data_samples[0].get("proposals", None) is None:
+                msg = "No 'proposals' in data samples."
+                raise ValueError(msg)
             # use pre-defined proposals in InstanceData for the second stage
             # to extract ROI features.
             rpn_results_list = [data_sample.proposals for data_sample in batch_data_samples]

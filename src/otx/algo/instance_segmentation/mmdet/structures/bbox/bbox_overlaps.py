@@ -6,13 +6,13 @@ from __future__ import annotations
 import torch
 
 
-def fp16_clamp(x: torch.Tensor, min: float | None = None, max: float | None = None):
+def fp16_clamp(x: torch.Tensor, min_value: float | None = None, max_value: float | None = None) -> torch.Tensor:
     """FP16 clamp."""
     if not x.is_cuda and x.dtype == torch.float16:
         # clamp for cpu float16, tensor fp16 has no clamp implementation
-        return x.float().clamp(min, max).half()
+        return x.float().clamp(min_value, max_value).half()
 
-    return x.clamp(min, max)
+    return x.clamp(min_value, max_value)
 
 
 def bbox_overlaps(
@@ -137,25 +137,34 @@ def bbox_overlaps(
         >>> assert tuple(bbox_overlaps(nonempty, empty).shape) == (1, 0)
         >>> assert tuple(bbox_overlaps(empty, empty).shape) == (0, 0)
     """
-    assert mode in ["iou", "iof"], f"Unsupported mode {mode}"
+    if mode not in ["iou", "iof"]:
+        msg = f"Unsupported mode {mode}"
+        raise ValueError(msg)
     # Either the boxes are empty or the length of boxes' last dimension is 4
-    assert bboxes1.size(-1) == 4 or bboxes1.size(0) == 0
-    assert bboxes2.size(-1) == 4 or bboxes2.size(0) == 0
+    if bboxes1.size(-1) != 4 and bboxes1.size(0) != 0:
+        msg = f"bboxes1 should have 4 columns, given {bboxes1.size(-1)}"
+        raise ValueError(msg)
+    if bboxes2.size(-1) != 4 and bboxes2.size(0) != 0:
+        msg = f"bboxes1 should have 4 columns, given {bboxes1.size(-1)}"
+        raise ValueError(msg)
 
     # Batch dim must be the same
     # Batch dim: (B1, B2, ... Bn)
-    assert bboxes1.shape[:-2] == bboxes2.shape[:-2]
+    if bboxes1.shape[:-2] != bboxes2.shape[:-2]:
+        msg = f"Batch dim of bboxes1 and bboxes2 must be the same, got {bboxes1.shape[:-2]} and {bboxes2.shape[:-2]}"
+        raise ValueError(msg)
     batch_shape = bboxes1.shape[:-2]
 
     rows = bboxes1.size(-2)
     cols = bboxes2.size(-2)
-    if is_aligned:
-        assert rows == cols
+    if is_aligned and rows != cols:
+        msg = "The number of bboxes in each image need to be same"
+        raise ValueError(msg)
 
     if rows * cols == 0:
         if is_aligned:
-            return bboxes1.new(batch_shape + (rows,))
-        return bboxes1.new(batch_shape + (rows, cols))
+            return bboxes1.new((*batch_shape, rows))
+        return bboxes1.new((*batch_shape, rows, cols))
 
     area1 = (bboxes1[..., 2] - bboxes1[..., 0]) * (bboxes1[..., 3] - bboxes1[..., 1])
     area2 = (bboxes2[..., 2] - bboxes2[..., 0]) * (bboxes2[..., 3] - bboxes2[..., 1])
@@ -164,7 +173,7 @@ def bbox_overlaps(
         lt = torch.max(bboxes1[..., :2], bboxes2[..., :2])  # [B, rows, 2]
         rb = torch.min(bboxes1[..., 2:], bboxes2[..., 2:])  # [B, rows, 2]
 
-        wh = fp16_clamp(rb - lt, min=0)
+        wh = fp16_clamp(rb - lt, min_value=0)
         overlap = wh[..., 0] * wh[..., 1]
 
         union = area1 + area2 - overlap if mode == "iou" else area1
@@ -172,7 +181,7 @@ def bbox_overlaps(
         lt = torch.max(bboxes1[..., :, None, :2], bboxes2[..., None, :, :2])  # [B, rows, cols, 2]
         rb = torch.min(bboxes1[..., :, None, 2:], bboxes2[..., None, :, 2:])  # [B, rows, cols, 2]
 
-        wh = fp16_clamp(rb - lt, min=0)
+        wh = fp16_clamp(rb - lt, min_value=0)
         overlap = wh[..., 0] * wh[..., 1]
 
         union = area1[..., None] + area2[..., None, :] - overlap if mode == "iou" else area1[..., None]

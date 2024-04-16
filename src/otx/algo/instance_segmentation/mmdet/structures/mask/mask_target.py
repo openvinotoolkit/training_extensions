@@ -1,12 +1,24 @@
 """The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import torch
 from torch.nn.modules.utils import _pair
 
+if TYPE_CHECKING:
+    from otx.algo.instance_segmentation.mmdet.structures.mask import BitmapMasks
 
-def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cfg) -> torch.Tensor:
+
+def mask_target(
+    pos_proposals_list: list[torch.Tensor],
+    pos_assigned_gt_inds_list: list[torch.Tensor],
+    gt_masks_list: list[BitmapMasks],
+    cfg: dict,
+) -> torch.Tensor:
     """Compute mask target for positive proposals in multiple images.
 
     Args:
@@ -64,7 +76,12 @@ def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list, cf
     return _mask_targets
 
 
-def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
+def mask_target_single(
+    pos_proposals: torch.Tensor,
+    pos_assigned_gt_inds: torch.Tensor,
+    gt_masks: BitmapMasks,
+    cfg: dict,
+) -> torch.Tensor | np.ndarray:
     """Compute mask target for each positive proposal in the image.
 
     Args:
@@ -103,7 +120,7 @@ def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
         >>> assert mask_targets.shape == (5,) + cfg['mask_size']
     """
     device = pos_proposals.device
-    mask_size = _pair(cfg.mask_size)
+    mask_size = _pair(cfg["mask_size"])
     binarize = not cfg.get("soft_mask_target", False)
     num_pos = pos_proposals.size(0)
     if num_pos > 0:
@@ -123,6 +140,6 @@ def mask_target_single(pos_proposals, pos_assigned_gt_inds, gt_masks, cfg):
 
         mask_targets = torch.from_numpy(mask_targets).float().to(device)
     else:
-        mask_targets = pos_proposals.new_zeros((0,) + mask_size)
+        mask_targets = pos_proposals.new_zeros((0, *mask_size))
 
     return mask_targets

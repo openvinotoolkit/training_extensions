@@ -1,12 +1,14 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
 # TODO(Eugene): replace mmcv with torchvision
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule, Sequential
-from torch import nn as nn
+from torch import nn
 
-from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType
+from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
 
 
 class ResLayer(Sequential):
@@ -34,10 +36,10 @@ class ResLayer(Sequential):
         inplanes: int,
         planes: int,
         num_blocks: int,
+        norm_cfg: dict,
         stride: int = 1,
         avg_down: bool = False,
         conv_cfg: OptConfigType = None,
-        norm_cfg: ConfigType = dict(type="BN"),
         downsample_first: bool = True,
         **kwargs,
     ) -> None:
@@ -86,8 +88,11 @@ class ResLayer(Sequential):
                 ),
             )
             inplanes = planes * block.expansion
-            for _ in range(1, num_blocks):
-                layers.append(
-                    block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs),
-                )
+            layers.extend(
+                [
+                    block(inplanes=inplanes, planes=planes, stride=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, **kwargs)
+                    for _ in range(1, num_blocks)
+                ],
+            )
+
         super().__init__(*layers)

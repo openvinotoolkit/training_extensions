@@ -1,3 +1,5 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
@@ -18,18 +20,20 @@ from otx.algo.instance_segmentation.mmdet.models.layers import ResLayer
 
 
 class Bottleneck(BaseModule):
+    """Bottleneck block for ResNet."""
+
     expansion = 4
 
     def __init__(
         self,
         inplanes: int,
         planes: int,
+        norm_cfg: dict,
         stride: int = 1,
         dilation: int = 1,
         downsample: nn.Module | None = None,
         with_cp: bool = False,
         conv_cfg: dict | None = None,
-        norm_cfg: dict = dict(type="BN"),
         init_cfg: dict | None = None,
     ):
         """Bottleneck block for ResNet.
@@ -193,7 +197,7 @@ class ResNet(BaseModule):
         avg_down: bool = False,
         frozen_stages: int = -1,
         conv_cfg: dict | None = None,
-        norm_cfg: dict = dict(type="BN", requires_grad=True),
+        norm_cfg: dict | None = None,
         norm_eval: bool = True,
         with_cp: bool = False,
         zero_init_residual: bool = True,
@@ -203,7 +207,8 @@ class ResNet(BaseModule):
         super().__init__(init_cfg)
         self.zero_init_residual = zero_init_residual
         if depth not in self.arch_settings:
-            raise KeyError(f"invalid depth {depth} for resnet")
+            msg = f"invalid depth {depth} for resnet"
+            raise KeyError(msg)
 
         block_init_cfg = None
         self.init_cfg: list[dict] | dict | None = None
@@ -211,18 +216,22 @@ class ResNet(BaseModule):
             msg = "init_cfg and pretrained cannot be specified at the same time"
             raise ValueError(msg)
         if isinstance(pretrained, str):
-            warnings.warn("DeprecationWarning: pretrained is deprecated, " 'please use "init_cfg" instead')
-            self.init_cfg = dict(type="Pretrained", checkpoint=pretrained)
+            warnings.warn("DeprecationWarning: pretrained is deprecated, please use init_cfg instead", stacklevel=2)
+            self.init_cfg = {"type": "Pretrained", "checkpoint": pretrained}
         elif pretrained is None:
             if init_cfg is None:
                 self.init_cfg = [
-                    dict(type="Kaiming", layer="Conv2d"),
-                    dict(type="Constant", val=1, layer=["_BatchNorm", "GroupNorm"]),
+                    {"type": "Kaiming", "layer": "Conv2d"},
+                    {"type": "Constant", "val": 1, "layer": ["BatchNorm", "GroupNorm"]},
                 ]
                 if self.zero_init_residual:
-                    block_init_cfg = dict(type="Constant", val=0, override=dict(name="norm3"))
+                    block_init_cfg = {"type": "Constant", "val": 0, "override": {"name": "norm3"}}
         else:
-            raise TypeError("pretrained must be a str or None")
+            msg = "pretrained must be a str or None"
+            raise TypeError(msg)
+
+        if norm_cfg is None:
+            norm_cfg = {"type": "BN", "requires_grad": True}
 
         self.depth = depth
         if stem_channels is None:
@@ -230,12 +239,18 @@ class ResNet(BaseModule):
         self.stem_channels = stem_channels
         self.base_channels = base_channels
         self.num_stages = num_stages
-        assert num_stages >= 1 and num_stages <= 4
+        if num_stages > 4 or num_stages < 1:
+            msg = "num_stages must be in [1, 4]"
+            raise ValueError(msg)
         self.strides = strides
         self.dilations = dilations
-        assert len(strides) == len(dilations) == num_stages
+        if len(strides) != len(dilations) != num_stages:
+            msg = "The length of strides, dilations and out_indices should be the same as num_stages"
+            raise ValueError(msg)
         self.out_indices = out_indices
-        assert max(out_indices) < num_stages
+        if max(out_indices) >= num_stages:
+            msg = "max(out_indices) should be smaller than num_stages"
+            raise ValueError(msg)
         self.avg_down = avg_down
         self.frozen_stages = frozen_stages
         self.conv_cfg = conv_cfg

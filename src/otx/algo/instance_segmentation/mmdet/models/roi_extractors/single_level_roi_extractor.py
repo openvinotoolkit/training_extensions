@@ -65,10 +65,9 @@ class SingleRoIExtractor(BaseRoIExtractor):
         """
         scale = torch.sqrt((rois[:, 3] - rois[:, 1]) * (rois[:, 4] - rois[:, 2]))
         target_lvls = torch.floor(torch.log2(scale / self.finest_scale + 1e-6))
-        target_lvls = target_lvls.clamp(min=0, max=num_levels - 1).long()
-        return target_lvls
+        return target_lvls.clamp(min=0, max=num_levels - 1).long()
 
-    def forward(self, feats: tuple[Tensor], rois: Tensor, roi_scale_factor: float | None = None):
+    def forward(self, feats: tuple[Tensor], rois: Tensor, roi_scale_factor: float | None = None) -> Tensor:
         """Extractor ROI feats.
 
         Args:

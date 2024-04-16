@@ -70,8 +70,9 @@ class SamplingResult:
         self.pos_assigned_gt_inds = assign_result.gt_inds[pos_inds] - 1
         self.pos_gt_labels = assign_result.labels[pos_inds]
         if gt_bboxes.numel() == 0:
-            # hack for index error case
-            assert self.pos_assigned_gt_inds.numel() == 0
+            if self.pos_assigned_gt_inds.numel() != 0:
+                msg = "gt_bboxes should not be empty"
+                raise ValueError(msg)
             self.pos_gt_bboxes = gt_bboxes.view(-1, 4)
         else:
             if len(gt_bboxes.shape) < 2:
@@ -86,19 +87,19 @@ class SamplingResult:
     @property
     def bboxes(self) -> Tensor:
         """torch.Tensor: concatenated positive and negative boxes."""
-        warnings.warn("DeprecationWarning: bboxes is deprecated, please use 'priors' instead")
+        warnings.warn("DeprecationWarning: bboxes is deprecated, please use 'priors' instead", stacklevel=2)
         return self.priors
 
     @property
     def pos_bboxes(self) -> Tensor:
         """Get positive bboxes."""
-        warnings.warn("DeprecationWarning: pos_bboxes is deprecated, please use 'pos_priors' instead")
+        warnings.warn("DeprecationWarning: pos_bboxes is deprecated, please use 'pos_priors' instead", stacklevel=2)
         return self.pos_priors
 
     @property
     def neg_bboxes(self) -> Tensor:
         """Get negative bboxes."""
-        warnings.warn("DeprecationWarning: neg_bboxes is deprecated, please use 'neg_priors' instead")
+        warnings.warn("DeprecationWarning: neg_bboxes is deprecated, please use 'neg_priors' instead", stacklevel=2)
         return self.neg_priors
 
     def to(self, device: torch.device | str) -> SamplingResult:

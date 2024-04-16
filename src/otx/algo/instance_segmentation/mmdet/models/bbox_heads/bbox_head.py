@@ -3,9 +3,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
-import torch.nn.functional as F
-from mmengine.config import ConfigDict
+import torch.nn.functional as F  # noqa: N812
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
@@ -19,6 +20,9 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     empty_instances,
 )
 from otx.algo.instance_segmentation.mmdet.structures.bbox import scale_boxes
+
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
 
 
 class BBoxHead(BaseModule):
@@ -41,7 +45,9 @@ class BBoxHead(BaseModule):
         init_cfg: OptMultiConfig = None,
     ) -> None:
         super().__init__(init_cfg=init_cfg)
-        assert with_cls or with_reg
+        if not with_cls and not with_reg:
+            msg = "with_cls and with_reg cannot be both False"
+            raise ValueError(msg)
         self.with_avg_pool = with_avg_pool
         self.with_cls = with_cls
         self.with_reg = with_reg
@@ -202,7 +208,9 @@ class BBoxHead(BaseModule):
                 - bboxes (Tensor): Has a shape (num_instances, 4),
                   the last dimension 4 arrange as (x1, y1, x2, y2).
         """
-        assert len(cls_scores) == len(bbox_preds)
+        if len(cls_scores) != len(bbox_preds):
+            msg = "The length of cls_scores and bbox_preds should be the same."
+            raise ValueError(msg)
         result_list = []
         for img_id in range(len(batch_img_metas)):
             img_meta = batch_img_metas[img_id]
@@ -276,15 +284,17 @@ class BBoxHead(BaseModule):
         bboxes = self.bbox_coder.decode(roi[..., 1:], bbox_pred, max_shape=img_shape)
 
         if rescale and bboxes.size(0) > 0:
-            assert img_meta.get("scale_factor") is not None
+            if img_meta.get("scale_factor") is None:
+                msg = "scale_factor must be specified in img_meta"
+                raise ValueError(msg)
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
-            bboxes = scale_boxes(bboxes, scale_factor)  # type: ignore
+            bboxes = scale_boxes(bboxes, scale_factor)  # type: ignore [arg-type]
 
         # Get the inside tensor when `bboxes` is a box type
         box_dim = bboxes.size(-1)
         bboxes = bboxes.view(num_rois, -1)
 
-        det_bboxes, det_labels = multiclass_nms(  # type: ignore
+        det_bboxes, det_labels = multiclass_nms(  # type: ignore [misc]
             bboxes,
             scores,
             rcnn_test_cfg.score_thr,

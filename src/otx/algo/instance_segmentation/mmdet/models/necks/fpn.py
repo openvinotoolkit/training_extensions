@@ -1,16 +1,18 @@
+"""The original source code is from mmdet. Please refer to https://github.com/open-mmlab/mmdetection/."""
+
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from mmcv.cnn import ConvModule
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 
 if TYPE_CHECKING:
-    from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, MultiConfig, OptConfigType
+    from otx.algo.instance_segmentation.mmdet.models.utils import OptConfigType
 
 
 @MODELS.register_module()
@@ -81,11 +83,14 @@ class FPN(BaseModule):
         conv_cfg: OptConfigType = None,
         norm_cfg: OptConfigType = None,
         act_cfg: OptConfigType = None,
-        upsample_cfg: ConfigType = dict(mode="nearest"),
-        init_cfg: MultiConfig = dict(type="Xavier", layer="Conv2d", distribution="uniform"),
+        upsample_cfg: dict | None = None,
+        init_cfg: dict | None = None,
     ) -> None:
+        init_cfg = {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"} if init_cfg is None else init_cfg
         super().__init__(init_cfg=init_cfg)
-        assert isinstance(in_channels, list)
+        if not isinstance(in_channels, list):
+            msg = f"in_channels must be a list, but got {type(in_channels)}"
+            raise AssertionError(msg)  # noqa: TRY004
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_ins = len(in_channels)
@@ -93,16 +98,22 @@ class FPN(BaseModule):
         self.relu_before_extra_convs = relu_before_extra_convs
         self.no_norm_on_lateral = no_norm_on_lateral
         self.fp16_enabled = False
-        self.upsample_cfg = upsample_cfg.copy()
+        self.upsample_cfg = {"mode": "nearest"} if upsample_cfg is None else upsample_cfg
 
-        if end_level == -1 or end_level == self.num_ins - 1:
+        if end_level in (-1, self.num_ins - 1):
             self.backbone_end_level = self.num_ins
-            assert num_outs >= self.num_ins - start_level
+            if num_outs < self.num_ins - start_level:
+                msg = "num_outs should not be less than the number of output levels"
+                raise ValueError(msg)
         else:
             # if end_level is not the last level, no extra level is allowed
             self.backbone_end_level = end_level + 1
-            assert end_level < self.num_ins
-            assert num_outs == end_level - start_level + 1
+            if end_level >= self.num_ins:
+                msg = "end_level must be less than len(in_channels)"
+                raise ValueError(msg)
+            if num_outs != end_level - start_level + 1:
+                msg = "num_outs must be equal to end_level - start_level + 1"
+                raise ValueError(msg)
         self.start_level = start_level
         self.end_level = end_level
 
@@ -143,7 +154,9 @@ class FPN(BaseModule):
         Returns:
             tuple: Feature maps, each is a 4D-tensor.
         """
-        assert len(inputs) == len(self.in_channels)
+        if len(inputs) != len(self.in_channels):
+            msg = f"len(inputs) is not equal to len(in_channels): {len(inputs)} != {len(self.in_channels)}"
+            raise ValueError(msg)
 
         # build laterals
         laterals = [lateral_conv(inputs[i + self.start_level]) for i, lateral_conv in enumerate(self.lateral_convs)]
@@ -167,6 +180,6 @@ class FPN(BaseModule):
         if self.num_outs > len(outs):
             # use max pool to get more levels on top of outputs
             # (e.g., Faster R-CNN, Mask R-CNN)
-            for i in range(self.num_outs - used_backbone_levels):
+            for _ in range(self.num_outs - used_backbone_levels):
                 outs.append(F.max_pool2d(outs[-1], 1, stride=2))
         return tuple(outs)

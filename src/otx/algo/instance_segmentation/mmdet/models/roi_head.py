@@ -32,9 +32,7 @@ from .roi_extractors import SingleRoIExtractor
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
-    from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
-    from otx.algo.instance_segmentation.mmdet.models.utils import InstanceList
-    from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
+    from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
 @MODELS.register_module()
@@ -44,7 +42,7 @@ class StandardRoIHead(BaseRoIHead):
     def init_assigner_sampler(self) -> None:
         """Initialize assigner and sampler."""
         self.bbox_assigner = TASK_UTILS.build(self.train_cfg["assigner"])
-        self.bbox_sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args=dict(context=self))
+        self.bbox_sampler = TASK_UTILS.build(self.train_cfg["sampler"], default_args={"context": self})
 
     def init_bbox_head(self, bbox_roi_extractor: ConfigType, bbox_head: ConfigType) -> None:
         """Initialize box head and box roi extractor.
@@ -132,7 +130,7 @@ class StandardRoIHead(BaseRoIHead):
             bbox_feats = self.shared_head(bbox_feats)
         cls_score, bbox_pred = self.bbox_head(bbox_feats)
 
-        return dict(cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
+        return {"cls_score": cls_score, "bbox_pred": bbox_pred, "bbox_feats": bbox_feats}
 
     def mask_loss(
         self,
@@ -196,17 +194,21 @@ class StandardRoIHead(BaseRoIHead):
                 - `mask_preds` (Tensor): Mask prediction.
                 - `mask_feats` (Tensor): Extract mask RoI features.
         """
-        assert (rois is not None) ^ (pos_inds is not None and bbox_feats is not None)
+        if not ((rois is not None) ^ (pos_inds is not None and bbox_feats is not None)):
+            msg = "rois is None xor (pos_inds is not None and bbox_feats is not None)"
+            raise ValueError(msg)
         if rois is not None:
             mask_feats = self.mask_roi_extractor(x[: self.mask_roi_extractor.num_inputs], rois)
             if self.with_shared_head:
                 mask_feats = self.shared_head(mask_feats)
         else:
-            assert bbox_feats is not None
+            if bbox_feats is None:
+                msg = "bbox_feats should not be None when rois is None"
+                raise ValueError(msg)
             mask_feats = bbox_feats[pos_inds]
 
         mask_preds = self.mask_head(mask_feats)
-        return dict(mask_preds=mask_preds, mask_feats=mask_feats)
+        return {"mask_preds": mask_preds, "mask_feats": mask_feats}
 
     def predict_bbox(
         self,
@@ -216,7 +218,7 @@ class StandardRoIHead(BaseRoIHead):
         rcnn_test_cfg: ConfigType,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the bbox head and predict detection results on the features of the upstream network.
+        """Forward the bbox head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.
@@ -286,7 +288,7 @@ class StandardRoIHead(BaseRoIHead):
         results_list: InstanceList,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the mask head and predict detection results on the features of the upstream network.
+        """Forward the mask head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Feature maps of all scale level.

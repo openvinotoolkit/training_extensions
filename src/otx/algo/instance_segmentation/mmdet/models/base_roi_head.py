@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING
 
 from mmengine.model import BaseModule
-from torch import Tensor
 
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, InstanceList, OptMultiConfig
 from otx.algo.instance_segmentation.mmdet.structures import SampleList
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
 class BaseRoIHead(BaseModule, metaclass=ABCMeta):
@@ -75,7 +78,7 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         batch_data_samples: SampleList,
         rescale: bool = False,
     ) -> InstanceList:
-        """Perform forward propagation of the roi head and predict detection results on the features of the upstream network.
+        """Forward the roi head and predict detection results on the features of the upstream network.
 
         Args:
             x (tuple[Tensor]): Features from upstream network. Each
@@ -100,7 +103,9 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
                   the last dimension 4 arrange as (x1, y1, x2, y2).
                 - masks (Tensor): Has a shape (num_instances, H, W).
         """
-        assert self.with_bbox, "Bbox head must be implemented."
+        if not self.with_bbox:
+            msg = "Bbox head must be implemented."
+            raise NotImplementedError(msg)
         batch_img_metas = [data_samples.metainfo for data_samples in batch_data_samples]
 
         # If it has the mask branch, the bbox branch does not need

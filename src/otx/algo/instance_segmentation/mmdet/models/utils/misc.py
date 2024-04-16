@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 from mmengine.structures import InstanceData
@@ -31,7 +31,7 @@ def images_to_levels(target: list[Tensor], num_levels: list[int]) -> list[Tensor
     return level_targets
 
 
-def multi_apply(func, *args, **kwargs) -> tuple:
+def multi_apply(func: Any, *args, **kwargs) -> tuple:  # noqa: ANN401
     """Apply function to a list of arguments.
 
     Note:
@@ -50,7 +50,7 @@ def multi_apply(func, *args, **kwargs) -> tuple:
     """
     pfunc = partial(func, **kwargs) if kwargs else func
     map_results = map(pfunc, *args)
-    return tuple(map(list, zip(*map_results)))  # type: ignore
+    return tuple(map(list, zip(*map_results)))
 
 
 def unmap(data: torch.Tensor, count: int, inds: torch.Tensor, fill: int = 0) -> torch.Tensor:
@@ -162,16 +162,21 @@ def empty_instances(
     Returns:
         list[:obj:`InstanceData`]: Detection results of each image
     """
-    assert task_type in ("bbox", "mask"), "Only support bbox and mask," f" but got {task_type}"
+    if task_type not in ("bbox", "mask"):
+        msg = f"Only support bbox and mask, but got {task_type}"
+        raise ValueError(msg)
 
-    if instance_results is not None:
-        assert len(instance_results) == len(batch_img_metas)
+    if instance_results is not None and len(instance_results) != len(batch_img_metas):
+        msg = "The length of instance_results should be the same as batch_img_metas"
+        raise ValueError(msg)
 
     results_list = []
     for img_id in range(len(batch_img_metas)):
         if instance_results is not None:
             results = instance_results[img_id]
-            assert isinstance(results, InstanceData)
+            if not isinstance(results, InstanceData):
+                msg = f"instance_results should be InstanceData, but got {type(results)}"
+                raise TypeError(msg)
         else:
             results = InstanceData()
 

@@ -3,17 +3,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 
 # TODO(Eugene): replace mmcv with generic PyTorch modules
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
 from mmcv.cnn import ConvModule, build_conv_layer, build_upsample_layer
-from mmengine.config import ConfigDict
 from mmengine.model import BaseModule, ModuleList
 from mmengine.registry import MODELS
-from mmengine.structures import InstanceData
 from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
@@ -32,8 +32,15 @@ BYTES_PER_FLOAT = 4
 GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 
+if TYPE_CHECKING:
+    from mmengine.config import ConfigDict
+    from mmengine.structures import InstanceData
+
+
 @MODELS.register_module()
 class FCNMaskHead(BaseModule):
+    """FCNMaskHead."""
+
     def __init__(
         self,
         num_convs: int = 4,
@@ -106,7 +113,7 @@ class FCNMaskHead(BaseModule):
         for m in [self.upsample, self.conv_logits]:
             if m is None:
                 continue
-            elif hasattr(m, "weight") and hasattr(m, "bias"):
+            if hasattr(m, "weight") and hasattr(m, "bias"):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
                 nn.init.constant_(m.bias, 0)
 
@@ -125,8 +132,7 @@ class FCNMaskHead(BaseModule):
             x = self.upsample(x)
             if self.upsample_method == "deconv":
                 x = self.relu(x)
-        mask_preds = self.conv_logits(x)
-        return mask_preds
+        return self.conv_logits(x)
 
     def get_targets(
         self,
@@ -182,16 +188,15 @@ class FCNMaskHead(BaseModule):
 
         pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
 
-        loss = dict()
+        loss = {}
         if mask_preds.size(0) == 0:
             loss_mask = mask_preds.sum()
+        elif self.class_agnostic:
+            loss_mask = self.loss_mask(mask_preds, mask_targets, torch.zeros_like(pos_labels))
         else:
-            if self.class_agnostic:
-                loss_mask = self.loss_mask(mask_preds, mask_targets, torch.zeros_like(pos_labels))
-            else:
-                loss_mask = self.loss_mask(mask_preds, mask_targets, pos_labels)
+            loss_mask = self.loss_mask(mask_preds, mask_targets, pos_labels)
         loss["loss_mask"] = loss_mask
-        return dict(loss_mask=loss, mask_targets=mask_targets)
+        return {"loss_mask": loss, "mask_targets": mask_targets}
 
     def predict_by_feat(
         self,
@@ -229,7 +234,9 @@ class FCNMaskHead(BaseModule):
                   the last dimension 4 arrange as (x1, y1, x2, y2).
                 - masks (Tensor): Has a shape (num_instances, H, W).
         """
-        assert len(mask_preds) == len(results_list) == len(batch_img_metas)
+        if len(mask_preds) != len(results_list) != len(batch_img_metas):
+            msg = "The number of inputs should be the same."
+            raise ValueError(msg)
 
         for img_id in range(len(batch_img_metas)):
             img_meta = batch_img_metas[img_id]
@@ -314,11 +321,7 @@ class FCNMaskHead(BaseModule):
         img_h, img_w = img_meta["ori_shape"][:2]
         device = bboxes.device
 
-        if not activate_map:
-            mask_preds = mask_preds.sigmoid()
-        else:
-            # In AugTest, has been activated before
-            mask_preds = bboxes.new_tensor(mask_preds)
+        mask_preds = mask_preds.sigmoid() if not activate_map else bboxes.new_tensor(mask_preds)
 
         if rescale:  # in-placed rescale the bboxes
             bboxes /= scale_factor
@@ -327,14 +330,14 @@ class FCNMaskHead(BaseModule):
             img_h = np.round(img_h * h_scale.item()).astype(np.int32)
             img_w = np.round(img_w * w_scale.item()).astype(np.int32)
 
-        N = len(mask_preds)
+        num_preds = len(mask_preds)
         # The actual implementation split the input into chunks,
         # and paste them chunk by chunk.
         if device.type == "cpu":
             # CPU is most efficient when they are pasted one by one with
             # skip_empty=True, so that it performs minimal number of
             # operations.
-            num_chunks = N
+            num_chunks = num_preds
         else:
             # GPU benefits from parallelism for larger chunks,
             # but may have memory issue
@@ -343,15 +346,23 @@ class FCNMaskHead(BaseModule):
             # the calculation of num_chunks will overflow.
             # so we need to change the types of img_w and img_h to int.
             # See https://github.com/open-mmlab/mmdetection/pull/5191
-            num_chunks = int(np.ceil(N * int(img_h) * int(img_w) * BYTES_PER_FLOAT / GPU_MEM_LIMIT))
-            assert num_chunks <= N, "Default GPU_MEM_LIMIT is too small; try increasing it"
-        chunks = torch.chunk(torch.arange(N, device=device), num_chunks)
+            num_chunks = int(np.ceil(num_preds * int(img_h) * int(img_w) * BYTES_PER_FLOAT / GPU_MEM_LIMIT))
+            if num_chunks > num_preds:
+                msg = "Default GPU_MEM_LIMIT is too small; try increasing it"
+                raise ValueError(msg)
+        chunks = torch.chunk(torch.arange(num_preds, device=device), num_chunks)
 
         threshold = rcnn_test_cfg.mask_thr_binary
-        im_mask = torch.zeros(N, img_h, img_w, device=device, dtype=torch.bool if threshold >= 0 else torch.uint8)
+        im_mask = torch.zeros(
+            num_preds,
+            img_h,
+            img_w,
+            device=device,
+            dtype=torch.bool if threshold >= 0 else torch.uint8,
+        )
 
         if not self.class_agnostic:
-            mask_preds = mask_preds[range(N), labels][:, None]
+            mask_preds = mask_preds[range(num_preds), labels][:, None]
 
         for inds in chunks:
             masks_chunk, spatial_inds = _do_paste_mask(
@@ -363,7 +374,7 @@ class FCNMaskHead(BaseModule):
             )
 
             masks_chunk = (masks_chunk >= threshold).to(dtype=torch.bool)
-            im_mask[(inds,) + spatial_inds] = masks_chunk
+            im_mask[(inds, *spatial_inds)] = masks_chunk
         return im_mask
 
 
@@ -399,7 +410,8 @@ def _do_paste_mask(masks: Tensor, boxes: Tensor, img_h: int, img_w: int, skip_em
     # this has more operations but is faster on COCO-scale dataset.
     device = masks.device
     if skip_empty:
-        x0_int, y0_int = torch.clamp(boxes.min(dim=0).values.floor()[:2] - 1, min=0).to(dtype=torch.int32)
+        box_values, _ = boxes.min(dim=0)
+        x0_int, y0_int = torch.clamp(box_values.floor()[:2] - 1, min=0).to(torch.int32)
         x1_int = torch.clamp(boxes[:, 2].max().ceil() + 1, max=img_w).to(dtype=torch.int32)
         y1_int = torch.clamp(boxes[:, 3].max().ceil() + 1, max=img_h).to(dtype=torch.int32)
     else:
@@ -407,7 +419,7 @@ def _do_paste_mask(masks: Tensor, boxes: Tensor, img_h: int, img_w: int, skip_em
         x1_int, y1_int = img_w, img_h
     x0, y0, x1, y1 = torch.split(boxes, 1, dim=1)  # each is Nx1
 
-    N = masks.shape[0]
+    num_preds = masks.shape[0]
 
     img_y = torch.arange(y0_int, y1_int, device=device).to(torch.float32) + 0.5
     img_x = torch.arange(x0_int, x1_int, device=device).to(torch.float32) + 0.5
@@ -423,13 +435,12 @@ def _do_paste_mask(masks: Tensor, boxes: Tensor, img_h: int, img_w: int, skip_em
             inds = torch.where(torch.isinf(img_y))
             img_y[inds] = 0
 
-    gx = img_x[:, None, :].expand(N, img_y.size(1), img_x.size(1))
-    gy = img_y[:, :, None].expand(N, img_y.size(1), img_x.size(1))
+    gx = img_x[:, None, :].expand(num_preds, img_y.size(1), img_x.size(1))
+    gy = img_y[:, :, None].expand(num_preds, img_y.size(1), img_x.size(1))
     grid = torch.stack([gx, gy], dim=3)
 
     img_masks = F.grid_sample(masks.to(dtype=torch.float32), grid, align_corners=False)
 
     if skip_empty:
         return img_masks[:, 0], (slice(y0_int, y1_int), slice(x0_int, x1_int))
-    else:
-        return img_masks[:, 0], ()
+    return img_masks[:, 0], ()

@@ -4,18 +4,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 from mmengine.registry import TASK_UTILS
-from mmengine.structures import InstanceData
 from torch import Tensor
 
 from .assign_result import AssignResult
-from .base_assigner import BaseAssigner
 from .iou2d_calculator import BboxOverlaps2D
+
+if TYPE_CHECKING:
+    from mmengine.structures import InstanceData
 
 
 @TASK_UTILS.register_module()
-class MaxIoUAssigner(BaseAssigner):
+class MaxIoUAssigner:
     """Assign a corresponding gt bbox or background to each bbox.
 
     Each proposals will be assigned with `-1`, or a semi-positive integer
@@ -130,7 +133,7 @@ class MaxIoUAssigner(BaseAssigner):
         priors = pred_instances.priors
         gt_labels = gt_instances.labels
 
-        assign_on_cpu = True if (self.gpu_assign_thr > 0) and (gt_bboxes.shape[0] > self.gpu_assign_thr) else False
+        assign_on_cpu = bool(self.gpu_assign_thr > 0) and (gt_bboxes.shape[0] > self.gpu_assign_thr)
         # compute overlap and assign gt on CPU when number of GT is large
         if assign_on_cpu:
             device = priors.device
