@@ -39,8 +39,12 @@ from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
-from otx.core.schedulers import LRSchedulerListCallable, PicklableLRSchedulerCallable
-from otx.core.schedulers.warmup_schedulers import LinearWarmupScheduler
+from otx.core.schedulers import (
+    LinearWarmupScheduler,
+    LinearWarmupSchedulerCallable,
+    LRSchedulerListCallable,
+    SchedulerCallableSupportHPO,
+)
 from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.label import LabelInfo, NullLabelInfo
 from otx.core.types.precision import OTXPrecisionType
@@ -720,8 +724,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         if not isinstance(self.optimizer_callable, OptimizerCallableSupportHPO):
             self.optimizer_callable = OptimizerCallableSupportHPO.from_callable(self.optimizer_callable)
 
-        if not isinstance(self.scheduler_callable, PicklableLRSchedulerCallable):
-            self.scheduler_callable = PicklableLRSchedulerCallable(self.scheduler_callable)
+        if not isinstance(self.scheduler_callable, SchedulerCallableSupportHPO) and not isinstance(
+            self.scheduler_callable,
+            LinearWarmupSchedulerCallable,  # LinearWarmupSchedulerCallable natively supports HPO
+        ):
+            self.scheduler_callable = SchedulerCallableSupportHPO.from_callable(self.scheduler_callable)
 
     @property
     def tile_config(self) -> TileConfig:
