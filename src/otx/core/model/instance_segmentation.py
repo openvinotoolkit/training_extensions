@@ -20,7 +20,7 @@ from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.tile import OTXTileBatchDataEntity, TileBatchInstSegDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -43,13 +43,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXInstanceSegModel(
-    OTXModel[
-        InstanceSegBatchDataEntity,
-        InstanceSegBatchPredEntity,
-        TileBatchInstSegDataEntity,
-    ],
-):
+class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
     """Base class for the Instance Segmentation models used in OTX."""
 
     def __init__(
@@ -69,7 +63,7 @@ class OTXInstanceSegModel(
         )
         self._tile_config = TileConfig()
 
-    def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[InstanceSegBatchDataEntity]) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
         Args:

@@ -34,7 +34,7 @@ from otx.core.data.entity.base import (
     T_OTXBatchDataEntity,
     T_OTXBatchPredEntity,
 )
-from otx.core.data.entity.tile import OTXTileBatchDataEntity, T_OTXTileBatchDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
@@ -81,7 +81,7 @@ DefaultOptimizerCallable = _default_optimizer_callable
 DefaultSchedulerCallable = _default_scheduler_callable
 
 
-class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
     """Base class for the models used in OTX.
 
     Args:
@@ -515,7 +515,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def forward_tiles(
         self,
-        inputs: T_OTXTileBatchDataEntity,
+        inputs: OTXTileBatchDataEntity[T_OTXBatchDataEntity],
     ) -> T_OTXBatchPredEntity | OTXBatchLossEntity:
         """Model forward function for tile task."""
         raise NotImplementedError
