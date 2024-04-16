@@ -613,8 +613,11 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.eval()
 
         orig_forward = self.forward
+        orig_trainer = self._trainer  # type: ignore[has-type]
+
         try:
-            self._trainer = Trainer()
+            if self._trainer is None:  # type: ignore[has-type]
+                self._trainer = Trainer()
             self.forward = self.forward_for_tracing  # type: ignore[method-assign, assignment]
             return self._exporter.export(
                 self,
@@ -626,6 +629,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         finally:
             self.train(mode)
             self.forward = orig_forward  # type: ignore[method-assign]
+            self._trainer = orig_trainer
 
     @property
     def _exporter(self) -> OTXModelExporter:

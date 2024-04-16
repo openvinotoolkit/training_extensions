@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.core.data.entity.base import OTXBatchLossEntity
@@ -162,3 +162,7 @@ class DINOv2RegisterClassifier(OTXMulticlassClsModel):
     def _optimization_config(self) -> dict[str, Any]:
         """PTQ config for DinoV2Cls."""
         return {"model_type": "transformer"}
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(image)
