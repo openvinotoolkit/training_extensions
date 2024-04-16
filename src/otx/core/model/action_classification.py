@@ -12,12 +12,12 @@ import torch
 
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.export import TaskLevelExportParameters
 from otx.core.utils.config import inplace_num_classes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
@@ -31,13 +31,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXActionClsModel(
-    OTXModel[
-        ActionClsBatchDataEntity,
-        ActionClsBatchPredEntity,
-        T_OTXTileBatchDataEntity,
-    ],
-):
+class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity]):
     """Base class for the action classification models used in OTX."""
 
     def __init__(
@@ -57,16 +51,12 @@ class OTXActionClsModel(
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
+    def _export_parameters(self) -> TaskLevelExportParameters:
         """Defines parameters required to export a particular model implementation."""
-        parameters = super()._export_parameters
-        parameters["metadata"].update(
-            {
-                ("model_info", "model_type"): "Action Classification",
-                ("model_info", "task_type"): "action classification",
-            },
+        return super()._export_parameters.wrap(
+            model_type="Action Classification",
+            task_type="action classification",
         )
-        return parameters
 
     def _convert_pred_entity_to_compute_metric(
         self,
@@ -176,23 +166,22 @@ class MMActionCompatibleModel(OTXActionClsModel):
         )
 
     @property
-    def _export_parameters(self) -> dict[str, Any]:
-        """Defines parameters required to export a particular model implementation."""
-        export_params = super()._export_parameters
-        export_params.update(get_mean_std_from_data_processing(self.config))
-        export_params["resize_mode"] = "standard"
-        export_params["pad_value"] = 0
-        export_params["swap_rgb"] = False
-        export_params["via_onnx"] = False
-        export_params["input_size"] = self.image_size
-        export_params["onnx_export_configuration"] = None
-
-        return export_params
-
-    @property
     def _exporter(self) -> OTXModelExporter:
         """Creates OTXModelExporter object that can export the model."""
-        return OTXNativeModelExporter(**self._export_parameters)
+        mean, std = get_mean_std_from_data_processing(self.config)
+
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=None,
+        )
 
 
 class OVActionClsModel(

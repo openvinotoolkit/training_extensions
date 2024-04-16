@@ -10,7 +10,7 @@ from enum import Enum
 
 class DeviceType(str, Enum):
     """OTX Device type definition."""
-    # ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
+    # ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "xpu", "auto")
 
     auto = "auto"
     gpu = "gpu"
@@ -19,3 +19,4 @@ class DeviceType(str, Enum):
     ipu = "ipu"
     hpu = "hpu"
     mps = "mps"
+    xpu = "xpu"

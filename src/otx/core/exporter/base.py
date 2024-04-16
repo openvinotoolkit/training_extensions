@@ -16,7 +16,7 @@ from zipfile import ZipFile
 from openvino.model_api.models import Model
 
 from otx.core.exporter.exportable_code import demo
-from otx.core.types.export import OTXExportFormatType
+from otx.core.types.export import OTXExportFormatType, TaskLevelExportParameters
 from otx.core.types.precision import OTXPrecisionType
 
 if TYPE_CHECKING:
@@ -29,6 +29,8 @@ class OTXModelExporter:
     """Base class for the model exporters used in OTX.
 
     Args:
+        task_level_export_parameters (TaskLevelExportParameters): Collection of export parameters
+            which can be defined at a task level.
         input_size (tuple[int, ...]): Input shape.
         mean (tuple[float, float, float], optional): Mean values of 3 channels. Defaults to (0.0, 0.0, 0.0).
         std (tuple[float, float, float], optional): Std values of 3 channels. Defaults to (1.0, 1.0, 1.0).
@@ -38,20 +40,19 @@ class OTXModelExporter:
             "fit_to_window_letterbox" resizes images and pads images to fit the size. Defaults to "standard".
         pad_value (int, optional): Padding value. Defaults to 0.
         swap_rgb (bool, optional): Whether to convert the image from BGR to RGB Defaults to False.
-        metadata (dict[tuple[str, str],str] | None, optional): metadata to embed to the exported model.
         output_names (list[str] | None, optional): Names for model's outputs, which would be
         embedded into resulting model.
     """
 
     def __init__(
         self,
+        task_level_export_parameters: TaskLevelExportParameters,
         input_size: tuple[int, ...],
         mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
         std: tuple[float, float, float] = (1.0, 1.0, 1.0),
         resize_mode: Literal["crop", "standard", "fit_to_window", "fit_to_window_letterbox"] = "standard",
         pad_value: int = 0,
         swap_rgb: bool = False,
-        metadata: dict[tuple[str, str], str] | None = None,
         output_names: list[str] | None = None,
     ) -> None:
         self.input_size = input_size
@@ -60,8 +61,16 @@ class OTXModelExporter:
         self.resize_mode = resize_mode
         self.pad_value = pad_value
         self.swap_rgb = swap_rgb
-        self.metadata = metadata
+        self.task_level_export_parameters = task_level_export_parameters
         self.output_names = output_names
+
+    @property
+    def metadata(self) -> dict[tuple[str, str], str]:
+        """Collection of metadata to be stored in OpenVINO Intermediate Representation or ONNX.
+
+        This metadata is mainly used to support ModelAPI.
+        """
+        return self.task_level_export_parameters.to_metadata()
 
     def export(
         self,
@@ -197,7 +206,6 @@ class OTXModelExporter:
 
             arch.write(str(path_to_model), Path("model") / "model.xml")
             arch.write(path_to_model.with_suffix(".bin"), Path("model") / "model.bin")
-
             arch.writestr(
                 str(Path("model") / "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),

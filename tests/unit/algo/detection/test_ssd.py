@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Test of OTX SSD architecture."""
 
+from pathlib import Path
+
 import pytest
+from lightning import Trainer
 from otx.algo.detection.ssd import SSD
 
 
@@ -11,16 +14,25 @@ class TestSSD:
     def fxt_model(self) -> SSD:
         return SSD(num_classes=3, variant="mobilenetv2")
 
-    def test_save_and_load_anchors(self, fxt_model) -> None:
-        anchor_widths = fxt_model.model.bbox_head.anchor_generator.widths
-        anchor_heights = fxt_model.model.bbox_head.anchor_generator.heights
-        state_dict = fxt_model.state_dict()
-        assert anchor_widths == state_dict["model.model.anchors"]["widths"]
-        assert anchor_heights == state_dict["model.model.anchors"]["heights"]
+    @pytest.fixture()
+    def fxt_checkpoint(self, fxt_model, fxt_data_module, tmpdir, monkeypatch: pytest.MonkeyPatch):
+        trainer = Trainer(max_steps=0)
 
-        state_dict["model.model.anchors"]["widths"][0][0] = 40
-        state_dict["model.model.anchors"]["heights"][0][0] = 50
+        monkeypatch.setattr(trainer.strategy, "_lightning_module", fxt_model)
+        monkeypatch.setattr(trainer, "datamodule", fxt_data_module)
+        monkeypatch.setattr(fxt_model, "_trainer", trainer)
+        fxt_model.setup("fit")
 
-        fxt_model.load_state_dict(state_dict)
-        assert fxt_model.model.bbox_head.anchor_generator.widths[0][0] == 40
-        assert fxt_model.model.bbox_head.anchor_generator.heights[0][0] == 50
+        fxt_model.hparams["ssd_anchors"]["widths"][0][0] = 40
+        fxt_model.hparams["ssd_anchors"]["heights"][0][0] = 50
+
+        checkpoint_path = Path(tmpdir) / "checkpoint.ckpt"
+        trainer.save_checkpoint(checkpoint_path)
+
+        return checkpoint_path
+
+    def test_save_and_load_anchors(self, fxt_checkpoint) -> None:
+        loaded_model = SSD.load_from_checkpoint(checkpoint_path=fxt_checkpoint)
+
+        assert loaded_model.model.bbox_head.anchor_generator.widths[0][0] == 40
+        assert loaded_model.model.bbox_head.anchor_generator.heights[0][0] == 50

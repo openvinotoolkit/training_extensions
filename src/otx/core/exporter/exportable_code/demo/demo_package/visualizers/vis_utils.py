@@ -95,7 +95,7 @@ class ColorPalette:
         Returns:
         None
         """
-        if num_classes == 0:
+        if num_classes <= 0:
             msg = "ColorPalette accepts only the positive number of colors"
             raise ValueError(msg)
         if rng is None:

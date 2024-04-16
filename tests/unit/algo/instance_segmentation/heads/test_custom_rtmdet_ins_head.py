@@ -1,7 +1,6 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import tempfile
 from pathlib import Path
 
 import torch
@@ -68,12 +67,11 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=test_cfg,
         )
 
-    def test_predict_by_feat_ov(self) -> None:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            lit_module = RTMDetInst(num_classes=1, variant="tiny")
-            exported_model_path = lit_module.export(
-                output_dir=Path(tmpdirname),
-                base_name="exported_model",
-                export_format=OTXExportFormatType.OPENVINO,
-            )
-            Path.exists(exported_model_path)
+    def test_predict_by_feat_ov(self, tmpdir) -> None:
+        lit_module = RTMDetInst(num_classes=1, variant="tiny")
+        exported_model_path = lit_module.export(
+            output_dir=Path(tmpdir),
+            base_name="exported_model",
+            export_format=OTXExportFormatType.OPENVINO,
+        )
+        Path.exists(exported_model_path)
