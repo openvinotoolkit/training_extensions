@@ -10,11 +10,10 @@ Original papers:
 import math
 import os
 
+from otx.algo.utils.mmengine_utils import load_from_http, load_checkpoint_to_model
 import torch.nn.functional as F
-from mmengine.runner import load_checkpoint
-from mmpretrain.models.utils import make_divisible
-from mmpretrain.registry import MODELS
 from torch import nn
+import torch
 
 pretrained_root = "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
 pretrained_urls = {
@@ -29,10 +28,10 @@ class ModelInterface(nn.Module):
 
     def __init__(
         self,
-        classification=False,
-        contrastive=False,
-        pretrained=False,
-        loss="softmax",
+        classification: bool = False,
+        contrastive: bool = False,
+        pretrained: bool = False,
+        loss: str = "softmax",
         **kwargs,
     ):
         super().__init__()
@@ -40,7 +39,7 @@ class ModelInterface(nn.Module):
         self.classification = classification
         self.contrastive = contrastive
         self.pretrained = pretrained
-        self.classification_classes = {}
+        self.classification_classes: dict = {}
         self.loss = loss
         self.is_ie_model = False
         if loss == "am_softmax":
@@ -86,7 +85,7 @@ class HSwish(nn.Module):
         inplace : bool, Whether to use inplace version of the module.
     """
 
-    def __init__(self, inplace=False):
+    def __init__(self, inplace: bool = False):
         super().__init__()
         self.inplace = inplace
 
@@ -98,7 +97,7 @@ class HSwish(nn.Module):
 class SELayer(nn.Module):
     """SE layer."""
 
-    def __init__(self, channel, reduction=4):
+    def __init__(self, channel: int, reduction: int = 4):
         super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
@@ -117,7 +116,7 @@ class SELayer(nn.Module):
         return x * y
 
 
-def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
+def conv_3x3_bn(inp: int, oup: int, stride: int, IN_conv1: bool = False):
     """Conv 3x3 layer with batch-norm."""
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
@@ -126,7 +125,7 @@ def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
     )
 
 
-def conv_1x1_bn(inp, oup, loss="softmax"):
+def conv_1x1_bn(inp: int, oup: int, loss: str = "softmax"):
     """Conv 1x1 layer with batch-norm."""
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
@@ -135,10 +134,36 @@ def conv_1x1_bn(inp, oup, loss="softmax"):
     )
 
 
+def make_divisible(value: int | float, divisor: int, min_value: int | None = None, min_ratio: float = 0.9):
+    """Make divisible function.
+
+    This function rounds the channel number down to the nearest value that can
+    be divisible by the divisor.
+
+    Args:
+        value (int | float): The original channel number.
+        divisor (int): The divisor to fully divide the channel number.
+        min_value (int, optional): The minimum value of the output channel.
+            Default: None, means that the minimum value equal to the divisor.
+        min_ratio (float): The minimum ratio of the rounded channel
+            number to the original channel number. Default: 0.9.
+    Returns:
+        int: The modified output channel number
+    """
+
+    if min_value is None:
+        min_value = divisor
+    new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than (1-min_ratio).
+    if new_value < min_ratio * value:
+        new_value += divisor
+    return new_value
+
+
 class InvertedResidual(nn.Module):
     """Inverted residual."""
 
-    def __init__(self, inp, hidden_dim, oup, kernel_size, stride, use_se, use_hs):
+    def __init__(self, inp: int, hidden_dim: int, oup: int, kernel_size: int, stride: int, use_se: bool, use_hs: bool):
         super().__init__()
         assert stride in [1, 2]
 
@@ -201,16 +226,15 @@ class MobileNetV3Base(ModelInterface):
 
     def __init__(
         self,
-        num_classes=1000,
-        width_mult=1.0,
-        in_channels=3,
-        input_size=(224, 224),
-        dropout_cls=None,
-        pooling_type="avg",
-        feature_dim=1280,
-        IN_first=False,
-        self_challenging_cfg=False,
-        lr_finder=None,
+        num_classes: int = 1000,
+        width_mult: float = 1.0,
+        in_channels: int = 3,
+        input_size: tuple[int, int] = (224, 224),
+        dropout_cls: nn.Module | None = None,
+        pooling_type: str = "avg",
+        feature_dim: int = 1280,
+        IN_first: bool = False,
+        self_challenging_cfg: bool = False,
         **kwargs,
     ):
 
@@ -222,7 +246,6 @@ class MobileNetV3Base(ModelInterface):
         self.self_challenging_cfg = self_challenging_cfg
         self.width_mult = width_mult
         self.dropout_cls = dropout_cls
-        self.lr_finder = lr_finder
         self.feature_dim = feature_dim
 
     def infer_head(self, x, skip_pool=False):
@@ -247,7 +270,7 @@ class MobileNetV3Base(ModelInterface):
 class MobileNetV3(MobileNetV3Base):
     """MobileNetV3."""
 
-    def __init__(self, cfgs, mode, IN_conv1=False, **kwargs):
+    def __init__(self, cfgs: list, mode: str, IN_conv1: bool = False, **kwargs):
         super().__init__(**kwargs)
         # setting of inverted residual blocks
         self.cfgs = cfgs
@@ -291,7 +314,7 @@ class MobileNetV3(MobileNetV3Base):
         logits = self.classifier(glob_features.view(x.shape[0], -1))
         return glob_features, logits
 
-    def _initialize_weights(self):
+    def _initialize_weights(self) -> None:
         """Initialize weights."""
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -308,11 +331,10 @@ class MobileNetV3(MobileNetV3Base):
                 m.bias.data.zero_()
 
 
-@MODELS.register_module()
 class OTXMobileNetV3(MobileNetV3):
     """MobileNetV3 model for OTX."""
 
-    cfgs = dict(
+    backbone_configs = dict(
         small=[
             # k, t, c, SE, HS, s
             [3, 1, 16, 1, 0, 2],
@@ -347,8 +369,8 @@ class OTXMobileNetV3(MobileNetV3):
         ],
     )
 
-    def __init__(self, mode="large", width_mult=1.0, **kwargs):
-        super().__init__(self.cfgs[mode], mode=mode, width_mult=width_mult, **kwargs)
+    def __init__(self, mode: str = "large", width_mult: float = 1.0, **kwargs):
+        super().__init__(self.backbone_configs[mode], mode=mode, width_mult=width_mult, **kwargs)
         self.key = "mobilenetv3_" + mode
         if width_mult != 1.0:
             self.key = self.key + f"_{int(width_mult * 100):03d}"  # pylint: disable=consider-using-f-string
@@ -358,11 +380,14 @@ class OTXMobileNetV3(MobileNetV3):
         """Forward."""
         return super().forward(x, return_featuremaps=True)
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: str | bool | None = None):
         """Initialize weights."""
+        checkpoint = None
         if isinstance(pretrained, str) and os.path.exists(pretrained):
-            load_checkpoint(self, pretrained)
+            checkpoint = torch.load(pretrained, None)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            load_checkpoint(self, pretrained_urls[self.key])
+            checkpoint = load_from_http(pretrained_urls[self.key])
             print(f"init weight - {pretrained_urls[self.key]}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint)

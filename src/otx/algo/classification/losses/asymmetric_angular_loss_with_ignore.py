@@ -6,23 +6,77 @@
 from __future__ import annotations
 
 import torch
-from mmpretrain.models.losses.utils import weight_reduce_loss
+
+# TODO(harimkang): Remove the following import after decoupling mmpretrain
 from mmpretrain.registry import MODELS
 from torch import nn
 
 
+def reduce_loss(loss: torch.Tensor, reduction: str) -> torch.Tensor:
+    """Reduce loss as specified.
+
+    Args:
+        loss (Tensor): Elementwise loss tensor.
+        reduction (str): Options are "none", "mean" and "sum".
+
+    Return:
+        Tensor: Reduced loss tensor.
+    """
+    reduction_enum = nn.functional._Reduction.get_enum(reduction)  # noqa: SLF001
+    # none: 0, elementwise_mean:1, sum: 2
+    if reduction_enum == 0:
+        return loss
+    if reduction_enum == 1:
+        return loss.mean()
+    return loss.sum()
+
+
+def weight_reduce_loss(
+    loss: torch.Tensor,
+    weight: torch.Tensor | None = None,
+    reduction: str = "mean",
+    avg_factor: float | None = None,
+) -> torch.Tensor:
+    """Apply element-wise weight and reduce loss.
+
+    Args:
+        loss (Tensor): Element-wise loss.
+        weight (Tensor): Element-wise weights.
+        reduction (str): Same as built-in losses of PyTorch.
+        avg_factor (float): Average factor when computing the mean of losses.
+
+    Returns:
+        Tensor: Processed loss values.
+    """
+    # if weight is specified, apply element-wise weight
+    if weight is not None:
+        loss = loss * weight
+
+    # if avg_factor is not specified, just reduce the loss
+    if avg_factor is None:
+        return reduce_loss(loss, reduction)
+    # if reduction is mean, then average the loss by avg_factor
+    if reduction == "mean":
+        return loss.sum() / avg_factor
+    # if reduction is 'none', then do nothing, otherwise raise an error
+    if reduction == "none":
+        return loss
+    msg = 'avg_factor can not be used with reduction="sum"'
+    raise ValueError(msg)
+
+
 def asymmetric_angular_loss_with_ignore(
-    pred: torch.tensor,
-    target: torch.tensor,
-    valid_label_mask: torch.tensor | None = None,
-    weight: torch.tensor | None = None,
+    pred: torch.Tensor,
+    target: torch.Tensor,
+    valid_label_mask: torch.Tensor | None = None,
+    weight: torch.Tensor | None = None,
     gamma_pos: float = 0.0,
     gamma_neg: float = 1.0,
     clip: float = 0.05,
     k: float = 0.8,
     reduction: str = "mean",
-    avg_factor: int | None = None,
-) -> nn.Module:
+    avg_factor: float | None = None,
+) -> torch.Tensor:
     """Asymmetric angular loss.
 
     Args:
@@ -41,7 +95,7 @@ def asymmetric_angular_loss_with_ignore(
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". If reduction is 'none' , loss
              is same shape as pred and label. Defaults to 'mean'.
-        avg_factor (int, optional): Average factor that is used to average
+        avg_factor (float, optional): Average factor that is used to average
             the loss. Defaults to None.
 
     Returns:
@@ -110,7 +164,7 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         gamma_neg: float = 1.0,
         k: float = 0.8,
         clip: float = 0.05,
-        reduction: str = "mean",
+        reduction: str = "sum",
         loss_weight: float = 1.0,
     ):
         """Init fuction of AsymmetricAngularLossWithIgnore class."""
@@ -124,13 +178,13 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
 
     def forward(
         self,
-        pred: torch.tensor,
-        target: torch.tensor,
-        valid_label_mask: torch.tensor | None = None,
-        weight: torch.tensor | None = None,
-        avg_factor: int | None = None,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        valid_label_mask: torch.Tensor | None = None,
+        weight: torch.Tensor | None = None,
+        avg_factor: float | None = None,
         reduction_override: str | None = None,
-    ) -> torch.tensor:
+    ) -> torch.Tensor:
         """Asymmetric angular loss."""
         if reduction_override not in (None, "none", "mean", "sum"):
             msg = f"reduction_override should be none / mean / sum / None, {reduction_override}"
