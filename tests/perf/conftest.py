@@ -9,14 +9,18 @@ import platform
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
-import pandas as pd
 import pytest
 from cpuinfo import get_cpu_info
 from mlflow.client import MlflowClient
 
 from .benchmark import Benchmark
+from .history import summary
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -150,13 +154,13 @@ def fxt_version_tags(fxt_current_date: str, fxt_otx_ref: str) -> dict[str, str]:
 
 
 @pytest.fixture(scope="session")
-def fxt_summary_csv(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
+def fxt_summary_file(request: pytest.FixtureRequest, fxt_output_root: Path) -> Path:
     """Path to benchmark result summary csv file."""
-    summary_csv = request.config.getoption("--summary-csv")
-    summary_csv = fxt_output_root / "benchmark-summary.csv" if summary_csv is None else Path(summary_csv)
-    msg = f"{summary_csv = }"
+    summary_file = request.config.getoption("--summary-file")
+    summary_file = fxt_output_root / "benchmark-summary.csv" if summary_file is None else Path(summary_file)
+    msg = f"{summary_file = }"
     log.info(msg)
-    return summary_csv
+    return summary_file
 
 
 @pytest.fixture(scope="session")
@@ -205,7 +209,10 @@ def fxt_model(request: pytest.FixtureRequest, fxt_model_category) -> Benchmark.M
     model: Benchmark.Model = request.param
     if fxt_model_category == "all":
         return model
-    if (fxt_model_category == "default" and model.category == "other") or fxt_model_category != model.category:
+    if fxt_model_category == "default":
+        if model.category == "other":
+            pytest.skip(f"{model.category} category model")
+    elif fxt_model_category != model.category:
         pytest.skip(f"{model.category} category model")
     return model
 
@@ -269,7 +276,7 @@ def fxt_benchmark(
 @pytest.fixture(scope="session", autouse=True)
 def fxt_benchmark_summary(
     fxt_output_root: Path,
-    fxt_summary_csv: Path,
+    fxt_summary_file: Path,
     fxt_mlflow_client: MlflowClient,
     fxt_tags: dict[str, str],
 ):
@@ -277,39 +284,41 @@ def fxt_benchmark_summary(
     yield
 
     raw_results = Benchmark.load_result(fxt_output_root)
-    if raw_results is None:
+    if raw_results is None or len(raw_results) == 0:
         print("No benchmark results loaded in ", fxt_output_root)
         return
 
-    summary_results = [
-        Benchmark.average_result(raw_results, ["task", "model", "data_group", "data"]),
-        Benchmark.average_result(raw_results, ["task", "model", "data_group"]),
-        Benchmark.average_result(raw_results, ["task", "model"]),
-        Benchmark.average_result(raw_results, ["task"]),
-    ]
-    summary_results = pd.concat(summary_results)
+    summary_results = summary.summarize(raw_results)
 
     print("=" * 20, "[Benchmark summary]")
     print(summary_results)
-    fxt_summary_csv.parent.mkdir(parents=True, exist_ok=True)
-    summary_results.to_csv(fxt_summary_csv)
-    raw_results.to_csv(fxt_summary_csv.parent / "benchmark-raw.csv")
-    print(f"  -> Saved to {fxt_summary_csv}.")
+    fxt_summary_file.parent.mkdir(parents=True, exist_ok=True)
+    raw_results.to_csv(fxt_summary_file.parent / "perf-benchmark-raw.csv", index=False)
+    if fxt_summary_file.suffix == ".xlsx":
+        summary_results.to_excel(fxt_summary_file)
+    else:
+        if fxt_summary_file.suffix != ".csv":
+            print(f"{fxt_summary_file.suffix} output is not supported.")
+            fxt_summary_file = fxt_summary_file.with_suffix(".csv")
+        summary_results.to_csv(fxt_summary_file)
+    print(f"  -> Saved to {fxt_summary_file}.")
 
     if fxt_mlflow_client:
         try:
-            _log_benchmark_results_to_mlflow(summary_results, fxt_mlflow_client, fxt_tags)
+            _log_benchmark_results_to_mlflow(raw_results, fxt_mlflow_client, fxt_tags)
         except Exception as e:
             print("MLFlow logging failed: ", e)
 
 
 def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient, tags: dict[str, str]) -> None:
+    results = summary.average(results, keys=["task", "model", "data_group", "data"])  # Average out seeds
+    results = results.set_index(["task", "data_group", "data"])
     for index, result in results.iterrows():
-        task, model, data_group, data = index
-        exp_name = f"[Benchmark] {task} | {model} | {data_group} | {data}"
+        task, data_group, data = index
+        model = result["model"]
+        exp_name = f"[Benchmark] {task} | {data_group} | {data}"
         exp_tags = {
             "task": task,
-            "model": model,
             "data_group": data_group,
             "data": data,
         }
@@ -320,7 +329,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
             exp_id = exp.experiment_id
             if exp.lifecycle_stage != "active":
                 client.restore_experiment(exp_id)
-        run_name = f"[{tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
+        run_name = f"[{model}] {tags['date']} | {tags['user_name']} | {tags['otx_version']} | {tags['test_branch']} | {tags['test_commit']}"
         run_tags = {k: v for k, v in result.items() if isinstance(v, str)}
         run_tags.update(**exp_tags, **tags)
         run = client.create_run(exp_id, run_name=run_name, tags=run_tags)
@@ -332,7 +341,7 @@ def _log_benchmark_results_to_mlflow(results: pd.DataFrame, client: MlflowClient
 @pytest.fixture(scope="session")
 def fxt_benchmark_reference() -> pd.DataFrame | None:
     """Load reference benchmark results with index."""
-    ref = pd.read_csv(Path(__file__).parent.resolve() / "benchmark-reference.csv")
+    ref = summary.load(Path(__file__).parent.resolve() / "history/v1.5.2", need_normalize=True)
     if ref is not None:
         ref = ref.set_index(["task", "model", "data_group", "data"])
     return ref
