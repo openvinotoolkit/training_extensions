@@ -10,16 +10,16 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmcv.cnn import build_activation_layer, build_norm_layer
+from mmdet.registry import MODELS
 from mmengine.dist import get_dist_info
-from mmengine.registry import MODELS
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 if TYPE_CHECKING:
+    from mmdet.registry import Registry
     from mmengine.config import Config, ConfigDict
-    from mmengine.registry import Registry
 
 # ruff: noqa: SLF001
 

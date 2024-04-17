@@ -27,16 +27,14 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     multi_apply,
     unpack_gt_instances,
 )
-from mmdet.structures.det_data_sample import DetDataSample
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead
 from .roi_extractors import SingleRoIExtractor
 
 if TYPE_CHECKING:
+    from mmdet.structures.det_data_sample import DetDataSample
     from mmengine.config import ConfigDict
-
-    from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
 @MODELS.register_module()
@@ -95,7 +93,7 @@ class StandardRoIHead(BaseRoIHead):
         self,
         x: tuple[Tensor],
         rpn_results_list: InstanceList,
-        batch_data_samples: SampleList | None = None,
+        batch_data_samples: list[DetDataSample] | None = None,
     ) -> tuple:
         """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
 

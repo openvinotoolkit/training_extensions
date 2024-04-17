@@ -7,10 +7,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-# TODO(Eugene): Remove this import after the issue is resolved.
 from mmdet.models.data_preprocessors import (
     DetDataPreprocessor as _DetDataPreprocessor,
 )
+from mmdet.registry import MODELS
 from mmengine.registry import MODELS as MMENGINE_MODELS
 
 from otx.core.utils.build import build_mm_model, get_classification_layers
@@ -49,6 +49,5 @@ def create_model(config: DictConfig, load_from: str | None) -> tuple[nn.Module, 
     Returns:
         tuple[nn.Module, dict[str, dict[str, int]]]: Model instance and classification layers.
     """
-    # classification_layers = get_classification_layers(config, MODELS, "model.")
-    classification_layers = get_classification_layers(config, MMENGINE_MODELS, "model.")
-    return build_mm_model(config, MMENGINE_MODELS, load_from), classification_layers
+    classification_layers = get_classification_layers(config, MODELS, "model.")
+    return build_mm_model(config, MODELS, load_from), classification_layers
