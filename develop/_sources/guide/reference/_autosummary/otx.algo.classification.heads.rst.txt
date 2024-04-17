@@ -21,6 +21,11 @@ otx.algo.classification.heads
       CustomMultiLabelNonLinearClsHead
       CustomHierarchicalLinearClsHead
       CustomHierarchicalNonLinearClsHead
+      LinearClsHead
+      MultiLabelLinearClsHead
+      MultiLabelNonLinearClsHead
+      HierarchicalLinearClsHead
+      HierarchicalNonLinearClsHead
    
    
 
