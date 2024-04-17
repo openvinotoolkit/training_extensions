@@ -39,7 +39,7 @@ class TestDecoupleMMDetInstanceSeg:
             config_path=DEFAULT_CONFIG_PER_TASK[OTXTaskType.INSTANCE_SEGMENTATION],
             data_root="tests/assets/car_tree_bug",
             work_dir=tmp_path_train,
-            device="gpu",
+            device="cpu",
         )
 
         new_model, _ = create_model(engine.model.config, engine.model.load_from)
