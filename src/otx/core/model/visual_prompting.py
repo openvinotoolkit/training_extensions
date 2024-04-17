@@ -44,7 +44,7 @@ from otx.core.utils.mask_util import polygon_to_bitmap
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-    from openvino.model_api.models import Model
+    from model_api.models import Model
     from torchmetrics import MetricCollection
 
     from otx.core.data.module import OTXDataModule
@@ -490,8 +490,8 @@ class OVVisualPromptingModel(
 
     def _create_model(self) -> dict[str, Model]:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import Model
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.models import Model
 
         ov_models: dict[str, Model] = {}
 

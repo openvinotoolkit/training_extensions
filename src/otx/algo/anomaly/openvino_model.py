@@ -18,8 +18,8 @@ from otx.core.model.anomaly import AnomalyModelInputs
 from otx.core.model.base import OVModel
 
 if TYPE_CHECKING:
-    from openvino.model_api.models import Model
-    from openvino.model_api.models.anomaly import AnomalyResult
+    from model_api.models import Model
+    from model_api.models.anomaly import AnomalyResult
 
 
 class AnomalyOpenVINO(OVModel):
@@ -51,8 +51,8 @@ class AnomalyOpenVINO(OVModel):
         )
 
     def _create_model(self) -> Model:
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
-        from openvino.model_api.models import AnomalyDetection
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.models import AnomalyDetection
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

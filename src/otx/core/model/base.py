@@ -20,8 +20,8 @@ import openvino
 import torch
 from jsonargparse import ArgumentParser
 from lightning import LightningModule
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import Tiler
+from model_api.models import Model
+from model_api.tilers import Tiler
 from torch import Tensor, nn
 from torch.optim.lr_scheduler import ConstantLR
 from torch.optim.sgd import SGD
@@ -786,7 +786,7 @@ class OVModel(OTXModel, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEntity]):
 
     def _create_model(self) -> Model:
         """Create a OV model with help of Model API."""
-        from openvino.model_api.adapters import OpenvinoAdapter, create_core, get_user_config
+        from model_api.adapters import OpenvinoAdapter, create_core, get_user_config
 
         plugin_config = get_user_config("AUTO", str(self.num_requests), "AUTO")
         if self.use_throughput_mode:

@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
-    from openvino.model_api.models.utils import ClassificationResult
+    from model_api.models.utils import ClassificationResult
     from torch import nn
 
     from otx.core.metrics import MetricCallable

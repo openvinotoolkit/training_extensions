@@ -9,8 +9,8 @@ from unittest.mock import MagicMock
 import numpy as np
 from datumaro import Image
 from datumaro.plugins.tiling.util import xywh_to_x1y1x2y2
-from openvino.model_api.models import Model
-from openvino.model_api.tilers import Tiler
+from model_api.models import Model
+from model_api.tilers import Tiler
 from otx.core.data.dataset.tile import OTXTileTransform
 
 

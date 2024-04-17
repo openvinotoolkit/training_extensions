@@ -11,13 +11,13 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import cv2
 import numpy as np
-from openvino.model_api.performance_metrics import put_highlighted_text
+from model_api.performance_metrics import put_highlighted_text
 
 from .vis_utils import ColorPalette
 
 if TYPE_CHECKING:
     from demo_package.streamer import BaseStreamer
-    from openvino.model_api.models.utils import (
+    from model_api.models.utils import (
         ClassificationResult,
         DetectionResult,
         InstanceSegmentationResult,
