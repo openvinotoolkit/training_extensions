@@ -295,31 +295,6 @@ class FCNMaskHead(BaseModule):
 
         Returns:
             Tensor: Encoded masks, has shape (n, img_w, img_h)
-
-        Example:
-            >>> from mmengine.config import Config
-            >>> from mmdet.models.roi_heads.mask_heads.fcn_mask_head import *  # NOQA
-            >>> N = 7  # N = number of extracted ROIs
-            >>> C, H, W = 11, 32, 32
-            >>> # Create example instance of FCN Mask Head.
-            >>> self = FCNMaskHead(num_classes=C, num_convs=0)
-            >>> inputs = torch.rand(N, self.in_channels, H, W)
-            >>> mask_preds = self.forward(inputs)
-            >>> # Each input is associated with some bounding box
-            >>> bboxes = torch.Tensor([[1, 1, 42, 42 ]] * N)
-            >>> labels = torch.randint(0, C, size=(N,))
-            >>> rcnn_test_cfg = Config({'mask_thr_binary': 0, })
-            >>> ori_shape = (H * 4, W * 4)
-            >>> scale_factor = (1, 1)
-            >>> rescale = False
-            >>> img_meta = {'scale_factor': scale_factor,
-            ...             'ori_shape': ori_shape}
-            >>> # Encoded masks are a list for each category.
-            >>> encoded_masks = self._get_seg_masks_single(
-            ...     mask_preds, bboxes, labels,
-            ...     img_meta, rcnn_test_cfg, rescale)
-            >>> assert encoded_masks.size()[0] == N
-            >>> assert encoded_masks.size()[1:] == ori_shape
         """
         scale_factor = bboxes.new_tensor(img_meta["scale_factor"]).repeat((1, 2))
         img_h, img_w = img_meta["ori_shape"][:2]

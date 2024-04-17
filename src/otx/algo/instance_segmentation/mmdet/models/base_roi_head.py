@@ -13,9 +13,9 @@ from typing import TYPE_CHECKING
 from mmengine.model import BaseModule
 
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, InstanceList, OptMultiConfig
-from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 if TYPE_CHECKING:
+    from mmdet.structures import DetDataSample
     from torch import Tensor
 
 
@@ -72,14 +72,14 @@ class BaseRoIHead(BaseModule, metaclass=ABCMeta):
         """Initialize assigner and sampler."""
 
     @abstractmethod
-    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: SampleList) -> dict:
+    def loss(self, x: tuple[Tensor], rpn_results_list: InstanceList, batch_data_samples: list[DetDataSample]) -> dict:
         """Perform forward propagation and loss calculation of the roi head on the features of the upstream network."""
 
     def predict(
         self,
         x: tuple[Tensor],
         rpn_results_list: InstanceList,
-        batch_data_samples: SampleList,
+        batch_data_samples: list[DetDataSample],
         rescale: bool = False,
     ) -> InstanceList:
         """Forward the roi head and predict detection results on the features of the upstream network.

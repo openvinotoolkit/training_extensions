@@ -27,7 +27,7 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     multi_apply,
     unpack_gt_instances,
 )
-from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
+from mmdet.structures.det_data_sample import DetDataSample
 from otx.algo.instance_segmentation.mmdet.structures.bbox import bbox2roi
 
 from .base_roi_head import BaseRoIHead

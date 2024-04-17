@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TypeAlias
 
 import torch
+from mmdet.structures.det_data_sample import DetDataSample
 from mmengine.model import BaseModel
 from torch import Tensor
 
@@ -19,7 +20,6 @@ from otx.algo.instance_segmentation.mmdet.models.utils import (
     OptConfigType,
     OptMultiConfig,
 )
-from otx.algo.instance_segmentation.mmdet.structures import DetDataSample, SampleList
 
 ForwardResults: TypeAlias = dict[str, torch.Tensor] | list[DetDataSample] | tuple[torch.Tensor] | torch.Tensor
 
@@ -50,7 +50,7 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
             hasattr(self, "bbox_head") and self.bbox_head is not None
         )
 
-    def forward(self, inputs: torch.Tensor, data_samples: SampleList, mode: str = "tensor") -> ForwardResults:
+    def forward(self, inputs: torch.Tensor, data_samples: list[DetDataSample], mode: str = "tensor") -> ForwardResults:
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "tensor", "predict" and "loss":
@@ -88,15 +88,15 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
         raise RuntimeError(msg)
 
     @abstractmethod
-    def loss(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> dict | tuple:
+    def loss(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> dict | tuple:
         """Calculate losses from a batch of inputs and data samples."""
 
     @abstractmethod
-    def predict(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> SampleList:
+    def predict(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> list[DetDataSample]:
         """Predict results from a batch of inputs and data samples with post-processing."""
 
     @abstractmethod
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> tuple:
+    def _forward(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> tuple:
         """Network forward process.
 
         Usually includes backbone, neck and head forward without any post-
@@ -107,7 +107,11 @@ class BaseDetector(BaseModel, metaclass=ABCMeta):
     def extract_feat(self, batch_inputs: Tensor) -> tuple:
         """Extract features from images."""
 
-    def add_pred_to_datasample(self, data_samples: SampleList, results_list: InstanceList) -> SampleList:
+    def add_pred_to_datasample(
+        self,
+        data_samples: list[DetDataSample],
+        results_list: InstanceList,
+    ) -> list[DetDataSample]:
         """Add predictions to `DetDataSample`.
 
         Args:

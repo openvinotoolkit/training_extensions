@@ -365,10 +365,9 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         ]
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        from mmdet.structures import DetDataSample
         from mmdet.structures.mask import BitmapMasks, PolygonMasks
         from mmengine.structures import InstanceData
-
-        from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
 
         mmdet_inputs: dict[str, Any] = {}
 
@@ -424,7 +423,7 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         outputs: dict[str, Any],
         inputs: InstanceSegBatchDataEntity,
     ) -> InstanceSegBatchPredEntity | OTXBatchLossEntity:
-        from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
+        from mmdet.structures import DetDataSample
 
         if self.training:
             if not isinstance(outputs, dict):

@@ -14,8 +14,9 @@ import torch
 from mmengine.structures import InstanceData
 
 if TYPE_CHECKING:
+    from mmdet.structures import DetDataSample
+
     from otx.algo.instance_segmentation.mmdet.models.utils import OptInstanceList
-    from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 
 def multi_apply(func: Any, *args, **kwargs) -> tuple:  # noqa: ANN401
@@ -40,7 +41,7 @@ def multi_apply(func: Any, *args, **kwargs) -> tuple:  # noqa: ANN401
     return tuple(map(list, zip(*map_results)))
 
 
-def unpack_gt_instances(batch_data_samples: SampleList) -> tuple:
+def unpack_gt_instances(batch_data_samples: list[DetDataSample]) -> tuple:
     """Unpack ``gt_instances``, ``gt_instances_ignore`` and ``img_metas`` based on ``batch_data_samples``.
 
     Args:

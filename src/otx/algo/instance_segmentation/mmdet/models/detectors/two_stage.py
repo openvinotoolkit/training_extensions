@@ -9,18 +9,21 @@ from __future__ import annotations
 
 import copy
 import warnings
+from typing import TYPE_CHECKING
 
 import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
+from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
-from otx.algo.instance_segmentation.mmdet.models.roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptConfigType, OptMultiConfig
-from otx.algo.instance_segmentation.mmdet.structures import SampleList
 
 from .base import BaseDetector
+
+if TYPE_CHECKING:
+    from mmdet.structures.det_data_sample import DetDataSample
 
 
 @MODELS.register_module()
@@ -136,7 +139,7 @@ class TwoStageDetector(BaseDetector):
             x = self.neck(x)
         return x
 
-    def _forward(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> tuple:
+    def _forward(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> tuple:
         """Network forward process. Usually includes backbone, neck and head forward without any post-processing.
 
         Args:
@@ -162,7 +165,7 @@ class TwoStageDetector(BaseDetector):
         roi_outs = self.roi_head.forward(x, rpn_results_list, batch_data_samples)
         return (*results, roi_outs)
 
-    def loss(self, batch_inputs: Tensor, batch_data_samples: SampleList) -> dict:
+    def loss(self, batch_inputs: Tensor, batch_data_samples: list[DetDataSample]) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
@@ -211,7 +214,12 @@ class TwoStageDetector(BaseDetector):
 
         return losses
 
-    def predict(self, batch_inputs: Tensor, batch_data_samples: SampleList, rescale: bool = True) -> SampleList:
+    def predict(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: list[DetDataSample],
+        rescale: bool = True,
+    ) -> list[DetDataSample]:
         """Predict results from a batch of inputs and data samples with post-processing.
 
         Args:
