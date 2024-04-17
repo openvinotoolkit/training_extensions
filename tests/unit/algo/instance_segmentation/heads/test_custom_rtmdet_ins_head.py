@@ -67,12 +67,6 @@ class TestCustomRTMDetInsSepBNHead:
             cfg=test_cfg,
         )
 
-        mask_head._bbox_mask_post_process(
-            results[0],
-            mask_feat,
-            cfg=None,
-        )
-
     def test_predict_by_feat_ov(self, tmpdir) -> None:
         lit_module = RTMDetInst(num_classes=1, variant="tiny")
         exported_model_path = lit_module.export(

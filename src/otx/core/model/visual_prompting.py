@@ -26,7 +26,6 @@ from torch import Tensor
 from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity, Points
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -169,9 +168,7 @@ def _inference_step_for_zero_shot(
                 )
 
 
-class OTXVisualPromptingModel(
-    OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity, T_OTXTileBatchDataEntity],
-):
+class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPromptingBatchPredEntity]):
     """Base class for the visual prompting models used in OTX."""
 
     def __init__(
@@ -276,11 +273,7 @@ class OTXVisualPromptingModel(
 
 
 class OTXZeroShotVisualPromptingModel(
-    OTXModel[
-        ZeroShotVisualPromptingBatchDataEntity,
-        ZeroShotVisualPromptingBatchPredEntity,
-        T_OTXTileBatchDataEntity,
-    ],
+    OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity],
 ):
     """Base class for the visual prompting models used in OTX."""
 

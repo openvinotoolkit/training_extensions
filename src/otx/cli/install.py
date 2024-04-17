@@ -64,10 +64,15 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
         help="Do not install PyTorch. Choose this option if you already install PyTorch.",
         action="store_true",
     )
+
     subcommands_action.add_subcommand("install", parser, help="Install OTX requirements.")
 
 
-def otx_install(option: str | None = None, verbose: bool = False, do_not_install_torch: bool = False) -> int:
+def otx_install(
+    option: str | None = None,
+    verbose: bool = False,
+    do_not_install_torch: bool = False,
+) -> int:
     """Install OTX requirements.
 
     Args:

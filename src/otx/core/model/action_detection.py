@@ -11,7 +11,6 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.action_detection import ActionDetBatchDataEntity, ActionDetBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel
@@ -26,13 +25,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXActionDetModel(
-    OTXModel[
-        ActionDetBatchDataEntity,
-        ActionDetBatchPredEntity,
-        T_OTXTileBatchDataEntity,
-    ],
-):
+class OTXActionDetModel(OTXModel[ActionDetBatchDataEntity, ActionDetBatchPredEntity]):
     """Base class for the action detection models used in OTX."""
 
     def __init__(

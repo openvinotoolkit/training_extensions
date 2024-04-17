@@ -341,19 +341,22 @@ class MaskRCNNExplainAlgo(BaseExplainAlgo):
     @classmethod
     def average_and_normalize(
         cls,
-        pred: InstanceData,
+        pred: InstanceData | dict[str, torch.Tensor],
         num_classes: int,
     ) -> np.array:
         """Average and normalize masks in prediction per-class.
 
         Args:
-            preds (InstanceData): Predictions of Instance Segmentation model.
+            preds (InstanceData | dict): Predictions of Instance Segmentation model.
             num_classes (int): Num classes that model can predict.
 
         Returns:
             np.array: Class-wise Saliency Maps. One saliency map per each class - [class_id, H, W]
         """
-        masks, scores, labels = (pred.masks, pred.scores, pred.labels)
+        if isinstance(pred, dict):
+            masks, scores, labels = pred["masks"], pred["scores"], pred["labels"]
+        else:
+            masks, scores, labels = (pred.masks, pred.scores, pred.labels)
         _, height, width = masks.shape
 
         saliency_map = torch.zeros((num_classes, height, width), dtype=torch.float32, device=labels.device)

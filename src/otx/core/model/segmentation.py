@@ -12,7 +12,6 @@ from torchvision import tv_tensors
 
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.segmentation import SegBatchDataEntity, SegBatchPredEntity
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity, T_OTXTileBatchDataEntity]):
+class OTXSegmentationModel(OTXModel[SegBatchDataEntity, SegBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
     def __init__(

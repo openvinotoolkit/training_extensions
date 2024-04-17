@@ -18,7 +18,7 @@ from torchvision import tv_tensors
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.tile import TileBatchDetDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from torchmetrics import Metric
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
+class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
     def __init__(
@@ -58,7 +58,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         )
         self._tile_config = TileConfig()
 
-    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
         Args:
@@ -71,11 +71,11 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         tile_attrs: list[list[dict[str, int | str]]] = []
         merger = DetectionTileMerge(
             inputs.imgs_info,
-            self.tile_config.iou_threshold,
-            self.tile_config.max_num_instances,
+            self.num_classes,
+            self.tile_config,
         )
         for batch_tile_attrs, batch_tile_input in inputs.unbind():
-            output = self.forward(batch_tile_input)
+            output = self.forward_explain(batch_tile_input) if self.explain_mode else self.forward(batch_tile_input)
             if isinstance(output, OTXBatchLossEntity):
                 msg = "Loss output is not supported for tile merging"
                 raise TypeError(msg)
@@ -83,7 +83,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             tile_attrs.append(batch_tile_attrs)
         pred_entities = merger.merge(tile_preds, tile_attrs)
 
-        return DetBatchPredEntity(
+        pred_entity = DetBatchPredEntity(
             batch_size=inputs.batch_size,
             images=[pred_entity.image for pred_entity in pred_entities],
             imgs_info=[pred_entity.img_info for pred_entity in pred_entities],
@@ -91,6 +91,11 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
             bboxes=[pred_entity.bboxes for pred_entity in pred_entities],
             labels=[pred_entity.labels for pred_entity in pred_entities],
         )
+        if self.explain_mode:
+            pred_entity.saliency_map = [pred_entity.saliency_map for pred_entity in pred_entities]
+            pred_entity.feature_vector = [pred_entity.feature_vector for pred_entity in pred_entities]
+
+        return pred_entity
 
     @property
     def _export_parameters(self) -> TaskLevelExportParameters:
@@ -189,11 +194,16 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
-    def forward_explain(
-        self,
-        inputs: DetBatchDataEntity,
-    ) -> DetBatchPredEntity:
+    def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
+        from otx.algo.explain.explain_algo import get_feature_vector
+
+        if isinstance(inputs, OTXTileBatchDataEntity):
+            return self.forward_tiles(inputs)
+
+        self.model.feature_vector_fn = get_feature_vector
+        self.model.explain_fn = self.get_explain_fn()
+
         # If customize_inputs is overridden
         outputs = (
             self._forward_explain_detection(self.model, **self._customize_inputs(inputs))
