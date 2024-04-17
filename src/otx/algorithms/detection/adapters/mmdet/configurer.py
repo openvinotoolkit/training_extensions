@@ -122,7 +122,7 @@ class DetectionConfigurer(BaseConfigurer):
     def configure_device(self, cfg):
         """Setting device for training and inference."""
         super().configure_device(cfg)
-        if cfg.device in ["xpu", "hpu"]:
+        if cfg.device in ["xpu", "hpu", "cuda"]:
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
 
