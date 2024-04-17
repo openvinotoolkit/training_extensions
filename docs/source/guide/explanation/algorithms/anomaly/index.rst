@@ -153,29 +153,3 @@ Since STFPM trains the student network, we use the following parameters for its 
    - ``Early Stopping``: Early stopping is used to stop the training process when the validation loss stops improving. The default value of the early stopping patience is ``10``.
 
 For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation <https://anomalib.readthedocs.io/en/v1.0.0/markdown/guides/reference/models/image/stfpm.html>`_.
-
-Reconstruction-based Models
----------------------------
-These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OpenVINO Training Extensions currently supports `DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection <https://arxiv.org/pdf/2108.07610v2.pdf>`_.
-
-DRÆM
-^^^^
-
-.. figure:: ../../../../../utils/images/draem.png
-   :width: 600
-   :align: center
-   :alt: Anomaly Task Types
-
-A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.
-
-Training Parameters
-~~~~~~~~~~~~~~~~~~~~
-
-- ``Enable SSPCAB``: The default value is ``False``. If set to ``True``, the model will use the SSPCAB block.
-- ``SSPCAB Lambda``: The default value is ``0.1``. This parameter is used to control the trade-off between the self-supervised reconstruction loss and the training loss.
-- ``Anomaly Source Path``: The default value is ``None``. This parameter is used to specify the path to the anomaly source images.
-- ``Beta``: Parameter that determines the opacity of the noise mask. The default is (0.1, 1.0).
-- ``Optimizer``: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.
-- ``Loss``: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.
-- ``Additional Training Techniques``:
-   - ``Early Stopping``: Early stopping is used to prevent overfitting. The early stopping patience can be configured by the user. By default, early stopping is enabled with a patience of 20 epochs.
