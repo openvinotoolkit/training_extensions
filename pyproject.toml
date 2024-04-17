@@ -71,12 +71,12 @@ base = [
     "lightning==2.1.2",
     "pytorchcv",
     "timm",
-    "openvino==2023.3.0",
-    "openvino-dev==2023.3.0",
-    "openvino-model-api==0.1.9",
+    "openvino==2024.0",
+    "openvino-dev==2024.0",
+    "openvino-model-api@git+https://github.com/sovrasov/model_api.git@0d3e633fae21639a0feb666f01caacdfec3733de#subdirectory=model_api/python",
     "onnx==1.16.0",
     "onnxconverter-common==1.14.0",
-    "nncf==2.8.1",
+    "nncf==2.9",
 ]
 mmlab = [
     "mmdet==3.2.0",
