@@ -7,10 +7,7 @@
 """MMDet utils."""
 from .misc import (
     empty_instances,
-    images_to_levels,
     multi_apply,
-    select_single_mlvl,
-    unmap,
     unpack_gt_instances,
 )
 from .typing_utils import (

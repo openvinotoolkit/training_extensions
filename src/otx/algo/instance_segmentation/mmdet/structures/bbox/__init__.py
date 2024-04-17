@@ -5,7 +5,6 @@
 # Please refer to https://github.com/open-mmlab/mmdetection/
 
 """MMDet bbox structures."""
-from .bbox_overlaps import bbox_overlaps
 from .transforms import (
     bbox2roi,
     empty_box_as,
@@ -14,7 +13,6 @@ from .transforms import (
 )
 
 __all__ = [
-    "bbox_overlaps",
     "bbox2roi",
     "empty_box_as",
     "get_box_wh",
