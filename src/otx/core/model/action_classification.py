@@ -12,7 +12,6 @@ import torch
 
 from otx.core.data.entity.action_classification import ActionClsBatchDataEntity, ActionClsBatchPredEntity
 from otx.core.data.entity.base import OTXBatchLossEntity
-from otx.core.data.entity.tile import T_OTXTileBatchDataEntity
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput
 from otx.core.metrics.accuracy import MultiClassClsMetricCallable
@@ -32,13 +31,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXActionClsModel(
-    OTXModel[
-        ActionClsBatchDataEntity,
-        ActionClsBatchPredEntity,
-        T_OTXTileBatchDataEntity,
-    ],
-):
+class OTXActionClsModel(OTXModel[ActionClsBatchDataEntity, ActionClsBatchPredEntity]):
     """Base class for the action classification models used in OTX."""
 
     def __init__(

@@ -181,7 +181,7 @@ class Engine:
         resume: bool = False,
         metric: MetricCallable | None = None,
         run_hpo: bool = False,
-        hpo_config: HpoConfig | None = None,
+        hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         checkpoint: PathLike | None = None,
         **kwargs,
     ) -> dict[str, Any]:
@@ -241,8 +241,6 @@ class Engine:
         checkpoint = checkpoint if checkpoint is not None else self.checkpoint
 
         if run_hpo:
-            if hpo_config is None:
-                hpo_config = HpoConfig()
             best_config, best_trial_weight = execute_hpo(engine=self, **locals())
             if best_config is not None:
                 update_hyper_parameter(self, best_config)

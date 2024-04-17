@@ -14,7 +14,7 @@ def cpu_resource_manager():
 
 @pytest.fixture()
 def gpu_resource_manager():
-    return GPUResourceManager(num_gpu_for_single_trial=1, available_gpu="0,1,2,3")
+    return GPUResourceManager(num_gpu_for_single_trial=1, num_parallel_trial=4)
 
 
 class TestCPUResourceManager:
@@ -66,25 +66,25 @@ class TestGPUResourceManager:
         mock_torch_cuda.device_count.return_value = 4
 
     def test_init(self):
-        GPUResourceManager(num_gpu_for_single_trial=1, available_gpu="0,1,2")
+        GPUResourceManager(num_gpu_for_single_trial=1, num_parallel_trial=3)
 
     @pytest.mark.parametrize("num_gpu_for_single_trial", [-1, 0])
     def test_init_not_positive_num_gpu(self, num_gpu_for_single_trial):
         with pytest.raises(ValueError):  # noqa: PT011
             GPUResourceManager(num_gpu_for_single_trial=num_gpu_for_single_trial)
 
-    @pytest.mark.parametrize("available_gpu", [",", "a,b", "0,a", ""])
-    def test_init_wrong_available_gpu_value(self, available_gpu):
+    @pytest.mark.parametrize("num_parallel_trial", [-1, 0])
+    def test_init_wrong_available_gpu_value(self, num_parallel_trial):
         with pytest.raises(ValueError):  # noqa: PT011
-            GPUResourceManager(available_gpu=available_gpu)
+            GPUResourceManager(num_parallel_trial=num_parallel_trial)
 
     def test_reserve_resource(self):
         num_gpu_for_single_trial = 2
         gpu_resource_manager = GPUResourceManager(
             num_gpu_for_single_trial=num_gpu_for_single_trial,
-            available_gpu=",".join([str(val) for val in range(8)]),
+            num_parallel_trial=8,
         )
-        num_gpus = len(gpu_resource_manager._available_gpu)
+        num_gpus = 4
         max_parallel = num_gpus // num_gpu_for_single_trial
 
         for i in range(max_parallel):
@@ -112,9 +112,9 @@ class TestGPUResourceManager:
         num_gpu_for_single_trial = 2
         gpu_resource_manager = GPUResourceManager(
             num_gpu_for_single_trial=num_gpu_for_single_trial,
-            available_gpu=",".join([str(val) for val in range(8)]),
+            num_parallel_trial=8,
         )
-        num_gpus = len(gpu_resource_manager._available_gpu)
+        num_gpus = 4
         max_parallel = num_gpus // num_gpu_for_single_trial
 
         for i in range(max_parallel):
@@ -133,11 +133,11 @@ def test_get_resource_manager_cpu():
 def test_get_resource_manager_gpu(mocker):
     mocker.patch("otx.hpo.resource_manager.torch.cuda.is_available", return_value=True)
     num_gpu_for_single_trial = 1
-    available_gpu = "0,1,2,3"
+    num_parallel_trial = 4
     manager = get_resource_manager(
         resource_type="gpu",
         num_gpu_for_single_trial=num_gpu_for_single_trial,
-        available_gpu=available_gpu,
+        num_parallel_trial=num_parallel_trial,
     )
     assert isinstance(manager, GPUResourceManager)
 

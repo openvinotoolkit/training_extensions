@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+from otx.core.types.task import OTXTaskType
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
 
 from tests.e2e.cli.utils import run_main
@@ -456,6 +457,17 @@ def test_otx_hpo_e2e_cli(
     """
     if task not in DEFAULT_CONFIG_PER_TASK:
         pytest.skip(f"Task {task} is not supported in the auto-configuration.")
+    if task == OTXTaskType.ZERO_SHOT_VISUAL_PROMPTING:
+        pytest.skip("ZERO_SHOT_VISUAL_PROMPTING doesn't support HPO.")
+
+    # Need to change model to stfpm because default anomaly model is 'padim' which doesn't support HPO
+    model_cfg = []
+    if task in {
+        OTXTaskType.ANOMALY_CLASSIFICATION,
+        OTXTaskType.ANOMALY_DETECTION,
+        OTXTaskType.ANOMALY_SEGMENTATION,
+    }:
+        model_cfg = ["--config", str(DEFAULT_CONFIG_PER_TASK[task].parent / "stfpm.yaml")]
 
     task = task.lower()
     tmp_path_hpo = tmp_path / f"otx_hpo_{task}"
@@ -464,6 +476,7 @@ def test_otx_hpo_e2e_cli(
     command_cfg = [
         "otx",
         "train",
+        *model_cfg,
         "--task",
         task.upper(),
         "--data_root",
@@ -484,10 +497,6 @@ def test_otx_hpo_e2e_cli(
     ]
 
     run_main(command_cfg=command_cfg, open_subprocess=fxt_open_subprocess)
-
-    # zero_shot_visual_prompting doesn't support HPO. Check just there is no error.
-    if task in ("zero_shot_visual_prompting"):
-        return
 
     latest_dir = max(
         (p for p in tmp_path_hpo.iterdir() if p.is_dir() and p.name != ".latest"),
