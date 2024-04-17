@@ -1,6 +1,6 @@
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
+
 """EfficientNetV2 model.
 
 Original papers:
@@ -11,8 +11,9 @@ Original papers:
 
 import os
 
+import torch
 import timm
-from mmengine.runner import load_checkpoint
+from otx.algo.utils.mmengine_utils import load_from_http, load_checkpoint_to_model
 from torch import nn
 from typing import Literal
 
@@ -97,14 +98,17 @@ class TimmBackbone(nn.Module):
 
         return parameters
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: str | bool | None = None):
         """Initialize weights."""
+        checkpoint = None
         if isinstance(pretrained, str) and os.path.exists(pretrained):
-            load_checkpoint(self, pretrained)
+            checkpoint = torch.load(pretrained, None)
             print(f"init weight - {pretrained}")
         elif pretrained is not None:
-            load_checkpoint(self, pretrained_urls[self.backbone])
-            print(f"init weight - {pretrained_urls[self.backbone]}")
+            checkpoint = load_from_http(pretrained_urls[self.key])
+            print(f"init weight - {pretrained_urls[self.key]}")
+        if checkpoint is not None:
+            load_checkpoint_to_model(self, checkpoint)
 
 
 # class EfficientNetV2(TimmModelsWrapper):
