@@ -16,10 +16,10 @@ from mmcv.transforms import BaseTransform
 from mmdet.datasets.transforms import LoadAnnotations as MMDetLoadAnnotations
 from mmdet.datasets.transforms import PackDetInputs as MMDetPackDetInputs
 from mmdet.registry import TRANSFORMS as MMDET_TRANSFORMS
+from mmdet.structures.mask import BitmapMasks, PolygonMasks
 from mmengine.registry import Registry
 from torchvision import tv_tensors
 
-from otx.algo.instance_segmentation.mmdet.structures.mask import BitmapMasks, PolygonMasks
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegDataEntity

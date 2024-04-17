@@ -14,7 +14,7 @@ import torch
 from torch.nn.modules.utils import _pair
 
 if TYPE_CHECKING:
-    from otx.algo.instance_segmentation.mmdet.structures.mask import BitmapMasks
+    from mmdet.structures.mask import BitmapMasks
 
 
 def mask_target(

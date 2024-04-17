@@ -365,10 +365,10 @@ class MMDetInstanceSegCompatibleModel(ExplainableOTXInstanceSegModel):
         ]
 
     def _customize_inputs(self, entity: InstanceSegBatchDataEntity) -> dict[str, Any]:
+        from mmdet.structures.mask import BitmapMasks, PolygonMasks
         from mmengine.structures import InstanceData
 
         from otx.algo.instance_segmentation.mmdet.structures import DetDataSample
-        from otx.algo.instance_segmentation.mmdet.structures.mask import BitmapMasks, PolygonMasks
 
         mmdet_inputs: dict[str, Any] = {}
 

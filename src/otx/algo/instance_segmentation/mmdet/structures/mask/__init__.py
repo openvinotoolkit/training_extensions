@@ -6,11 +6,7 @@
 
 """MMDet mask structures."""
 from .mask_target import mask_target
-from .structures import BitmapMasks, PolygonMasks, polygon_to_bitmap
 
 __all__ = [
     "mask_target",
-    "BitmapMasks",
-    "PolygonMasks",
-    "polygon_to_bitmap",
 ]
