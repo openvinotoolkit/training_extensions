@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from openvino.model_api.tilers import Tiler
 from otx.algo.classification.efficientnet_b0 import EfficientNetB0ForMulticlassCls
+from otx.core.config.hpo import HpoConfig
 from otx.core.data.module import OTXDataModule
 from otx.core.model.base import OTXModel
 from otx.core.types.task import OTXTaskType
@@ -156,24 +157,9 @@ def test_engine_from_tile_recipe(
     assert engine.datamodule.config.tile_config.overlap == ov_model.model.tiles_overlap
 
 
-REASON = """
-Traceback (most recent call last):
-  File "/home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/home/vinnamki/miniconda3/envs/otx-v2/lib/python3.11/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/vinnamki/otx/training_extensions/src/otx/hpo/hpo_runner.py", line 200, in _run_train
-    train_func(hp_config, report_func)
-  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 75, in run_hpo_trial
-    callbacks = _register_hpo_callback(report_func, callbacks)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 101, in _register_hpo_callback
-    callbacks.append(HPOCallback(report_func, _get_metric(callbacks)))
-                                              ^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/vinnamki/otx/training_extensions/src/otx/engine/hpo/hpo_trial.py", line 110, in _get_metric
-    raise RuntimeError(error_msg)
-RuntimeError: Failed to find a metric. There is no ModelCheckpoint in callback list.
-"""
+METRIC_NAME = {
+    OTXTaskType.MULTI_CLASS_CLS: "val/accuracy",
+}
 
 
 @pytest.mark.parametrize("task", pytest.TASK_LIST)
@@ -182,9 +168,12 @@ def test_otx_hpo(
     tmp_path: Path,
     fxt_target_dataset_per_task: dict,
 ) -> None:
-    pytest.xfail(reason=REASON)
+    if task not in METRIC_NAME:
+        reason = f"test_otx_hpo for {task} isn't prepared yet."
+        pytest.xfail(reason=reason)
 
-    model = EfficientNetB0ForMulticlassCls(num_classes=3)
+    model = EfficientNetB0ForMulticlassCls(num_classes=2)
+    hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2, num_workers=1)
     work_dir = str(tmp_path)
     engine = Engine(
         data_root=fxt_target_dataset_per_task[task.lower()],
@@ -192,4 +181,4 @@ def test_otx_hpo(
         work_dir=work_dir,
         model=model,
     )
-    engine.train(run_hpo=True)
+    engine.train(max_epochs=1, run_hpo=True, hpo_config=hpo_config)

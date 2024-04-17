@@ -20,7 +20,7 @@ from otx.algo.explain.explain_algo import get_feature_vector
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
-from otx.core.data.entity.tile import OTXTileBatchDataEntity, TileBatchInstSegDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricInput
 from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -33,7 +33,7 @@ from otx.core.utils.tile_merge import InstanceSegTileMerge
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmdet.models.data_preprocessors import DetDataPreprocessor
-    from mmdet.models.detectors.base import TwoStageDetector
+    from mmdet.models.detectors.two_stage import TwoStageDetector
     from mmdet.structures import OptSampleList
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import InstanceSegmentationResult
@@ -43,13 +43,7 @@ if TYPE_CHECKING:
     from otx.core.metrics import MetricCallable
 
 
-class OTXInstanceSegModel(
-    OTXModel[
-        InstanceSegBatchDataEntity,
-        InstanceSegBatchPredEntity,
-        TileBatchInstSegDataEntity,
-    ],
-):
+class OTXInstanceSegModel(OTXModel[InstanceSegBatchDataEntity, InstanceSegBatchPredEntity]):
     """Base class for the Instance Segmentation models used in OTX."""
 
     def __init__(
@@ -69,7 +63,7 @@ class OTXInstanceSegModel(
         )
         self._tile_config = TileConfig()
 
-    def forward_tiles(self, inputs: TileBatchInstSegDataEntity) -> InstanceSegBatchPredEntity:
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[InstanceSegBatchDataEntity]) -> InstanceSegBatchPredEntity:
         """Unpack instance segmentation tiles.
 
         Args:
@@ -235,10 +229,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
-    def forward_explain(
-        self,
-        inputs: InstanceSegBatchDataEntity | TileBatchInstSegDataEntity,
-    ) -> InstanceSegBatchPredEntity:
+    def forward_explain(self, inputs: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
         """Model forward function."""
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)

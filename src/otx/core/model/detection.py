@@ -17,7 +17,7 @@ from torchvision import tv_tensors
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.detection import DetBatchDataEntity, DetBatchPredEntity
-from otx.core.data.entity.tile import OTXTileBatchDataEntity, TileBatchDetDataEntity
+from otx.core.data.entity.tile import OTXTileBatchDataEntity
 from otx.core.metrics import MetricCallable, MetricInput
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable, OTXModel, OVModel
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from torchmetrics import Metric
 
 
-class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBatchDetDataEntity]):
+class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity]):
     """Base class for the detection models used in OTX."""
 
     def __init__(
@@ -57,7 +57,7 @@ class OTXDetectionModel(OTXModel[DetBatchDataEntity, DetBatchPredEntity, TileBat
         )
         self._tile_config = TileConfig()
 
-    def forward_tiles(self, inputs: TileBatchDetDataEntity) -> DetBatchPredEntity:
+    def forward_tiles(self, inputs: OTXTileBatchDataEntity[DetBatchDataEntity]) -> DetBatchPredEntity:
         """Unpack detection tiles.
 
         Args:
@@ -193,10 +193,7 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         self.model.feature_vector_fn = get_feature_vector
         self.model.explain_fn = self.get_explain_fn()
 
-    def forward_explain(
-        self,
-        inputs: DetBatchDataEntity | TileBatchDetDataEntity,
-    ) -> DetBatchPredEntity:
+    def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
         from otx.algo.explain.explain_algo import get_feature_vector
 
