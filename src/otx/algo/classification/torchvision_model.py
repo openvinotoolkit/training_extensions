@@ -141,10 +141,12 @@ class TVModelWithLossComputation(nn.Module):
 
         avgpool_index = 0
         for i, layer in enumerate(self.backbone.children()):
-            if layer.__class__.__name__ == "AdaptiveAvgPool2d":
+            if isinstance(layer, nn.AdaptiveAvgPool2d):
                 avgpool_index = i
         self.feature_extractor = nn.Sequential(*list(self.backbone.children())[:avgpool_index])
-        self.avgpool = net.avgpool
+        self.avgpool = nn.Sequential(
+            *list(self.backbone.children())[avgpool_index:],
+        )  # Avgpool and Dropout (if the model has it)
 
         self.explainer = ReciproCAM(
             self._head_forward_fn,

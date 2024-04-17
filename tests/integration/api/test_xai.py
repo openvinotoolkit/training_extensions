@@ -10,12 +10,8 @@ from otx.core.data.entity.base import OTXBatchPredEntity
 from otx.engine import Engine
 
 RECIPE_LIST_ALL = pytest.RECIPE_LIST
-MULTI_CLASS_CLS = [
-    recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in recipe
-]  # and "tv_efficientnet" in recipe]
-MULTI_LABEL_CLS = [
-    recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe
-]  # and "tv_efficientnet" in recipe]
+MULTI_CLASS_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_class_cls" in recipe]
+MULTI_LABEL_CLS = [recipe for recipe in RECIPE_LIST_ALL if "multi_label_cls" in recipe]
 MC_ML_CLS = MULTI_CLASS_CLS + MULTI_LABEL_CLS
 
 DETECTION_LIST = [recipe for recipe in RECIPE_LIST_ALL if "/detection" in recipe and "tile" not in recipe]
