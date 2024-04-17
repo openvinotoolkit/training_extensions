@@ -239,19 +239,26 @@ def normalize(data: pd.DataFrame) -> pd.DataFrame:
     data.loc[tiling_indices, "task"] = data.loc[tiling_indices, "task"].str.replace("tiling_", "")
     data.loc[tiling_indices, "model"] = data.loc[tiling_indices, "model"] + "_tile"
     # Map anomaly metrics
+    anomaly_indices = data["task"] == "anomaly_classification"
     if "test/image_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_classification"
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+    if "export/image_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+    if "optimize/image_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
-        anomaly_indices = data["task"] == "anomaly_detection"
+    anomaly_indices = data["task"] == "anomaly_detection"
+    if "test/image_F1Score" in data:
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/image_F1Score"]
+    if "export/image_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/image_F1Score"]
+    if "optimize/image_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/image_F1Score"]
+    anomaly_indices = data["task"] == "anomaly_segmentation"
     if "test/pixel_F1Score" in data:
-        anomaly_indices = data["task"] == "anomaly_segmentation"
         data.loc[anomaly_indices, "test/f1-score"] = data.loc[anomaly_indices, "test/pixel_F1Score"]
+    if "export/pixel_F1Score" in data:
         data.loc[anomaly_indices, "export/f1-score"] = data.loc[anomaly_indices, "export/pixel_F1Score"]
+    if "optimize/pixel_F1Score" in data:
         data.loc[anomaly_indices, "optimize/f1-score"] = data.loc[anomaly_indices, "optimize/pixel_F1Score"]
     # Map other names
     data = data.rename(columns=V1_V2_NAME_MAP).replace(V1_V2_NAME_MAP)
