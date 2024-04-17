@@ -10,8 +10,8 @@ import pytest
 import torch
 from mmdet.structures import DetDataSample
 from mmengine.structures import InstanceData
-from otx.algo.instance_segmentation.heads.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
+from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 
 
 @pytest.fixture()
