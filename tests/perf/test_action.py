@@ -1,7 +1,7 @@
 # Copyright (C) 2024 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""OTX instance segmentation perfomance benchmark tests."""
+"""OTX action perfomance benchmark tests."""
 
 from __future__ import annotations
 
@@ -13,66 +13,48 @@ from .benchmark import Benchmark
 from .conftest import PerfTestBase
 
 
-class TestPerfInstanceSegmentation(PerfTestBase):
-    """Benchmark instance segmentation."""
+class TestPerfActionClassification(PerfTestBase):
+    """Benchmark action classification."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b", category="speed"),
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50", category="accuracy"),
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint", category="other"),
+        Benchmark.Model(task="action/action_classification", name="movinet", category="speed"),
+        Benchmark.Model(task="action/action_classification", name="x3d", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name=f"wgisd_small_{idx}",
-            path=Path("instance_seg/wgisd_small") / f"{idx}",
+            name="ucf-5percent-small",
+            path=Path("action/action_classification/ucf_kinetics_5percent_small"),
             group="small",
             num_repeat=5,
             extra_overrides={
                 "train": {
+                    "max_epochs": "10",
                     "deterministic": "True",
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                    "callback_monitor": "val/f1-score",
-                    "model.scheduler.monitor": "val/f1-score",
-                },
-                "test": {
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                },
-            },
-        )
-        for idx in (1, 2, 3)
-    ] + [
-        Benchmark.Dataset(
-            name="coco_car_person_medium",
-            path=Path("instance_seg/coco_car_person_medium"),
-            group="medium",
-            num_repeat=5,
-            extra_overrides={
-                "train": {
-                    "deterministic": "True",
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                    "callback_monitor": "val/f1-score",
-                    "model.scheduler.monitor": "val/f1-score",
-                },
-                "test": {
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
             },
         ),
         Benchmark.Dataset(
-            name="vitens_coliform",
-            path=Path("instance_seg/Vitens-Coliform-coco"),
+            name="ucf-30percent-medium",
+            path=Path("action/action_classification/ucf_kinetics_30percent_medium"),
+            group="medium",
+            num_repeat=5,
+            extra_overrides={
+                "train": {
+                    "max_epochs": "10",
+                    "deterministic": "True",
+                },
+            },
+        ),
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_classification/ucf_kinetics_large"),
             group="large",
             num_repeat=5,
             extra_overrides={
                 "train": {
+                    "max_epochs": "3",
                     "deterministic": "True",
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                    "callback_monitor": "val/f1-score",
-                    "model.scheduler.monitor": "val/f1-score",
-                },
-                "test": {
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
             },
         ),
@@ -81,10 +63,9 @@ class TestPerfInstanceSegmentation(PerfTestBase):
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/accuracy", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/accuracy", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
@@ -117,62 +98,58 @@ class TestPerfInstanceSegmentation(PerfTestBase):
         )
 
 
-class TestPerfTilingInstanceSegmentation(PerfTestBase):
-    """Benchmark tiling instance segmentation."""
+class TestPerfActionDetection(PerfTestBase):
+    """Benchmark action detection."""
 
     MODEL_TEST_CASES = [  # noqa: RUF012
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_efficientnetb2b_tile", category="speed"),
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_r50_tile", category="accuracy"),
-        Benchmark.Model(task="instance_segmentation", name="maskrcnn_swint_tile", category="other"),
+        Benchmark.Model(task="action/action_detection", name="x3d_fastrcnn", category="accuracy"),
     ]
 
-    DATASET_TEST_CASES = [
+    DATASET_TEST_CASES = [  # noqa: RUF012
         Benchmark.Dataset(
-            name=f"vitens_aeromonas_small_{idx}",
-            path=Path("tiling_instance_seg/vitens_aeromonas_small") / f"{idx}",
+            name="ucf-5percent-small",
+            path=Path("action/action_detection/UCF101_ava_5percent"),
             group="small",
             num_repeat=5,
             extra_overrides={
                 "train": {
+                    "max_epochs": "3",
                     "deterministic": "True",
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                    "callback_monitor": "val/f1-score",
-                    "model.scheduler.monitor": "val/f1-score",
-                },
-                "test": {
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
             },
-        )
-        for idx in (1, 2, 3)
-    ] + [
+        ),
         Benchmark.Dataset(
-            name="vitens_aeromonas_medium",
-            path=Path("tiling_instance_seg/vitens_aeromonas_medium"),
+            name="ucf-30percent-medium",
+            path=Path("action/action_detection/UCF101_ava_30percent"),
             group="medium",
             num_repeat=5,
             extra_overrides={
                 "train": {
+                    "max_epochs": "3",
                     "deterministic": "True",
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
-                    "callback_monitor": "val/f1-score",
-                    "model.scheduler.monitor": "val/f1-score",
-                },
-                "test": {
-                    "metric": "otx.core.metrics.fmeasure.FMeasureCallable",
                 },
             },
         ),
-        # Add large dataset
+        Benchmark.Dataset(
+            name="ucf-large",
+            path=Path("action/action_detection/UCF101_ava"),
+            group="large",
+            num_repeat=5,
+            extra_overrides={
+                "train": {
+                    "max_epochs": "1",
+                    "deterministic": "True",
+                },
+            },
+        ),
     ]
 
     BENCHMARK_CRITERIA = [  # noqa: RUF012
         Benchmark.Criterion(name="train/epoch", summary="max", compare="<", margin=0.1),
         Benchmark.Criterion(name="train/e2e_time", summary="max", compare="<", margin=0.1),
-        Benchmark.Criterion(name="val/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="test/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="export/f1-score", summary="max", compare=">", margin=0.1),
-        Benchmark.Criterion(name="optimize/f1-score", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="test/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="export/map_50", summary="max", compare=">", margin=0.1),
+        Benchmark.Criterion(name="optimize/map_50", summary="max", compare=">", margin=0.1),
         Benchmark.Criterion(name="train/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="test/iter_time", summary="mean", compare="<", margin=0.1),
         Benchmark.Criterion(name="export/iter_time", summary="mean", compare="<", margin=0.1),
