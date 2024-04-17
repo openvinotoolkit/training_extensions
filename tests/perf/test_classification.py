@@ -180,10 +180,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             path=Path("hlabel_classification/hlabel_CUB_small") / f"{idx}",
             group="small",
             num_repeat=5,
-            extra_overrides={
-                "model.num_multiclass_heads": "3",
-                "model.num_multilabel_classes": "0",
-            },
+            extra_overrides={},
         )
         for idx in (1, 2, 3)
     ] + [
@@ -192,10 +189,7 @@ class TestPerfHierarchicalLabelClassification(PerfTestBase):
             path=Path("hlabel_classification/hlabel_CUB_medium"),
             group="medium",
             num_repeat=5,
-            extra_overrides={
-                "model.num_multiclass_heads": "23",
-                "model.num_multilabel_classes": "0",
-            },
+            extra_overrides={},
         ),
         # Add large dataset
     ]
