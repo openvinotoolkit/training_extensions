@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Sequence, TypeVar
+from typing import TYPE_CHECKING, Generic, Sequence
 
 from otx.core.types.task import OTXTaskType
 
@@ -18,12 +18,6 @@ if TYPE_CHECKING:
     from datumaro import Polygon
     from torch import LongTensor
     from torchvision import tv_tensors
-
-
-T_OTXTileBatchDataEntity = TypeVar(
-    "T_OTXTileBatchDataEntity",
-    bound="OTXTileBatchDataEntity",
-)
 
 
 @dataclass
@@ -66,6 +60,9 @@ class TileDetDataEntity(TileDataEntity):
         return OTXTaskType.DETECTION
 
 
+TileAttrDictList = list[dict[str, int | str]]
+
+
 @dataclass
 class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
     """Base batch data entity for tile task.
@@ -82,10 +79,10 @@ class OTXTileBatchDataEntity(Generic[T_OTXBatchDataEntity]):
     batch_size: int
     batch_tiles: list[list[tv_tensors.Image]]
     batch_tile_img_infos: list[list[ImageInfo]]
-    batch_tile_attr_list: list[list[dict[str, int | str]]]
+    batch_tile_attr_list: list[TileAttrDictList]
     imgs_info: list[ImageInfo]
 
-    def unbind(self) -> list[T_OTXBatchDataEntity]:
+    def unbind(self) -> list[tuple[TileAttrDictList, T_OTXBatchDataEntity]]:
         """Unbind batch data entity."""
         raise NotImplementedError
 
@@ -102,7 +99,7 @@ class TileBatchDetDataEntity(OTXTileBatchDataEntity):
     bboxes: list[tv_tensors.BoundingBoxes]
     labels: list[LongTensor]
 
-    def unbind(self) -> list[tuple[list[dict[str, int | str]], DetBatchDataEntity]]:
+    def unbind(self) -> list[tuple[TileAttrDictList, DetBatchDataEntity]]:
         """Unbind batch data entity for detection task."""
         tiles = [tile for tiles in self.batch_tiles for tile in tiles]
         tile_infos = [tile_info for tile_infos in self.batch_tile_img_infos for tile_info in tile_infos]
@@ -194,7 +191,7 @@ class TileBatchInstSegDataEntity(OTXTileBatchDataEntity):
     masks: list[tv_tensors.Mask]
     polygons: list[list[Polygon]]
 
-    def unbind(self) -> list[tuple[list[dict[str, int | str]], InstanceSegBatchDataEntity]]:
+    def unbind(self) -> list[tuple[TileAttrDictList, InstanceSegBatchDataEntity]]:
         """Unbind batch data entity for instance segmentation task."""
         tiles = [tile for tiles in self.batch_tiles for tile in tiles]
         tile_infos = [tile_info for tile_infos in self.batch_tile_img_infos for tile_info in tile_infos]
