@@ -97,7 +97,6 @@ def _extract_class_mask(item: DatasetItem, img_shape: tuple[int, int], ignore_in
         raise ValueError(msg, ignore_index)
 
     class_mask = np.full(shape=img_shape[:2], fill_value=ignore_index, dtype=np.uint8)
-
     for mask in sorted(
         [ann for ann in item.annotations if isinstance(ann, Mask)],
         key=lambda ann: ann.z_order,

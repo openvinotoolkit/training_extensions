@@ -5,5 +5,6 @@
 
 from .dinov2 import DinoVisionTransformer
 from .litehrnet import LiteHRNet
+from .mscan import MSCAN
 
-__all__ = ["LiteHRNet", "DinoVisionTransformer"]
+__all__ = ["LiteHRNet", "DinoVisionTransformer", "MSCAN"]

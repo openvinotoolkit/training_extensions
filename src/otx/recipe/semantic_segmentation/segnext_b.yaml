@@ -2,7 +2,7 @@ model:
   class_path: otx.algo.segmentation.segnext.SegNext
   init_args:
     num_classes: 2
-    variant: b
+    checkpoint: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_b_20230227-3ab7d230.pth
 
     optimizer:
       class_path: torch.optim.AdamW
