@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 from mmengine.registry import MODELS
 from torch import Tensor, nn
 from torch.cuda.amp import custom_fwd
@@ -40,7 +40,7 @@ def cross_sigmoid_focal_loss(
         calculate_loss_func = sigmoid_focal_loss
     else:
         inputs_size = inputs.size(1)
-        targets = F.one_hot(targets, num_classes=inputs_size + 1)
+        targets = torch.nn.functional.one_hot(targets, num_classes=inputs_size + 1)
         targets = targets[:, :inputs_size]
         calculate_loss_func = py_sigmoid_focal_loss
 

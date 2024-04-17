@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 from mmcv.cnn import ConvModule
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS
@@ -172,10 +172,14 @@ class FPN(BaseModule):
             #  it cannot co-exist with `size` in `F.interpolate`.
             if "scale_factor" in self.upsample_cfg:
                 # fix runtime error of "+=" inplace operation in PyTorch 1.10
-                laterals[i - 1] = laterals[i - 1] + F.interpolate(laterals[i], **self.upsample_cfg)
+                laterals[i - 1] = laterals[i - 1] + torch.nn.functional.interpolate(laterals[i], **self.upsample_cfg)
             else:
                 prev_shape = laterals[i - 1].shape[2:]
-                laterals[i - 1] = laterals[i - 1] + F.interpolate(laterals[i], size=prev_shape, **self.upsample_cfg)
+                laterals[i - 1] = laterals[i - 1] + torch.nn.functional.interpolate(
+                    laterals[i],
+                    size=prev_shape,
+                    **self.upsample_cfg,
+                )
 
         # build outputs
         # part 1: from original levels
@@ -185,5 +189,5 @@ class FPN(BaseModule):
             # use max pool to get more levels on top of outputs
             # (e.g., Faster R-CNN, Mask R-CNN)
             for _ in range(self.num_outs - used_backbone_levels):
-                outs.append(F.max_pool2d(outs[-1], 1, stride=2))
+                outs.append(torch.nn.functional.max_pool2d(outs[-1], 1, stride=2))
         return tuple(outs)

@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 
 # TODO(Eugene): replace mmcv.sigmoid_focal_loss with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
@@ -54,7 +54,7 @@ def py_sigmoid_focal_loss(
     pt = (1 - pred_sigmoid) * target + pred_sigmoid * (1 - target)
     # Thus it's pt.pow(gamma) rather than (1 - pt).pow(gamma)
     focal_weight = (alpha * target + (1 - alpha) * (1 - target)) * pt.pow(gamma)
-    loss = F.binary_cross_entropy_with_logits(pred, target, reduction="none") * focal_weight
+    loss = torch.nn.functional.binary_cross_entropy_with_logits(pred, target, reduction="none") * focal_weight
     if weight is not None:
         if weight.shape != loss.shape:
             if weight.size(0) == loss.size(0):

@@ -11,7 +11,7 @@ import functools
 from typing import Callable
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 from torch import Tensor
 
 
@@ -25,7 +25,7 @@ def reduce_loss(loss: Tensor, reduction: str) -> Tensor:
     Return:
         Tensor: Reduced loss tensor.
     """
-    reduction_enum = F._Reduction.get_enum(reduction)  # noqa: SLF001
+    reduction_enum = torch.nn.functional._Reduction.get_enum(reduction)  # noqa: SLF001
     # none: 0, elementwise_mean:1, sum: 2
     if reduction_enum == 0:
         return loss

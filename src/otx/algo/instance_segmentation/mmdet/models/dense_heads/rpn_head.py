@@ -11,7 +11,7 @@ import copy
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 
 # TODO(Eugene): replace mmcv.ConvModule with torchvision
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
@@ -98,7 +98,7 @@ class RPNHead(AnchorHead):
                     level, the channels number is num_base_priors * 4.
         """
         x = self.rpn_conv(x)
-        x = F.relu(x)
+        x = torch.nn.functional.relu(x)
         rpn_cls_score = self.rpn_cls(x)
         rpn_bbox_pred = self.rpn_reg(x)
         return rpn_cls_score, rpn_bbox_pred

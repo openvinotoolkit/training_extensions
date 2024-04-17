@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 
 # TODO(Eugene): replace mmcv with generic PyTorch modules
 # https://github.com/openvinotoolkit/training_extensions/pull/3281
@@ -443,7 +443,7 @@ def _do_paste_mask(masks: Tensor, boxes: Tensor, img_h: int, img_w: int, skip_em
     gy = img_y[:, :, None].expand(num_preds, img_y.size(1), img_x.size(1))
     grid = torch.stack([gx, gy], dim=3)
 
-    img_masks = F.grid_sample(masks.to(dtype=torch.float32), grid, align_corners=False)
+    img_masks = torch.nn.functional.grid_sample(masks.to(dtype=torch.float32), grid, align_corners=False)
 
     if skip_empty:
         return img_masks[:, 0], (slice(y0_int, y1_int), slice(x0_int, x1_int))

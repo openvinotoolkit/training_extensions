@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional
 from mmengine.model import BaseModule
 from mmengine.registry import MODELS, TASK_UTILS
 from mmengine.structures import InstanceData
@@ -276,7 +276,7 @@ class BBoxHead(BaseModule):
                 score_per_cls=rcnn_test_cfg is None,
             )[0]
 
-        scores = F.softmax(cls_score, dim=-1) if cls_score is not None else None
+        scores = torch.nn.functional.softmax(cls_score, dim=-1) if cls_score is not None else None
 
         img_shape = img_meta["img_shape"]
         num_rois = roi.size(0)
