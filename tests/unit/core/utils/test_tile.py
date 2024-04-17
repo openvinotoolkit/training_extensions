@@ -24,7 +24,7 @@ def test_tile_transform_consistency(mocker):
     dm_image = Image.from_numpy(np_image)
 
     mock_model = MagicMock(spec=Model)
-    mocker.patch("openvino.model_api.tilers.tiler.Tiler.__init__", return_value=None)
+    mocker.patch("model_api.tilers.tiler.Tiler.__init__", return_value=None)
     mocker.patch.multiple(Tiler, __abstractmethods__=set())
 
     tiler = Tiler(model=mock_model)

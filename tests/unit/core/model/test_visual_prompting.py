@@ -276,10 +276,10 @@ class TestOVVisualPromptingModel:
     def set_ov_visual_prompting_model(self, mocker, tmpdir):
         def ov_visual_prompting_model(for_create_model: bool = False) -> OVVisualPromptingModel:
             if for_create_model:
-                mocker.patch("openvino.model_api.adapters.create_core")
-                mocker.patch("openvino.model_api.adapters.get_user_config")
-                mocker.patch("openvino.model_api.adapters.OpenvinoAdapter")
-                mocker.patch("openvino.model_api.models.Model.create_model")
+                mocker.patch("model_api.adapters.create_core")
+                mocker.patch("model_api.adapters.get_user_config")
+                mocker.patch("model_api.adapters.OpenvinoAdapter")
+                mocker.patch("model_api.models.Model.create_model")
             else:
                 mocker.patch.object(
                     OVVisualPromptingModel,
