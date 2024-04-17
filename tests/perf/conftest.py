@@ -29,8 +29,8 @@ def pytest_addoption(parser):
         "--model-category",
         action="store",
         default="all",
-        choices=("default", "all"),
-        help="Choose default|all. Defaults to all.",
+        choices=("speed", "balance", "accuracy", "default", "other", "all"),
+        help="Choose speed|balcence|accuracy|default|other|all. Defaults to all.",
     )
     parser.addoption(
         "--data-group",
