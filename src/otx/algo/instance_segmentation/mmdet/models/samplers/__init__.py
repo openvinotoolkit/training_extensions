@@ -7,9 +7,7 @@
 """MMDet samplers."""
 
 from .random_sampler import RandomSampler
-from .sampling_result import SamplingResult
 
 __all__ = [
     "RandomSampler",
-    "SamplingResult",
 ]

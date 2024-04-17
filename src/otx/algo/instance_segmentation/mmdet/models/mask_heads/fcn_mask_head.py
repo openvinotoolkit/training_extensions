@@ -22,7 +22,7 @@ from torch import Tensor, nn
 from torch.nn.modules.utils import _pair
 
 from otx.algo.detection.losses.cross_entropy_loss import CrossEntropyLoss
-from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
+from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     InstanceList,
     OptConfigType,

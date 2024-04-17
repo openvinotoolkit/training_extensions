@@ -13,8 +13,7 @@ import torch
 from mmengine.registry import TASK_UTILS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.models.assigners import AssignResult
-from otx.algo.instance_segmentation.mmdet.models.samplers.sampling_result import SamplingResult
+from otx.algo.detection.utils.structures import AssignResult, SamplingResult
 
 if TYPE_CHECKING:
     from mmengine.structures import InstanceData

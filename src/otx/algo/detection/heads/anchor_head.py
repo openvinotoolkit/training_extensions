@@ -49,7 +49,7 @@ class AnchorHead(BaseDenseHead):
     def __init__(
         self,
         num_classes: int,
-        in_channels: tuple[int, ...],
+        in_channels: tuple[int, ...] | int,
         anchor_generator: dict,
         bbox_coder: dict,
         loss_cls: dict,

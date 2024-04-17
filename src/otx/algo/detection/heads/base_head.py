@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmcv.ops import batched_nms
-from mmengine.model import constant_init
+from mmengine.model import BaseModule, constant_init
 from mmengine.structures import InstanceData
-from torch import Tensor, nn
+from torch import Tensor
 
 from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 # This class and its supporting functions below lightly adapted from the mmdet BaseDenseHead available at:
 # https://github.com/open-mmlab/mmdetection/blob/fe3f809a0a514189baf889aa358c498d51ee36cd/mmdet/models/dense_heads/base_dense_head.py
-class BaseDenseHead(nn.Module):
+class BaseDenseHead(BaseModule):
     """Base class for DenseHeads.
 
     1. The ``init_weights`` method is used to initialize densehead's

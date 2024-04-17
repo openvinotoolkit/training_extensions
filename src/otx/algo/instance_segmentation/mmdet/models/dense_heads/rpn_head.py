@@ -24,12 +24,11 @@ from mmengine.registry import MODELS
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.heads.anchor_head import AnchorHead
 from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     empty_box_as,
     get_box_wh,
 )
-
-from .anchor_head import AnchorHead
 
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
@@ -236,9 +235,9 @@ class RPNHead(AnchorHead):
         self,
         results: InstanceData,
         cfg: ConfigDict,
+        img_meta: dict,
         rescale: bool = False,
         with_nms: bool = True,
-        img_meta: dict | None = None,
     ) -> InstanceData:
         """Bbox post-processing method.
 

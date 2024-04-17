@@ -17,9 +17,9 @@ from otx.algo.detection.heads.class_incremental_mixin import (
     ClassIncrementalMixin,
 )
 from otx.algo.detection.losses import CrossSigmoidFocalLoss, accuracy
+from otx.algo.detection.utils.structures import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from otx.algo.instance_segmentation.mmdet.models.mask_heads.fcn_mask_head import FCNMaskHead
-from otx.algo.instance_segmentation.mmdet.models.samplers import SamplingResult
 from otx.algo.instance_segmentation.mmdet.models.utils import (
     ConfigType,
     InstanceList,
