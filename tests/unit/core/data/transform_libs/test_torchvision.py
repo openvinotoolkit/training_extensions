@@ -9,22 +9,25 @@ from copy import deepcopy
 import numpy as np
 import pytest
 import torch
-from torch import LongTensor, Tensor
-from torchvision import tv_tensors
-
 from otx.core.data.entity.action_classification import ActionClsDataEntity
 from otx.core.data.entity.base import ImageInfo
 from otx.core.data.entity.detection import DetDataEntity
-from otx.core.data.transform_libs.torchvision import (CachedMixUp,
-                                                      CachedMosaic,
-                                                      DecodeVideo,
-                                                      MinIoURandomCrop,
-                                                      PackVideo, Pad,
-                                                      PhotoMetricDistortion,
-                                                      RandomAffine, RandomFlip,
-                                                      Resize,
-                                                      YOLOXHSVRandomAug)
+from otx.core.data.transform_libs.torchvision import (
+    CachedMixUp,
+    CachedMosaic,
+    DecodeVideo,
+    MinIoURandomCrop,
+    PackVideo,
+    Pad,
+    PhotoMetricDistortion,
+    RandomAffine,
+    RandomFlip,
+    Resize,
+    YOLOXHSVRandomAug,
+)
 from otx.core.data.transform_libs.utils import overlap_bboxes
+from torch import LongTensor, Tensor
+from torchvision import tv_tensors
 
 
 class MockFrame:
@@ -99,9 +102,7 @@ class TestMinIoURandomCrop:
         if (mode := min_iou_random_crop.mode) == 1:
             assert torch.equal(results.bboxes, det_data_entity.bboxes)
         else:
-            patch = tv_tensors.wrap(
-                torch.tensor([[0, 0, *results.img_info.img_shape]]),
-                like=results.bboxes)
+            patch = tv_tensors.wrap(torch.tensor([[0, 0, *results.img_info.img_shape]]), like=results.bboxes)
             ious = overlap_bboxes(patch, results.bboxes)
             assert torch.all(ious >= mode)
             assert results.image.shape[-2:] == results.img_info.img_shape
@@ -111,14 +112,14 @@ class TestMinIoURandomCrop:
 class TestResize:
     @pytest.fixture()
     def resize(self) -> Resize:
-        return Resize(scale=(448, 448)) # (112, 224) -> (448, 448)
+        return Resize(scale=(448, 448))  # (112, 224) -> (448, 448)
 
     @pytest.mark.parametrize(
-        ("keep_ratio", "expected"), 
+        ("keep_ratio", "expected"),
         [
-            (True, torch.tensor([[0., 0., 100., 100.]])),
-            (False, torch.tensor([[0., 0., 100., 200.]]))
-        ]
+            (True, torch.tensor([[0.0, 0.0, 100.0, 100.0]])),
+            (False, torch.tensor([[0.0, 0.0, 100.0, 200.0]])),
+        ],
     )
     def test_forward(self, resize, det_data_entity, keep_ratio: bool, expected: Tensor) -> None:
         """Test forward."""
@@ -131,18 +132,18 @@ class TestResize:
         if keep_ratio:
             assert results.image.shape == (3, 224, 448)
             assert results.img_info.img_shape == (224, 448)
-            assert results.img_info.scale_factor == (2., 2.)
+            assert results.img_info.scale_factor == (2.0, 2.0)
         else:
             assert results.image.shape == (3, 448, 448)
             assert results.img_info.img_shape == (448, 448)
-            assert results.img_info.scale_factor == (2., 4.)
+            assert results.img_info.scale_factor == (2.0, 4.0)
 
         assert torch.all(results.bboxes.data == expected)
 
     def test_forward_without_bboxes(self, resize, det_data_entity) -> None:
         """Test forward."""
         resize.keep_ratio = True
-        resize.transform_bbox = False # set `transform_bbox` to False
+        resize.transform_bbox = False  # set `transform_bbox` to False
         det_data_entity.img_info.img_shape = resize.scale
 
         results = resize(deepcopy(det_data_entity))
@@ -150,14 +151,14 @@ class TestResize:
         assert results.img_info.ori_shape == (112, 224)
         assert results.image.shape == (3, 224, 448)
         assert results.img_info.img_shape == (224, 448)
-        assert results.img_info.scale_factor == (2., 2.)
+        assert results.img_info.scale_factor == (2.0, 2.0)
         assert torch.all(results.bboxes.data == det_data_entity.bboxes.data)
 
 
 class TestRandomFlip:
     @pytest.fixture()
     def random_flip(self) -> RandomFlip:
-        return RandomFlip(prob=1.)
+        return RandomFlip(prob=1.0)
 
     def test_forward(self, random_flip, det_data_entity) -> None:
         """Test forward."""
@@ -190,15 +191,15 @@ class TestRandomAffine:
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_translate_ratio(self) -> None:
-        transform = RandomAffine(max_translate_ratio=1.5)
+        RandomAffine(max_translate_ratio=1.5)
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_inverse_order(self) -> None:
-        transform = RandomAffine(scaling_ratio_range=(1.5, 0.5))
+        RandomAffine(scaling_ratio_range=(1.5, 0.5))
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_scaling_ratio_range_zero_value(self) -> None:
-        transform = RandomAffine(scaling_ratio_range=(0, 0.5))
+        RandomAffine(scaling_ratio_range=(0, 0.5))
 
     def test_forward(self, random_affine, det_data_entity) -> None:
         """Test forward."""
@@ -218,11 +219,11 @@ class TestCachedMosaic:
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
-        transform = CachedMosaic(img_scale=640)
+        CachedMosaic(img_scale=640)
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_probability(self) -> None:
-        transform = CachedMosaic(prob=1.5)
+        CachedMosaic(prob=1.5)
 
     def test_forward(self, cached_mosaic, det_data_entity) -> None:
         """Test forward."""
@@ -244,11 +245,11 @@ class TestCachedMixUp:
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_img_scale(self) -> None:
-        transform = CachedMixUp(img_scale=640)
+        CachedMixUp(img_scale=640)
 
     @pytest.mark.xfail(raises=AssertionError)
     def test_init_invalid_probability(self) -> None:
-        transform = CachedMosaic(prob=1.5)
+        CachedMosaic(prob=1.5)
 
     def test_forward(self, cached_mixup, det_data_entity) -> None:
         """Test forward."""
@@ -287,7 +288,6 @@ class TestPad:
 
         assert results.image.shape[-2:] == (200, 250)
 
-
         # test pad img/gt_masks with size_divisor
         transform = Pad(size_divisor=11)
 
@@ -295,14 +295,12 @@ class TestPad:
 
         assert results.image.shape[-2:] == (121, 231)
 
-
         # test pad img/gt_masks with pad_to_square
         transform = Pad(pad_to_square=True)
 
         results = transform(deepcopy(det_data_entity))
 
         assert results.image.shape[-2:] == (224, 224)
-
 
         # test pad img/gt_masks with pad_to_square and size_divisor
         transform = Pad(pad_to_square=True, size_divisor=11)

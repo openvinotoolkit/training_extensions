@@ -8,7 +8,7 @@ from __future__ import annotations
 import copy
 import math
 from inspect import isclass
-from typing import TYPE_CHECKING, Any, Sequence, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 import cv2
 import numpy as np
@@ -24,14 +24,28 @@ from torchvision._utils import sequence_to_str
 from torchvision.transforms.v2 import functional as F  # noqa: N812
 
 from otx.core.data.entity.action_classification import ActionClsDataEntity
-from otx.core.data.entity.base import (Points, _crop_image_info, _pad_image_info,
-                                       _resize_image_info, _resized_crop_image_info)
-from otx.core.data.transform_libs.utils import (_scale_size, cache_randomness, flip_image,
-                                                centers_bboxes, clip_bboxes,
-                                                flip_bboxes, is_inside_bboxes,
-                                                overlap_bboxes, rescale_bboxes,
-                                                rescale_size, to_np_image,
-                                                translate_bboxes, project_bboxes)
+from otx.core.data.entity.base import (
+    Points,
+    _crop_image_info,
+    _pad_image_info,
+    _resize_image_info,
+    _resized_crop_image_info,
+)
+from otx.core.data.transform_libs.utils import (
+    _scale_size,
+    cache_randomness,
+    centers_bboxes,
+    clip_bboxes,
+    flip_bboxes,
+    flip_image,
+    is_inside_bboxes,
+    overlap_bboxes,
+    project_bboxes,
+    rescale_bboxes,
+    rescale_size,
+    to_np_image,
+    translate_bboxes,
+)
 
 if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
@@ -311,10 +325,12 @@ class MinIoURandomCrop(tvt_v2.Transform):
             Default, 50.
     """
 
-    def __init__(self,
-                 min_ious: Sequence[float] = (0.1, 0.3, 0.5, 0.7, 0.9),
-                 min_crop_size: float = 0.3,
-                 bbox_clip_border: bool = True) -> None:
+    def __init__(
+        self,
+        min_ious: Sequence[float] = (0.1, 0.3, 0.5, 0.7, 0.9),
+        min_crop_size: float = 0.3,
+        bbox_clip_border: bool = True,
+    ) -> None:
         super().__init__()
         self.min_ious = min_ious
         self.sample_mode = (1, *min_ious, 0)
@@ -325,8 +341,9 @@ class MinIoURandomCrop(tvt_v2.Transform):
     def _random_mode(self) -> int | float:
         return random.choice(self.sample_mode)
 
-    def forward(self, *inputs: Any) -> Any:
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+        """Forward for MinIoURandomCrop."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         img = to_np_image(inputs.image)
@@ -339,7 +356,7 @@ class MinIoURandomCrop(tvt_v2.Transform):
                 return inputs
 
             min_iou = self.mode
-            for i in range(50):
+            for _ in range(50):
                 new_w = random.uniform(self.min_crop_size * w, w)
                 new_h = random.uniform(self.min_crop_size * h, h)
 
@@ -350,14 +367,13 @@ class MinIoURandomCrop(tvt_v2.Transform):
                 left = random.uniform(w - new_w)
                 top = random.uniform(h - new_h)
 
-                patch = np.array(
-                    (int(left), int(top), int(left + new_w), int(top + new_h)))
+                patch = np.array((int(left), int(top), int(left + new_w), int(top + new_h)))
                 # Line or point crop is not allowed
                 if patch[2] == patch[0] or patch[3] == patch[1]:
                     continue
-                overlaps = overlap_bboxes(
-                    torch.as_tensor(patch.reshape(-1, 4).astype(np.float32)),
-                    boxes).numpy().reshape(-1)
+                overlaps = (
+                    overlap_bboxes(torch.as_tensor(patch.reshape(-1, 4).astype(np.float32)), boxes).numpy().reshape(-1)
+                )
                 if len(overlaps) > 0 and overlaps.min() < min_iou:
                     continue
 
@@ -365,13 +381,14 @@ class MinIoURandomCrop(tvt_v2.Transform):
                 # only adjust boxes and instance masks when the gt is not empty
                 if len(overlaps) > 0:
                     # adjust boxes
-                    def is_center_of_bboxes_in_patch(boxes, patch):
+                    def is_center_of_bboxes_in_patch(boxes: torch.Tensor, patch: np.ndarray) -> np.ndarray:
                         centers = centers_bboxes(boxes).numpy()
-                        mask = ((centers[:, 0] > patch[0]) *
-                                (centers[:, 1] > patch[1]) *
-                                (centers[:, 0] < patch[2]) *
-                                (centers[:, 1] < patch[3]))
-                        return mask
+                        return (
+                            (centers[:, 0] > patch[0])
+                            * (centers[:, 1] > patch[1])
+                            * (centers[:, 0] < patch[2])
+                            * (centers[:, 1] < patch[3])
+                        )
 
                     mask = is_center_of_bboxes_in_patch(boxes, patch)
                     if not mask.any():
@@ -382,29 +399,33 @@ class MinIoURandomCrop(tvt_v2.Transform):
                         bboxes = translate_bboxes(bboxes, [-patch[0], -patch[1]])
                         if self.bbox_clip_border:
                             bboxes = clip_bboxes(bboxes, [patch[3] - patch[1], patch[2] - patch[0]])
-                        inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=(patch[3] - patch[1], patch[2] - patch[0]))
+                        inputs.bboxes = tv_tensors.BoundingBoxes(
+                            bboxes,
+                            format="XYXY",
+                            canvas_size=(patch[3] - patch[1], patch[2] - patch[0]),
+                        )
 
                         # labels
                         if (labels := getattr(inputs, "labels", None)) is not None:
                             inputs.labels = labels[mask]
 
                 # adjust the img no matter whether the gt is empty before crop
-                img = img[patch[1]:patch[3], patch[0]:patch[2]]
+                img = img[patch[1] : patch[3], patch[0] : patch[2]]
                 inputs.image = F.to_image(img)
                 inputs.img_info = _crop_image_info(inputs.img_info, *img.shape[:2])
                 return inputs
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(min_ious={self.min_ious}, '
-        repr_str += f'min_crop_size={self.min_crop_size}, '
-        repr_str += f'bbox_clip_border={self.bbox_clip_border})'
+        repr_str += f"(min_ious={self.min_ious}, "
+        repr_str += f"min_crop_size={self.min_crop_size}, "
+        repr_str += f"bbox_clip_border={self.bbox_clip_border})"
         return repr_str
 
 
 class Resize(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.Resize with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L135-L246
 
     TODO : update masks for instance segmentation
@@ -422,34 +443,33 @@ class Resize(tvt_v2.Transform):
             don't need to clip the gt bboxes in these cases. Defaults to True.
         interpolation (str): Interpolation method for cv2. Defaults to 'bilinear'.
     """
-    cv2_interp_codes = {
-        'nearest': cv2.INTER_NEAREST,
-        'bilinear': cv2.INTER_LINEAR,
-        'bicubic': cv2.INTER_CUBIC,
-        'area': cv2.INTER_AREA,
-        'lanczos': cv2.INTER_LANCZOS4
+
+    cv2_interp_codes: ClassVar = {
+        "nearest": cv2.INTER_NEAREST,
+        "bilinear": cv2.INTER_LINEAR,
+        "bicubic": cv2.INTER_CUBIC,
+        "area": cv2.INTER_AREA,
+        "lanczos": cv2.INTER_LANCZOS4,
     }
 
-    def __init__(self,
-                 scale: int | Sequence[int, int] = None,
-                 scale_factor: float | tuple[float, float] = None,
-                 keep_ratio: bool = False,
-                 clip_object_border: bool = True,
-                 interpolation: str = "bilinear",
-                 transform_bbox: bool = True,
-                 ) -> None:
+    def __init__(
+        self,
+        scale: int | Sequence[int, int] | None = None,
+        scale_factor: float | tuple[float, float] | None = None,
+        keep_ratio: bool = False,
+        clip_object_border: bool = True,
+        interpolation: str = "bilinear",
+        transform_bbox: bool = True,
+    ) -> None:
         super().__init__()
 
-        assert scale is not None or scale_factor is not None, (
-            '`scale` and'
-            '`scale_factor` can not both be `None`')
+        assert scale is not None or scale_factor is not None, "`scale` and`scale_factor` can not both be `None`"  # noqa: S101
         if scale is None:
             self.scale = None
+        elif isinstance(scale, int):
+            self.scale = (scale, scale)
         else:
-            if isinstance(scale, int):
-                self.scale = (scale, scale)
-            else:
-                self.scale = tuple(scale)
+            self.scale = tuple(scale)
 
         self.transform_bbox = transform_bbox
         self.interpolation = interpolation
@@ -460,24 +480,20 @@ class Resize(tvt_v2.Transform):
         elif isinstance(scale_factor, float):
             self.scale_factor = (scale_factor, scale_factor)
         elif isinstance(scale_factor, tuple):
-            assert (len(scale_factor)) == 2
+            assert (len(scale_factor)) == 2  # noqa: S101
             self.scale_factor = scale_factor
         else:
-            raise TypeError(
-                f'expect scale_factor is float or Tuple(float), but'
-                f'get {type(scale_factor)}')
+            msg = f"expect scale_factor is float or Tuple(float), butget {type(scale_factor)}"
+            raise TypeError(msg)
 
     def _resize_img(self, inputs: DetDataEntity) -> tuple[DetDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
-        scale_factor : tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
+        scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
 
             img_shape = img.shape[:2]
-            if self.scale:
-                scale = self.scale
-            else:
-                scale = _scale_size(img_shape[::-1], self.scale_factor)
+            scale = self.scale if self.scale else _scale_size(img_shape[::-1], self.scale_factor)
 
             if self.keep_ratio:
                 scale = rescale_size(img_shape[::-1], scale)
@@ -487,29 +503,30 @@ class Resize(tvt_v2.Transform):
             inputs.image = F.to_image(img)
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-            scale_factor = (scale[0]/img_shape[1], scale[1]/img_shape[0]) # TODO (sungchul): revert to (h, w)
+            scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): revert to (h, w)
         return inputs, scale_factor
 
     def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float] | None) -> DetDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
-            bboxes = rescale_bboxes(bboxes, scale_factor) # TODO (sungchul): revert to (h, w)
+            bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): revert to (h, w)
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
-    def forward(self, *inputs: Any) -> Any:
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
         """Transform function to resize images and bounding boxes.
 
         Args:
             results (dict): Result dict from loading pipeline.
+
         Returns:
             dict: Resized results, 'img', 'gt_bboxes', 'gt_seg_map',
             'scale', 'scale_factor', 'height', 'width', and 'keep_ratio' keys
             are updated in result dict.
         """
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         inputs, scale_factor = self._resize_img(inputs)
@@ -520,17 +537,17 @@ class Resize(tvt_v2.Transform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(scale={self.scale}, '
-        repr_str += f'scale_factor={self.scale_factor}, '
-        repr_str += f'keep_ratio={self.keep_ratio}, '
-        repr_str += f'clip_object_border={self.clip_object_border}), '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f"(scale={self.scale}, "
+        repr_str += f"scale_factor={self.scale_factor}, "
+        repr_str += f"keep_ratio={self.keep_ratio}, "
+        repr_str += f"clip_object_border={self.clip_object_border}), "
+        repr_str += f"interpolation={self.interpolation})"
         return repr_str
 
 
 class RandomFlip(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.RandomFlip with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L496-L596
 
     TODO : update masks for instance segmentation
@@ -562,62 +579,61 @@ class RandomFlip(tvt_v2.Transform):
              corresponding direction. Defaults to 'horizontal'.
     """
 
-    def __init__(self,
-                 prob: float | Iterable[float] | None = None,
-                 direction: str | Sequence[str | None] = 'horizontal') -> None:
+    def __init__(
+        self,
+        prob: float | Iterable[float] | None = None,
+        direction: str | Sequence[str | None] = "horizontal",
+    ) -> None:
         super().__init__()
 
         if isinstance(prob, list):
-            assert all([isinstance(p, float) for p in prob])
-            assert 0 <= sum(prob) <= 1
+            assert all(isinstance(p, float) for p in prob)  # noqa: S101
+            assert 0 <= sum(prob) <= 1  # noqa: S101
         elif isinstance(prob, float):
-            assert 0 <= prob <= 1
+            assert 0 <= prob <= 1  # noqa: S101
         else:
-            raise ValueError(f'probs must be float or list of float, but \
-                              got `{type(prob)}`.')
+            msg = f"probs must be float or list of float, but got `{type(prob)}`."
+            raise TypeError(msg)
         self.prob = prob
 
-        valid_directions = ['horizontal', 'vertical', 'diagonal']
+        valid_directions = ["horizontal", "vertical", "diagonal"]
         if isinstance(direction, str):
-            assert direction in valid_directions
+            assert direction in valid_directions  # noqa: S101
         elif isinstance(direction, list):
-            assert all([isinstance(d, str) for d in direction])
-            assert set(direction).issubset(set(valid_directions))
+            assert all(isinstance(d, str) for d in direction)  # noqa: S101
+            assert set(direction).issubset(set(valid_directions))  # noqa: S101
         else:
-            raise ValueError(f'direction must be either str or list of str, \
-                               but got `{type(direction)}`.')
+            msg = f"direction must be either str or list of str, but got `{type(direction)}`."
+            raise TypeError(msg)
         self.direction = direction
 
         if isinstance(prob, list):
-            assert len(prob) == len(self.direction)
+            assert len(prob) == len(self.direction)  # noqa: S101
 
     @cache_randomness
     def _choose_direction(self) -> str:
-        """Choose the flip direction according to `prob` and `direction`"""
-        if isinstance(self.direction,
-                      Sequence) and not isinstance(self.direction, str):
+        """Choose the flip direction according to `prob` and `direction`."""
+        if isinstance(self.direction, Sequence) and not isinstance(self.direction, str):
             # None means non-flip
-            direction_list: list = list(self.direction) + [None]
+            direction_list: list = [*list(self.direction), None]
         elif isinstance(self.direction, str):
             # None means non-flip
             direction_list = [self.direction, None]
 
         if isinstance(self.prob, list):
             non_prob: float = 1 - sum(self.prob)
-            prob_list = self.prob + [non_prob]
+            prob_list = [*self.prob, non_prob]
         elif isinstance(self.prob, float):
-            non_prob = 1. - self.prob
+            non_prob = 1.0 - self.prob
             # exclude non-flip
             single_ratio = self.prob / (len(direction_list) - 1)
             prob_list = [single_ratio] * (len(direction_list) - 1) + [non_prob]
 
-        cur_dir = np.random.choice(direction_list, p=prob_list)
+        return np.random.choice(direction_list, p=prob_list)
 
-        return cur_dir
-
-    def forward(self, *inputs: Any) -> Any:
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
         """Flip images, bounding boxes, and semantic segmentation map."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         if (cur_dir := self._choose_direction()) is not None:
@@ -636,19 +652,19 @@ class RandomFlip(tvt_v2.Transform):
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(prob={self.prob}, '
-        repr_str += f'direction={self.direction})'
+        repr_str += f"(prob={self.prob}, "
+        repr_str += f"direction={self.direction})"
         return repr_str
 
 
 class PhotoMetricDistortion(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.PhotoMetricDistortion with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L1084-L1210
 
     TODO : update masks for instance segmentation
     TODO : optimize logic to torcivision pipeline
-    
+
     Apply photometric distortion to image sequentially, every transformation
     is applied with a probability of 0.5. The position of random contrast is in
     second or second to last.
@@ -669,11 +685,13 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         hue_delta (int): delta of hue.
     """
 
-    def __init__(self,
-                 brightness_delta: int = 32,
-                 contrast_range: Sequence[int | float] = (0.5, 1.5),
-                 saturation_range: Sequence[int | float] = (0.5, 1.5),
-                 hue_delta: int = 18) -> None:
+    def __init__(
+        self,
+        brightness_delta: int = 32,
+        contrast_range: Sequence[int | float] = (0.5, 1.5),
+        saturation_range: Sequence[int | float] = (0.5, 1.5),
+        hue_delta: int = 18,
+    ) -> None:
         super().__init__()
 
         self.brightness_delta = brightness_delta
@@ -689,19 +707,27 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         saturation_flag = random.randint(2)
         hue_flag = random.randint(2)
         swap_flag = random.randint(2)
-        delta_value = random.uniform(-self.brightness_delta,
-                                     self.brightness_delta)
+        delta_value = random.uniform(-self.brightness_delta, self.brightness_delta)
         alpha_value = random.uniform(self.contrast_lower, self.contrast_upper)
-        saturation_value = random.uniform(self.saturation_lower,
-                                          self.saturation_upper)
+        saturation_value = random.uniform(self.saturation_lower, self.saturation_upper)
         hue_value = random.uniform(-self.hue_delta, self.hue_delta)
         swap_value = random.permutation(3)
 
-        return (mode, brightness_flag, contrast_flag, saturation_flag,
-                hue_flag, swap_flag, delta_value, alpha_value,
-                saturation_value, hue_value, swap_value)
+        return (
+            mode,
+            brightness_flag,
+            contrast_flag,
+            saturation_flag,
+            hue_flag,
+            swap_flag,
+            delta_value,
+            alpha_value,
+            saturation_value,
+            hue_value,
+            swap_value,
+        )
 
-    def forward(self, *inputs: Any) -> Any:
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
         """Transform function to perform photometric distortion on images.
 
         Args:
@@ -710,16 +736,26 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         Returns:
             dict: Result dict with images distorted.
         """
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
             img = img.astype(np.float32)
 
-            (mode, brightness_flag, contrast_flag, saturation_flag, hue_flag,
-            swap_flag, delta_value, alpha_value, saturation_value, hue_value,
-            swap_value) = self._random_flags()
+            (
+                mode,
+                brightness_flag,
+                contrast_flag,
+                saturation_flag,
+                hue_flag,
+                swap_flag,
+                delta_value,
+                alpha_value,
+                saturation_value,
+                hue_value,
+                swap_value,
+            ) = self._random_flags()
 
             # random brightness
             if brightness_flag:
@@ -727,13 +763,12 @@ class PhotoMetricDistortion(tvt_v2.Transform):
 
             # mode == 0 --> do random contrast first
             # mode == 1 --> do random contrast last
-            if mode == 1:
-                if contrast_flag:
-                    img *= alpha_value
+            if mode == 1 and contrast_flag:
+                img *= alpha_value
 
             # TODO (sungchul): OTX consumes RGB images but mmx assumes they are BGR.
             # convert color from BGR to HSV
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) # f32 -> f32
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)  # f32 -> f32
 
             # random saturation
             if saturation_flag:
@@ -750,34 +785,33 @@ class PhotoMetricDistortion(tvt_v2.Transform):
                 img[..., 0][img[..., 0] < 0] += 360
 
             # convert color from HSV to BGR
-            img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR) # f32 -> f32
+            img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)  # f32 -> f32
 
             # random contrast
-            if mode == 0:
-                if contrast_flag:
-                    img *= alpha_value
+            if mode == 0 and contrast_flag:
+                img *= alpha_value
 
             # randomly swap channels
             if swap_flag:
                 img = img[..., swap_value]
 
-            inputs.image = F.to_image(img) # f32
+            inputs.image = F.to_image(img)  # f32
         return inputs
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(brightness_delta={self.brightness_delta}, '
-        repr_str += 'contrast_range='
-        repr_str += f'{(self.contrast_lower, self.contrast_upper)}, '
-        repr_str += 'saturation_range='
-        repr_str += f'{(self.saturation_lower, self.saturation_upper)}, '
-        repr_str += f'hue_delta={self.hue_delta})'
+        repr_str += f"(brightness_delta={self.brightness_delta}, "
+        repr_str += "contrast_range="
+        repr_str += f"{(self.contrast_lower, self.contrast_upper)}, "
+        repr_str += "saturation_range="
+        repr_str += f"{(self.saturation_lower, self.saturation_upper)}, "
+        repr_str += f"hue_delta={self.hue_delta})"
         return repr_str
 
 
 class RandomAffine(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.RandomAffine with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2736-L2901
 
     TODO : update masks for instance segmentation
@@ -803,19 +837,21 @@ class RandomAffine(tvt_v2.Transform):
             need to clip the gt bboxes in these cases. Defaults to True.
     """
 
-    def __init__(self,
-                 max_rotate_degree: float = 10.0,
-                 max_translate_ratio: float = 0.1,
-                 scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
-                 max_shear_degree: float = 2.0,
-                 border: tuple[int, int] = (0, 0),
-                 border_val: tuple[int, int, int] = (114, 114, 114),
-                 bbox_clip_border: bool = True) -> None:
+    def __init__(
+        self,
+        max_rotate_degree: float = 10.0,
+        max_translate_ratio: float = 0.1,
+        scaling_ratio_range: tuple[float, float] = (0.5, 1.5),
+        max_shear_degree: float = 2.0,
+        border: tuple[int, int] = (0, 0),
+        border_val: tuple[int, int, int] = (114, 114, 114),
+        bbox_clip_border: bool = True,
+    ) -> None:
         super().__init__()
 
-        assert 0 <= max_translate_ratio <= 1
-        assert scaling_ratio_range[0] <= scaling_ratio_range[1]
-        assert scaling_ratio_range[0] > 0
+        assert 0 <= max_translate_ratio <= 1  # noqa: S101
+        assert scaling_ratio_range[0] <= scaling_ratio_range[1]  # noqa: S101
+        assert scaling_ratio_range[0] > 0  # noqa: S101
         self.max_rotate_degree = max_rotate_degree
         self.max_translate_ratio = max_translate_ratio
         self.scaling_ratio_range = scaling_ratio_range
@@ -825,37 +861,30 @@ class RandomAffine(tvt_v2.Transform):
         self.bbox_clip_border = bbox_clip_border
 
     @cache_randomness
-    def _get_random_homography_matrix(self, height, width):
+    def _get_random_homography_matrix(self, height: int, width: int) -> np.ndarray:
         # Rotation
-        rotation_degree = random.uniform(-self.max_rotate_degree,
-                                         self.max_rotate_degree)
+        rotation_degree = random.uniform(-self.max_rotate_degree, self.max_rotate_degree)
         rotation_matrix = self._get_rotation_matrix(rotation_degree)
 
         # Scaling
-        scaling_ratio = random.uniform(self.scaling_ratio_range[0],
-                                       self.scaling_ratio_range[1])
+        scaling_ratio = random.uniform(self.scaling_ratio_range[0], self.scaling_ratio_range[1])
         scaling_matrix = self._get_scaling_matrix(scaling_ratio)
 
         # Shear
-        x_degree = random.uniform(-self.max_shear_degree,
-                                  self.max_shear_degree)
-        y_degree = random.uniform(-self.max_shear_degree,
-                                  self.max_shear_degree)
+        x_degree = random.uniform(-self.max_shear_degree, self.max_shear_degree)
+        y_degree = random.uniform(-self.max_shear_degree, self.max_shear_degree)
         shear_matrix = self._get_shear_matrix(x_degree, y_degree)
 
         # Translation
-        trans_x = random.uniform(-self.max_translate_ratio,
-                                 self.max_translate_ratio) * width
-        trans_y = random.uniform(-self.max_translate_ratio,
-                                 self.max_translate_ratio) * height
+        trans_x = random.uniform(-self.max_translate_ratio, self.max_translate_ratio) * width
+        trans_y = random.uniform(-self.max_translate_ratio, self.max_translate_ratio) * height
         translate_matrix = self._get_translation_matrix(trans_x, trans_y)
 
-        warp_matrix = (
-            translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix)
-        return warp_matrix
+        return translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix
 
-    def forward(self, *inputs: Any) -> Any:
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+        """Forward for RandomAffine."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         img = to_np_image(inputs.image)
@@ -864,11 +893,7 @@ class RandomAffine(tvt_v2.Transform):
 
         warp_matrix = self._get_random_homography_matrix(height, width)
 
-        img = cv2.warpPerspective(
-            img,
-            warp_matrix,
-            dsize=(width, height),
-            borderValue=self.border_val)
+        img = cv2.warpPerspective(img, warp_matrix, dsize=(width, height), borderValue=self.border_val)
         inputs.image = F.to_image(img)
         inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
@@ -880,59 +905,51 @@ class RandomAffine(tvt_v2.Transform):
                 bboxes = clip_bboxes(bboxes, [height, width])
             # remove outside bbox
             valid_index = is_inside_bboxes(bboxes, [height, width])
-            inputs.bboxes = tv_tensors.BoundingBoxes(
-                bboxes[valid_index], format="XYXY", canvas_size=(height, width))
+            inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_index], format="XYXY", canvas_size=(height, width))
             inputs.labels = inputs.labels[valid_index]
 
         return inputs
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(max_rotate_degree={self.max_rotate_degree}, '
-        repr_str += f'max_translate_ratio={self.max_translate_ratio}, '
-        repr_str += f'scaling_ratio_range={self.scaling_ratio_range}, '
-        repr_str += f'max_shear_degree={self.max_shear_degree}, '
-        repr_str += f'border={self.border}, '
-        repr_str += f'border_val={self.border_val}, '
-        repr_str += f'bbox_clip_border={self.bbox_clip_border})'
+        repr_str += f"(max_rotate_degree={self.max_rotate_degree}, "
+        repr_str += f"max_translate_ratio={self.max_translate_ratio}, "
+        repr_str += f"scaling_ratio_range={self.scaling_ratio_range}, "
+        repr_str += f"max_shear_degree={self.max_shear_degree}, "
+        repr_str += f"border={self.border}, "
+        repr_str += f"border_val={self.border_val}, "
+        repr_str += f"bbox_clip_border={self.bbox_clip_border})"
         return repr_str
 
     @staticmethod
     def _get_rotation_matrix(rotate_degrees: float) -> np.ndarray:
         radian = math.radians(rotate_degrees)
-        rotation_matrix = np.array(
-            [[np.cos(radian), -np.sin(radian), 0.],
-             [np.sin(radian), np.cos(radian), 0.], [0., 0., 1.]],
-            dtype=np.float32)
-        return rotation_matrix
+        return np.array(
+            [[np.cos(radian), -np.sin(radian), 0.0], [np.sin(radian), np.cos(radian), 0.0], [0.0, 0.0, 1.0]],
+            dtype=np.float32,
+        )
 
     @staticmethod
     def _get_scaling_matrix(scale_ratio: float) -> np.ndarray:
-        scaling_matrix = np.array(
-            [[scale_ratio, 0., 0.], [0., scale_ratio, 0.], [0., 0., 1.]],
-            dtype=np.float32)
-        return scaling_matrix
+        return np.array([[scale_ratio, 0.0, 0.0], [0.0, scale_ratio, 0.0], [0.0, 0.0, 1.0]], dtype=np.float32)
 
     @staticmethod
-    def _get_shear_matrix(x_shear_degrees: float,
-                          y_shear_degrees: float) -> np.ndarray:
+    def _get_shear_matrix(x_shear_degrees: float, y_shear_degrees: float) -> np.ndarray:
         x_radian = math.radians(x_shear_degrees)
         y_radian = math.radians(y_shear_degrees)
-        shear_matrix = np.array([[1, np.tan(x_radian), 0.],
-                                 [np.tan(y_radian), 1, 0.], [0., 0., 1.]],
-                                dtype=np.float32)
-        return shear_matrix
+        return np.array(
+            [[1, np.tan(x_radian), 0.0], [np.tan(y_radian), 1, 0.0], [0.0, 0.0, 1.0]],
+            dtype=np.float32,
+        )
 
     @staticmethod
     def _get_translation_matrix(x: float, y: float) -> np.ndarray:
-        translation_matrix = np.array([[1, 0., x], [0., 1, y], [0., 0., 1.]],
-                                      dtype=np.float32)
-        return translation_matrix
+        return np.array([[1, 0.0, x], [0.0, 1, y], [0.0, 0.0, 1.0]], dtype=np.float32)
 
 
 class CachedMosaic(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.CachedMosaic with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3342-L3573
 
     TODO : update masks for instance segmentation
@@ -959,9 +976,10 @@ class CachedMosaic(tvt_v2.Transform):
             when the cache is full. If set to False, use FIFO popping method.
             Defaults to True.
     """
+
     def __init__(
         self,
-        img_scale: tuple[int, int] | list[int] = (640, 640), # (H, W)
+        img_scale: tuple[int, int] | list[int] = (640, 640),  # (H, W)
         center_ratio_range: tuple[float, float] = (0.5, 1.5),
         bbox_clip_border: bool = True,
         pad_val: float = 114.0,
@@ -969,14 +987,12 @@ class CachedMosaic(tvt_v2.Transform):
         max_cached_images: int = 40,
         random_pop: bool = True,
     ) -> None:
-
         super().__init__()
 
-        assert isinstance(img_scale, (tuple, list))
-        assert 0 <= prob <= 1.0, "The probability should be in range [0,1]. " \
-                                 f"got {prob}."
+        assert isinstance(img_scale, (tuple, list))  # noqa: S101
+        assert 0 <= prob <= 1.0, f"The probability should be in range [0,1]. got {prob}."  # noqa: S101
 
-        self.img_scale = img_scale # (H, W)
+        self.img_scale = img_scale  # (H, W)
         self.center_ratio_range = center_ratio_range
         self.bbox_clip_border = bbox_clip_border
         self.pad_val = pad_val
@@ -984,8 +1000,7 @@ class CachedMosaic(tvt_v2.Transform):
 
         self.results_cache = []
         self.random_pop = random_pop
-        assert max_cached_images >= 4, "The length of cache must >= 4, " \
-                                       f"but got {max_cached_images}."
+        assert max_cached_images >= 4, f"The length of cache must >= 4, but got {max_cached_images}."  # noqa: S101
         self.max_cached_images = max_cached_images
 
         self.cnt_cached_images = 0
@@ -1000,20 +1015,16 @@ class CachedMosaic(tvt_v2.Transform):
         Returns:
             list: indexes.
         """
+        return [random.randint(0, len(cache) - 1) for _ in range(3)]
 
-        indexes = [random.randint(0, len(cache) - 1) for _ in range(3)]
-        return indexes
-
-    def forward(self, *inputs: Any) -> Any:
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+        """Forward for CachedMosaic."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         self.results_cache.append(copy.deepcopy(inputs))
         if len(self.results_cache) > self.max_cached_images:
-            if self.random_pop:
-                index = random.randint(0, len(self.results_cache) - 1)
-            else:
-                index = 0
+            index = random.randint(0, len(self.results_cache) - 1) if self.random_pop else 0
             self.results_cache.pop(index)
 
         if len(self.results_cache) <= 4:
@@ -1025,7 +1036,8 @@ class CachedMosaic(tvt_v2.Transform):
         indices = self.get_indexes(self.results_cache)
         mix_results = [copy.deepcopy(self.results_cache[i]) for i in indices]
 
-        # TODO: refactor mosaic to reuse these code.
+        # TODO (mmdetection): refactor mosaic to reuse these code.
+        # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3465
         mosaic_bboxes = []
         mosaic_bboxes_labels = []
 
@@ -1033,37 +1045,36 @@ class CachedMosaic(tvt_v2.Transform):
             mosaic_img = np.full(
                 (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
                 self.pad_val,
-                dtype=inp_img.dtype)
+                dtype=inp_img.dtype,
+            )
         else:
             mosaic_img = np.full(
                 (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2)),
                 self.pad_val,
-                dtype=inp_img.dtype)
+                dtype=inp_img.dtype,
+            )
 
         # mosaic center x, y
-        center_x = int(
-            random.uniform(*self.center_ratio_range) * self.img_scale[1])
-        center_y = int(
-            random.uniform(*self.center_ratio_range) * self.img_scale[0])
+        center_x = int(random.uniform(*self.center_ratio_range) * self.img_scale[1])
+        center_y = int(random.uniform(*self.center_ratio_range) * self.img_scale[0])
         center_position = (center_x, center_y)
 
         loc_strs = ("top_left", "top_right", "bottom_left", "bottom_right")
         for i, loc in enumerate(loc_strs):
-            if loc == "top_left":
-                results_patch = copy.deepcopy(inputs)
-            else:
-                results_patch = copy.deepcopy(mix_results[i - 1])
+            results_patch = copy.deepcopy(inputs) if loc == "top_left" else copy.deepcopy(mix_results[i - 1])
 
             img_i = to_np_image(results_patch.image)
             h_i, w_i = img_i.shape[:2]
             # keep_ratio resize
-            scale_ratio_i = min(self.img_scale[0] / h_i,
-                                self.img_scale[1] / w_i)
-            img_i = cv2.resize(img_i, (int(w_i * scale_ratio_i), int(h_i * scale_ratio_i)), interpolation=cv2.INTER_LINEAR)
+            scale_ratio_i = min(self.img_scale[0] / h_i, self.img_scale[1] / w_i)
+            img_i = cv2.resize(
+                img_i,
+                (int(w_i * scale_ratio_i), int(h_i * scale_ratio_i)),
+                interpolation=cv2.INTER_LINEAR,
+            )
 
             # compute the combine parameters
-            paste_coord, crop_coord = self._mosaic_combine(
-                loc, center_position, img_i.shape[:2][::-1])
+            paste_coord, crop_coord = self._mosaic_combine(loc, center_position, img_i.shape[:2][::-1])
             x1_p, y1_p, x2_p, y2_p = paste_coord
             x1_c, y1_c, x2_c, y2_c = crop_coord
 
@@ -1094,14 +1105,21 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
         inputs.image = F.to_image(mosaic_img)
-        inputs.img_info = _resized_crop_image_info(inputs.img_info, mosaic_img.shape[:2]) # TODO (sungchul): need to add proper function
+        inputs.img_info = _resized_crop_image_info(
+            inputs.img_info,
+            mosaic_img.shape[:2],
+        )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mosaic_bboxes, format="XYXY", canvas_size=mosaic_img.shape[:2])
         inputs.labels = mosaic_bboxes_labels
         return inputs
 
-    def _mosaic_combine(self, loc: str, center_position_xy: Sequence[float], img_shape_wh: Sequence[int]) -> tuple[tuple[int], tuple[int]]:
-        """Calculate global coordinate of mosaic image and local coordinate of
-        cropped sub-image.
+    def _mosaic_combine(
+        self,
+        loc: str,
+        center_position_xy: Sequence[float],
+        img_shape_wh: Sequence[int],
+    ) -> tuple[tuple[int], tuple[int]]:
+        """Calculate global coordinate of mosaic image and local coordinate of cropped sub-image.
 
         Args:
             loc (str): Index for the sub-image, loc in ("top_left",
@@ -1116,64 +1134,64 @@ class CachedMosaic(tvt_v2.Transform):
                 - paste_coord (tuple): paste corner coordinate in mosaic image.
                 - crop_coord (tuple): crop corner coordinate in mosaic image.
         """
-        assert loc in ("top_left", "top_right", "bottom_left", "bottom_right")
+        assert loc in ("top_left", "top_right", "bottom_left", "bottom_right")  # noqa: S101
         if loc == "top_left":
             # index0 to top left part of image
-            x1, y1, x2, y2 = max(center_position_xy[0] - img_shape_wh[0], 0), \
-                             max(center_position_xy[1] - img_shape_wh[1], 0), \
-                             center_position_xy[0], \
-                             center_position_xy[1]
-            crop_coord = img_shape_wh[0] - (x2 - x1), img_shape_wh[1] - (
-                y2 - y1), img_shape_wh[0], img_shape_wh[1]
+            x1, y1, x2, y2 = (
+                max(center_position_xy[0] - img_shape_wh[0], 0),
+                max(center_position_xy[1] - img_shape_wh[1], 0),
+                center_position_xy[0],
+                center_position_xy[1],
+            )
+            crop_coord = img_shape_wh[0] - (x2 - x1), img_shape_wh[1] - (y2 - y1), img_shape_wh[0], img_shape_wh[1]
 
         elif loc == "top_right":
             # index1 to top right part of image
-            x1, y1, x2, y2 = center_position_xy[0], \
-                             max(center_position_xy[1] - img_shape_wh[1], 0), \
-                             min(center_position_xy[0] + img_shape_wh[0],
-                                 self.img_scale[1] * 2), \
-                             center_position_xy[1]
-            crop_coord = 0, img_shape_wh[1] - (y2 - y1), min(
-                img_shape_wh[0], x2 - x1), img_shape_wh[1]
+            x1, y1, x2, y2 = (
+                center_position_xy[0],
+                max(center_position_xy[1] - img_shape_wh[1], 0),
+                min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
+                center_position_xy[1],
+            )
+            crop_coord = 0, img_shape_wh[1] - (y2 - y1), min(img_shape_wh[0], x2 - x1), img_shape_wh[1]
 
         elif loc == "bottom_left":
             # index2 to bottom left part of image
-            x1, y1, x2, y2 = max(center_position_xy[0] - img_shape_wh[0], 0), \
-                             center_position_xy[1], \
-                             center_position_xy[0], \
-                             min(self.img_scale[0] * 2, center_position_xy[1] +
-                                 img_shape_wh[1])
-            crop_coord = img_shape_wh[0] - (x2 - x1), 0, img_shape_wh[0], min(
-                y2 - y1, img_shape_wh[1])
+            x1, y1, x2, y2 = (
+                max(center_position_xy[0] - img_shape_wh[0], 0),
+                center_position_xy[1],
+                center_position_xy[0],
+                min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+            )
+            crop_coord = img_shape_wh[0] - (x2 - x1), 0, img_shape_wh[0], min(y2 - y1, img_shape_wh[1])
 
         else:
             # index3 to bottom right part of image
-            x1, y1, x2, y2 = center_position_xy[0], \
-                             center_position_xy[1], \
-                             min(center_position_xy[0] + img_shape_wh[0],
-                                 self.img_scale[1] * 2), \
-                             min(self.img_scale[0] * 2, center_position_xy[1] +
-                                 img_shape_wh[1])
-            crop_coord = 0, 0, min(img_shape_wh[0],
-                                   x2 - x1), min(y2 - y1, img_shape_wh[1])
+            x1, y1, x2, y2 = (
+                center_position_xy[0],
+                center_position_xy[1],
+                min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
+                min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+            )
+            crop_coord = 0, 0, min(img_shape_wh[0], x2 - x1), min(y2 - y1, img_shape_wh[1])
 
         paste_coord = x1, y1, x2, y2
         return paste_coord, crop_coord
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(img_scale={self.img_scale}, '
-        repr_str += f'center_ratio_range={self.center_ratio_range}, '
-        repr_str += f'pad_val={self.pad_val}, '
-        repr_str += f'prob={self.prob}, '
-        repr_str += f'max_cached_images={self.max_cached_images}, '
-        repr_str += f'random_pop={self.random_pop})'
+        repr_str += f"(img_scale={self.img_scale}, "
+        repr_str += f"center_ratio_range={self.center_ratio_range}, "
+        repr_str += f"pad_val={self.pad_val}, "
+        repr_str += f"prob={self.prob}, "
+        repr_str += f"max_cached_images={self.max_cached_images}, "
+        repr_str += f"random_pop={self.random_pop})"
         return repr_str
 
 
 class CachedMixUp(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.CachedMixup with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3577-L3854
 
     TODO : update masks for instance segmentation
@@ -1205,24 +1223,24 @@ class CachedMixUp(tvt_v2.Transform):
             Defaults to 1.0.
     """
 
-    def __init__(self,
-                 img_scale: tuple[int, int] | list[int] = (640, 640), # (H, W)
-                 ratio_range: tuple[float, float] = (0.5, 1.5),
-                 flip_ratio: float = 0.5,
-                 pad_val: float = 114.0,
-                 max_iters: int = 15,
-                 bbox_clip_border: bool = True,
-                 max_cached_images: int = 20,
-                 random_pop: bool = True,
-                 prob: float = 1.0) -> None:
+    def __init__(
+        self,
+        img_scale: tuple[int, int] | list[int] = (640, 640),  # (H, W)
+        ratio_range: tuple[float, float] = (0.5, 1.5),
+        flip_ratio: float = 0.5,
+        pad_val: float = 114.0,
+        max_iters: int = 15,
+        bbox_clip_border: bool = True,
+        max_cached_images: int = 20,
+        random_pop: bool = True,
+        prob: float = 1.0,
+    ) -> None:
         super().__init__()
 
-        assert isinstance(img_scale, (tuple, list))
-        assert max_cached_images >= 2, 'The length of cache must >= 2, ' \
-                                       f'but got {max_cached_images}.'
-        assert 0 <= prob <= 1.0, 'The probability should be in range [0,1]. ' \
-                                 f'got {prob}.'
-        self.dynamic_scale = img_scale # (H, W)
+        assert isinstance(img_scale, (tuple, list))  # noqa: S101
+        assert max_cached_images >= 2, f"The length of cache must >= 2, but got {max_cached_images}."  # noqa: S101
+        assert 0 <= prob <= 1.0, f"The probability should be in range [0,1]. got {prob}."  # noqa: S101
+        self.dynamic_scale = img_scale  # (H, W)
         self.ratio_range = ratio_range
         self.flip_ratio = flip_ratio
         self.pad_val = pad_val
@@ -1244,15 +1262,14 @@ class CachedMixUp(tvt_v2.Transform):
         Returns:
             int: index.
         """
-
-        for i in range(self.max_iters):
+        for _ in range(self.max_iters):
             index = random.randint(0, len(cache) - 1)
             gt_bboxes_i = cache[index].bboxes
             if len(gt_bboxes_i) != 0:
                 break
         return index
 
-    def forward(self, *inputs: Any) -> Any:
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
         """MixUp transform function.
 
         Args:
@@ -1262,15 +1279,12 @@ class CachedMixUp(tvt_v2.Transform):
             dict: Updated result dict.
         """
         # cache and pop images
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         self.results_cache.append(copy.deepcopy(inputs))
         if len(self.results_cache) > self.max_cached_images:
-            if self.random_pop:
-                index = random.randint(0, len(self.results_cache) - 1)
-            else:
-                index = 0
+            index = random.randint(0, len(self.results_cache) - 1) if self.random_pop else 0
             self.results_cache.pop(index)
 
         if len(self.results_cache) <= 1:
@@ -1282,7 +1296,8 @@ class CachedMixUp(tvt_v2.Transform):
         index = self.get_indexes(self.results_cache)
         retrieve_results = copy.deepcopy(self.results_cache[index])
 
-        # TODO: refactor mixup to reuse these code.
+        # TODO (mmdetection): refactor mixup to reuse these code.
+        # https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L3721
         if retrieve_results.bboxes.shape[0] == 0:
             # empty bbox
             return inputs
@@ -1293,25 +1308,30 @@ class CachedMixUp(tvt_v2.Transform):
         is_flip = random.uniform(0, 1) > self.flip_ratio
 
         if len(retrieve_img.shape) == 3:
-            out_img = np.ones(
-                (self.dynamic_scale[0], self.dynamic_scale[1], 3),
-                dtype=retrieve_img.dtype) * self.pad_val
+            out_img = (
+                np.ones((self.dynamic_scale[0], self.dynamic_scale[1], 3), dtype=retrieve_img.dtype) * self.pad_val
+            )
         else:
-            out_img = np.ones(
-                self.dynamic_scale,
-                dtype=retrieve_img.dtype) * self.pad_val
+            out_img = np.ones(self.dynamic_scale, dtype=retrieve_img.dtype) * self.pad_val
 
         # 1. keep_ratio resize
-        scale_ratio = min(self.dynamic_scale[0] / retrieve_img.shape[0],
-                          self.dynamic_scale[1] / retrieve_img.shape[1])
-        retrieve_img = cv2.resize(retrieve_img, (int(retrieve_img.shape[1] * scale_ratio), int(retrieve_img.shape[0] * scale_ratio)), interpolation=cv2.INTER_LINEAR)
+        scale_ratio = min(self.dynamic_scale[0] / retrieve_img.shape[0], self.dynamic_scale[1] / retrieve_img.shape[1])
+        retrieve_img = cv2.resize(
+            retrieve_img,
+            (int(retrieve_img.shape[1] * scale_ratio), int(retrieve_img.shape[0] * scale_ratio)),
+            interpolation=cv2.INTER_LINEAR,
+        )
 
         # 2. paste
-        out_img[:retrieve_img.shape[0], :retrieve_img.shape[1]] = retrieve_img
+        out_img[: retrieve_img.shape[0], : retrieve_img.shape[1]] = retrieve_img
 
         # 3. scale jit
         scale_ratio *= jit_factor
-        out_img = cv2.resize(out_img, (int(out_img.shape[1] * jit_factor), int(out_img.shape[0] * jit_factor)), interpolation=cv2.INTER_LINEAR)
+        out_img = cv2.resize(
+            out_img,
+            (int(out_img.shape[1] * jit_factor), int(out_img.shape[0] * jit_factor)),
+            interpolation=cv2.INTER_LINEAR,
+        )
 
         # 4. flip
         if is_flip:
@@ -1329,7 +1349,7 @@ class CachedMixUp(tvt_v2.Transform):
             y_offset = random.randint(0, padded_img.shape[0] - target_h)
         if padded_img.shape[1] > target_w:
             x_offset = random.randint(0, padded_img.shape[1] - target_w)
-        padded_cropped_img = padded_img[y_offset:y_offset + target_h, x_offset:x_offset + target_w]
+        padded_cropped_img = padded_img[y_offset : y_offset + target_h, x_offset : x_offset + target_w]
 
         # 6. adjust bbox
         retrieve_gt_bboxes = retrieve_results.bboxes
@@ -1363,28 +1383,31 @@ class CachedMixUp(tvt_v2.Transform):
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
         inputs.image = F.to_image(mixup_img.astype(np.uint8))
-        inputs.img_info = _resized_crop_image_info(inputs.img_info, mixup_img.shape[:2]) # TODO (sungchul): need to add proper function
+        inputs.img_info = _resized_crop_image_info(
+            inputs.img_info,
+            mixup_img.shape[:2],
+        )  # TODO (sungchul): need to add proper function
         inputs.bboxes = tv_tensors.BoundingBoxes(mixup_gt_bboxes, format="XYXY", canvas_size=mixup_img.shape[:2])
         inputs.labels = mixup_gt_bboxes_labels
         return inputs
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(dynamic_scale={self.dynamic_scale}, '
-        repr_str += f'ratio_range={self.ratio_range}, '
-        repr_str += f'flip_ratio={self.flip_ratio}, '
-        repr_str += f'pad_val={self.pad_val}, '
-        repr_str += f'max_iters={self.max_iters}, '
-        repr_str += f'bbox_clip_border={self.bbox_clip_border}, '
-        repr_str += f'max_cached_images={self.max_cached_images}, '
-        repr_str += f'random_pop={self.random_pop}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f"(dynamic_scale={self.dynamic_scale}, "
+        repr_str += f"ratio_range={self.ratio_range}, "
+        repr_str += f"flip_ratio={self.flip_ratio}, "
+        repr_str += f"pad_val={self.pad_val}, "
+        repr_str += f"max_iters={self.max_iters}, "
+        repr_str += f"bbox_clip_border={self.bbox_clip_border}, "
+        repr_str += f"max_cached_images={self.max_cached_images}, "
+        repr_str += f"random_pop={self.random_pop}, "
+        repr_str += f"prob={self.prob})"
         return repr_str
 
 
 class YOLOXHSVRandomAug(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.YOLOXHSVRandomAug with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L2905-L2961
 
     TODO : update masks for instance segmentation
@@ -1396,29 +1419,28 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         value_delta (int): delat of value. Defaults to 30.
     """
 
-    def __init__(self,
-                 hue_delta: int = 5,
-                 saturation_delta: int = 30,
-                 value_delta: int = 30) -> None:
+    def __init__(self, hue_delta: int = 5, saturation_delta: int = 30, value_delta: int = 30) -> None:
         super().__init__()
-        
+
         self.hue_delta = hue_delta
         self.saturation_delta = saturation_delta
         self.value_delta = value_delta
 
     @cache_randomness
-    def _get_hsv_gains(self):
+    def _get_hsv_gains(self) -> np.ndarray:
         hsv_gains = np.random.uniform(-1, 1, 3) * [
-            self.hue_delta, self.saturation_delta, self.value_delta
+            self.hue_delta,
+            self.saturation_delta,
+            self.value_delta,
         ]
         # random selection of h, s, v
-        hsv_gains *= np.random.randint(0, 2, 3)
+        hsv_gains *= random.randint(0, 2, 3)
         # prevent overflow
-        hsv_gains = hsv_gains.astype(np.int16)
-        return hsv_gains
+        return hsv_gains.astype(np.int16)
 
-    def forward(self, *inputs: Any) -> Any:
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+        """Forward for random hsv transform."""
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
         img = to_np_image(inputs.image)
@@ -1430,21 +1452,21 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         img_hsv[..., 1] = np.clip(img_hsv[..., 1] + hsv_gains[1], 0, 255)
         img_hsv[..., 2] = np.clip(img_hsv[..., 2] + hsv_gains[2], 0, 255)
         cv2.cvtColor(img_hsv.astype(img.dtype), cv2.COLOR_HSV2BGR, dst=img)
-        
+
         inputs.image = F.to_image(img)
         return inputs
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(hue_delta={self.hue_delta}, '
-        repr_str += f'saturation_delta={self.saturation_delta}, '
-        repr_str += f'value_delta={self.value_delta})'
+        repr_str += f"(hue_delta={self.hue_delta}, "
+        repr_str += f"saturation_delta={self.saturation_delta}, "
+        repr_str += f"value_delta={self.value_delta})"
         return repr_str
 
 
 class Pad(tvt_v2.Transform):
     """Implementation of mmdet.datasets.transforms.Pad with torchvision format.
-    
+
     Reference : https://github.com/open-mmlab/mmdetection/blob/v3.2.0/mmdet/datasets/transforms/transforms.py#L705-L784
 
     TODO : update masks for instance segmentation
@@ -1482,44 +1504,44 @@ class Pad(tvt_v2.Transform):
               [2, 1, 1, 2, 3, 4, 4, 3]
     """
 
-    border_type = {
-        'constant': cv2.BORDER_CONSTANT,
-        'edge': cv2.BORDER_REPLICATE,
-        'reflect': cv2.BORDER_REFLECT_101,
-        'symmetric': cv2.BORDER_REFLECT
+    border_type: ClassVar = {
+        "constant": cv2.BORDER_CONSTANT,
+        "edge": cv2.BORDER_REPLICATE,
+        "reflect": cv2.BORDER_REFLECT_101,
+        "symmetric": cv2.BORDER_REFLECT,
     }
 
-    def __init__(self,
-                 size: tuple[int, int] | None = None, # (H, W)
-                 size_divisor: int | None = None,
-                 pad_to_square: bool = False,
-                 pad_val: int | float | dict = dict(img=0, seg=255),
-                 padding_mode: str = 'constant') -> None:
+    def __init__(
+        self,
+        size: tuple[int, int] | None = None,  # (H, W)
+        size_divisor: int | None = None,
+        pad_to_square: bool = False,
+        pad_val: int | float | dict | None = None,
+        padding_mode: str = "constant",
+    ) -> None:
         super().__init__()
 
         self.size = size
         self.size_divisor = size_divisor
+        pad_val = pad_val or {"img": 0, "seg": 255}
         if isinstance(pad_val, int):
-            pad_val = dict(img=pad_val, seg=255)
-        assert isinstance(pad_val, dict), 'pad_val '
+            pad_val = {"img": pad_val, "seg": 255}
+        assert isinstance(pad_val, dict), "pad_val "  # noqa: S101
         self.pad_val = pad_val
         self.pad_to_square = pad_to_square
 
         if pad_to_square:
-            assert size is None, \
-                'The size and size_divisor must be None ' \
-                'when pad2square is True'
+            assert size is None, "The size and size_divisor must be None when pad2square is True"  # noqa: S101
         else:
-            assert size is not None or size_divisor is not None, \
-                'only one of size and size_divisor should be valid'
-            assert size is None or size_divisor is None
-        assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+            assert size is not None or size_divisor is not None, "only one of size and size_divisor should be valid"  # noqa: S101
+            assert size is None or size_divisor is None  # noqa: S101
+        assert padding_mode in ["constant", "edge", "reflect", "symmetric"]  # noqa: S101
         self.padding_mode = padding_mode
 
     def _pad_img(self, inputs: DetDataEntity) -> DetDataEntity:
         """Pad images according to ``self.size``."""
         img = to_np_image(inputs.image)
-        pad_val = self.pad_val.get('img', 0)
+        pad_val = self.pad_val.get("img", 0)
 
         size = None
         if self.pad_to_square:
@@ -1528,10 +1550,8 @@ class Pad(tvt_v2.Transform):
         if self.size_divisor is not None:
             if size is None:
                 size = (img.shape[0], img.shape[1])
-            pad_h = int(np.ceil(
-                size[0] / self.size_divisor)) * self.size_divisor
-            pad_w = int(np.ceil(
-                size[1] / self.size_divisor)) * self.size_divisor
+            pad_h = int(np.ceil(size[0] / self.size_divisor)) * self.size_divisor
+            pad_w = int(np.ceil(size[1] / self.size_divisor)) * self.size_divisor
             size = (pad_h, pad_w)
         elif self.size is not None:
             size = self.size
@@ -1549,20 +1569,20 @@ class Pad(tvt_v2.Transform):
             padding[0],
             padding[2],
             self.border_type[self.padding_mode],
-            value=pad_val)
+            value=pad_val,
+        )
 
         inputs.image = F.to_image(padded_img)
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
         return inputs
 
-    def forward(self, *inputs: Any) -> Any:
+    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
         """Call function to pad images."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."
+        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
         inputs = inputs[0]
 
-        inputs = self._pad_img(inputs)
-        return inputs
-    
+        return self._pad_img(inputs)
+
 
 tvt_v2.PerturbBoundingBoxes = PerturbBoundingBoxes
 tvt_v2.PadtoSquare = PadtoSquare
