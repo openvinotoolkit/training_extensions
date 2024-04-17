@@ -31,8 +31,8 @@ if TYPE_CHECKING:
     from mmdet.models.data_preprocessors import DetDataPreprocessor
     from mmdet.models.detectors import SingleStageDetector
     from mmdet.structures import OptSampleList
-    from omegaconf import DictConfig
     from model_api.models.utils import DetectionResult
+    from omegaconf import DictConfig
     from torch import nn
     from torchmetrics import Metric
 

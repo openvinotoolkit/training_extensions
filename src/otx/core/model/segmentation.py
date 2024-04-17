@@ -23,8 +23,8 @@ from otx.core.utils.config import inplace_num_classes
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmseg.models.data_preprocessor import SegDataPreProcessor
-    from omegaconf import DictConfig
     from model_api.models.utils import ImageResultWithSoftPrediction
+    from omegaconf import DictConfig
     from torch import nn
 
     from otx.core.metrics import MetricCallable

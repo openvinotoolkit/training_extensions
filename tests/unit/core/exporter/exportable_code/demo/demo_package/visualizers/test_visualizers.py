@@ -2,7 +2,6 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from numpy.random import PCG64, Generator
 from model_api.models.utils import (
     ClassificationResult,
     Detection,
@@ -11,6 +10,7 @@ from model_api.models.utils import (
     InstanceSegmentationResult,
     SegmentedObject,
 )
+from numpy.random import PCG64, Generator
 
 
 @pytest.fixture(scope="module", autouse=True)
