@@ -32,7 +32,6 @@ from otx.core.data.entity.base import (
     _resized_crop_image_info,
 )
 from otx.core.data.transform_libs.utils import (
-    _scale_size,
     cache_randomness,
     centers_bboxes,
     clip_bboxes,
@@ -43,6 +42,7 @@ from otx.core.data.transform_libs.utils import (
     project_bboxes,
     rescale_bboxes,
     rescale_size,
+    scale_size,
     to_np_image,
     translate_bboxes,
 )
@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from torchvision.transforms.v2 import Compose
 
     from otx.core.config.data import SubsetConfig
+    from otx.core.data.entity.base import T_OTXDataEntity
     from otx.core.data.entity.detection import DetDataEntity
 
 
@@ -341,10 +342,10 @@ class MinIoURandomCrop(tvt_v2.Transform):
     def _random_mode(self) -> int | float:
         return random.choice(self.sample_mode)
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
         """Forward for MinIoURandomCrop."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         img = to_np_image(inputs.image)
         boxes = inputs.bboxes
@@ -396,9 +397,9 @@ class MinIoURandomCrop(tvt_v2.Transform):
                     if (bboxes := getattr(inputs, "bboxes", None)) is not None:
                         mask = is_center_of_bboxes_in_patch(bboxes, patch)
                         bboxes = bboxes[mask]
-                        bboxes = translate_bboxes(bboxes, [-patch[0], -patch[1]])
+                        bboxes = translate_bboxes(bboxes, (-patch[0], -patch[1]))
                         if self.bbox_clip_border:
-                            bboxes = clip_bboxes(bboxes, [patch[3] - patch[1], patch[2] - patch[0]])
+                            bboxes = clip_bboxes(bboxes, (patch[3] - patch[1], patch[2] - patch[0]))
                         inputs.bboxes = tv_tensors.BoundingBoxes(
                             bboxes,
                             format="XYXY",
@@ -454,7 +455,7 @@ class Resize(tvt_v2.Transform):
 
     def __init__(
         self,
-        scale: int | Sequence[int, int] | None = None,
+        scale: int | tuple[int, int] | None = None,
         scale_factor: float | tuple[float, float] | None = None,
         keep_ratio: bool = False,
         clip_object_border: bool = True,
@@ -464,12 +465,13 @@ class Resize(tvt_v2.Transform):
         super().__init__()
 
         assert scale is not None or scale_factor is not None, "`scale` and`scale_factor` can not both be `None`"  # noqa: S101
+
         if scale is None:
             self.scale = None
         elif isinstance(scale, int):
             self.scale = (scale, scale)
         else:
-            self.scale = tuple(scale)
+            self.scale = tuple(scale)  # type: ignore[assignment]
 
         self.transform_bbox = transform_bbox
         self.interpolation = interpolation
@@ -479,24 +481,23 @@ class Resize(tvt_v2.Transform):
             self.scale_factor = None
         elif isinstance(scale_factor, float):
             self.scale_factor = (scale_factor, scale_factor)
-        elif isinstance(scale_factor, tuple):
-            assert (len(scale_factor)) == 2  # noqa: S101
+        elif isinstance(scale_factor, tuple) and len(scale_factor) == 2:
             self.scale_factor = scale_factor
         else:
             msg = f"expect scale_factor is float or Tuple(float), butget {type(scale_factor)}"
             raise TypeError(msg)
 
-    def _resize_img(self, inputs: DetDataEntity) -> tuple[DetDataEntity, tuple[float, float] | None]:
+    def _resize_img(self, inputs: T_OTXDataEntity) -> tuple[T_OTXDataEntity, tuple[float, float] | None]:
         """Resize images with inputs.img_info.img_shape."""
         scale_factor: tuple[float, float] | None = getattr(inputs.img_info, "scale_factor", None)
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
 
             img_shape = img.shape[:2]
-            scale = self.scale if self.scale else _scale_size(img_shape[::-1], self.scale_factor)
+            scale: tuple[int, int] = self.scale or scale_size(img_shape[::-1], self.scale_factor)  # type: ignore[arg-type]
 
             if self.keep_ratio:
-                scale = rescale_size(img_shape[::-1], scale)
+                scale = rescale_size(img_shape[::-1], scale)  # type: ignore[assignment]
 
             img = cv2.resize(img, scale, interpolation=self.cv2_interp_codes[self.interpolation])
 
@@ -506,7 +507,7 @@ class Resize(tvt_v2.Transform):
             scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): revert to (h, w)
         return inputs, scale_factor
 
-    def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float] | None) -> DetDataEntity:
+    def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float]) -> DetDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
             bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): revert to (h, w)
@@ -515,7 +516,7 @@ class Resize(tvt_v2.Transform):
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
         return inputs
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Transform function to resize images and bounding boxes.
 
         Args:
@@ -526,12 +527,12 @@ class Resize(tvt_v2.Transform):
             'scale', 'scale_factor', 'height', 'width', and 'keep_ratio' keys
             are updated in result dict.
         """
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         inputs, scale_factor = self._resize_img(inputs)
         if self.transform_bbox:
-            inputs = self._resize_bboxes(inputs, scale_factor)
+            inputs = self._resize_bboxes(inputs, scale_factor)  # type: ignore[arg-type, assignment]
 
         return inputs
 
@@ -631,10 +632,10 @@ class RandomFlip(tvt_v2.Transform):
 
         return np.random.choice(direction_list, p=prob_list)
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Flip images, bounding boxes, and semantic segmentation map."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         if (cur_dir := self._choose_direction()) is not None:
             # flip image
@@ -644,7 +645,7 @@ class RandomFlip(tvt_v2.Transform):
             inputs.image = F.to_image(img)
 
             # flip bboxes
-            if (bboxes := getattr(inputs, "bboxes", None)) is not None:
+            if hasattr(inputs, "bboxes") and (bboxes := getattr(inputs, "bboxes", None)) is not None:
                 bboxes = flip_bboxes(bboxes, inputs.img_info.img_shape, direction=cur_dir)
                 inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=img.shape[:2])
 
@@ -727,7 +728,7 @@ class PhotoMetricDistortion(tvt_v2.Transform):
             swap_value,
         )
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Transform function to perform photometric distortion on images.
 
         Args:
@@ -736,8 +737,8 @@ class PhotoMetricDistortion(tvt_v2.Transform):
         Returns:
             dict: Result dict with images distorted.
         """
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         if (img := getattr(inputs, "image", None)) is not None:
             img = to_np_image(img)
@@ -882,10 +883,10 @@ class RandomAffine(tvt_v2.Transform):
 
         return translate_matrix @ shear_matrix @ rotation_matrix @ scaling_matrix
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
         """Forward for RandomAffine."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         img = to_np_image(inputs.image)
         height = img.shape[0] + self.border[1] * 2
@@ -902,9 +903,9 @@ class RandomAffine(tvt_v2.Transform):
         if num_bboxes:
             bboxes = project_bboxes(bboxes, warp_matrix)
             if self.bbox_clip_border:
-                bboxes = clip_bboxes(bboxes, [height, width])
+                bboxes = clip_bboxes(bboxes, (height, width))
             # remove outside bbox
-            valid_index = is_inside_bboxes(bboxes, [height, width])
+            valid_index = is_inside_bboxes(bboxes, (height, width))
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes[valid_index], format="XYXY", canvas_size=(height, width))
             inputs.labels = inputs.labels[valid_index]
 
@@ -998,7 +999,7 @@ class CachedMosaic(tvt_v2.Transform):
         self.pad_val = pad_val
         self.prob = prob
 
-        self.results_cache = []
+        self.results_cache: list[DetDataEntity] = []
         self.random_pop = random_pop
         assert max_cached_images >= 4, f"The length of cache must >= 4, but got {max_cached_images}."  # noqa: S101
         self.max_cached_images = max_cached_images
@@ -1017,10 +1018,10 @@ class CachedMosaic(tvt_v2.Transform):
         """
         return [random.randint(0, len(cache) - 1) for _ in range(3)]
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
         """Forward for CachedMosaic."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         self.results_cache.append(copy.deepcopy(inputs))
         if len(self.results_cache) > self.max_cached_images:
@@ -1087,9 +1088,8 @@ class CachedMosaic(tvt_v2.Transform):
 
             padw = x1_p - x1_c
             padh = y1_p - y1_c
-            # TODO (sungchul): use tv dispatch (private) or below
-            gt_bboxes_i = rescale_bboxes(gt_bboxes_i, [scale_ratio_i, scale_ratio_i])
-            gt_bboxes_i = translate_bboxes(gt_bboxes_i, [padw, padh])
+            gt_bboxes_i = rescale_bboxes(gt_bboxes_i, (scale_ratio_i, scale_ratio_i))
+            gt_bboxes_i = translate_bboxes(gt_bboxes_i, (padw, padh))
             mosaic_bboxes.append(gt_bboxes_i)
             mosaic_bboxes_labels.append(gt_bboxes_labels_i)
 
@@ -1097,10 +1097,10 @@ class CachedMosaic(tvt_v2.Transform):
         mosaic_bboxes_labels = torch.cat(mosaic_bboxes_labels, dim=0)
 
         if self.bbox_clip_border:
-            mosaic_bboxes = clip_bboxes(mosaic_bboxes, [2 * self.img_scale[0], 2 * self.img_scale[1]])
+            mosaic_bboxes = clip_bboxes(mosaic_bboxes, (2 * self.img_scale[0], 2 * self.img_scale[1]))
 
         # remove outside bboxes
-        inside_inds = is_inside_bboxes(mosaic_bboxes, [2 * self.img_scale[0], 2 * self.img_scale[1]]).numpy()
+        inside_inds = is_inside_bboxes(mosaic_bboxes, (2 * self.img_scale[0], 2 * self.img_scale[1])).numpy()
         mosaic_bboxes = mosaic_bboxes[inside_inds]
         mosaic_bboxes_labels = mosaic_bboxes_labels[inside_inds]
 
@@ -1118,7 +1118,7 @@ class CachedMosaic(tvt_v2.Transform):
         loc: str,
         center_position_xy: Sequence[float],
         img_shape_wh: Sequence[int],
-    ) -> tuple[tuple[int], tuple[int]]:
+    ) -> tuple[tuple[int, ...], tuple[int, ...]]:
         """Calculate global coordinate of mosaic image and local coordinate of cropped sub-image.
 
         Args:
@@ -1129,7 +1129,7 @@ class CachedMosaic(tvt_v2.Transform):
             img_shape_wh (Sequence[int]): Width and height of sub-image
 
         Returns:
-            tuple[tuple[float]]: Corresponding coordinate of pasting and
+            tuple[tuple[int]]: Corresponding coordinate of pasting and
                 cropping
                 - paste_coord (tuple): paste corner coordinate in mosaic image.
                 - crop_coord (tuple): crop corner coordinate in mosaic image.
@@ -1137,41 +1137,53 @@ class CachedMosaic(tvt_v2.Transform):
         assert loc in ("top_left", "top_right", "bottom_left", "bottom_right")  # noqa: S101
         if loc == "top_left":
             # index0 to top left part of image
-            x1, y1, x2, y2 = (
-                max(center_position_xy[0] - img_shape_wh[0], 0),
-                max(center_position_xy[1] - img_shape_wh[1], 0),
-                center_position_xy[0],
-                center_position_xy[1],
+            x1, y1, x2, y2 = map(
+                int,
+                (
+                    max(center_position_xy[0] - img_shape_wh[0], 0),
+                    max(center_position_xy[1] - img_shape_wh[1], 0),
+                    center_position_xy[0],
+                    center_position_xy[1],
+                ),
             )
             crop_coord = img_shape_wh[0] - (x2 - x1), img_shape_wh[1] - (y2 - y1), img_shape_wh[0], img_shape_wh[1]
 
         elif loc == "top_right":
             # index1 to top right part of image
-            x1, y1, x2, y2 = (
-                center_position_xy[0],
-                max(center_position_xy[1] - img_shape_wh[1], 0),
-                min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
-                center_position_xy[1],
+            x1, y1, x2, y2 = map(
+                int,
+                (
+                    center_position_xy[0],
+                    max(center_position_xy[1] - img_shape_wh[1], 0),
+                    min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
+                    center_position_xy[1],
+                ),
             )
             crop_coord = 0, img_shape_wh[1] - (y2 - y1), min(img_shape_wh[0], x2 - x1), img_shape_wh[1]
 
         elif loc == "bottom_left":
             # index2 to bottom left part of image
-            x1, y1, x2, y2 = (
-                max(center_position_xy[0] - img_shape_wh[0], 0),
-                center_position_xy[1],
-                center_position_xy[0],
-                min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+            x1, y1, x2, y2 = map(
+                int,
+                (
+                    max(center_position_xy[0] - img_shape_wh[0], 0),
+                    center_position_xy[1],
+                    center_position_xy[0],
+                    min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+                ),
             )
             crop_coord = img_shape_wh[0] - (x2 - x1), 0, img_shape_wh[0], min(y2 - y1, img_shape_wh[1])
 
         else:
             # index3 to bottom right part of image
-            x1, y1, x2, y2 = (
-                center_position_xy[0],
-                center_position_xy[1],
-                min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
-                min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+            x1, y1, x2, y2 = map(
+                int,
+                (
+                    center_position_xy[0],
+                    center_position_xy[1],
+                    min(center_position_xy[0] + img_shape_wh[0], self.img_scale[1] * 2),
+                    min(self.img_scale[0] * 2, center_position_xy[1] + img_shape_wh[1]),
+                ),
             )
             crop_coord = 0, 0, min(img_shape_wh[0], x2 - x1), min(y2 - y1, img_shape_wh[1])
 
@@ -1246,7 +1258,7 @@ class CachedMixUp(tvt_v2.Transform):
         self.pad_val = pad_val
         self.max_iters = max_iters
         self.bbox_clip_border = bbox_clip_border
-        self.results_cache = []
+        self.results_cache: list[DetDataEntity] = []
 
         self.max_cached_images = max_cached_images
         self.random_pop = random_pop
@@ -1269,7 +1281,7 @@ class CachedMixUp(tvt_v2.Transform):
                 break
         return index
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: DetDataEntity) -> DetDataEntity:
         """MixUp transform function.
 
         Args:
@@ -1279,8 +1291,8 @@ class CachedMixUp(tvt_v2.Transform):
             dict: Updated result dict.
         """
         # cache and pop images
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         self.results_cache.append(copy.deepcopy(inputs))
         if len(self.results_cache) > self.max_cached_images:
@@ -1353,20 +1365,20 @@ class CachedMixUp(tvt_v2.Transform):
 
         # 6. adjust bbox
         retrieve_gt_bboxes = retrieve_results.bboxes
-        retrieve_gt_bboxes = rescale_bboxes(retrieve_gt_bboxes, [scale_ratio, scale_ratio])
+        retrieve_gt_bboxes = rescale_bboxes(retrieve_gt_bboxes, (scale_ratio, scale_ratio))
 
         if self.bbox_clip_border:
-            retrieve_gt_bboxes = clip_bboxes(retrieve_gt_bboxes, [origin_h, origin_w])
+            retrieve_gt_bboxes = clip_bboxes(retrieve_gt_bboxes, (origin_h, origin_w))
 
         if is_flip:
-            retrieve_gt_bboxes = flip_bboxes(retrieve_gt_bboxes, [origin_h, origin_w], direction="horizontal")
+            retrieve_gt_bboxes = flip_bboxes(retrieve_gt_bboxes, (origin_h, origin_w), direction="horizontal")
 
         # 7. filter
         cp_retrieve_gt_bboxes = retrieve_gt_bboxes.clone()
-        cp_retrieve_gt_bboxes = translate_bboxes(cp_retrieve_gt_bboxes, [-x_offset, -y_offset])
+        cp_retrieve_gt_bboxes = translate_bboxes(cp_retrieve_gt_bboxes, (-x_offset, -y_offset))
 
         if self.bbox_clip_border:
-            cp_retrieve_gt_bboxes = clip_bboxes(cp_retrieve_gt_bboxes, [target_h, target_w])
+            cp_retrieve_gt_bboxes = clip_bboxes(cp_retrieve_gt_bboxes, (target_h, target_w))
 
         # 8. mix up
         ori_img = ori_img.astype(np.float32)
@@ -1378,7 +1390,7 @@ class CachedMixUp(tvt_v2.Transform):
         mixup_gt_bboxes_labels = torch.cat((inputs.labels, retrieve_gt_bboxes_labels), dim=0)
 
         # remove outside bbox
-        inside_inds = is_inside_bboxes(mixup_gt_bboxes, [target_h, target_w])
+        inside_inds = is_inside_bboxes(mixup_gt_bboxes, (target_h, target_w))
         mixup_gt_bboxes = mixup_gt_bboxes[inside_inds]
         mixup_gt_bboxes_labels = mixup_gt_bboxes_labels[inside_inds]
 
@@ -1438,10 +1450,10 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
         # prevent overflow
         return hsv_gains.astype(np.int16)
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Forward for random hsv transform."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         img = to_np_image(inputs.image)
         hsv_gains = self._get_hsv_gains()
@@ -1538,23 +1550,25 @@ class Pad(tvt_v2.Transform):
         assert padding_mode in ["constant", "edge", "reflect", "symmetric"]  # noqa: S101
         self.padding_mode = padding_mode
 
-    def _pad_img(self, inputs: DetDataEntity) -> DetDataEntity:
+    def _pad_img(self, inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Pad images according to ``self.size``."""
         img = to_np_image(inputs.image)
         pad_val = self.pad_val.get("img", 0)
 
-        size = None
+        size: tuple[int, int]
         if self.pad_to_square:
             max_size = max(img.shape[:2])
             size = (max_size, max_size)
+
         if self.size_divisor is not None:
-            if size is None:
+            if not self.pad_to_square:
                 size = (img.shape[0], img.shape[1])
             pad_h = int(np.ceil(size[0] / self.size_divisor)) * self.size_divisor
             pad_w = int(np.ceil(size[1] / self.size_divisor)) * self.size_divisor
             size = (pad_h, pad_w)
         elif self.size is not None:
             size = self.size
+
         if isinstance(pad_val, int) and img.ndim == 3:
             pad_val = tuple(pad_val for _ in range(img.shape[2]))
 
@@ -1576,10 +1590,10 @@ class Pad(tvt_v2.Transform):
         inputs.img_info = _pad_image_info(inputs.img_info, padding)
         return inputs
 
-    def forward(self, *inputs: Any) -> Any:  # noqa: ANN401
+    def forward(self, *_inputs: T_OTXDataEntity) -> T_OTXDataEntity:
         """Call function to pad images."""
-        assert len(inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
-        inputs = inputs[0]
+        assert len(_inputs) == 1, "[tmp] Multiple entity is not supported yet."  # noqa: S101
+        inputs = _inputs[0]
 
         return self._pad_img(inputs)
 

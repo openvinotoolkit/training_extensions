@@ -408,7 +408,7 @@ def fp16_clamp(x: Tensor, min: float | None = None, max: float | None = None) ->
     return x.clamp(min, max)
 
 
-def _scale_size(
+def scale_size(
     size: tuple[int, int],
     scale: float | int | tuple[float, float] | tuple[int, int],
 ) -> tuple[int, int]:
@@ -456,7 +456,7 @@ def rescale_size(old_size: tuple, scale: float | int | tuple[int, int], return_s
         msg = f"Scale must be a number or tuple of int, but got {type(scale)}"
         raise TypeError(msg)
 
-    new_size = _scale_size((w, h), scale_factor)
+    new_size = scale_size((w, h), scale_factor)
 
     if return_scale:
         return new_size, scale_factor
