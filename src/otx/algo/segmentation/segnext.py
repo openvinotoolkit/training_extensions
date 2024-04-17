@@ -4,7 +4,7 @@
 """SegNext model implementations."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, List, Dict
 
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
@@ -29,70 +29,49 @@ from otx.core.metrics.dice import SegmCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.schedulers import LRSchedulerListCallable
 from otx.algo.segmentation.backbones import MSCAN
-from otx.algo.segmentation.heads import CustomLightHamHead
-from otx.algo.segmentation.losses import CrossEntropyLossWithIgnore
+# from otx.algo.segmentation.heads import LightHamHead
+from otx.algo.segmentation.losses import create_criterion
+from mmseg.models.decode_heads import LightHamHead
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
 
     from otx.core.metrics import MetricCallable
-if TYPE_CHECKING:
-    from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
-
-    from otx.core.metrics import MetricCallable
 
 
-class _SegNext(nn.Module):
-    def __init__(self,
-                 num_classes,
-                 in_chans=3,
-                 embed_dims=[64, 128, 320, 512],
-                 mlp_ratios=[4, 4, 4, 4],
-                 dropout_ratio=0.1,
-                 drop_path_rate=0.,
-                 depths=[3, 3, 12, 3],
-                 num_stages=4,
-                 norm_cfg=dict(type='SyncBN', requires_grad=True),
-                 in_channels=[128,320,512],
-                 ham_channels=512,
-                 channels=512,
-                 spatial=True,
-                 MD_S=1,   #MD_S
-                 MD_R=64,  #MD_R
-                 train_steps=6,
-                 eval_steps=7,
-                 inv_t=100,
-                 eta=0.9,
-                 ignore_index=255,
-                 checkpoint=None):
+class SegNext(nn.Module):
+    def __init__(
+        self,
+        backbone: MSCAN,
+        decode_head: LightHamHead,
+        criterion_configuration: Dict[str, str | Any] = {"type": "CrossEntropyLoss", "ignore_index": 255},
+        pretrained_weights: str | None = None,
+    ) -> None:
+        """
+        Initializes a SegNext model.
+
+        Args:
+            backbone (MSCAN): The backbone of the model.
+            decode_head (LightHamHead): The decode head of the model.
+            criterion (Dict[str, Union[str, int]]): The criterion of the model.
+                Defaults to {"type": "CrossEntropyLoss", "ignore_index": 255}.
+            pretrained_weights (Optional[str]): The path to the pretrained weights.
+                Defaults to None.
+
+        Returns:
+            None
+        """
         super().__init__()
 
-        self.backbone = MSCAN(in_channels=in_chans, embed_dims=embed_dims, mlp_ratios=mlp_ratios,
-                             drop_rate=dropout_ratio, drop_path_rate=drop_path_rate, depths=depths,
-                             num_stages=num_stages, norm_cfg=norm_cfg)
-        self.decode_head = CustomLightHamHead(in_channels=in_channels, ham_channels=ham_channels, num_classes=num_classes, in_index=[1,2,3], channels=channels, ham_kwargs=dict(MD_S=MD_S, MD_R=MD_R, train_steps=train_steps,
-                                    eval_steps=eval_steps, inv_t=inv_t))
-        self.conv_seg = nn.Sequential(nn.Conv2d(channels, num_classes, kernel_size=1), nn.ReLU(inplace=True))
-        self.criterion = CrossEntropyLossWithIgnore()
+        self.backbone = backbone
+        self.decode_head = decode_head
+        self.criterion = create_criterion(**criterion_configuration)
         self.init_weights()
-        if checkpoint:
-            checkpoint = load_url(checkpoint)
-            # checkpoint = torch.load(checkpoint)
-            self.load_state_dict(checkpoint['state_dict'], strict=False)
-        #self.conv_seg = nn.Conv2d(channels, num_classes, kernel_size=1)
-        if dropout_ratio > 0:
-            self.dropout = nn.Dropout2d(dropout_ratio)
-        else:
-            self.dropout = None
 
-
-    def cls_seg(self, feat):
-        """Classify each pixel."""
-        if self.dropout is not None:
-            feat = self.dropout(feat)
-        outputs = self.conv_seg(feat)
-
-        return outputs
+        if pretrained_weights:
+            # load pretrained weights
+            pretrained_weights = load_url(pretrained_weights)
+            self.load_state_dict(pretrained_weights['state_dict'], strict=False)
 
     def init_weights(self):
         for m in self.modules():
@@ -106,11 +85,9 @@ class _SegNext(nn.Module):
                 fan_out //= m.groups
                 nn.init.normal_(m.weight, std=math.sqrt(2.0/fan_out), mean=0)
 
-
     def forward(self, images, masks):
         enc_feats = self.backbone(images)
         outputs = self.decode_head(enc_feats)
-        # outputs = self.cls_seg(dec_out)  # here output will be B x C x H/8 x W/8
         outputs = F.interpolate(outputs, size=images.size()[-2:], mode='bilinear', align_corners=True)
 
         if self.training:
@@ -119,7 +96,7 @@ class _SegNext(nn.Module):
         return outputs
 
 
-class SegNext(OTXSegmentationModel):
+class OTXSegNext(OTXSegmentationModel):
     """SegNext Model."""
 
     def __init__(
@@ -129,12 +106,16 @@ class SegNext(OTXSegmentationModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = SegmCallable,  # type: ignore[assignment]
         torch_compile: bool = False,
-        checkpoint: str = None,
-        # configuration: dict[str, Any] = {},
+        pretrained_weights: str = None,
+        backbone_configuration: dict[str, Any] = {},
+        decode_head_configuration: dict[str, Any] = {},
+        criterion_configuration: dict[str, Any] = {}
     ) -> None:
         # self.num_classes = num_classes
-        # self.config = configuration
-        self.checkpoint = checkpoint
+        self.backbone_configuration = backbone_configuration
+        self.decode_head_configuration = decode_head_configuration
+        self.criterion_configuration = criterion_configuration
+        self.pretrained_weights = pretrained_weights
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
@@ -144,7 +125,14 @@ class SegNext(OTXSegmentationModel):
         )
 
     def _create_model(self) -> nn.Module:
-        return _SegNext(num_classes=self.num_classes, checkpoint=self.checkpoint)
+        backbone = MSCAN(**self.backbone_configuration)
+        decode_head = LightHamHead(num_classes=self.num_classes, **self.decode_head_configuration)
+        return SegNext(
+            backbone=backbone,
+            decode_head=decode_head,
+            pretrained_weights=self.pretrained_weights,
+            criterion_configuration = self.criterion_configuration
+        )
 
     def _customize_inputs(self, entity: SegBatchDataEntity) -> dict[str, Any]:
         masks = torch.stack(entity.masks).long()
@@ -165,8 +153,8 @@ class SegNext(OTXSegmentationModel):
         masks = []
 
         for output in outputs:
-            masks.append(output)
-        breakpoint()
+            masks.append(output.argmax(dim=0))
+
         return SegBatchPredEntity(
             batch_size=len(outputs),
             images=inputs.images,

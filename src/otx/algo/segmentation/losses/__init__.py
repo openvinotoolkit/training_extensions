@@ -5,4 +5,13 @@
 
 from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
 
-__all__ = ["CrossEntropyLossWithIgnore"]
+__all__ = ["CrossEntropyLossWithIgnore", "create_criterion"]
+
+
+def create_criterion(type: str, **kwargs):
+    from torchvision.ops import focal_loss
+    """Create loss function by name."""
+    if type == "CrossEntropyLoss":
+        return CrossEntropyLossWithIgnore(**kwargs)
+    else:
+        raise NotImplementedError
