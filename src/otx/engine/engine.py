@@ -31,6 +31,8 @@ from otx.core.utils.cache import TrainerArgumentsCache
 from otx.utils.utils import is_xpu_available
 
 from .hpo import execute_hpo, update_hyper_parameter
+from .adaptive_bs.automatic_bs import adapt_batch_size as auto_bs
+from .adaptive_bs.bs_search_algo import _get_max_memory_reserved
 from .utils.auto_configurator import DEFAULT_CONFIG_PER_TASK, AutoConfigurator
 
 if TYPE_CHECKING:
@@ -183,6 +185,7 @@ class Engine:
         run_hpo: bool = False,
         hpo_config: HpoConfig = HpoConfig(),  # noqa: B008 https://github.com/omni-us/jsonargparse/issues/423
         checkpoint: PathLike | None = None,
+        adapt_batch_size: Literal["None", "Safe", "Full"] = "None",
         **kwargs,
     ) -> dict[str, Any]:
         """Trains the model using the provided LightningModule and OTXDataModule.
@@ -262,6 +265,9 @@ class Engine:
         )
         fit_kwargs: dict[str, Any] = {}
 
+        if adapt_batch_size != "None":
+            auto_bs(self.trainer, self.model, self.datamodule, not_increase=(adapt_batch_size!="Full"))
+
         # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
@@ -291,6 +297,8 @@ class Engine:
                 **fit_kwargs,
             )
         self.checkpoint = self.trainer.checkpoint_callback.best_model_path
+
+        print("*"*100, _get_max_memory_reserved())
 
         if not isinstance(self.checkpoint, (Path, str)):
             msg = "self.checkpoint should be Path or str at this time."
