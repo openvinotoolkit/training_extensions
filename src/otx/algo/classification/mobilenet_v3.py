@@ -57,8 +57,8 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
 
     def __init__(
         self,
-        mode: Literal["large", "small"],
         num_classes: int,
+        mode: Literal["large", "small"] = "large",
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -173,8 +173,8 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
 
     def __init__(
         self,
-        mode: Literal["large", "small"],
         num_classes: int,
+        mode: Literal["large", "small"] = "large",
         loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -292,8 +292,8 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
 
     def __init__(
         self,
-        mode: Literal["large", "small"],
         hlabel_info: HLabelInfo,
+        mode: Literal["large", "small"] = "large",
         multiclass_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         multilabel_loss_callable: Callable[[], nn.Module] = nn.CrossEntropyLoss,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
