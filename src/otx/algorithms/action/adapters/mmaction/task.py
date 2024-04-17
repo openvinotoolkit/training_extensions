@@ -19,6 +19,7 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import partial
 from typing import Dict, Optional, Union
 
 import torch
@@ -323,13 +324,12 @@ class MMActionTask(OTXActionTask):
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(
-                train_model,
-                model,
-                datasets,
+                train_func,
                 cfg,
-                cfg.distributed,
-                meta=meta,
+                datasets,
+                validate,
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
