@@ -65,7 +65,7 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-v100-1']"
+      runs-on: "['otx-gpu-v100-1-test']"
       custom-container: true
   # Coverage:
   #   runs-on: [otx-gpu-v100-1]
