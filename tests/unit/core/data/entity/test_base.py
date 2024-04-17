@@ -64,7 +64,7 @@ class TestImageInfo:
         scale_factor = (
             transformed.image.shape[2] / fxt_torchvision_data_entity.image.shape[2],
             transformed.image.shape[1] / fxt_torchvision_data_entity.image.shape[1],
-        )
+        )  # TODO (sungchul): revert to (h, w)
         assert scale_factor == transformed.img_info.scale_factor
 
     @pytest.fixture()
