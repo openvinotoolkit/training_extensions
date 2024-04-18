@@ -54,7 +54,6 @@ class DetectionTaskAPIBase:
                 max_shapes=20,
                 min_size=50,
                 max_size=100,
-                random_seed=None,
             )
             # Convert shapes according to task
             for anno in annos:
