@@ -54,5 +54,9 @@ class TestDecoupleMMDetInstanceSeg:
         predict_result = engine.predict()
         assert len(predict_result) > 0
 
-        # TODO(Eugene): add export IR test
-        # https://github.com/openvinotoolkit/training_extensions/pull/3281
+        # Export IR Model
+        exported_model_path: Path | dict[str, Path] = engine.export()
+        if isinstance(exported_model_path, Path):
+            assert exported_model_path.exists()
+        test_metric_from_ov_model = engine.test(checkpoint=exported_model_path, accelerator="cpu")
+        assert len(test_metric_from_ov_model) > 0
