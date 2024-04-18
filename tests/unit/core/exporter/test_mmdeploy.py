@@ -183,7 +183,7 @@ class TestMMdeployExporter:
 
         assert output_dir / f"{base_model_name}.onnx" == exporter._cvt2onnx(mock_model, output_dir, base_model_name)
         mock_torch.save.assert_called_once()
-        assert mock_torch.save.call_args.args[0] == mock_model.state_dict()
+        assert mock_torch.save.call_args.args[0] == mock_model.model.state_dict()
         mock_use_temporary_default_scope.assert_called_once()
         mock_build_task_processor.assert_called_once()
         mock_torch2onnx.assert_called_once()

@@ -57,20 +57,21 @@ class RTMDet(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        return MMdeployExporter(
-            model_builder=self._create_model,
-            model_cfg=deepcopy(self.config),
-            deploy_cfg="otx.algo.detection.mmdeploy.rtmdet",
-            test_pipeline=self._make_fake_test_pipeline(),
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="fit_to_window_letterbox",
-            pad_value=114,
-            swap_rgb=False,
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
+        with self.export_model_forward_context():
+            return MMdeployExporter(
+                model_builder=self._create_model,
+                model_cfg=deepcopy(self.config),
+                deploy_cfg="otx.algo.detection.mmdeploy.rtmdet",
+                test_pipeline=self._make_fake_test_pipeline(),
+                task_level_export_parameters=self._export_parameters,
+                input_size=self.image_size,
+                mean=mean,
+                std=std,
+                resize_mode="fit_to_window_letterbox",
+                pad_value=114,
+                swap_rgb=False,
+                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            )
 
     def load_from_otx_v1_ckpt(self, state_dict: dict, add_prefix: str = "model.model.") -> dict:
         """Load the previous OTX ckpt according to OTX2.0."""

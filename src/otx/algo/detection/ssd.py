@@ -572,20 +572,21 @@ class SSD(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        return MMdeployExporter(
-            model_builder=self._create_model,
-            model_cfg=deepcopy(self.config),
-            deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
-            test_pipeline=self._make_fake_test_pipeline(),
-            task_level_export_parameters=self._export_parameters,
-            input_size=self.image_size,
-            mean=mean,
-            std=std,
-            resize_mode="standard",
-            pad_value=0,
-            swap_rgb=False,
-            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-        )
+        with self.export_model_forward_context():
+            return MMdeployExporter(
+                model_builder=self._create_model,
+                model_cfg=deepcopy(self.config),
+                deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
+                test_pipeline=self._make_fake_test_pipeline(),
+                task_level_export_parameters=self._export_parameters,
+                input_size=self.image_size,
+                mean=mean,
+                std=std,
+                resize_mode="standard",
+                pad_value=0,
+                swap_rgb=False,
+                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+            )
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""
