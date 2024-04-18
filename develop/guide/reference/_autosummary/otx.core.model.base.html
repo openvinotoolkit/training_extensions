@@ -475,6 +475,12 @@ The latter is a list of lr scheduler configs which has a dictionary format.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.base.OTXModel.forward_for_tracing">
+<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.forward_for_tracing" title="Link to this definition">#</a></dt>
+<dd><p>Model forward function used for the model tracing during model exportation.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.base.OTXModel.forward_tiles">
 <span class="sig-name descname"><span class="pre">forward_tiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OTXTileBatchDataEntity</span><span class="p"><span class="pre">[</span></span><span class="pre">T_OTXBatchDataEntity</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T_OTXBatchPredEntity</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OTXBatchLossEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/base.html#OTXModel.forward_tiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.base.OTXModel.forward_tiles" title="Link to this definition">#</a></dt>
 <dd><p>Model forward function for tile task.</p>
@@ -862,6 +868,15 @@ OVModel supports synchronous as well as asynchronous inference type.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXModel.forward_explain()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.base.OTXModel.forward_for_tracing">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXModel.forward_for_tracing()
       </span>
      </code>
     </a>

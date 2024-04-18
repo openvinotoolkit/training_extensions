@@ -245,7 +245,7 @@
 <span class="kn">import</span> <span class="nn">logging</span> <span class="k">as</span> <span class="nn">log</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
 
 <span class="kn">import</span> <span class="nn">onnx</span>
 <span class="kn">import</span> <span class="nn">openvino</span>
@@ -254,6 +254,9 @@
 <span class="kn">from</span> <span class="nn">otx.core.exporter.native</span> <span class="kn">import</span> <span class="n">OTXNativeModelExporter</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.export</span> <span class="kn">import</span> <span class="n">OTXExportFormatType</span>
 <span class="kn">from</span> <span class="nn">otx.core.types.precision</span> <span class="kn">import</span> <span class="n">OTXPrecisionType</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">otx.core.model.base</span> <span class="kn">import</span> <span class="n">OTXModel</span>
 
 
 <div class="viewcode-block" id="OTXVisualPromptingModelExporter">
@@ -265,7 +268,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.export">[docs]</a>
     <span class="k">def</span> <span class="nf">export</span><span class="p">(</span>  <span class="c1"># type: ignore[override]</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
         <span class="n">export_format</span><span class="p">:</span> <span class="n">OTXExportFormatType</span> <span class="o">=</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">OPENVINO</span><span class="p">,</span>
@@ -274,7 +277,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Exports input model to the specified deployable format, such as OpenVINO IR or ONNX.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            model (torch.nn.Module): pytorch model top export</span>
+<span class="sd">            model (OTXModel): OTXModel to be exported</span>
 <span class="sd">            output_dir (Path): path to the directory to store export artifacts</span>
 <span class="sd">            base_model_name (str, optional): exported model name</span>
 <span class="sd">            format (OTXExportFormatType): final format of the exported model</span>
@@ -283,9 +286,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            dict[str, Path]: paths to the exported models</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># NOTE: Rather than using OTXModel.forward_for_tracing()</span>
+        <span class="c1"># Use the nested `image_encoder` and `decoder` models&#39; forward functions directly</span>
         <span class="n">models</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;image_encoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">,</span>
-            <span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;image_encoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">image_encoder</span><span class="p">,</span>
+            <span class="s2">&quot;decoder&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">export_format</span> <span class="o">==</span> <span class="n">OTXExportFormatType</span><span class="o">.</span><span class="n">OPENVINO</span><span class="p">:</span>
@@ -309,7 +314,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_openvino">[docs]</a>
     <span class="k">def</span> <span class="nf">to_openvino</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
@@ -346,7 +351,7 @@
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.exporter.visual_prompting.html#otx.core.exporter.visual_prompting.OTXVisualPromptingModelExporter.to_onnx">[docs]</a>
     <span class="k">def</span> <span class="nf">to_onnx</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">OTXModel</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">base_model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exported_model&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="p">:</span> <span class="n">OTXPrecisionType</span> <span class="o">=</span> <span class="n">OTXPrecisionType</span><span class="o">.</span><span class="n">FP32</span><span class="p">,</span>
@@ -355,7 +360,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export the given PyTorch model to ONNX format and save it to the specified output directory.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            model (torch.nn.Module): The PyTorch model to be exported.</span>
+<span class="sd">            model (OTXModel): OTXModel to be exported.</span>
 <span class="sd">            output_dir (Path): The directory where the ONNX model will be saved.</span>
 <span class="sd">            base_model_name (str, optional): The base name for the exported model. Defaults to &quot;exported_model&quot;.</span>
 <span class="sd">            precision (OTXPrecisionType, optional): The precision type for the exported model.</span>

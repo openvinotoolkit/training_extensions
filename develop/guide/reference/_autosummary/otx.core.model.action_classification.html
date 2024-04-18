@@ -402,6 +402,12 @@
 <p>It can consume MMAction model configuration translated into OTX configuration
 (please see otx.tools.translate_mmrecipe) and create the OTX Action classification model
 compatible for OTX pipelines.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing">
+<span class="sig-name descname"><span class="pre">forward_for_tracing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/action_classification.html#MMActionCompatibleModel.forward_for_tracing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing" title="Link to this definition">#</a></dt>
+<dd><p>Model forward function used for the model tracing during model exportation.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -480,6 +486,17 @@ and create the OTX classification model compatible for OTX testing pipeline.</p>
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.action_classification.MMActionCompatibleModel.forward_for_tracing">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MMActionCompatibleModel.forward_for_tracing()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.core.model.action_classification.OTXActionClsModel">

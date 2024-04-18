@@ -820,20 +820,21 @@
 
         <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">get_mean_std_from_data_processing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">MMdeployExporter</span><span class="p">(</span>
-            <span class="n">model_builder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">,</span>
-            <span class="n">model_cfg</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
-            <span class="n">deploy_cfg</span><span class="o">=</span><span class="s2">&quot;otx.algo.detection.mmdeploy.ssd_mobilenetv2&quot;</span><span class="p">,</span>
-            <span class="n">test_pipeline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_fake_test_pipeline</span><span class="p">(),</span>
-            <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
-            <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
-            <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
-            <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
-            <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
-            <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">export_model_forward_context</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">MMdeployExporter</span><span class="p">(</span>
+                <span class="n">model_builder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_model</span><span class="p">,</span>
+                <span class="n">model_cfg</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">),</span>
+                <span class="n">deploy_cfg</span><span class="o">=</span><span class="s2">&quot;otx.algo.detection.mmdeploy.ssd_mobilenetv2&quot;</span><span class="p">,</span>
+                <span class="n">test_pipeline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_fake_test_pipeline</span><span class="p">(),</span>
+                <span class="n">task_level_export_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_export_parameters</span><span class="p">,</span>
+                <span class="n">input_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span>
+                <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">,</span>
+                <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+                <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">swap_rgb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">output_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">,</span> <span class="s2">&quot;saliency_map&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_mode</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="SSD.on_load_checkpoint">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.algo.detection.html#otx.algo.detection.SSD.on_load_checkpoint">[docs]</a>

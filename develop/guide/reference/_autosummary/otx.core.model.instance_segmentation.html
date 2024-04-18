@@ -403,6 +403,14 @@
 <dd><p>Bases: <a class="reference internal" href="#otx.core.model.instance_segmentation.OTXInstanceSegModel" title="otx.core.model.instance_segmentation.OTXInstanceSegModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">OTXInstanceSegModel</span></code></a></p>
 <p>OTX Instance Segmentation model which can attach a XAI (Explainable AI) branch.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.export_model_forward_context">
+<span class="sig-name descname"><span class="pre">export_model_forward_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.12)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/instance_segmentation.html#ExplainableOTXInstanceSegModel.export_model_forward_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.export_model_forward_context" title="Link to this definition">#</a></dt>
+<dd><p>A context manager for managing the model’s forward function during model exportation.</p>
+<p>It temporarily modifies the model’s forward function to generate output sinks
+for explain results during the model graph tracing.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">
 <span class="sig-name descname"><span class="pre">forward_explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">InstanceSegBatchDataEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InstanceSegBatchPredEntity</span></span></span><a class="reference internal" href="../../../_modules/otx/core/model/instance_segmentation.html#ExplainableOTXInstanceSegModel.forward_explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain" title="Link to this definition">#</a></dt>
 <dd><p>Model forward function.</p>
@@ -513,6 +521,15 @@ and create the OTX detection model compatible for OTX testing pipeline.</p>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.export_model_forward_context">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExplainableOTXInstanceSegModel.export_model_forward_context()
+      </span>
+     </code>
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.core.model.instance_segmentation.ExplainableOTXInstanceSegModel.forward_explain">
      <code class="docutils literal notranslate">
