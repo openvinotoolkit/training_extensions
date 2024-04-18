@@ -4,32 +4,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
+from otx.core.model.utils.mmdet import create_model
 from otx.core.types.task import OTXTaskType
-from otx.core.utils.build import build_mm_model, get_classification_layers
 from otx.engine import Engine
 from otx.engine.utils.auto_configurator import DEFAULT_CONFIG_PER_TASK
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-    from torch import nn
-
-
-def create_model(config: DictConfig, load_from: str | None) -> tuple[nn.Module, dict[str, dict[str, int]]]:
-    """Create a model from mmengine Model registry.
-
-    Args:
-        config (DictConfig): Model configuration.
-        load_from (str | None): Model weight file path.
-
-    Returns:
-        tuple[nn.Module, dict[str, dict[str, int]]]: Model instance and classification layers.
-    """
-    from mmengine.registry import MODELS
-
-    classification_layers = get_classification_layers(config, MODELS, "model.")
-    return build_mm_model(config, MODELS, load_from), classification_layers
 
 
 class TestDecoupleMMDetInstanceSeg:
