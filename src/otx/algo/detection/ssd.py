@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import numpy as np
 from datumaro.components.annotation import Bbox
 from mmdet.registry import MODELS
+from mmengine.structures import InstanceData
 from torch import nn
 
 from otx.algo.detection.backbones.pytorchcv_backbones import _build_pytorchcv_model
@@ -19,7 +20,7 @@ from otx.algo.detection.heads.custom_ssd_head import SSDHead
 from otx.algo.utils.mmconfig import read_mmconfig
 from otx.algo.utils.support_otx_v1 import OTXv1Helper
 from otx.core.exporter.base import OTXModelExporter
-from otx.core.exporter.mmdeploy import MMdeployExporter
+from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics.mean_ap import MeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.detection import MMDetCompatibleModel
@@ -33,7 +34,6 @@ if TYPE_CHECKING:
     import torch
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from mmengine import ConfigDict
-    from mmengine.structures import InstanceData
     from omegaconf import DictConfig
     from torch import Tensor, device
 
@@ -573,21 +573,32 @@ class SSD(MMDetCompatibleModel):
 
         mean, std = get_mean_std_from_data_processing(self.config)
 
-        with self.export_model_forward_context():
-            return MMdeployExporter(
-                model_builder=self._create_model,
-                model_cfg=deepcopy(self.config),
-                deploy_cfg="otx.algo.detection.mmdeploy.ssd_mobilenetv2",
-                test_pipeline=self._make_fake_test_pipeline(),
-                task_level_export_parameters=self._export_parameters,
-                input_size=self.image_size,
-                mean=mean,
-                std=std,
-                resize_mode="standard",
-                pad_value=0,
-                swap_rgb=False,
-                output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
-            )
+        return OTXNativeModelExporter(
+            task_level_export_parameters=self._export_parameters,
+            input_size=self.image_size,
+            mean=mean,
+            std=std,
+            resize_mode="standard",
+            pad_value=0,
+            swap_rgb=False,
+            via_onnx=False,
+            onnx_export_configuration=None,
+            output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
+        )
+
+    def forward_for_tracing(self, inputs: Tensor) -> list[InstanceData]:
+        """Forward function for export."""
+        meta_info = {
+            "pad_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
+            "batch_input_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
+            "img_shape": (int(inputs.shape[2]), int(inputs.shape[3])),
+            "scale_factor": (1.0, 1.0),
+        }
+        sample = InstanceData(
+            metainfo=meta_info,
+        )
+        data_samples = [sample] * len(inputs)
+        return self.model.forward(inputs, data_samples, mode="predict")
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""
