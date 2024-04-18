@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 from otx.algo.classification.backbones import OTXMobileNetV3
 from otx.algo.classification.classifier.base_classifier import ImageClassifier
@@ -158,14 +158,12 @@ class MobileNetV3ForMulticlassCls(OTXMulticlassClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
@@ -277,14 +275,12 @@ class MobileNetV3ForMultilabelCls(OTXMultilabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
@@ -423,11 +419,9 @@ class MobileNetV3ForHLabelCls(OTXHlabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")

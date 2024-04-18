@@ -266,7 +266,7 @@ class PerturbBoundingBoxes(BaseTransform):
         def get_randomness(length: int) -> int:
             if offset_bbox == 0:
                 return 0
-            return np.random.normal(0, min(length * 0.1, offset_bbox))  # noqa: NPY002
+            return np.random.normal(0, min(length * 0.1, offset_bbox))
 
         x1, y1, x2, y2 = bbox
         return np.array(

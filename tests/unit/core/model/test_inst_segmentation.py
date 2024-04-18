@@ -5,7 +5,7 @@
 
 import pytest
 import torch
-from otx.algo.explain.explain_algo import get_feature_vector
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.algo.instance_segmentation.maskrcnn import MaskRCNN
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
 from otx.core.types.export import TaskLevelExportParameters
@@ -28,7 +28,7 @@ class TestOTXInstanceSegModel:
 
     def test_forward_explain_inst_seg(self, otx_model, fxt_data_sample):
         inputs = torch.randn(1, 3, 224, 224)
-        otx_model.model.feature_vector_fn = get_feature_vector
+        otx_model.model.feature_vector_fn = feature_vector_fn
         otx_model.model.explain_fn = otx_model.get_explain_fn()
         result = otx_model._forward_explain_inst_seg(otx_model.model, inputs, fxt_data_sample, mode="predict")
 

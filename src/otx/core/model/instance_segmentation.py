@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
@@ -16,7 +17,7 @@ from openvino.model_api.models import Model
 from openvino.model_api.tilers import InstanceSegmentationTiler
 from torchvision import tv_tensors
 
-from otx.algo.explain.explain_algo import get_feature_vector
+from otx.algo.explain.explain_algo import feature_vector_fn
 from otx.core.config.data import TileConfig
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.instance_segmentation import InstanceSegBatchDataEntity, InstanceSegBatchPredEntity
@@ -224,9 +225,9 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
             torch_compile=torch_compile,
         )
 
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: InstanceSegBatchDataEntity) -> InstanceSegBatchPredEntity:
@@ -234,7 +235,7 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -295,6 +296,19 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
         explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
+
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
 
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:

@@ -234,6 +234,12 @@ ignore = [
 
     "E731",     # Do not assign a `lambda` expression, use a `def`
     "TD003",    # Missing issue link on the line following this TODO
+
+    # TODO (someone): Update legacy np.random.{method_name} call with np.random.Generator
+    # Legacy (MT19964) and new (PCG64) random generators use different pseudo-random number generators.
+    # (https://numpy.org/doc/stable/reference/random/legacy.html#legacy)
+    # For now, remaining legacy random methods is required until numpy version is explicitly updated in OTX.
+    "NPY002",   # Replace legacy np.random.{method_name} call with np.random.Generator
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
