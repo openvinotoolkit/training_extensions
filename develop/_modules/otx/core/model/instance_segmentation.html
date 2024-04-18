@@ -254,7 +254,7 @@
 <span class="kn">from</span> <span class="nn">openvino.model_api.tilers</span> <span class="kn">import</span> <span class="n">InstanceSegmentationTiler</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">tv_tensors</span>
 
-<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
+<span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
 <span class="kn">from</span> <span class="nn">otx.core.config.data</span> <span class="kn">import</span> <span class="n">TileConfig</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.base</span> <span class="kn">import</span> <span class="n">OTXBatchLossEntity</span>
 <span class="kn">from</span> <span class="nn">otx.core.data.entity.instance_segmentation</span> <span class="kn">import</span> <span class="n">InstanceSegBatchDataEntity</span><span class="p">,</span> <span class="n">InstanceSegBatchPredEntity</span>
@@ -473,9 +473,9 @@
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ExplainableOTXInstanceSegModel.forward_explain">
@@ -485,7 +485,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_tiles</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
         <span class="c1"># If customize_inputs is overridden</span>

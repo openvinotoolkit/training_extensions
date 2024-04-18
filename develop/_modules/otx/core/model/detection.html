@@ -429,6 +429,8 @@
         <span class="n">metric</span><span class="p">:</span> <span class="n">MetricCallable</span> <span class="o">=</span> <span class="n">MeanAPCallable</span><span class="p">,</span>
         <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
             <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
@@ -436,22 +438,19 @@
             <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
             <span class="n">torch_compile</span><span class="o">=</span><span class="n">torch_compile</span><span class="p">,</span>
         <span class="p">)</span>
-
-        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ExplainableOTXDetModel.forward_explain">
 <a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.model.detection.html#otx.core.model.detection.ExplainableOTXDetModel.forward_explain">[docs]</a>
     <span class="k">def</span> <span class="nf">forward_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">DetBatchDataEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DetBatchPredEntity</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model forward function.&quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">get_feature_vector</span>
+        <span class="kn">from</span> <span class="nn">otx.algo.explain.explain_algo</span> <span class="kn">import</span> <span class="n">feature_vector_fn</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">OTXTileBatchDataEntity</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_tiles</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">get_feature_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">feature_vector_fn</span> <span class="o">=</span> <span class="n">feature_vector_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">explain_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_explain_fn</span><span class="p">()</span>
 
         <span class="c1"># If customize_inputs is overridden</span>
