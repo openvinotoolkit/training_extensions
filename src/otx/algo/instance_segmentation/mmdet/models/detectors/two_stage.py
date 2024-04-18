@@ -323,7 +323,7 @@ if is_mmdeploy_enabled():
                 - labels (Tensor): Labels of bboxes, has a shape
                     (num_instances, ).
         """
-        del mode, kwargs
+        warnings.warn(f"{mode}, {kwargs} not used", stacklevel=2)
         ctx = FUNCTION_REWRITER.get_context()
         deploy_cfg = ctx.cfg
 

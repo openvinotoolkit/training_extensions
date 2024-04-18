@@ -12,6 +12,7 @@ import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
+from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMultiConfig
 
 from .base_roi_extractor import BaseRoIExtractor
@@ -116,3 +117,77 @@ class SingleRoIExtractor(BaseRoIExtractor):
                 # included in the computation graph to avoid runtime bugs.
                 roi_feats += sum(x.view(-1)[0] for x in self.parameters()) * 0.0 + feats[i].sum() * 0.0
         return roi_feats
+
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core.rewriters import FUNCTION_REWRITER
+    from torch.autograd import Function
+
+    class SingleRoIExtractorOpenVINO(Function):
+        """This class adds support for ExperimentalDetectronROIFeatureExtractor when exporting to OpenVINO.
+
+        The `forward` method returns the original output, which is calculated in
+        advance and added to the SingleRoIExtractorOpenVINO class. In addition, the
+        list of arguments is changed here to be more suitable for
+        ExperimentalDetectronROIFeatureExtractor.
+        """
+
+        def __init__(self) -> None:
+            super().__init__()
+
+        @staticmethod
+        def forward(g, output_size, featmap_strides, sample_num, rois, *feats):
+            """Run forward."""
+            return SingleRoIExtractorOpenVINO.origin_output
+
+        @staticmethod
+        def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
+            """Symbolic function for creating onnx op."""
+            from torch.onnx.symbolic_opset10 import _slice
+
+            rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
+            domain = "org.openvinotoolkit"
+            op_name = "ExperimentalDetectronROIFeatureExtractor"
+            return g.op(
+                f"{domain}::{op_name}",
+                rois,
+                *feats,
+                output_size_i=output_size,
+                pyramid_scales_i=featmap_strides,
+                sampling_ratio_i=sample_num,
+                image_id_i=0,
+                distribute_rois_between_levels_i=1,
+                preserve_rois_order_i=0,
+                aligned_i=1,
+                outputs=1,
+            )
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.algo.instance_segmentation.mmdet.models.roi_extractors."
+        "single_level_roi_extractor.SingleRoIExtractor.forward",
+        backend="openvino",
+    )
+    def single_roi_extractor__forward__openvino(
+        self: SingleRoIExtractor,
+        feats: tuple[Tensor],
+        rois: Tensor,
+        roi_scale_factor: float | None = None,
+    ) -> Tensor:
+        """Replaces SingleRoIExtractor with SingleRoIExtractorOpenVINO when exporting to OpenVINO.
+
+        This function uses ExperimentalDetectronROIFeatureExtractor for OpenVINO.
+        """
+        ctx = FUNCTION_REWRITER.get_context()
+
+        # Adding original output to SingleRoIExtractorOpenVINO.
+        state = torch._C._get_tracing_state()
+        origin_output = ctx.origin_func(self, feats, rois, roi_scale_factor)
+        SingleRoIExtractorOpenVINO.origin_output = origin_output
+        torch._C._set_tracing_state(state)
+
+        output_size = self.roi_layers[0].output_size[0]
+        featmap_strides = self.featmap_strides
+        sample_num = self.roi_layers[0].sampling_ratio
+
+        args = (output_size, featmap_strides, sample_num, rois, *feats)
+        return SingleRoIExtractorOpenVINO.apply(*args)

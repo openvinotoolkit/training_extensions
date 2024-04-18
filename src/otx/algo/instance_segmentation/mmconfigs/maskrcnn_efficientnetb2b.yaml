@@ -14,6 +14,9 @@ data_preprocessor:
     - 1.0
     - 1.0
 type: MaskRCNN
+# TODO(Eugene): Update scope after removing mmdet as pytorchcv_model is register under mmdet.registry.MODELS.
+# https://github.com/openvinotoolkit/training_extensions/pull/3281
+# _scope_: mmengine
 backbone:
   type: efficientnet_b2b
   out_indices:
