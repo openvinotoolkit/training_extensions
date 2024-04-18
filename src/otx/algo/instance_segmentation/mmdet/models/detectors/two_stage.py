@@ -15,7 +15,7 @@ import torch
 from mmengine.registry import MODELS
 from torch import Tensor
 
-from otx.algo.instance_segmentation.mmdet.deployment import is_mmdeploy_enabled
+from otx.algo.detection.deployment import is_mmdeploy_enabled
 from otx.algo.instance_segmentation.mmdet.models.custom_roi_head import CustomRoIHead
 from otx.algo.instance_segmentation.mmdet.models.dense_heads import RPNHead
 from otx.algo.instance_segmentation.mmdet.models.necks import FPN
