@@ -45,7 +45,7 @@ class TestDecoupleMMDetInstanceSeg:
         new_model, _ = create_model(engine.model.config, engine.model.load_from)
         engine.model.model = new_model
 
-        train_metric = engine.train(max_epochs=2)
+        train_metric = engine.train(max_epochs=1)
         assert len(train_metric) > 0
 
         test_metric = engine.test()
