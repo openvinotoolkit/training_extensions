@@ -7,6 +7,7 @@
 """MMDet BBox Head."""
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import torch
@@ -324,7 +325,7 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algo.instance_segmentation.mmdet.models.custom_roi_head.CustomConvFCBBoxHead.forward",
     )
-    def bbox_head__forward(self, x):
+    def bbox_head__forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
         """Rewrite `forward` for default backend.
 
         This function uses the specific `forward` function for the BBoxHead
@@ -343,7 +344,7 @@ if is_mmdeploy_enabled():
         ctx = FUNCTION_REWRITER.get_context()
 
         @mark("bbox_head_forward", inputs=["bbox_feats"], outputs=["cls_score", "bbox_pred"])
-        def __forward(self, x):
+        def __forward(self: BBoxHead, x: Tensor) -> tuple[Tensor]:
             return ctx.origin_func(self, x)
 
         return __forward(self, x)
@@ -385,9 +386,11 @@ if is_mmdeploy_enabled():
                 - labels (Tensor): Labels of bboxes, has a shape
                     (num_instances, ).
         """
+        warnings.warn(f"rescale: {rescale} is not supported in ONNX export. Ignored.", stacklevel=2)
         ctx = FUNCTION_REWRITER.get_context()
         if rois.ndim != 3:
-            raise ValueError("Only support export two stage model to ONNX with batch dimension.")
+            msg = "Only support export two stage model to ONNX with batch dimension."
+            raise ValueError(msg)
 
         img_shape = batch_img_metas[0]["img_shape"]
         if self.custom_cls_channels:

@@ -691,7 +691,7 @@ if is_mmdeploy_enabled():
         batch_img_metas: list[dict],
         results_list: list[Tensor],
         rescale: bool = False,
-    ) -> list[Tensor]:
+    ) -> tuple[Tensor, Tensor, Tensor]:
         """Forward the mask head and predict detection results on the features of the upstream network.
 
         Args:
@@ -729,7 +729,7 @@ if is_mmdeploy_enabled():
         mask_results = self._mask_forward(x, mask_rois)
         mask_preds = mask_results["mask_preds"]
         num_det = det_bboxes.shape[1]
-        segm_results = self.mask_head.predict_by_feat(
+        segm_results: Tensor = self.mask_head.predict_by_feat(
             mask_preds,
             results_list,
             batch_img_metas,

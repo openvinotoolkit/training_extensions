@@ -32,6 +32,8 @@ from otx.algo.instance_segmentation.mmdet.structures.bbox import (
     get_box_wh,
 )
 
+# ruff: noqa: PLW2901
+
 if TYPE_CHECKING:
     from mmengine.config import ConfigDict
 
@@ -201,8 +203,8 @@ class RPNHead(AnchorHead):
                 raise RuntimeError(msg)
 
             reg_dim = self.bbox_coder.encode_size
-            bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)  # noqa: PLW2901
-            cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)  # noqa: PLW2901
+            bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, reg_dim)
+            cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
             scores = cls_score.sigmoid() if self.use_sigmoid_cls else cls_score.softmax(-1)[:, :-1]
 
             scores = torch.squeeze(scores)
@@ -212,8 +214,8 @@ class RPNHead(AnchorHead):
                 ranked_scores, rank_inds = scores.sort(descending=True)
                 topk_inds = rank_inds[:nms_pre]
                 scores = ranked_scores[:nms_pre]
-                bbox_pred = bbox_pred[topk_inds, :]  # noqa: PLW2901
-                priors = priors[topk_inds]  # noqa: PLW2901
+                bbox_pred = bbox_pred[topk_inds, :]
+                priors = priors[topk_inds]
 
             mlvl_bbox_preds.append(bbox_pred)
             mlvl_valid_priors.append(priors)

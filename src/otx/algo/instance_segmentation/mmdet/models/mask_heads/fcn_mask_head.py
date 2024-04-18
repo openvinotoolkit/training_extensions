@@ -7,6 +7,7 @@
 """MMDet FCNMaskHead."""
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -441,7 +442,7 @@ if is_mmdeploy_enabled():
         rcnn_test_cfg: ConfigDict,
         rescale: bool = False,
         activate_map: bool = False,
-    ) -> list[Tensor]:
+    ) -> Tensor:
         """Transform a batch of output features extracted from the head into mask results.
 
         Args:
@@ -467,6 +468,9 @@ if is_mmdeploy_enabled():
                     (num_instances, ).
                 - masks (Tensor): Has a shape (num_instances, H, W).
         """
+        warnings.warn(f"rescale: {rescale} is not supported in deploy mode", stacklevel=2)
+        warnings.warn(f"activate_map: {activate_map} is not supported in deploy mode", stacklevel=2)
+
         ctx = FUNCTION_REWRITER.get_context()
         ori_shape = batch_img_metas[0]["img_shape"]
         dets, det_labels = results_list
@@ -528,7 +532,8 @@ if is_mmdeploy_enabled():
         # this has more operations but is faster on COCO-scale dataset.
         device = masks.device
         if skip_empty:
-            x0_int, y0_int = torch.clamp(boxes.min(dim=0).values.floor()[:2] - 1, min=0).to(dtype=torch.int32)
+            box_values, _ = boxes.min(dim=0)
+            x0_int, y0_int = torch.clamp(box_values.floor()[:2] - 1, min=0).to(dtype=torch.int32)
             x1_int = torch.clamp(boxes[:, 2].max().ceil() + 1, max=img_w).to(dtype=torch.int32)
             y1_int = torch.clamp(boxes[:, 3].max().ceil() + 1, max=img_h).to(dtype=torch.int32)
         else:
@@ -536,14 +541,14 @@ if is_mmdeploy_enabled():
             x1_int, y1_int = img_w, img_h
         x0, y0, x1, y1 = torch.split(boxes, 1, dim=1)  # each is Nx1
 
-        N = masks.shape[0]
+        num_preds = masks.shape[0]
 
         img_y = torch.arange(y0_int, y1_int, device=device).to(torch.float32) + 0.5
         img_x = torch.arange(x0_int, x1_int, device=device).to(torch.float32) + 0.5
         img_y = (img_y - y0) / (y1 - y0) * 2 - 1
         img_x = (img_x - x0) / (x1 - x0) * 2 - 1
-        gx = img_x[:, None, :].expand(N, img_y.size(1), img_x.size(1))
-        gy = img_y[:, :, None].expand(N, img_y.size(1), img_x.size(1))
+        gx = img_x[:, None, :].expand(num_preds, img_y.size(1), img_x.size(1))
+        gy = img_y[:, :, None].expand(num_preds, img_y.size(1), img_x.size(1))
         grid = torch.stack([gx, gy], dim=3)
 
         img_masks = torch.nn.functional.grid_sample(masks.to(dtype=torch.float32), grid, align_corners=False)

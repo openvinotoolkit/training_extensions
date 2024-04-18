@@ -17,6 +17,8 @@ from otx.algo.instance_segmentation.mmdet.models.utils import ConfigType, OptMul
 
 from .base_roi_extractor import BaseRoIExtractor
 
+# ruff: noqa: ARG004
+
 
 @MODELS.register_module()
 class SingleRoIExtractor(BaseRoIExtractor):
@@ -121,6 +123,7 @@ class SingleRoIExtractor(BaseRoIExtractor):
 
 if is_mmdeploy_enabled():
     from mmdeploy.core.rewriters import FUNCTION_REWRITER
+    from torch import Graph
     from torch.autograd import Function
 
     class SingleRoIExtractorOpenVINO(Function):
@@ -136,12 +139,26 @@ if is_mmdeploy_enabled():
             super().__init__()
 
         @staticmethod
-        def forward(g, output_size, featmap_strides, sample_num, rois, *feats):
+        def forward(
+            g: Graph,
+            output_size: int,
+            featmap_strides: int,
+            sample_num: int,
+            rois: torch.Value,
+            *feats: tuple[torch.Value],
+        ) -> Tensor:
             """Run forward."""
             return SingleRoIExtractorOpenVINO.origin_output
 
         @staticmethod
-        def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
+        def symbolic(
+            g: Graph,
+            output_size: int,
+            featmap_strides: list[int],
+            sample_num: int,
+            rois: torch.Value,
+            *feats: tuple[torch.Value],
+        ) -> Graph:
             """Symbolic function for creating onnx op."""
             from torch.onnx.symbolic_opset10 import _slice
 
@@ -180,10 +197,10 @@ if is_mmdeploy_enabled():
         ctx = FUNCTION_REWRITER.get_context()
 
         # Adding original output to SingleRoIExtractorOpenVINO.
-        state = torch._C._get_tracing_state()
+        state = torch._C._get_tracing_state()  # noqa: SLF001
         origin_output = ctx.origin_func(self, feats, rois, roi_scale_factor)
         SingleRoIExtractorOpenVINO.origin_output = origin_output
-        torch._C._set_tracing_state(state)
+        torch._C._set_tracing_state(state)  # noqa: SLF001
 
         output_size = self.roi_layers[0].output_size[0]
         featmap_strides = self.featmap_strides
