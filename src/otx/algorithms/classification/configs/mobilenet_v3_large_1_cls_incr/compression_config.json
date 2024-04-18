@@ -52,6 +52,11 @@
           "preset": "mixed",
           "initializer": {
             "range": {
+              "type": "percentile",
+              "params": {
+                "min_percentile": 0,
+                "max_percentile": 100
+              },
               "num_init_samples": 8192
             },
             "batchnorm_adaptation": {
