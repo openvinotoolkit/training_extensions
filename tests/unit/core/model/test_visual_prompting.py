@@ -441,7 +441,7 @@ class TestOVZeroShotVisualPromptingModel:
             "infer_sync",
             return_value={
                 "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
-                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),  # noqa: NPY002
+                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),
                 "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
             },
         )
@@ -457,7 +457,7 @@ class TestOVZeroShotVisualPromptingModel:
         mocker.patch.object(
             ov_zero_shot_visual_prompting_model,
             "_generate_masked_features",
-            return_value=np.random.rand(1, 256),  # noqa: NPY002
+            return_value=np.random.rand(1, 256),
         )
         reference_info, ref_masks = ov_zero_shot_visual_prompting_model.learn(
             inputs=fxt_zero_shot_vpm_data_entity[1],
@@ -501,7 +501,7 @@ class TestOVZeroShotVisualPromptingModel:
             "infer_sync",
             return_value={
                 "iou_predictions": np.array([[0.1, 0.3, 0.5, 0.7]]),
-                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),  # noqa: NPY002
+                "upscaled_masks": np.random.randn(1, 4, 1024, 1024),
                 "low_res_masks": np.zeros((1, 4, 64, 64), dtype=np.float32),
             },
         )
