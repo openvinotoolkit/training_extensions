@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import torch
 
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -181,6 +182,8 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
