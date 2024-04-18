@@ -122,7 +122,12 @@ class DetectionConfigurer(BaseConfigurer):
     def configure_device(self, cfg):
         """Setting device for training and inference."""
         super().configure_device(cfg)
-        if cfg.device in ["xpu", "hpu", "cuda"]:
+
+        patch_det_ops = cfg.device in ["xpu", "hpu"] or (
+            cfg.model.backbone.get("type", "") and cfg.model.backbone.get("depth", 0) == 50
+        )
+
+        if patch_det_ops:
             NMSop.forward = monkey_patched_nms
             RoIAlign.forward = monkey_patched_roi_align
 
