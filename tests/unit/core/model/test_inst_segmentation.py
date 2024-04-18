@@ -14,7 +14,7 @@ from otx.core.types.export import TaskLevelExportParameters
 class TestOTXInstanceSegModel:
     @pytest.fixture()
     def otx_model(self) -> MMDetInstanceSegCompatibleModel:
-        return MaskRCNN(num_classes=1, variant="efficientnetb2b")
+        return MaskRCNN(label_info=1, variant="efficientnetb2b")
 
     def test_create_model(self, otx_model) -> None:
         mmdet_model = otx_model._create_model()

@@ -55,7 +55,7 @@ class TestOTXDetectionModel:
 
     @pytest.fixture()
     def otx_model(self, config) -> MMDetCompatibleModel:
-        return MMDetCompatibleModel(num_classes=1, config=config)
+        return MMDetCompatibleModel(label_info=1, config=config)
 
     def test_configure_metric_with_ckpt(
         self,
@@ -64,7 +64,7 @@ class TestOTXDetectionModel:
         mock_ckpt,
     ) -> None:
         model = OTXDetectionModel(
-            num_classes=1,
+            label_info=1,
             torch_compile=False,
             optimizer=mock_optimizer,
             scheduler=mock_scheduler,
