@@ -1,7 +1,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""Class definition for visual prompting model entity used in OTX."""
+"""Class definition for visual prompting models entity used in OTX."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import torch
 from torch import Tensor
 from torchvision import tv_tensors
 
-from otx.core.data.entity.base import OTXBatchLossEntity, Points
+from otx.core.data.entity.base import Points
 from otx.core.data.entity.visual_prompting import (
     VisualPromptingBatchDataEntity,
     VisualPromptingBatchPredEntity,
@@ -270,7 +270,7 @@ class OTXVisualPromptingModel(OTXModel[VisualPromptingBatchDataEntity, VisualPro
 class OTXZeroShotVisualPromptingModel(
     OTXModel[ZeroShotVisualPromptingBatchDataEntity, ZeroShotVisualPromptingBatchPredEntity],
 ):
-    """Base class for the visual prompting models used in OTX."""
+    """Base class for the zero-shot visual prompting models used in OTX."""
 
     def __init__(
         self,
@@ -311,7 +311,7 @@ class OTXZeroShotVisualPromptingModel(
 
     @property
     def _optimization_config(self) -> dict[str, Any]:
-        """PTQ config for visual prompting models."""
+        """PTQ config for zero-shot visual prompting models."""
         return {
             "model_type": "transformer",
             "advanced_parameters": {
@@ -405,7 +405,7 @@ class OTXZeroShotVisualPromptingModel(
             batch_idx (int): The index of the current batch.
 
         Raises:
-            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchDataEntity.
         """
         _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
@@ -597,7 +597,7 @@ class OVVisualPromptingModel(
             return any(op.get_type_name() == "FakeQuantize" for op in nodes)
 
         def transform_fn(
-            data_batch: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+            data_batch: VisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
             images, _, prompts = self._customize_inputs(data_batch)  # type: ignore[arg-type]
@@ -740,7 +740,10 @@ class OVZeroShotVisualPromptingModel(
     ) -> None:
         if async_inference:
             log.warning(
-                "Async inference is not supported for visual prompting models. Setting async_inference to False.",
+                (
+                    "Async inference is not supported for zero-shot visual prompting models. "
+                    "Setting async_inference to False.",
+                ),
             )
             async_inference = False
 
@@ -927,7 +930,7 @@ class OVZeroShotVisualPromptingModel(
     def forward(  # type: ignore[override]
         self,
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity:
         """Model forward function."""
         kwargs: dict[str, Any] = {}
         fn = self.learn if self.training else self.infer
@@ -942,7 +945,7 @@ class OVZeroShotVisualPromptingModel(
         if self.async_inference:
             log.warning(
                 (
-                    "Async inference is not supported for visual prompting models yet. "
+                    "Async inference is not supported for zero-shot visual prompting models yet. "
                     "Running synchronous inference instead.",
                 ),
             )
@@ -998,7 +1001,7 @@ class OVZeroShotVisualPromptingModel(
         self,
         outputs: Any,  # noqa: ANN401
         inputs: ZeroShotVisualPromptingBatchDataEntity,  # type: ignore[override]
-    ) -> ZeroShotVisualPromptingBatchPredEntity | OTXBatchLossEntity:
+    ) -> ZeroShotVisualPromptingBatchPredEntity:
         """Customize OTX output batch data entity if needed for model."""
         if self.training:
             return outputs
@@ -1055,7 +1058,7 @@ class OVZeroShotVisualPromptingModel(
             return any(op.get_type_name() == "FakeQuantize" for op in nodes)
 
         def transform_fn(
-            data_batch: VisualPromptingBatchDataEntity | ZeroShotVisualPromptingBatchDataEntity,
+            data_batch: ZeroShotVisualPromptingBatchDataEntity,
             module: Literal["image_encoder", "decoder"],
         ) -> np.ndarray | dict[str, Any]:
             images, _, prompts = self._customize_inputs(data_batch)  # type: ignore[arg-type]
@@ -1588,11 +1591,11 @@ class OVZeroShotVisualPromptingModel(
         """Perform a single test step on a batch of data from the test set.
 
         Args:
-            inputs (VisualPromptingBatchDataEntity): The input data for the test step.
+            inputs (ZeroShotVisualPromptingBatchDataEntity): The input data for the test step.
             batch_idx (int): The index of the current batch.
 
         Raises:
-            TypeError: If the predictions are not of type VisualPromptingBatchPredEntity.
+            TypeError: If the predictions are not of type ZeroShotVisualPromptingBatchPredEntity.
         """
         _inference_step_for_zero_shot(model=self, metric=self.metric, inputs=inputs)
 
