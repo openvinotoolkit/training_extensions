@@ -342,8 +342,8 @@ class OTXZeroShotVisualPromptingModel(
     def on_test_start(self) -> None:
         """Load previously saved reference info."""
         super().on_test_start()
-        if not self.load_latest_reference_info(self.device):
-            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+        if not self.model.load_reference_info(self.trainer.default_root_dir, self.device):
+            log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
@@ -351,12 +351,12 @@ class OTXZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_latest_reference_info(self.device)
+            self.model.load_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_predict_start(self) -> None:
         """Load previously saved reference info."""
-        if not self.load_latest_reference_info(self.device):
-            log.warning("No reference info found. `Learn` will be automatically excuted first.")
+        if not self.model.load_reference_info(self.trainer.default_root_dir, self.device):
+            log.warning("No reference info found. `Learn` will be automatically executed first.")
             self.trainer.lightning_module.automatic_optimization = False
             self.trainer.fit_loop.run()
             # to use infer logic
@@ -364,7 +364,7 @@ class OTXZeroShotVisualPromptingModel(
             # to set _combined_loader
             self.trainer._evaluation_loop.setup_data()  # noqa: SLF001
             self.trainer._evaluation_loop.reset()  # noqa: SLF001
-            self.load_latest_reference_info(self.device)
+            self.model.load_reference_info(self.trainer.default_root_dir, self.device)
 
     def on_train_epoch_start(self) -> None:
         """Skip on_train_epoch_start unused in zero-shot visual prompting."""
@@ -372,23 +372,7 @@ class OTXZeroShotVisualPromptingModel(
     def on_train_epoch_end(self) -> None:
         """Skip on_train_epoch_end unused in zero-shot visual prompting."""
         if self.save_outputs:
-            reference_info = {
-                "reference_feats": self.reference_feats,
-                "used_indices": self.used_indices,
-            }
-            # save reference info
-            path_reference_info: Path = self.root_reference_info / time.strftime("%Y%m%d_%H%M%S") / "reference_info.pt"
-            Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
-            if isinstance(self, OTXZeroShotVisualPromptingModel):
-                torch.save(reference_info, path_reference_info)
-                pickle.dump(
-                    {k: v.numpy() for k, v in reference_info.items()},
-                    Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
-                )
-            else:
-                torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
-                pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
-            log.info(f"Saved reference info at {path_reference_info}.")
+            self.model.save_reference_info(self.trainer.default_root_dir)
 
     def on_validation_epoch_start(self) -> None:
         """Skip on_validation_epoch_start unused in zero-shot visual prompting."""
@@ -749,7 +733,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
         use_throughput_mode: bool = True,
         model_api_configuration: dict[str, Any] | None = None,
         metric: MetricCallable = VisualPromptingMetricCallable,
-        root_reference_info: str = "vpm_zsl_reference_infos",
+        reference_info_dir: Path | str = "reference_infos",
+        infer_reference_info_root: Path | str = "../.latest/train",
         save_outputs: bool = True,
         **kwargs,
     ) -> None:
@@ -762,7 +747,8 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
             model_api_configuration=model_api_configuration,
             metric=metric,
         )
-        self.root_reference_info: Path = Path(root_reference_info)
+        self.reference_info_dir: Path = Path(reference_info_dir)
+        self.infer_reference_info_root: Path = Path(infer_reference_info_root)
         self.save_outputs: bool = save_outputs
 
         self.point_labels_box = np.array([[2, 3]], dtype=np.float32)
@@ -1190,25 +1176,24 @@ class OVZeroShotVisualPromptingModel(OVVisualPromptingModel):
     ######################################
     #               Infer                #
     ######################################
-    def _find_latest_reference_info(self, root: Path) -> str | None:
-        """Find latest reference info to be used."""
-        if not Path.is_dir(root):
-            return None
-        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
-            return stamps[0]
-        return None
-
-    def load_latest_reference_info(self, *args, **kwargs) -> bool:
+    def load_reference_info(self, default_root_dir: Path | str, *args, **kwargs) -> bool:
         """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info: Path = self.root_reference_info / latest_stamp / "reference_info.pickle"
-            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(latest_reference_info, "rb"))  # noqa: S301
+        _infer_reference_info_root = (
+            self.infer_reference_info_root
+            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
+            else Path(default_root_dir) / self.infer_reference_info_root
+        )
+
+        if Path.is_file(
+            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pickle",
+        ):
+            reference_info: dict[str, np.ndarray] = pickle.load(Path.open(path_reference_info, "rb"))  # noqa: S301
             self.reference_feats = reference_info.get(
                 "reference_feats",
                 np.zeros((0, 1, self.model["decoder"].embed_dim), dtype=np.float32),
             )
             self.used_indices = reference_info.get("used_indices", np.array([], dtype=np.int64))
-            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
             return True
         return False
 

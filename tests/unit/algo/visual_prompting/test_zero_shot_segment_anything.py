@@ -695,54 +695,40 @@ class TestOTXZeroShotSegmentAnything:
         assert model.reference_feats.shape == (0, 1, 256)
         assert model.used_indices.shape == (0,)
 
-    def test_find_latest_reference_info(self, mocker, model) -> None:
-        """Test _find_latest_reference_info."""
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.path.isdir",
-            return_value=True,
-        )
+    def test_save_reference_info(self, mocker, tmpdir, model) -> None:
+        """Test save_reference_info."""
+        model.root_reference_info = tmpdir
+        model.reference_feats = torch.tensor(1)
+        model.used_indices = torch.tensor(1)
+        mocker_mkdir = mocker.patch("pathlib.Path.mkdir")
+        mocker.patch("pathlib.Path.open")
+        mocker_torch_save = mocker.patch("torch.save")
+        mocker_pickle_dump = mocker.patch("pickle.dump")
 
-        # there are some saved reference info
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
-            return_value=["1", "2"],
-        )
-        results = model._find_latest_reference_info(Path())
-        assert results == "2"
+        model.save_reference_info(".")
 
-        # there are no saved reference info
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.os.listdir",
-            return_value=[],
-        )
-        results = model._find_latest_reference_info(Path())
-        assert results is None
+        mocker_mkdir.assert_called_once()
+        mocker_torch_save.assert_called_once()
+        mocker_pickle_dump.assert_called_once()
 
-    def test_load_latest_reference_info(self, mocker, model) -> None:
-        """Test load_latest_reference_info."""
+    def test_load_reference_info(self, mocker, model) -> None:
+        """Test load_reference_info."""
         # get previously saved reference info
         mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
-            return_value="1",
-        )
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.torch.load",
+            "torch.load",
             return_value={"reference_feats": torch.zeros((1, 1, 256)), "used_indices": torch.tensor([0.0])},
         )
-        mocker.patch("builtins.open", return_value="Mocked data")
+        mocker.patch("pathlib.Path.is_file", return_value=True)
 
-        model.load_latest_reference_info()
+        model.load_reference_info(".")
         assert model.reference_feats.shape == (1, 1, 256)
         assert model.used_indices.shape == (1,)
 
         # no saved reference info
-        mocker.patch(
-            "otx.algo.visual_prompting.zero_shot_segment_anything.OTXZeroShotSegmentAnything._find_latest_reference_info",
-            return_value=None,
-        )
+        mocker.patch("pathlib.Path.is_file", return_value=False)
 
         model.initialize_reference_info()
-        model.load_latest_reference_info()
+        model.load_reference_info(".")
 
         assert model.reference_feats.shape == (0, 1, 256)
         assert model.used_indices.shape == (0,)

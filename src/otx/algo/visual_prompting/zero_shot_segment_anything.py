@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
+import pickle
 import torchvision.transforms.v2 as tvt_v2
 from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
@@ -632,7 +633,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = VisualPromptingMetricCallable,
         torch_compile: bool = False,
-        root_reference_info: Path | str = "vpm_zsl_reference_infos",
+        reference_info_dir: Path | str = "reference_infos",
+        infer_reference_info_root: Path | str = "../.latest/train",
         save_outputs: bool = True,
         pixel_mean: list[float] | None = [123.675, 116.28, 103.53],  # noqa: B006
         pixel_std: list[float] | None = [58.395, 57.12, 57.375],  # noqa: B006
@@ -668,7 +670,8 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         )
 
         self.save_outputs = save_outputs
-        self.root_reference_info: Path = Path(root_reference_info)
+        self.reference_info_dir: Path = Path(reference_info_dir)
+        self.infer_reference_info_root: Path = Path(infer_reference_info_root)
 
         self.register_buffer("pixel_mean", Tensor(pixel_mean).view(-1, 1, 1), False)
         self.register_buffer("pixel_std", Tensor(pixel_std).view(-1, 1, 1), False)
@@ -876,21 +879,42 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         self.register_buffer("reference_feats", torch.zeros(0, 1, self.model.embed_dim), False)
         self.register_buffer("used_indices", torch.tensor([], dtype=torch.int64), False)
 
-    def _find_latest_reference_info(self, root: Path) -> str | None:
-        """Find latest reference info to be used."""
-        if not Path.is_dir(root):
-            return None
-        if len(stamps := sorted(os.listdir(root), reverse=True)) > 0:
-            return stamps[0]
-        return None
+    def save_reference_info(self, default_root_dir: Path | str) -> None:
+        """Save reference info."""
+        reference_info = {
+            "reference_feats": self.reference_feats,
+            "used_indices": self.used_indices,
+        }
+        # save reference info
+        path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
+        Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
+        if isinstance(self, OTXZeroShotVisualPromptingModel):
+            # with torch model
+            torch.save(reference_info, path_reference_info)
+            pickle.dump(
+                {k: v.numpy() for k, v in reference_info.items()},
+                Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
+            )
+        else:
+            # with ov model
+            torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
+            pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
+        log.info(f"Saved reference info at {path_reference_info}.")
 
-    def load_latest_reference_info(self, device: str | torch.device = "cpu") -> bool:
+    def load_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
         """Load latest reference info to be used."""
-        if (latest_stamp := self._find_latest_reference_info(self.root_reference_info)) is not None:
-            latest_reference_info = self.root_reference_info / latest_stamp / "reference_info.pt"
-            reference_info = torch.load(latest_reference_info)
+        _infer_reference_info_root = (
+            self.infer_reference_info_root
+            if self.infer_reference_info_root == self.infer_reference_info_root.absolute()
+            else Path(default_root_dir) / self.infer_reference_info_root
+        )
+
+        if Path.is_file(
+            path_reference_info := _infer_reference_info_root / self.reference_info_dir / "reference_info.pt",
+        ):
+            reference_info = torch.load(path_reference_info)
             retval = True
-            log.info(f"reference info saved at {latest_reference_info} was successfully loaded.")
+            log.info(f"reference info saved at {path_reference_info} was successfully loaded.")
         else:
             reference_info = {}
             retval = False
