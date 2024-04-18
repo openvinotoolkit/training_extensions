@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>otx.core.optimizer.callable &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
+    <title>otx.core.schedulers.callable &#8212; OpenVINO™ Training Extensions 2.1.0rc0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../../../_static/tabs.js?v=3030b3cb"></script>
     <script src="../../../../_static/design-tabs.js?v=36754332"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/optimizer/callable';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/otx/core/schedulers/callable';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -234,51 +234,53 @@
             
             <article class="bd-article" role="main">
               
-  <h1>Source code for otx.core.optimizer.callable</h1><div class="highlight"><pre>
+  <h1>Source code for otx.core.schedulers.callable</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (C) 2024 Intel Corporation</span>
 <span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
-<span class="sd">&quot;&quot;&quot;Optimizer callable to support hyper-parameter optimization (HPO) algorithm.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Scheduler callable to support hyper-parameter optimization (HPO) algorithm.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
+<span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
-<span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span> <span class="k">as</span> <span class="n">TorchReduceLROnPlateau</span>
 
 <span class="kn">from</span> <span class="nn">otx.core.utils.jsonargparse</span> <span class="kn">import</span> <span class="n">ClassType</span><span class="p">,</span> <span class="n">lazy_instance</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">OptimizerCallable</span>
-    <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">params_t</span>
+    <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span>
 
 
-<div class="viewcode-block" id="OptimizerCallableSupportHPO">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO">[docs]</a>
-<span class="k">class</span> <span class="nc">OptimizerCallableSupportHPO</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimizer callable supports OTX hyper-parameter optimization (HPO) algorithm.</span>
+<div class="viewcode-block" id="SchedulerCallableSupportHPO">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO">[docs]</a>
+<span class="k">class</span> <span class="nc">SchedulerCallableSupportHPO</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;LR scheduler callable supports OTX hyper-parameter optimization (HPO) algorithm.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        optimizer_cls: Optimizer class type or string class import path. See examples for details.</span>
-<span class="sd">        optimizer_kwargs: Keyword arguments used for the initialization of the given `optimizer_cls`.</span>
+<span class="sd">        scheduler_cls: `LRScheduler` class type or string class import path. See examples for details.</span>
+<span class="sd">        scheduler_kwargs: Keyword arguments used for the initialization of the given `scheduler_cls`.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        This is an example to create `MobileNetV3ForMulticlassCls` with a `SGD` optimizer and</span>
+<span class="sd">        This is an example to create `MobileNetV3ForMulticlassCls` with a `StepLR` lr scheduler and</span>
 <span class="sd">        custom configurations.</span>
 
 <span class="sd">        ```python</span>
-<span class="sd">        from torch.optim import SGD</span>
+<span class="sd">        from torch.optim.lr_scheduler import StepLR</span>
 <span class="sd">        from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls</span>
 
 <span class="sd">        model = MobileNetV3ForMulticlassCls(</span>
 <span class="sd">            num_classes=3,</span>
-<span class="sd">            optimizer=OptimizerCallableSupportHPO(</span>
-<span class="sd">                optimizer_cls=SGD,</span>
-<span class="sd">                optimizer_kwargs={</span>
-<span class="sd">                    &quot;lr&quot;: 0.1,</span>
-<span class="sd">                    &quot;momentum&quot;: 0.9,</span>
-<span class="sd">                    &quot;weight_decay&quot;: 1e-4,</span>
+<span class="sd">            scheduler=SchedulerCallableSupportHPO(</span>
+<span class="sd">                scheduler_cls=StepLR,</span>
+<span class="sd">                scheduler_kwargs={</span>
+<span class="sd">                    &quot;step_size&quot;: 10,</span>
+<span class="sd">                    &quot;gamma&quot;: 0.5,</span>
 <span class="sd">                },</span>
 <span class="sd">            ),</span>
 <span class="sd">        )</span>
@@ -291,12 +293,11 @@
 
 <span class="sd">        model = MobileNetV3ForMulticlassCls(</span>
 <span class="sd">            num_classes=3,</span>
-<span class="sd">            optimizer=OptimizerCallableSupportHPO(</span>
-<span class="sd">                optimizer_cls=&quot;torch.optim.SGD&quot;,</span>
-<span class="sd">                optimizer_kwargs={</span>
-<span class="sd">                    &quot;lr&quot;: 0.1,</span>
-<span class="sd">                    &quot;momentum&quot;: 0.9,</span>
-<span class="sd">                    &quot;weight_decay&quot;: 1e-4,</span>
+<span class="sd">            optimizer=SchedulerCallableSupportHPO(</span>
+<span class="sd">                scheduler_cls=&quot;torch.optim.lr_scheduler.StepLR&quot;,</span>
+<span class="sd">                scheduler_kwargs={</span>
+<span class="sd">                    &quot;step_size&quot;: 10,</span>
+<span class="sd">                    &quot;gamma&quot;: 0.5,</span>
 <span class="sd">                },</span>
 <span class="sd">            ),</span>
 <span class="sd">        )</span>
@@ -305,34 +306,34 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">optimizer_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">optimizer_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">],</span>
+        <span class="n">scheduler_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">scheduler_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span>
     <span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_cls</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">splited</span> <span class="o">=</span> <span class="n">optimizer_cls</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler_cls</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">splited</span> <span class="o">=</span> <span class="n">scheduler_cls</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
             <span class="n">module_path</span><span class="p">,</span> <span class="n">class_name</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">splited</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">splited</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_path</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_init</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_path</span> <span class="o">=</span> <span class="n">optimizer_cls</span>
-        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">optimizer_cls</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_init</span> <span class="o">=</span> <span class="n">optimizer_cls</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_path</span> <span class="o">=</span> <span class="n">optimizer_cls</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">optimizer_cls</span><span class="o">.</span><span class="vm">__qualname__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_init</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_path</span> <span class="o">=</span> <span class="n">scheduler_cls</span>
+        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">scheduler_cls</span><span class="p">,</span> <span class="n">LRScheduler</span> <span class="o">|</span> <span class="n">ReduceLROnPlateau</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_init</span> <span class="o">=</span> <span class="n">scheduler_cls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_path</span> <span class="o">=</span> <span class="n">scheduler_cls</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">scheduler_cls</span><span class="o">.</span><span class="vm">__qualname__</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">optimizer_cls</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">scheduler_cls</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scheduler_kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="OptimizerCallableSupportHPO.__call__">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">params_t</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create `torch.optim.Optimizer` instance for the given parameters.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_init</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">)</span></div>
+<div class="viewcode-block" id="SchedulerCallableSupportHPO.__call__">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LRScheduler</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create `torch.optim.LRScheduler` instance for the given parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_init</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="OptimizerCallableSupportHPO.to_lazy_instance">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.to_lazy_instance">[docs]</a>
+<div class="viewcode-block" id="SchedulerCallableSupportHPO.to_lazy_instance">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO.to_lazy_instance">[docs]</a>
     <span class="k">def</span> <span class="nf">to_lazy_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return lazy instance of this class.</span>
 
@@ -343,7 +344,7 @@
 <span class="sd">        for more details.</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            This is an example to implement a new model with a `SGD` optimizer and</span>
+<span class="sd">            This is an example to implement a new model with a `StepLR` scheduler and</span>
 <span class="sd">            custom configurations as a default.</span>
 
 <span class="sd">            ```python</span>
@@ -351,15 +352,14 @@
 <span class="sd">                def __init__(</span>
 <span class="sd">                    self,</span>
 <span class="sd">                    num_classes: int,</span>
-<span class="sd">                    optimizer: OptimizerCallable = OptimizerCallableSupportHPO(</span>
-<span class="sd">                        optimizer_cls=SGD,</span>
-<span class="sd">                        optimizer_kwargs={</span>
-<span class="sd">                            &quot;lr&quot;: 0.1,</span>
-<span class="sd">                            &quot;momentum&quot;: 0.9,</span>
-<span class="sd">                            &quot;weight_decay&quot;: 1e-4,</span>
+<span class="sd">                    optimizer: OptimizerCallable = DefaultOptimizerCallable,</span>
+<span class="sd">                    scheduler: LRSchedulerCallable | LRSchedulerListCallable = SchedulerCallableSupportHPO(</span>
+<span class="sd">                        scheduler_cls=StepLR,</span>
+<span class="sd">                        scheduler_kwargs={</span>
+<span class="sd">                            &quot;step_size&quot;: 10,</span>
+<span class="sd">                            &quot;gamma&quot;: 0.5,</span>
 <span class="sd">                        },</span>
 <span class="sd">                    ).to_lazy_instance(),</span>
-<span class="sd">                    scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,</span>
 <span class="sd">                    metric: MetricCallable = MultiClassClsMetricCallable,</span>
 <span class="sd">                    torch_compile: bool = False,</span>
 <span class="sd">                ) -&gt; None:</span>
@@ -367,31 +367,43 @@
 <span class="sd">            ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">lazy_instance</span><span class="p">(</span>
-            <span class="n">OptimizerCallableSupportHPO</span><span class="p">,</span>
-            <span class="n">optimizer_cls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_path</span><span class="p">,</span>
-            <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">,</span>
+            <span class="n">SchedulerCallableSupportHPO</span><span class="p">,</span>
+            <span class="n">scheduler_cls</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_path</span><span class="p">,</span>
+            <span class="n">scheduler_kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_path</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="OptimizerCallableSupportHPO.from_callable">
-<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.optimizer.html#otx.core.optimizer.OptimizerCallableSupportHPO.from_callable">[docs]</a>
+<div class="viewcode-block" id="SchedulerCallableSupportHPO.from_callable">
+<a class="viewcode-back" href="../../../../guide/reference/_autosummary/otx.core.schedulers.html#otx.core.schedulers.SchedulerCallableSupportHPO.from_callable">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_callable</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">OptimizerCallable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizerCallableSupportHPO</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">from_callable</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">LRSchedulerCallable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SchedulerCallableSupportHPO</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create this class instance from an existing optimizer callable.&quot;&quot;&quot;</span>
         <span class="n">dummy_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">()]</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">dummy_params</span><span class="p">)</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span><span class="n">dummy_params</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
 
-        <span class="n">param_group</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">))</span>
+        <span class="n">allow_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">scheduler</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">OptimizerCallableSupportHPO</span><span class="p">(</span>
-            <span class="n">optimizer_cls</span><span class="o">=</span><span class="n">optimizer</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
-            <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">param_group</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;params&quot;</span><span class="p">},</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span><span class="p">):</span>
+            <span class="c1"># NOTE: Other arguments except &quot;monitor&quot;, such as &quot;patience&quot;</span>
+            <span class="c1"># are not included in the signature of ReduceLROnPlateau.__init__()</span>
+            <span class="n">allow_names</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">TorchReduceLROnPlateau</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="n">block_names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;last_epoch&quot;</span><span class="p">}</span>
+
+        <span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">allow_names</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">block_names</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">SchedulerCallableSupportHPO</span><span class="p">(</span>
+            <span class="n">scheduler_cls</span><span class="o">=</span><span class="n">scheduler</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+            <span class="n">scheduler_kwargs</span><span class="o">=</span><span class="n">scheduler_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 

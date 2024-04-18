@@ -389,6 +389,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#otx.core.schedulers.LinearWarmupSchedulerCallable" title="otx.core.schedulers.LinearWarmupSchedulerCallable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinearWarmupSchedulerCallable</span></code></a>(...[, ...])</p></td>
 <td><p>This callable can create the given main LR scheduler and <cite>LinearWarmupScheduler</cite> at the same time.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.core.schedulers.SchedulerCallableSupportHPO" title="otx.core.schedulers.SchedulerCallableSupportHPO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchedulerCallableSupportHPO</span></code></a>(scheduler_cls, ...)</p></td>
+<td><p>LR scheduler callable supports OTX hyper-parameter optimization (HPO) algorithm.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py class">
@@ -442,6 +445,118 @@ Otherwise, the iteration step will be the warmup period.</p></li>
 <dd><p>Create a list of lr schedulers.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.core.schedulers.SchedulerCallableSupportHPO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.schedulers.</span></span><span class="sig-name descname"><span class="pre">SchedulerCallableSupportHPO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scheduler_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">LRScheduler</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/otx/core/schedulers/callable.html#SchedulerCallableSupportHPO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.schedulers.SchedulerCallableSupportHPO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>LR scheduler callable supports OTX hyper-parameter optimization (HPO) algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scheduler_cls</strong> – <cite>LRScheduler</cite> class type or string class import path. See examples for details.</p></li>
+<li><p><strong>scheduler_kwargs</strong> – Keyword arguments used for the initialization of the given <cite>scheduler_cls</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>This is an example to create <cite>MobileNetV3ForMulticlassCls</cite> with a <cite>StepLR</cite> lr scheduler and
+custom configurations.</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from torch.optim.lr_scheduler import StepLR
+from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls</p>
+<dl>
+<dt>model = MobileNetV3ForMulticlassCls(</dt><dd><p>num_classes=3,
+scheduler=SchedulerCallableSupportHPO(</p>
+<blockquote>
+<div><p>scheduler_cls=StepLR,
+scheduler_kwargs={</p>
+<blockquote>
+<div><p>“step_size”: 10,
+“gamma”: 0.5,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>),</p>
+</dd>
+</dl>
+<section id="id5">
+<h2>)<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
+<p>It can be created from the string class import path such as</p>
+<p><a href="#id6"><span class="problematic" id="id7">``</span></a><a href="#id8"><span class="problematic" id="id9">`</span></a>python
+from otx.algo.classification.mobilenet_v3_large import MobileNetV3ForMulticlassCls</p>
+<dl>
+<dt>model = MobileNetV3ForMulticlassCls(</dt><dd><p>num_classes=3,
+optimizer=SchedulerCallableSupportHPO(</p>
+<blockquote>
+<div><p>scheduler_cls=”torch.optim.lr_scheduler.StepLR”,
+scheduler_kwargs={</p>
+<blockquote>
+<div><p>“step_size”: 10,
+“gamma”: 0.5,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>),</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>)<a class="headerlink" href="#id10" title="Link to this heading">#</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.schedulers.SchedulerCallableSupportHPO.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">LRScheduler</span></span></span><a class="reference internal" href="../../../_modules/otx/core/schedulers/callable.html#SchedulerCallableSupportHPO.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.schedulers.SchedulerCallableSupportHPO.__call__" title="Link to this definition">#</a></dt>
+<dd><p>Create <cite>torch.optim.LRScheduler</cite> instance for the given parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.schedulers.SchedulerCallableSupportHPO.from_callable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_callable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LRSchedulerCallable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.core.schedulers.SchedulerCallableSupportHPO" title="otx.core.schedulers.SchedulerCallableSupportHPO"><span class="pre">SchedulerCallableSupportHPO</span></a></span></span><a class="reference internal" href="../../../_modules/otx/core/schedulers/callable.html#SchedulerCallableSupportHPO.from_callable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.schedulers.SchedulerCallableSupportHPO.from_callable" title="Link to this definition">#</a></dt>
+<dd><p>Create this class instance from an existing optimizer callable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.schedulers.SchedulerCallableSupportHPO.to_lazy_instance">
+<span class="sig-name descname"><span class="pre">to_lazy_instance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ClassType</span></span></span><a class="reference internal" href="../../../_modules/otx/core/schedulers/callable.html#SchedulerCallableSupportHPO.to_lazy_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.core.schedulers.SchedulerCallableSupportHPO.to_lazy_instance" title="Link to this definition">#</a></dt>
+<dd><p>Return lazy instance of this class.</p>
+<p>Because OTX is rely on jsonargparse library,
+the default value of class initialization
+argument should be the lazy instance.
+Please refer to <a class="reference external" href="https://jsonargparse.readthedocs.io/en/stable/#default-values">https://jsonargparse.readthedocs.io/en/stable/#default-values</a>
+for more details.</p>
+<p class="rubric">Examples</p>
+<p>This is an example to implement a new model with a <cite>StepLR</cite> scheduler and
+custom configurations as a default.</p>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a>python
+class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):</p>
+<blockquote>
+<div><dl>
+<dt>def __init__(</dt><dd><p>self,
+num_classes: int,
+optimizer: OptimizerCallable = DefaultOptimizerCallable,
+scheduler: LRSchedulerCallable | LRSchedulerListCallable = SchedulerCallableSupportHPO(</p>
+<blockquote>
+<div><p>scheduler_cls=StepLR,
+scheduler_kwargs={</p>
+<blockquote>
+<div><p>“step_size”: 10,
+“gamma”: 0.5,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>).to_lazy_instance(),
+metric: MetricCallable = MultiClassClsMetricCallable,
+torch_compile: bool = False,</p>
+</dd>
+</dl>
+<p>) -&gt; None:
+…</p>
+</div></blockquote>
+<p><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a></p>
+</dd></dl>
+
+</section>
 </dd></dl>
 
 </section>
@@ -527,6 +642,44 @@ Otherwise, the iteration step will be the warmup period.</p></li>
      <code class="docutils literal notranslate">
       <span class="pre">
        LinearWarmupSchedulerCallable.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.schedulers.SchedulerCallableSupportHPO">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SchedulerCallableSupportHPO
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.schedulers.SchedulerCallableSupportHPO.__call__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SchedulerCallableSupportHPO.__call__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.schedulers.SchedulerCallableSupportHPO.from_callable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SchedulerCallableSupportHPO.from_callable()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.schedulers.SchedulerCallableSupportHPO.to_lazy_instance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SchedulerCallableSupportHPO.to_lazy_instance()
       </span>
      </code>
     </a>

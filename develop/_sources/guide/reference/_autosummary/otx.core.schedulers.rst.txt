@@ -19,6 +19,7 @@ otx.core.schedulers
    
       LinearWarmupScheduler
       LinearWarmupSchedulerCallable
+      SchedulerCallableSupportHPO
    
    
 

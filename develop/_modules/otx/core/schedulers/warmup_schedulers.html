@@ -245,6 +245,8 @@
 
 <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LambdaLR</span><span class="p">,</span> <span class="n">LRScheduler</span>
 
+<span class="kn">from</span> <span class="nn">otx.core.schedulers.callable</span> <span class="kn">import</span> <span class="n">SchedulerCallableSupportHPO</span>
+
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">lightning.pytorch.cli</span> <span class="kn">import</span> <span class="n">LRSchedulerCallable</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span>
     <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
@@ -310,7 +312,7 @@
         <span class="n">warmup_interval</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">,</span> <span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;step&quot;</span><span class="p">,</span>
         <span class="n">monitor</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">main_scheduler_callable</span> <span class="o">=</span> <span class="n">main_scheduler_callable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">main_scheduler_callable</span> <span class="o">=</span> <span class="n">SchedulerCallableSupportHPO</span><span class="o">.</span><span class="n">from_callable</span><span class="p">(</span><span class="n">main_scheduler_callable</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_warmup_steps</span> <span class="o">=</span> <span class="n">num_warmup_steps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">warmup_interval</span> <span class="o">=</span> <span class="n">warmup_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="n">monitor</span>
