@@ -13,7 +13,14 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from datumaro import Label, LabelCategories
 
-__all__ = ["LabelInfo", "HLabelInfo", "SegLabelInfo", "NullLabelInfo"]
+__all__ = [
+    "LabelInfo",
+    "HLabelInfo",
+    "SegLabelInfo",
+    "NullLabelInfo",
+    "AnomalyLabelInfo",
+    "LabelInfoTypes",
+]
 
 
 @dataclass
@@ -41,9 +48,12 @@ class LabelInfo:
                 label_groups=[["label_0", ...]]
             )
         """
+        if num_classes < 0:
+            return NullLabelInfo()
+
         label_names = [f"label_{idx}" for idx in range(num_classes)]
 
-        return LabelInfo(
+        return cls(
             label_names=label_names,
             label_groups=[label_names],
         )
@@ -271,17 +281,35 @@ class HLabelInfo(LabelInfo):
 class SegLabelInfo(LabelInfo):
     """Meta information of Semantic Segmentation."""
 
-    def __init__(self, label_names: list[str], label_groups: list[list[str]], ignore_index: int = 255) -> None:
-        if not any(word.lower() == "background" for word in label_names):
+    ignore_index: int = 255
+
+    def __post_init__(self):
+        if not any(word.lower() == "background" for word in self.label_names):
             msg = (
                 "Currently, no background label exists for `label_names`. "
                 "Segmentation requires a background label. "
                 "To do this, `Background` is added at index 0 of `label_names`."
             )
             warnings.warn(msg, stacklevel=2)
-            label_names.insert(0, "Background")
-        super().__init__(label_names, label_groups)
-        self.ignore_index = ignore_index
+            self.label_names.insert(0, "Background")
+
+    @classmethod
+    def from_num_classes(cls, num_classes: int) -> LabelInfo:
+        """Create this object from the number of classes.
+
+        Args:
+            num_classes: Number of classes
+
+        Returns:
+            LabelInfo(
+                label_names=["Background", "label_0", ..., "label_{num_classes - 1}"]
+                label_groups=[["Background", "label_0", ..., "label_{num_classes - 1}"]]
+            )
+        """
+        # NOTE: It should have "Background" label at the first place.
+        # To consider it, we need to decrease num_classes by one.
+        num_classes = num_classes - 1
+        return super().from_num_classes(num_classes)
 
 
 @dataclass
@@ -295,3 +323,19 @@ class NullLabelInfo(LabelInfo):
     def from_json(cls, _: str) -> LabelInfo:
         """Reconstruct it from the JSON serialized string."""
         return cls()
+
+
+@dataclass
+class AnomalyLabelInfo(LabelInfo):
+    """Represent no label information. It is used for Anomaly tasks."""
+
+    def __init__(self) -> None:
+        super().__init__(label_names=["Normal", "Anomaly"], label_groups=[["Normal", "Anomaly"]])
+
+
+# Dispatching rules:
+# 1. label_info: int => LabelInfo.from_num_classes(label_info)
+# 2. label_info: list[str] => LabelInfo(label_names=label_info, label_groups=[label_info])
+# 3. label_info: LabelInfo => label_info
+# See OTXModel._dispatch_label_info() for more details
+LabelInfoTypes = LabelInfo | int | list[str]

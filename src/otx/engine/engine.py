@@ -265,7 +265,6 @@ class Engine:
         # NOTE: Model's label info should be converted datamodule's label info before ckpt loading
         # This is due to smart weight loading check label name as well as number of classes.
         if self.model.label_info != self.datamodule.label_info:
-            # TODO (vinnamki): Revisit label_info logic to make it cleaner
             msg = (
                 "Model label_info is not equal to the Datamodule label_info. "
                 f"It will be overriden: {self.model.label_info} => {self.datamodule.label_info}"

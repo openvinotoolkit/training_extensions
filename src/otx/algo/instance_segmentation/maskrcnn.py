@@ -16,6 +16,7 @@ from otx.core.metrics.mean_ap import MaskRLEMeanAPCallable
 from otx.core.model.base import DefaultOptimizerCallable, DefaultSchedulerCallable
 from otx.core.model.instance_segmentation import MMDetInstanceSegCompatibleModel
 from otx.core.schedulers import LRSchedulerListCallable
+from otx.core.types.label import LabelInfoTypes
 from otx.core.utils.utils import get_mean_std_from_data_processing
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         variant: Literal["efficientnetb2b", "r50"],
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
@@ -39,7 +40,7 @@ class MaskRCNN(MMDetInstanceSegCompatibleModel):
         model_name = f"maskrcnn_{variant}"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,
@@ -83,7 +84,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
 
     def __init__(
         self,
-        num_classes: int,
+        label_info: LabelInfoTypes,
         optimizer: OptimizerCallable = DefaultOptimizerCallable,
         scheduler: LRSchedulerCallable | LRSchedulerListCallable = DefaultSchedulerCallable,
         metric: MetricCallable = MaskRLEMeanAPCallable,
@@ -92,7 +93,7 @@ class MaskRCNNSwinT(MMDetInstanceSegCompatibleModel):
         model_name = "maskrcnn_swint"
         config = read_mmconfig(model_name=model_name)
         super().__init__(
-            num_classes=num_classes,
+            label_info=label_info,
             config=config,
             optimizer=optimizer,
             scheduler=scheduler,

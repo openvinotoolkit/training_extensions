@@ -22,9 +22,9 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
-from otx.core.types.label import HLabelInfo
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
+from otx.utils.utils import get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
@@ -369,22 +369,22 @@ class OTXCLI:
 
         skip = set()
 
-        # Update num_classes
-        if not self.get_config_value(self.config_init, "disable_infer_num_classes", False):
-            num_classes = self.datamodule.label_info.num_classes
-            if hasattr(model_config.init_args, "num_classes") and num_classes != model_config.init_args.num_classes:
-                warning_msg = (
-                    f"The `num_classes` in dataset is {num_classes} "
-                    f"but, the `num_classes` of model is {model_config.init_args.num_classes}. "
-                    f"So, Update `model.num_classes` to {num_classes}."
-                )
-                warn(warning_msg, stacklevel=0)
-                model_config.init_args.num_classes = num_classes
+        # Update label_info
+        model_cls = get_model_cls_from_config(model_config)
 
-            if isinstance(self.datamodule.label_info, HLabelInfo):
-                hlabel_info = self.datamodule.label_info
-                model_config.init_args.hlabel_info = hlabel_info
-                skip.add("hlabel_info")
+        if should_pass_label_info(model_cls) and not self.get_config_value(
+            self.config_init,
+            "disable_infer_num_classes",
+            False,
+        ):
+            model_config.init_args.label_info = self.datamodule.label_info
+            warning_msg = (
+                "Automatically infer label_info from the given dataset. "
+                "Then, giving it to the OTXModel.__init__() argument. "
+                "If you don't want this behavior, please use `--disable-infer-num-classes` option."
+            )
+            warn(warning_msg, stacklevel=0)
+            skip.add("label_info")
 
         # Parses the OTXModel separately to update num_classes.
         model_parser = ArgumentParser()
@@ -459,7 +459,7 @@ class OTXCLI:
         cfg = deepcopy(self.config.get(str(self.subcommand), self.config))
         cfg.model.init_args.pop("optimizer")
         cfg.model.init_args.pop("scheduler")
-        cfg.model.init_args.pop("hlabel_info")
+        cfg.model.init_args.pop("label_info")
 
         self.get_subcommand_parser(self.subcommand).save(
             cfg=cfg,
