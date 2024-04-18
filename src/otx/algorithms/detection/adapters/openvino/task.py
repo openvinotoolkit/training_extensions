@@ -265,6 +265,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
     ):
         model_adapter = OpenvinoAdapter(
             create_core(),
@@ -281,6 +282,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
+        configuration.update(model_configuration)
 
         model = Model.create_model(model_adapter, "MaskRCNN", configuration, preload=True)
         converter = RotatedRectToAnnotationConverter(label_schema, configuration)
