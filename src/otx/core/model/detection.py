@@ -181,6 +181,8 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
@@ -188,20 +190,17 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-        from otx.algo.explain.explain_algo import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
