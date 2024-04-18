@@ -146,14 +146,12 @@ class EfficientNetV2ForMulticlassCls(OTXMulticlassClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
@@ -261,14 +259,12 @@ class EfficientNetV2ForMultilabelCls(OTXMultilabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
 
 
 class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
@@ -405,11 +401,9 @@ class EfficientNetV2ForHLabelCls(OTXHlabelClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: torch.Tensor) -> torch.Tensor | dict[str, torch.Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
