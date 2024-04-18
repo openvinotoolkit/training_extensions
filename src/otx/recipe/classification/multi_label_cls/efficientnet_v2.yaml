@@ -1,5 +1,5 @@
 model:
-  class_path: otx.algo.classification.efficientnet_v2_test.EfficientNetV2ForMultilabelCls
+  class_path: otx.algo.classification.efficientnet_v2.EfficientNetV2ForMultilabelCls
   init_args:
     num_classes: 1000
     loss_callable:
@@ -49,7 +49,7 @@ overrides:
         batch_size: 64
         transforms:
           # TODO(harimkang): There is currently a slowdown issue with some transforms in torchvision.transforms.
-          # https://github.com/openvinotoolkit/training_extensions/pull/3253 -> A revisit is required after this PR is merged.
+          # https://github.com/openvinotoolkit/training_extensions/pull/3352 -> A revisit is required after this PR is merged.
           - class_path: torchvision.transforms.v2.RandomResizedCrop
             init_args:
               size:
