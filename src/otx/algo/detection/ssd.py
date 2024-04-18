@@ -252,6 +252,38 @@ class SingleStageDetector(nn.Module):
         results_list = self.bbox_head.predict(x, batch_data_samples, rescale=rescale)
         return self.add_pred_to_datasample(batch_data_samples, results_list)
 
+    def export(
+        self,
+        batch_inputs: Tensor,
+        batch_data_samples: list[InstanceData],
+        rescale: bool = True,
+    ) -> list[InstanceData]:
+        """Predict results from a batch of inputs and data samples with post-processing.
+
+        Args:
+            batch_inputs (Tensor): Inputs with shape (N, C, H, W).
+            batch_data_samples (List[:obj:`InstanceData`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            rescale (bool): Whether to rescale the results.
+                Defaults to True.
+
+        Returns:
+            list[:obj:`InstanceData`]: Detection results of the
+            input images. Each InstanceData usually contain
+            'pred_instances'. And the ``pred_instances`` usually
+            contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+        """
+        x = self.extract_feat(batch_inputs)
+        return self.bbox_head.export(x, batch_data_samples, rescale=rescale)
+
     def _forward(
         self,
         batch_inputs: Tensor,
@@ -598,7 +630,7 @@ class SSD(MMDetCompatibleModel):
             metainfo=meta_info,
         )
         data_samples = [sample] * len(inputs)
-        return self.model.forward(inputs, data_samples, mode="predict")
+        return self.model.export(inputs, data_samples)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on load checkpoint."""
