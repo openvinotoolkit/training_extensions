@@ -613,7 +613,7 @@ class SSD(MMDetCompatibleModel):
             resize_mode="standard",
             pad_value=0,
             swap_rgb=False,
-            via_onnx=False,
+            via_onnx=True,
             onnx_export_configuration=None,
             output_names=["feature_vector", "saliency_map"] if self.explain_mode else None,
         )

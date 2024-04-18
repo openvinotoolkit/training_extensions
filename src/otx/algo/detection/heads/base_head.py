@@ -15,6 +15,7 @@ from mmengine.model import constant_init
 from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
+from otx.algo.detection.ops.nms import multiclass_nms
 from otx.algo.detection.utils.utils import filter_scores_and_topk, select_single_mlvl, unpack_gt_instances
 
 if TYPE_CHECKING:
@@ -666,13 +667,10 @@ class BaseDenseHead(nn.Module):
         bboxes = self.bbox_coder.decode_export(priors, bbox_pred, max_shape=img_shape)
         scores = torch.cat(mlvl_scores, dim=1)
 
-        from mmdeploy.mmcv.ops import multiclass_nms
-
         return multiclass_nms(
             bboxes,
             scores,
             cfg.max_per_img,
-            nms_type="nms",
             iou_threshold=cfg.nms.iou_threshold,
             score_threshold=cfg.score_thr,
             pre_top_k=5000,
