@@ -172,7 +172,7 @@ def test_otx_hpo(
         reason = f"test_otx_hpo for {task} isn't prepared yet."
         pytest.xfail(reason=reason)
 
-    model = EfficientNetB0ForMulticlassCls(num_classes=2)
+    model = EfficientNetB0ForMulticlassCls(label_info=2)
     hpo_config = HpoConfig(metric_name=METRIC_NAME[task], expected_time_ratio=2, num_workers=1)
     work_dir = str(tmp_path)
     engine = Engine(

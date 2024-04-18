@@ -265,14 +265,3 @@ class OVSegmentationModel(OVModel[SegBatchDataEntity, SegBatchPredEntity]):
 
         msg = "Cannot construct LabelInfo from OpenVINO IR. Please check this model is trained by OTX."
         raise ValueError(msg)
-
-    @staticmethod
-    def _dispatch_label_info(label_info: LabelInfoTypes) -> LabelInfo:
-        if isinstance(label_info, int):
-            return SegLabelInfo.from_num_classes(num_classes=label_info)
-        if isinstance(label_info, Sequence) and all(isinstance(name, str) for name in label_info):
-            return SegLabelInfo(label_names=label_info, label_groups=[label_info])
-        if isinstance(label_info, SegLabelInfo):
-            return label_info
-
-        raise TypeError(label_info)
