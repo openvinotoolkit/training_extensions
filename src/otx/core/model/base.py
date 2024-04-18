@@ -19,7 +19,7 @@ import numpy as np
 import openvino
 import torch
 from jsonargparse import ArgumentParser
-from lightning import LightningModule
+from lightning import LightningModule, Trainer
 from openvino.model_api.models import Model
 from openvino.model_api.tilers import Tiler
 from torch import Tensor, nn
@@ -35,7 +35,6 @@ from otx.core.data.entity.base import (
     T_OTXBatchPredEntity,
 )
 from otx.core.data.entity.tile import OTXTileBatchDataEntity
-from otx.core.exporter.base import OTXModelExporter
 from otx.core.exporter.native import OTXNativeModelExporter
 from otx.core.metrics import MetricInput, NullMetricCallable
 from otx.core.optimizer.callable import OptimizerCallableSupportHPO
@@ -57,6 +56,7 @@ if TYPE_CHECKING:
     from torch.optim.optimizer import Optimizer, params_t
 
     from otx.core.data.module import OTXDataModule
+    from otx.core.exporter.base import OTXModelExporter
     from otx.core.metrics import MetricCallable
 
 logger = logging.getLogger()
@@ -115,7 +115,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         self.torch_compile = torch_compile
         self._explain_mode = False
 
-        self._tile_config: TileConfig | None = None
+        self._tile_config = TileConfig(enable_tiler=False)
 
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
@@ -346,9 +346,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
         checkpoint["label_info"] = self.label_info
         checkpoint["otx_version"] = __version__
-
-        if self._tile_config:
-            checkpoint["tile_config"] = self._tile_config
+        checkpoint["tile_config"] = self.tile_config
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Callback on loading checkpoint."""
@@ -358,7 +356,7 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
             self._label_info = ckpt_label_info
 
         if ckpt_tile_config := checkpoint.get("tile_config", None):
-            self._tile_config = ckpt_tile_config
+            self.tile_config = ckpt_tile_config
 
     def load_state_dict_incrementally(self, ckpt: dict[str, Any], *args, **kwargs) -> None:
         """Load state dict incrementally."""
@@ -499,19 +497,20 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
 
     def forward_explain(self, inputs: T_OTXBatchDataEntity) -> T_OTXBatchPredEntity:
         """Model forward explain function."""
-        raise NotImplementedError
+        msg = "Derived model class should implement this class to support the explain pipeline."
+        raise NotImplementedError(msg)
+
+    def forward_for_tracing(self, *args, **kwargs) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        msg = (
+            "Derived model class should implement this class to support the export pipeline. "
+            "If it wants to use `otx.core.exporter.native.OTXNativeModelExporter`."
+        )
+        raise NotImplementedError(msg)
 
     def get_explain_fn(self) -> Callable:
         """Returns explain function."""
         raise NotImplementedError
-
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        pass
-
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        pass
 
     def forward_tiles(
         self,
@@ -610,16 +609,27 @@ class OTXModel(LightningModule, Generic[T_OTXBatchDataEntity, T_OTXBatchPredEnti
         Returns:
             Path: path to the exported model.
         """
-        self._reset_model_forward()
-        exported_model_path = self._exporter.export(
-            self.model,
-            output_dir,
-            base_name,
-            export_format,
-            precision,
-        )
-        self._restore_model_forward()
-        return exported_model_path
+        mode = self.training
+        self.eval()
+
+        orig_forward = self.forward
+        orig_trainer = self._trainer  # type: ignore[has-type]
+
+        try:
+            if self._trainer is None:  # type: ignore[has-type]
+                self._trainer = Trainer()
+            self.forward = self.forward_for_tracing  # type: ignore[method-assign, assignment]
+            return self._exporter.export(
+                self,
+                output_dir,
+                base_name,
+                export_format,
+                precision,
+            )
+        finally:
+            self.train(mode)
+            self.forward = orig_forward  # type: ignore[method-assign]
+            self._trainer = orig_trainer
 
     @property
     def _exporter(self) -> OTXModelExporter:
