@@ -221,7 +221,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_test_start."""
-        otx_zero_shot_visual_prompting_model.model.load_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -238,7 +238,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_predict_start."""
-        otx_zero_shot_visual_prompting_model.model.load_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -256,7 +256,7 @@ class TestOTXZeroShotVisualPromptingModel:
     def test_on_train_epoch_end(self, mocker, tmpdir, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_train_epoch_end."""
         otx_zero_shot_visual_prompting_model.save_outputs = True
-        otx_zero_shot_visual_prompting_model.model.save_reference_info = Mock()
+        otx_zero_shot_visual_prompting_model.save_reference_info = Mock()
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer, "default_root_dir")
 
