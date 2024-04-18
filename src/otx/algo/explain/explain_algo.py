@@ -19,7 +19,7 @@ HeadForwardFn = Callable[[FeatureMapType], torch.Tensor]
 ExplainerForwardFn = HeadForwardFn
 
 
-def get_feature_vector(feature_map: FeatureMapType) -> torch.Tensor:
+def feature_vector_fn(feature_map: FeatureMapType) -> torch.Tensor:
     """Generate the feature vector by average pooling feature maps."""
     if isinstance(feature_map, (list, tuple)):
         # aggregate feature maps from Feature Pyramid Network

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.exporter.base import OTXModelExporter
     from otx.core.metrics import MetricCallable
@@ -182,6 +182,10 @@ class MMActionCompatibleModel(OTXActionClsModel):
             onnx_export_configuration=None,
             output_names=None,
         )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model(inputs=image, mode="tensor")
 
 
 class OVActionClsModel(

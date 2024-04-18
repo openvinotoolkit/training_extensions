@@ -45,6 +45,10 @@ class TestOTXTVModel:
 
         assert isinstance(outputs, MulticlassClsBatchPredEntity)
         assert outputs.has_xai_outputs == explain_mode
+        if explain_mode:
+            assert outputs.feature_vector.ndim == 2
+            assert outputs.saliency_map.ndim == 4
+            assert outputs.saliency_map.shape[-2:] != torch.Size([1, 1])
 
     def test_freeze_backbone(self):
         freezed_model = OTXTVModel(backbone="resnet50", num_classes=10, freeze_backbone=True)

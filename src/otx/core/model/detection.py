@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import torch
 from openvino.model_api.models import Model
@@ -180,6 +181,8 @@ class ExplainableOTXDetModel(OTXDetectionModel):
         metric: MetricCallable = MeanAPCallable,
         torch_compile: bool = False,
     ) -> None:
+        from otx.algo.explain.explain_algo import feature_vector_fn
+
         super().__init__(
             num_classes=num_classes,
             optimizer=optimizer,
@@ -187,20 +190,17 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             metric=metric,
             torch_compile=torch_compile,
         )
-
-        from otx.algo.explain.explain_algo import get_feature_vector
-
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
     def forward_explain(self, inputs: DetBatchDataEntity) -> DetBatchPredEntity:
         """Model forward function."""
-        from otx.algo.explain.explain_algo import get_feature_vector
+        from otx.algo.explain.explain_algo import feature_vector_fn
 
         if isinstance(inputs, OTXTileBatchDataEntity):
             return self.forward_tiles(inputs)
 
-        self.model.feature_vector_fn = get_feature_vector
+        self.model.feature_vector_fn = feature_vector_fn
         self.model.explain_fn = self.get_explain_fn()
 
         # If customize_inputs is overridden
@@ -272,6 +272,19 @@ class ExplainableOTXDetModel(OTXDetectionModel):
             num_anchors=self.get_num_anchors(),
         )
         return explainer.func
+
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
 
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:

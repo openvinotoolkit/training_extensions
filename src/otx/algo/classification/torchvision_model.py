@@ -8,10 +8,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 import torch
-from torch import nn
+from torch import Tensor, nn
 from torchvision.models import get_model, get_model_weights
 
-from otx.algo.explain.explain_algo import ReciproCAM
+from otx.algo.explain.explain_algo import ReciproCAM, feature_vector_fn
 from otx.core.data.entity.base import OTXBatchLossEntity
 from otx.core.data.entity.classification import MulticlassClsBatchDataEntity, MulticlassClsBatchPredEntity
 from otx.core.exporter.base import OTXModelExporter
@@ -139,6 +139,15 @@ class TVModelWithLossComputation(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.loss = loss
 
+        avgpool_index = 0
+        for i, layer in enumerate(self.backbone.children()):
+            if isinstance(layer, nn.AdaptiveAvgPool2d):
+                avgpool_index = i
+        self.feature_extractor = nn.Sequential(*list(self.backbone.children())[:avgpool_index])
+        self.avgpool = nn.Sequential(
+            *list(self.backbone.children())[avgpool_index:],
+        )  # Avgpool and Dropout (if the model has it)
+
         self.explainer = ReciproCAM(
             self._head_forward_fn,
             num_classes=num_classes,
@@ -175,16 +184,14 @@ class TVModelWithLossComputation(nn.Module):
         return self.softmax(logits)
 
     def _forward_explain(self, images: torch.Tensor) -> dict[str, torch.Tensor | list[torch.Tensor]]:
-        x = self.backbone(images)
-        backbone_feat = x
+        backbone_feat = self.feature_extractor(images)
 
         saliency_map = self.explainer.func(backbone_feat)
+        feature_vector = feature_vector_fn(backbone_feat)
 
+        x = self.avgpool(backbone_feat)
         if len(x.shape) == 4 and not self.use_layer_norm_2d:
             x = x.view(x.size(0), -1)
-
-        feature_vector = x
-
         logits = self.head(x)
 
         return {
@@ -198,6 +205,7 @@ class TVModelWithLossComputation(nn.Module):
     @torch.no_grad()
     def _head_forward_fn(self, x: torch.Tensor) -> torch.Tensor:
         """Performs model's neck and head forward."""
+        x = self.avgpool(x)
         if len(x.shape) == 4 and not self.use_layer_norm_2d:
             x = x.view(x.size(0), -1)
         return self.head(x)
@@ -312,11 +320,9 @@ class OTXTVModel(OTXMulticlassClsModel):
             feature_vector=outputs["feature_vector"],
         )
 
-    def _reset_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.__orig_model_forward = self.model.forward
-        self.model.forward = self.model._forward_explain  # type: ignore[assignment] # noqa: SLF001
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        if self.explain_mode:
+            return self.model(images=image, mode="explain")
 
-    def _restore_model_forward(self) -> None:
-        # TODO(vinnamkim): This will be revisited by the export refactoring
-        self.model.forward = self.__orig_model_forward  # type: ignore[method-assign]
+        return self.model(images=image, mode="tensor")
