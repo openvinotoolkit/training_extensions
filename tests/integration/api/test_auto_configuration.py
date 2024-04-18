@@ -45,6 +45,8 @@ def test_auto_configuration(
     )
     if task.lower() == "zero_shot_visual_prompting":
         engine.model.infer_reference_info_root = Path()
+        # update litmodule.hparams to reflect changed hparams
+        engine.model.hparams.update({"infer_reference_info_root": str(engine.model.infer_reference_info_root)})
 
     # Check OTXModel & OTXDataModule
     assert isinstance(engine.model, OTXModel)

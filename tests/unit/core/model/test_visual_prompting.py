@@ -221,7 +221,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_test_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_test_start."""
-        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -238,7 +238,7 @@ class TestOTXZeroShotVisualPromptingModel:
 
     def test_on_predict_start(self, mocker, otx_zero_shot_visual_prompting_model) -> None:
         """Test on_predict_start."""
-        otx_zero_shot_visual_prompting_model.load_reference_info = Mock(return_value=False)
+        otx_zero_shot_visual_prompting_model.model.load_reference_info = Mock(return_value=False)
         otx_zero_shot_visual_prompting_model.trainer = Mock()
         mocker_run = mocker.patch.object(otx_zero_shot_visual_prompting_model.trainer.fit_loop, "run")
         mocker_setup_data = mocker.patch.object(
@@ -645,7 +645,8 @@ class TestOVZeroShotVisualPromptingModel:
 
         # get previously saved reference info
         mocker.patch(
-            "pickle.load", return_value={"reference_feats": np.zeros((1, 1, 256)), "used_indices": np.array([0])}
+            "pickle.load",
+            return_value={"reference_feats": np.zeros((1, 1, 256)), "used_indices": np.array([0])},
         )
         mocker.patch("pathlib.Path.is_file", return_value=True)
         mocker.patch("pathlib.Path.open", return_value="Mocked data")

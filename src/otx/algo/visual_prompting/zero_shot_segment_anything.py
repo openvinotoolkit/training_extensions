@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging as log
-import os
+import pickle
 from collections import defaultdict
 from copy import deepcopy
 from itertools import product
@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import torch
-import pickle
 import torchvision.transforms.v2 as tvt_v2
 from datumaro import Polygon as dmPolygon
 from torch import LongTensor, Tensor, nn
@@ -625,7 +624,7 @@ class ZeroShotSegmentAnything(SegmentAnything):
 class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
     """Zero-Shot Visual Prompting model."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         backbone: Literal["tiny_vit", "vit_b"],
         num_classes: int = 0,
@@ -888,17 +887,11 @@ class OTXZeroShotSegmentAnything(OTXZeroShotVisualPromptingModel):
         # save reference info
         path_reference_info: Path = Path(default_root_dir) / self.reference_info_dir / "reference_info.pt"
         Path.mkdir(Path(path_reference_info).parent, parents=True, exist_ok=True)
-        if isinstance(self, OTXZeroShotVisualPromptingModel):
-            # with torch model
-            torch.save(reference_info, path_reference_info)
-            pickle.dump(
-                {k: v.numpy() for k, v in reference_info.items()},
-                Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
-            )
-        else:
-            # with ov model
-            torch.save({k: torch.as_tensor(v) for k, v in reference_info.items()}, path_reference_info)
-            pickle.dump(reference_info, Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"))
+        torch.save(reference_info, path_reference_info)
+        pickle.dump(
+            {k: v.numpy() for k, v in reference_info.items()},
+            Path.open(Path(str(path_reference_info).replace(".pt", ".pickle")), "wb"),
+        )
         log.info(f"Saved reference info at {path_reference_info}.")
 
     def load_reference_info(self, default_root_dir: Path | str, device: str | torch.device = "cpu") -> bool:
