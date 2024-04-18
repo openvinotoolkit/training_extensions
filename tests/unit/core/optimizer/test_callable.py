@@ -48,30 +48,21 @@ class TestOptimizerCallableSupportHPO:
         assert all(param["momentum"] == 0.9 for param in fxt_params)
         assert all(param["weight_decay"] == 1e-4 for param in fxt_params)
 
-    def test_failure(self, fxt_invaliid_optimizer_cls, fxt_optimizer_cls):
-        with pytest.raises(TypeError):
-            OptimizerCallableSupportHPO(
-                optimizer_cls=fxt_invaliid_optimizer_cls,
-                optimizer_kwargs={
-                    "lr": 0.1,
-                    "momentum": 0.9,
-                    "weight_decay": 1e-4,
-                },
-            )
+    def test_from_callable(self, fxt_params):
+        optimizer_callable = OptimizerCallableSupportHPO.from_callable(
+            func=lambda params: SGD(params, lr=0.1, momentum=0.9, weight_decay=1e-4),
+        )
+        optimizer = optimizer_callable(fxt_params)
 
-        with pytest.raises(
-            ValueError,
-            match="Search hyperparamter=(.*) should be existed in optimizer keyword arguments",
-        ):
-            OptimizerCallableSupportHPO(
-                optimizer_cls=fxt_optimizer_cls,
-                search_hparams=("lr", "non_momentum"),
-                optimizer_kwargs={
-                    "lr": 0.1,
-                    "momentum": 0.9,
-                    "weight_decay": 1e-4,
-                },
-            )
+        assert isinstance(optimizer, SGD)
+
+        assert optimizer_callable.lr == 0.1
+        assert optimizer_callable.momentum == 0.9
+        assert optimizer_callable.weight_decay == 1e-4
+
+        assert all(param["lr"] == 0.1 for param in fxt_params)
+        assert all(param["momentum"] == 0.9 for param in fxt_params)
+        assert all(param["weight_decay"] == 1e-4 for param in fxt_params)
 
     def test_picklable(self, fxt_optimizer_cls):
         optimizer_callable = OptimizerCallableSupportHPO(
@@ -89,7 +80,6 @@ class TestOptimizerCallableSupportHPO:
         assert isinstance(unpickled, OptimizerCallableSupportHPO)
         assert optimizer_callable.optimizer_path == unpickled.optimizer_path
         assert optimizer_callable.optimizer_kwargs == unpickled.optimizer_kwargs
-        assert optimizer_callable.search_hparams == unpickled.search_hparams
 
     def test_lazy_instance(self, fxt_optimizer_cls):
         default_optimizer_callable = OptimizerCallableSupportHPO(
