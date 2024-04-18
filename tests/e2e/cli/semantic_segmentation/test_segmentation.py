@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import torch
 
+from otx.algorithms.common.utils.utils import is_xpu_available
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -187,6 +188,8 @@ class TestToolsOTXSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -194,6 +197,8 @@ class TestToolsOTXSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_export_testing(template, tmp_dir_path)
 
@@ -201,6 +206,8 @@ class TestToolsOTXSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "semantic_segmentation", type(self).__name__)
 
@@ -208,6 +215,8 @@ class TestToolsOTXSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
@@ -215,6 +224,8 @@ class TestToolsOTXSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        if is_xpu_available():
+            pytest.skip("NNCF is not supported on XPU")
         tmp_dir_path = tmp_dir_path / "segmentation"
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
