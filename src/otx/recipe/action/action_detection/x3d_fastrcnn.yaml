@@ -1,7 +1,7 @@
 model:
   class_path: otx.algo.action_detection.x3d_fastrcnn.X3DFastRCNN
   init_args:
-    num_classes: 81
+    label_info: 81
     topk: 3
 
     optimizer:
