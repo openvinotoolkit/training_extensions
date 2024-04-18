@@ -404,10 +404,10 @@
 <section id="anomaly-segmentation">
 <h3>Anomaly Segmentation<a class="headerlink" href="#anomaly-segmentation" title="Link to this heading">#</a></h3>
 <p>The anomaly segmentation task locates anomalies at the pixel level. Similar to anomaly classification and detection, a model is trained on only normal images. During the validation and testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.</p>
-<figure class="align-center" id="id10">
+<figure class="align-center" id="id9">
 <span id="fig-anomaly-tasks"></span><a class="reference internal image-reference" href="../../../../_images/anomaly_tasks.png"><img alt="Anomaly Task Types" src="../../../../_images/anomaly_tasks.png" style="width: 600px;" /></a>
 <figcaption>
-<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id10" title="Link to this image">#</a></p>
+<p><span class="caption-text">Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task</span><a class="headerlink" href="#id9" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
@@ -539,35 +539,6 @@
 </section>
 </section>
 </section>
-<section id="reconstruction-based-models">
-<h3>Reconstruction-based Models<a class="headerlink" href="#reconstruction-based-models" title="Link to this heading">#</a></h3>
-<p>These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OpenVINO Training Extensions currently supports <a class="reference external" href="https://arxiv.org/pdf/2108.07610v2.pdf">DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection</a>.</p>
-<section id="draem">
-<h4>DRÆM<a class="headerlink" href="#draem" title="Link to this heading">#</a></h4>
-<figure class="align-center">
-<a class="reference internal image-reference" href="../../../../_images/draem.png"><img alt="Anomaly Task Types" src="../../../../_images/draem.png" style="width: 600px;" /></a>
-</figure>
-<p>A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.</p>
-<section id="id9">
-<h5>Training Parameters<a class="headerlink" href="#id9" title="Link to this heading">#</a></h5>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Enable</span> <span class="pre">SSPCAB</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">False</span></code>. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the model will use the SSPCAB block.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SSPCAB</span> <span class="pre">Lambda</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">0.1</span></code>. This parameter is used to control the trade-off between the self-supervised reconstruction loss and the training loss.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Anomaly</span> <span class="pre">Source</span> <span class="pre">Path</span></code>: The default value is <code class="docutils literal notranslate"><span class="pre">None</span></code>. This parameter is used to specify the path to the anomaly source images.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Beta</span></code>: Parameter that determines the opacity of the noise mask. The default is (0.1, 1.0).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span></code>: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.</p></li>
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">Training</span> <span class="pre">Techniques</span></code>:</dt><dd><ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">Stopping</span></code>: Early stopping is used to prevent overfitting. The early stopping patience can be configured by the user. By default, early stopping is enabled with a patience of 20 epochs.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</section>
-</section>
-</section>
 </section>
 </section>
 
@@ -672,25 +643,6 @@
       <ul class="nav section-nav flex-column">
        <li class="toc-h5 nav-item toc-entry">
         <a class="reference internal nav-link" href="#training-parameters">
-         Training Parameters
-        </a>
-       </li>
-      </ul>
-     </li>
-    </ul>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#reconstruction-based-models">
-     Reconstruction-based Models
-    </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#draem">
-       DRÆM
-      </a>
-      <ul class="nav section-nav flex-column">
-       <li class="toc-h5 nav-item toc-entry">
-        <a class="reference internal nav-link" href="#id9">
          Training Parameters
         </a>
        </li>
