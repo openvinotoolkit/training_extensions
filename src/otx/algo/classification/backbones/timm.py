@@ -109,20 +109,3 @@ class TimmBackbone(nn.Module):
             print(f"init weight - {pretrained_urls[self.key]}")
         if checkpoint is not None:
             load_checkpoint_to_model(self, checkpoint)
-
-
-# class EfficientNetV2(TimmModelsWrapper):
-#     """EfficientNetV2 for OTX."""
-
-#     def __init__(self, version="s_21k", **kwargs):
-#         self.model_name = "efficientnetv2_" + version
-#         super().__init__(model_name=self.model_name, **kwargs)
-
-#     def init_weights(self, pretrained=None):
-#         """Initialize weights."""
-#         if isinstance(pretrained, str) and os.path.exists(pretrained):
-#             load_checkpoint(self, pretrained)
-#             print(f"init weight - {pretrained}")
-#         elif pretrained is not None:
-#             load_checkpoint(self, pretrained_urls[self.model_name])
-#             print(f"init weight - {pretrained_urls[self.model_name]}")
