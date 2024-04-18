@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from mmpretrain.models.utils import ClsDataPreprocessor
     from omegaconf import DictConfig
     from openvino.model_api.models.utils import ClassificationResult
-    from torch import nn
+    from torch import Tensor, nn
 
     from otx.core.metrics import MetricCallable
 
@@ -229,6 +229,10 @@ class MMPretrainMulticlassClsModel(OTXMulticlassClsModel):
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
 
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
+
 
 ### NOTE, currently, although we've made the separate Multi-cls, Multi-label classes
 ### It'll be integrated after H-label classification integration with more advanced design.
@@ -273,6 +277,10 @@ class OTXMultilabelClsModel(OTXModel[MultilabelClsBatchDataEntity, MultilabelCls
             "preds": torch.stack(preds.scores),
             "target": torch.stack(inputs.labels),
         }
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
 
 
 class MMPretrainMultilabelClsModel(OTXMultilabelClsModel):
@@ -621,6 +629,10 @@ class MMPretrainHlabelClsModel(OTXHlabelClsModel):
             onnx_export_configuration=None,
             output_names=["logits", "feature_vector", "saliency_map"] if self.explain_mode else None,
         )
+
+    def forward_for_tracing(self, image: Tensor) -> Tensor | dict[str, Tensor]:
+        """Model forward function used for the model tracing during model exportation."""
+        return self.model.forward(image, mode="tensor")
 
 
 class OVMulticlassClassificationModel(

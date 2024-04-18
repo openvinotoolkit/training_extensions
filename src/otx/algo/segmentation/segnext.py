@@ -73,7 +73,7 @@ class SegNext(MMSegCompatibleModel):
         # TODO(Kirill): check PTQ removing hamburger from ignored_scope
         return {
             "ignored_scope": {
-                "patterns": ["__module.decode_head.hamburger*"],
+                "patterns": ["__module.model.decode_head.hamburger*"],
                 "types": [
                     "Add",
                     "MVN",

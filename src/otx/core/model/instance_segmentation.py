@@ -7,7 +7,8 @@ from __future__ import annotations
 
 import logging as log
 import types
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Literal
 
 import numpy as np
 import torch
@@ -295,6 +296,19 @@ class ExplainableOTXInstanceSegModel(OTXInstanceSegModel):
 
         explainer = MaskRCNNExplainAlgo(num_classes=self.num_classes)
         return explainer.func
+
+    @contextmanager
+    def export_model_forward_context(self) -> Iterator[None]:
+        """A context manager for managing the model's forward function during model exportation.
+
+        It temporarily modifies the model's forward function to generate output sinks
+        for explain results during the model graph tracing.
+        """
+        try:
+            self._reset_model_forward()
+            yield
+        finally:
+            self._restore_model_forward()
 
     def _reset_model_forward(self) -> None:
         if not self.explain_mode:
