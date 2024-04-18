@@ -504,13 +504,13 @@ class Resize(tvt_v2.Transform):
             inputs.image = F.to_image(img)
             inputs.img_info = _resize_image_info(inputs.img_info, img.shape[:2])
 
-            scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): revert to (h, w)
+            scale_factor = (scale[0] / img_shape[1], scale[1] / img_shape[0])  # TODO (sungchul): ticket no. 138831
         return inputs, scale_factor
 
     def _resize_bboxes(self, inputs: DetDataEntity, scale_factor: tuple[float, float]) -> DetDataEntity:
         """Resize bounding boxes with inputs.img_info.scale_factor."""
         if (bboxes := getattr(inputs, "bboxes", None)) is not None:
-            bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): revert to (h, w)
+            bboxes = rescale_bboxes(bboxes, scale_factor)  # TODO (sungchul): ticket no. 138831
             if self.clip_object_border:
                 bboxes = clip_bboxes(bboxes, inputs.img_info.img_shape)
             inputs.bboxes = tv_tensors.BoundingBoxes(bboxes, format="XYXY", canvas_size=inputs.img_info.img_shape)
@@ -1457,7 +1457,7 @@ class YOLOXHSVRandomAug(tvt_v2.Transform):
 
         img = to_np_image(inputs.image)
         hsv_gains = self._get_hsv_gains()
-        # TODO (sungchul): OTX consumes RGB images but mmx assumes they are BGR.
+        # TODO (sungchul): OTX det models except for YOLOX-S, L, X consume RGB images but mmdet assumes they are BGR.
         img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV).astype(np.int16)
 
         img_hsv[..., 0] = (img_hsv[..., 0] + hsv_gains[0]) % 180
