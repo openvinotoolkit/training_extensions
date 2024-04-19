@@ -47,8 +47,6 @@ bbox_head:
     - 96
     - 320
   use_depthwise: true
-  act_cfg:
-    type: ReLU
   init_cfg:
     type: Xavier
     layer: Conv2d

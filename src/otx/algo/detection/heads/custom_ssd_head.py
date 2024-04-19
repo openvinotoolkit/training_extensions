@@ -59,7 +59,6 @@ class SSDHead(AnchorHead):
         anchor_generator: ConfigDict | dict,
         bbox_coder: ConfigDict | dict,
         init_cfg: ConfigDict | dict | list[ConfigDict] | list[dict],
-        act_cfg: ConfigDict | dict,
         train_cfg: ConfigDict | dict,
         num_classes: int = 80,
         in_channels: tuple[int, ...] = (512, 1024, 512, 256, 256, 256),
@@ -75,7 +74,6 @@ class SSDHead(AnchorHead):
         self.stacked_convs = stacked_convs
         self.feat_channels = feat_channels
         self.use_depthwise = use_depthwise
-        self.act_cfg = act_cfg  # TODO(Jaeguk): act_cfg will be deprecated after implementing export.
 
         self.cls_out_channels = num_classes + 1  # add background class
         self.prior_generator = SSDAnchorGeneratorClustered(**anchor_generator)
