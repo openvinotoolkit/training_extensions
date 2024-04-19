@@ -64,7 +64,6 @@ class SingleStageDetector(nn.Module):
         self.backbone = _build_pytorchcv_model(**backbone)
         bbox_head.update(train_cfg=train_cfg)
         bbox_head.update(test_cfg=test_cfg)
-        bbox_head.pop("type")
         self.bbox_head = SSDHead(**bbox_head)
         if isinstance(data_preprocessor, nn.Module):
             self.data_preprocessor = data_preprocessor
@@ -423,7 +422,6 @@ class SSD(MMDetCompatibleModel):
 
         config = deepcopy(self.config)
         self.classification_layers = self.get_classification_layers(config, "model.")
-        config.pop("type")
         detector = SingleStageDetector(**convert_conf_to_mmconfig_dict(config))
         if self.load_from is not None:
             load_checkpoint(detector, self.load_from, map_location="cpu")
@@ -545,7 +543,6 @@ class SSD(MMDetCompatibleModel):
             so we have to update every anchors.
         """
         sample_config = deepcopy(config)
-        sample_config.pop("type")
         modify_num_classes(sample_config, 3)
         sample_model_dict = SingleStageDetector(**convert_conf_to_mmconfig_dict(sample_config)).state_dict()
 
