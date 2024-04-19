@@ -165,14 +165,14 @@ def should_pass_label_info(model_cls: type[OTXModel]) -> bool:
     return label_info_param is not None and label_info_param.default == label_info_param.empty
 
 
-def should_pass_tile_config(model_cls: type[OTXModel]) -> bool:
-    """Determine if tile_config should be passed when instantiating the given model class.
+def can_pass_tile_config(model_cls: type[OTXModel]) -> bool:
+    """Determine if tile_config can be passed when instantiating the given model class.
 
     Args:
         model_cls (Type[OTXModel]): OTX model class to instantiate.
 
     Returns:
-        bool: True if tile_config should be passed, False otherwise.
+        bool: True if tile_config can be passed, False otherwise.
     """
     tile_config_param = inspect.signature(model_cls).parameters.get("tile_config")
     return tile_config_param is not None

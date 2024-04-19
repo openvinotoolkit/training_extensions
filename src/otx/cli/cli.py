@@ -21,14 +21,14 @@ from otx.cli.utils import absolute_path
 from otx.cli.utils.help_formatter import CustomHelpFormatter
 from otx.cli.utils.jsonargparse import get_short_docstring, patch_update_configs
 from otx.cli.utils.workspace import Workspace
-from otx.core.data.module import OTXDataModule
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
-from otx.utils.utils import should_pass_tile_config
+from otx.utils.utils import can_pass_tile_config
 
 if TYPE_CHECKING:
     from jsonargparse._actions import _ActionSubCommands
 
+    from otx.core.data.module import OTXDataModule
     from otx.core.model.base import OTXModel
 
 
@@ -390,7 +390,7 @@ class OTXCLI:
             skip.add("label_info")
 
         # Update tile config due to adaptive tiling
-        if should_pass_tile_config(model_cls):
+        if can_pass_tile_config(model_cls):
             model_config.init_args.tile_config = self.datamodule.tile_config
             skip.add("tile_config")
 

@@ -22,7 +22,7 @@ from otx.core.types.label import LabelInfo, LabelInfoTypes
 from otx.core.types.task import OTXTaskType
 from otx.core.utils.imports import get_otx_root_path
 from otx.core.utils.instantiators import partial_instantiate_class
-from otx.utils.utils import get_model_cls_from_config, should_pass_label_info, should_pass_tile_config
+from otx.utils.utils import can_pass_tile_config, get_model_cls_from_config, should_pass_label_info
 
 if TYPE_CHECKING:
     from lightning.pytorch.cli import LRSchedulerCallable, OptimizerCallable
@@ -279,11 +279,7 @@ class AutoConfigurator:
 
             model_config["init_args"]["label_info"] = label_info
 
-        if should_pass_tile_config(model_cls):
-            datamodule = self.get_datamodule()
-            if datamodule is None:
-                msg = f"{model_cls} should pass tile_config from OTXDataModule. However, cannot get datamodule."
-                raise RuntimeError(msg)
+        if can_pass_tile_config(model_cls) and (datamodule := self.get_datamodule()) is not None:
             model_config["init_args"]["tile_config"] = datamodule.tile_config
 
         return model_parser.instantiate_classes(Namespace(model=model_config)).get("model")
