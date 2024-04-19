@@ -352,6 +352,12 @@ class ImageTilingDataset(OTXDetDataset):
         annotation = [self.get_ann_info(i) for i in range(len(self))]
         self.evaluator = Evaluator(annotation, self.dataset.domain, self.CLASSES)
 
+    @property
+    def img_indices(self) -> dict:
+        """Get indices of old and new images."""
+        # TODO: Tiling currently does not support incremental learning.
+        return {"old": [], "new": [i for i in range(len(self))]}
+
     def __len__(self) -> int:
         """Get the length of the dataset."""
         return len(self.tile_dataset)

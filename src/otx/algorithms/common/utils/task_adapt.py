@@ -99,8 +99,13 @@ def unwrap_dataset(dataset):
     :param dataset: dataset object, an instance of a dataset.
     :return: tuple of dataset object and int, the base dataset and the number of times to repeat the dataset.
     """
+    from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
+
     times = 1
     target_dataset = dataset
+    if isinstance(target_dataset, ImageTilingDataset):
+        return target_dataset, times
+
     while hasattr(target_dataset, "dataset"):
         if hasattr(target_dataset, "times"):
             times = target_dataset.times
