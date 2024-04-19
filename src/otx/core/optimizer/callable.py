@@ -106,7 +106,7 @@ class OptimizerCallableSupportHPO:
             class MyAwesomeMulticlassClsModel(OTXMulticlassClsModel):
                 def __init__(
                     self,
-                    num_classes: int,
+                    label_info: LabelInfoTypes,
                     optimizer: OptimizerCallable = OptimizerCallableSupportHPO(
                         optimizer_cls=SGD,
                         optimizer_kwargs={
