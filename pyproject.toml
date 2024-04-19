@@ -57,7 +57,7 @@ dev = [
 docs = [
     "furo",
     "myst-parser",
-    "sphinx==7.2.6",
+    "sphinx==7.3.6",
     "pydata-sphinx-theme==0.12.0",
     "sphinx-tabs",
     "sphinx-panels",
