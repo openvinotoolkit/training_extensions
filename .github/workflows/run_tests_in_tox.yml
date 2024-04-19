@@ -29,7 +29,7 @@ on:
         default: false
       container-image:
         type: string
-        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e"
+        default: "219678651685.dkr.ecr.eu-west-1.amazonaws.com/ote-ci:pr-194-1334bef936df3b06d28bc3d1bd90e7248359b99e"
       container-options:
         type: string
         default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
